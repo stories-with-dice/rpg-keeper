@@ -5,6 +5,7 @@
   'use strict';
 
   const STORAGE_KEY = 'osr_manager_v1';
+  const MONSTERS_URL = 'data/monsters.json';
   const MAX_LOG = 500;
   const MAX_DICE = 500;
 
@@ -20,7 +21,34 @@
   /* ------------------------------------------------------------------ */
   /* State                                                              */
   /* ------------------------------------------------------------------ */
-  let state = { version: 1, activeId: null, characters: [], log: [] };
+  const STATE_DEFAULTS = {
+    version: 1, activeId: null, characters: [], log: [],
+    monsters: [], monstersSeeded: false, conditions: [],
+    combat: { round: 1, activeId: null, selectedId: null, entries: [] }
+  };
+
+  // Prepopulated status conditions (common OSR set). icon = Font Awesome class.
+  const CONDITION_SEED = [
+    { name: 'Blinded', icon: 'fa-eye-slash', desc: 'The creature has disadvantage on tasks requiring the lost sense. (p55 SD)' },
+    { name: 'Charmed', icon: 'fa-heart', desc: "A charmed creature can't attack the charmer or target the charmer with harmful abilities or magical effects. The charmer has advantage on any ability check to interact socially with the creature." },
+    { name: 'Deafened', icon: 'fa-ear-deaf', desc: 'The creature has disadvantage on tasks requiring the lost sense. (p55 SD)' },
+    { name: 'Exhaustion', icon: 'fa-battery-empty', desc: 'Measured in six levels, with effects ranging from disadvantage on ability checks to hit point maximum halving, speed reduction, disadvantage on attack rolls and saving throws, and even death at the extreme level.' },
+    { name: 'Frightened', icon: 'fa-ghost', desc: "A frightened creature has disadvantage on ability checks and attack rolls while the source of its fear is within line of sight. The creature can't willingly move closer to the source of its fear." },
+    { name: 'Grappled', icon: 'fa-handcuffs', desc: 'A grappled creature cannot move. The condition ends if the grappler is incapacitated or if an effect removes the grappled creature from the reach of the grappler.' },
+    { name: 'Incapacitated', icon: 'fa-ban', desc: "An incapacitated creature can't take actions or reactions." },
+    { name: 'Invisible', icon: 'fa-eye-low-vision', desc: 'Impossible to see without the aid of magic or a special sense. Attacks against the invisible creature are at disadvantage. Its location can be detected by any noise it makes or tracks it leaves.' },
+    { name: 'Paralyzed', icon: 'fa-bolt', desc: "A paralyzed creature is incapacitated and can't move or speak." },
+    { name: 'Petrified', icon: 'fa-cube', desc: 'Transformed, along with any nonmagical object it is wearing or carrying, into a solid inanimate substance (usually stone). Its weight increases by a factor of ten, and it ceases aging.' },
+    { name: 'Poisoned', icon: 'fa-skull-crossbones', desc: 'A poisoned creature has disadvantage on attack rolls and ability checks.' },
+    { name: 'Prone', icon: 'fa-person-falling', desc: "A prone creature's only movement option is to crawl Near unless it stands up and thereby ends the condition. It has disadvantage on attack rolls. An attack roll against it has advantage if the attacker is Near, otherwise disadvantage." },
+    { name: 'Restrained', icon: 'fa-link', desc: "A restrained creature cannot move. Attack rolls against it have advantage, and its attack rolls have disadvantage. It has disadvantage on Dexterity saving throws." },
+    { name: 'Stunned', icon: 'fa-face-dizzy', desc: "A stunned creature is incapacitated, can't move, and can speak only falteringly. It automatically fails Strength and Dexterity saving throws. Attack rolls against it have advantage." },
+    { name: 'Unconscious', icon: 'fa-bed', desc: "Incapacitated, can't move or speak, and unaware of its surroundings. Can't take actions or reactions." },
+    { name: 'Concentrating', icon: 'fa-brain', desc: 'Maintaining an ongoing effect. Taking damage may force a check to keep concentration.' }
+  ];
+  const DEFAULT_STATUS_ICON = 'fa-circle-exclamation';
+
+  let state = JSON.parse(JSON.stringify(STATE_DEFAULTS));
   let mode = 'view'; // 'view' | 'edit'
 
   function load() {
@@ -29,13 +57,37 @@
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          state = Object.assign({ version: 1, activeId: null, characters: [], log: [] }, parsed);
+          state = Object.assign(JSON.parse(JSON.stringify(STATE_DEFAULTS)), parsed);
         }
-        state.characters.forEach(ensureCharShape);
+        ensureStateShape();
         return true;
       }
     } catch (e) { console.warn('load failed', e); }
     return false;
+  }
+
+  function ensureStateShape() {
+    if (!Array.isArray(state.characters)) state.characters = [];
+    if (!Array.isArray(state.monsters)) state.monsters = [];
+    if (!Array.isArray(state.log)) state.log = [];
+    if (!Array.isArray(state.conditions) || !state.conditions.length) {
+      state.conditions = CONDITION_SEED.map(c => Object.assign({ id: uid() }, c));
+    }
+    state.conditions.forEach(c => { if (!c.id) c.id = uid(); if (!c.icon) c.icon = DEFAULT_STATUS_ICON; });
+    state.characters.forEach(ensureCharShape);
+    state.monsters.forEach(m => { if (!m.id) m.id = uid(); });
+    if (!state.combat || typeof state.combat !== 'object') state.combat = {};
+    state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
+    if (!Array.isArray(state.combat.entries)) state.combat.entries = [];
+    state.combat.entries.forEach(e => {
+      if (!e.id) e.id = uid();
+      if (e.side !== 'ally' && e.side !== 'enemy' && e.side !== 'neutral') {
+        e.side = e.kind === 'character' ? 'ally' : 'enemy';
+      }
+      if (e.hd == null) e.hd = '';
+      if (e.hp == null) e.hp = 0;
+      if (!Array.isArray(e.statuses)) e.statuses = [];
+    });
   }
 
   // Backfill fields added in later versions so older saves keep working.
@@ -131,18 +183,30 @@
   /* ------------------------------------------------------------------ */
   /* Roll + log                                                         */
   /* ------------------------------------------------------------------ */
-  function doRoll(formula, source) {
-    const res = evalFormula(formula);
-    if (!res) { showLast('—', 'Invalid: ' + formula, ''); return; }
-    const entry = {
-      id: uid(), ts: Date.now(), source: source || 'Roll',
-      formula: res.normalized, total: res.total, detail: res.detail
-    };
+  function pushLog(source, formula, total, detail) {
+    const entry = { id: uid(), ts: Date.now(), source: source || 'Roll', formula: formula, total: total, detail: detail || '' };
     state.log.push(entry);
     if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
     save();
     appendLogEntry(entry);
-    showLast(res.total, res.normalized, res.detail);
+    showLast(total, formula, detail);
+    return entry;
+  }
+
+  // A non-roll log line (status changes, etc.) — no "= total" column.
+  function pushNote(source, text, detail) {
+    const entry = { id: uid(), ts: Date.now(), source: source || '—', formula: text, total: '', detail: detail || '' };
+    state.log.push(entry);
+    if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
+    save();
+    appendLogEntry(entry);
+    return entry;
+  }
+
+  function doRoll(formula, source) {
+    const res = evalFormula(formula);
+    if (!res) { showLast('—', 'Invalid: ' + formula, ''); return null; }
+    return pushLog(source || 'Roll', res.normalized, res.total, res.detail);
   }
 
   function showLast(total, formula, detail) {
@@ -160,12 +224,14 @@
     const list = $('#log-list');
     const empty = list.querySelector('.log-empty');
     if (empty) empty.remove();
+    const hasTotal = e.total !== '' && e.total != null;
     const li = document.createElement('li');
+    if (!hasTotal) li.className = 'log-note';
     li.innerHTML =
       '<span class="log-time">' + fmtTime(e.ts) + '</span>' +
       '<span class="log-src">' + escapeHtml(e.source) + '</span>' +
       '<span class="log-formula">' + escapeHtml(e.formula) + '</span>' +
-      '<span class="log-total">= ' + escapeHtml(String(e.total)) + '</span>' +
+      (hasTotal ? '<span class="log-total">= ' + escapeHtml(String(e.total)) + '</span>' : '') +
       (e.detail ? '<span class="log-detail">' + escapeHtml(e.detail) + '</span>' : '');
     list.appendChild(li);
     list.scrollTop = list.scrollHeight;
@@ -179,10 +245,12 @@
   }
 
   function logToText() {
-    return state.log.map(e =>
-      fmtTime(e.ts) + '  ' + e.source + '  ' + e.formula + ' = ' + e.total +
-      (e.detail ? '   (' + e.detail + ')' : '')
-    ).join('\n');
+    return state.log.map(e => {
+      const hasTotal = e.total !== '' && e.total != null;
+      return fmtTime(e.ts) + '  ' + e.source + '  ' + e.formula +
+        (hasTotal ? ' = ' + e.total : '') +
+        (e.detail ? '   (' + e.detail + ')' : '');
+    }).join('\n');
   }
 
   /* ------------------------------------------------------------------ */
@@ -486,6 +554,735 @@
     area.addEventListener('blur', save);
   }
 
+  /* ================================================================== */
+  /* Combat tracker                                                      */
+  /* ================================================================== */
+  let saveT = null;
+  function saveDebounced() { clearTimeout(saveT); saveT = setTimeout(save, 250); }
+  const fmtMod = n => (n >= 0 ? '+' : '') + n;
+
+  function combatCharFor(e) {
+    return e.kind === 'character' ? state.characters.find(c => c.id === e.charId) || null : null;
+  }
+  function hpConsumable(ch) {
+    if (!ch || !Array.isArray(ch.consumables)) return null;
+    return ch.consumables.find(c => /^\s*hp\s*$/i.test(c.name || '')) || null;
+  }
+  function entryHp(e) {
+    if (e.kind === 'character') {
+      const hpc = hpConsumable(combatCharFor(e));
+      if (hpc) return hpc.value;
+    }
+    return Number(e.hp) || 0;
+  }
+  function entryMaxHp(e) {
+    if (e.kind === 'character') {
+      const hpc = hpConsumable(combatCharFor(e));
+      if (hpc) return hpc.max || 0;
+    }
+    return Number(e.maxHp) || 0;
+  }
+  function setEntryHp(e, v) {
+    v = Math.round(Number(v) || 0);
+    if (e.kind === 'character') {
+      const hpc = hpConsumable(combatCharFor(e));
+      if (hpc) { hpc.value = v; clampConsumable(hpc); save(); renderConsumables(); return; }
+    }
+    e.hp = v < 0 ? 0 : v;
+    save();
+  }
+  function entryDown(e) {
+    if (entryHp(e) <= 0) return true;
+    const hd = String(e.hd == null ? '' : e.hd).trim();
+    return hd !== '' && MonsterParse.hdNum(hd) === 0;
+  }
+  function charQuickAC(ch) {
+    const m = (ch && ch.body || '').match(/\bAC\b[^0-9\n]{0,4}(\d{1,2})/i);
+    return m ? m[1] : '';
+  }
+  function charDetectHp(ch) {
+    const body = ch && ch.body || '';
+    let m = body.match(/\bHP\b[^0-9\n]{0,4}(\d+)\s*\/\s*(\d+)/i);
+    if (m) return { value: +m[1], max: +m[2] };
+    m = body.match(/\bHP\b[^0-9\n]{0,4}(\d+)/i);
+    if (m) return { value: +m[1], max: +m[1] };
+    return null;
+  }
+  function acDisplay(m) {
+    if (!m || !m.ac) return '—';
+    if (m.ac.asc != null && m.ac.desc != null) return m.ac.asc + ' [' + m.ac.desc + ']';
+    if (m.ac.asc != null) return String(m.ac.asc);
+    if (m.ac.desc != null) return '[' + m.ac.desc + ']';
+    return '—';
+  }
+  function atkLabel(a) {
+    return (a.label || 'attack') + (a.count > 1 ? ' ×' + a.count : '') + ' ' + fmtMod(a.toHit || 0) +
+      (a.damage ? ' · ' + a.damage : '') + (a.note ? ' (' + a.note + ')' : '');
+  }
+  function selectedEntry() {
+    return state.combat.entries.find(e => e.id === state.combat.selectedId) || null;
+  }
+
+  function uniqueName(base) {
+    const esc = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rx = new RegExp('^' + esc + '(?: \\((\\d+)\\))?$');
+    const same = state.combat.entries.filter(e => rx.test(e.name));
+    if (!same.length) return base;
+    const bare = same.find(e => e.name === base);
+    if (bare) bare.name = base + ' (1)';
+    const taken = new Set(state.combat.entries.map(e => e.name));
+    let n = 2;
+    while (taken.has(base + ' (' + n + ')')) n++;
+    return base + ' (' + n + ')';
+  }
+
+  function addCharEntry(charId) {
+    const ch = state.characters.find(c => c.id === charId);
+    if (!ch) return;
+    // Seed the linked HP consumable from the sheet if it's still the untouched 0/0 default.
+    const det = charDetectHp(ch);
+    if (det) {
+      const hpc = hpConsumable(ch);
+      if (hpc) {
+        if ((hpc.value || 0) === 0 && (hpc.max || 0) === 0) { hpc.value = det.value; hpc.max = det.max; }
+      } else {
+        ch.consumables.push({ id: uid(), name: 'HP', value: det.value, max: det.max });
+      }
+      save();
+      renderConsumables();
+    }
+    const e = { id: uid(), kind: 'character', charId: ch.id, name: uniqueName(ch.name), hd: '', hp: 0, side: 'ally', statuses: [] };
+    state.combat.entries.push(e);
+    if (!state.combat.activeId) state.combat.activeId = e.id;
+    state.combat.selectedId = e.id;
+    save();
+    renderCombat();
+  }
+  function addMonsterEntry(def) {
+    const e = {
+      id: uid(), kind: 'monster', name: uniqueName(def.name),
+      monster: JSON.parse(JSON.stringify(def)),
+      hd: def.hd || '', hp: def.hp || 0, maxHp: def.hp || 0, side: 'enemy', statuses: []
+    };
+    state.combat.entries.push(e);
+    if (!state.combat.activeId) state.combat.activeId = e.id;
+    state.combat.selectedId = e.id;
+    save();
+    renderCombat();
+  }
+  function removeEntry(id) {
+    const ents = state.combat.entries;
+    const i = ents.findIndex(x => x.id === id);
+    if (i < 0) return;
+    ents.splice(i, 1);
+    const fallback = ents.length ? ents[Math.min(i, ents.length - 1)].id : null;
+    if (state.combat.activeId === id) state.combat.activeId = fallback;
+    if (state.combat.selectedId === id) state.combat.selectedId = fallback;
+    save();
+    renderCombat();
+  }
+  function cycleSide(id) {
+    const e = state.combat.entries.find(x => x.id === id);
+    if (!e) return;
+    e.side = e.side === 'ally' ? 'enemy' : (e.side === 'enemy' ? 'neutral' : 'ally');
+    save();
+    renderTracker();
+  }
+  function setSelected(id) {
+    state.combat.selectedId = id;
+    saveDebounced();
+    renderTracker();
+    renderCombatantDetail();
+  }
+
+  /* ---- status conditions ---- */
+  function statusIconOf(name) {
+    const c = state.conditions.find(x => x.name.toLowerCase() === String(name).toLowerCase());
+    return (c && c.icon) || DEFAULT_STATUS_ICON;
+  }
+  function statusDescOf(name) {
+    const c = state.conditions.find(x => x.name.toLowerCase() === String(name).toLowerCase());
+    return (c && c.desc) || '';
+  }
+  function toggleStatus(entryId, name) {
+    const e = state.combat.entries.find(x => x.id === entryId);
+    if (!e) return;
+    if (!Array.isArray(e.statuses)) e.statuses = [];
+    const round = state.combat.round || 1;
+    const i = e.statuses.findIndex(s => s.name.toLowerCase() === name.toLowerCase());
+    if (i >= 0) {
+      e.statuses.splice(i, 1);
+      pushNote(e.name, 'lost "' + name + '"', 'round ' + round);
+    } else {
+      e.statuses.push({ name: name, icon: statusIconOf(name), round: round, ts: Date.now() });
+      pushNote(e.name, 'gained "' + name + '"', 'round ' + round);
+    }
+    save();
+    renderTracker();
+    renderCombatantDetail();
+  }
+  function removeStatus(entryId, name) {
+    const e = state.combat.entries.find(x => x.id === entryId);
+    if (!e || !Array.isArray(e.statuses)) return;
+    const i = e.statuses.findIndex(s => s.name.toLowerCase() === name.toLowerCase());
+    if (i < 0) return;
+    e.statuses.splice(i, 1);
+    pushNote(e.name, 'lost "' + name + '"', 'round ' + (state.combat.round || 1));
+    save();
+    renderTracker();
+    renderCombatantDetail();
+  }
+  function defineCondition(name, desc) {
+    name = String(name || '').trim();
+    if (!name) return null;
+    let c = state.conditions.find(x => x.name.toLowerCase() === name.toLowerCase());
+    if (c) { if (desc) c.desc = desc; }
+    else {
+      c = { id: uid(), name: name, icon: DEFAULT_STATUS_ICON, desc: String(desc || '').trim() };
+      state.conditions.push(c);
+      state.conditions.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    save();
+    return c;
+  }
+
+  /* ---- right-click context menu ---- */
+  let ctxEntryId = null;
+  function closeCtxMenu() {
+    const m = $('#ctx-menu');
+    m.hidden = true;
+    m.innerHTML = '';
+    ctxEntryId = null;
+  }
+  function openCtxMenu(x, y, entryId) {
+    const e = state.combat.entries.find(en => en.id === entryId);
+    if (!e) return;
+    ctxEntryId = entryId;
+    const active = new Set((e.statuses || []).map(s => s.name.toLowerCase()));
+    const items = state.conditions
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(c => {
+        const on = active.has(c.name.toLowerCase());
+        return '<button class="ctx-item' + (on ? ' is-on' : '') + '" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(c.desc) + '">' +
+          '<i class="fa-solid ' + escapeHtml(c.icon || DEFAULT_STATUS_ICON) + '"></i>' +
+          '<span>' + escapeHtml(c.name) + '</span>' +
+          (on ? '<i class="fa-solid fa-check ctx-check"></i>' : '') +
+          '</button>';
+      }).join('');
+    const m = $('#ctx-menu');
+    m.innerHTML =
+      '<div class="ctx-head">' + escapeHtml(e.name) + ' &middot; status</div>' +
+      '<div class="ctx-list">' + items + '</div>' +
+      '<button class="ctx-item ctx-new"><i class="fa-solid fa-plus"></i><span>New condition&hellip;</span></button>';
+    m.hidden = false;
+    // position within viewport
+    const mw = m.offsetWidth, mh = m.offsetHeight;
+    const px = Math.min(x, window.innerWidth - mw - 8);
+    const py = Math.min(y, window.innerHeight - mh - 8);
+    m.style.left = Math.max(8, px) + 'px';
+    m.style.top = Math.max(8, py) + 'px';
+  }
+  function onCtxMenuClick(e) {
+    const item = e.target.closest('.ctx-item');
+    if (!item || ctxEntryId == null) return;
+    if (item.classList.contains('ctx-new')) {
+      const name = prompt('New condition name:');
+      if (name && name.trim()) {
+        const desc = prompt('Description for "' + name.trim() + '":') || '';
+        defineCondition(name.trim(), desc);
+        toggleStatus(ctxEntryId, name.trim());
+      }
+      closeCtxMenu();
+      return;
+    }
+    toggleStatus(ctxEntryId, item.dataset.name);
+    closeCtxMenu();
+  }
+
+  function turnIndex() {
+    return state.combat.entries.findIndex(e => e.id === state.combat.activeId);
+  }
+  function nextTurn() {
+    const ents = state.combat.entries;
+    if (!ents.length) return;
+    let i = turnIndex();
+    if (i < 0) { state.combat.activeId = ents[0].id; save(); renderCombat(); return; }
+    i++;
+    if (i >= ents.length) { i = 0; state.combat.round = (state.combat.round || 1) + 1; }
+    state.combat.activeId = ents[i].id;
+    save();
+    renderCombat();
+  }
+  function prevTurn() {
+    const ents = state.combat.entries;
+    if (!ents.length) return;
+    let i = turnIndex();
+    if (i <= 0) {
+      if ((state.combat.round || 1) > 1) { state.combat.round--; i = ents.length - 1; }
+      else i = 0;
+    } else i--;
+    state.combat.activeId = ents[i].id;
+    save();
+    renderCombat();
+  }
+  function setRound(delta) {
+    state.combat.round = Math.max(1, (state.combat.round || 1) + delta);
+    save();
+    renderCombatBar();
+  }
+  function moveSelection(dir) {
+    const ents = state.combat.entries;
+    if (!ents.length) return;
+    let i = ents.findIndex(e => e.id === state.combat.selectedId);
+    if (i < 0) i = dir > 0 ? -1 : 0;
+    i = (i + dir + ents.length) % ents.length;
+    state.combat.selectedId = ents[i].id;
+    saveDebounced();
+    renderTracker();
+    renderCombatantDetail();
+    const row = $('#tracker-list [data-id="' + ents[i].id + '"]');
+    if (row) row.scrollIntoView({ block: 'nearest' });
+  }
+
+  /* ---- combat rolls ---- */
+  function rollEntryAttack(e, atk) {
+    const bonus = atk.toHit != null ? atk.toHit : (e.monster && e.monster.atkBonus) || 0;
+    const n = Math.max(1, atk.count || 1);
+    const bits = [];
+    let firstTotal = null;
+    for (let k = 0; k < n; k++) {
+      const hit = evalFormula('1d20' + fmtMod(bonus));
+      let s = (n > 1 ? '#' + (k + 1) + ' ' : '') + 'to-hit ' + hit.total;
+      if (atk.damage) { const dmg = evalFormula(atk.damage); if (dmg) s += ', dmg ' + dmg.total + ' [' + atk.damage + ']'; }
+      if (firstTotal == null) firstTotal = hit.total;
+      bits.push(s);
+    }
+    pushLog(e.name, (atk.label || 'attack') + ' ' + fmtMod(bonus) + (atk.damage ? ' (' + atk.damage + ')' : ''), firstTotal, bits.join('  |  '));
+  }
+  function rollEntrySave(e, key) {
+    const m = e.monster;
+    if (m && m.saveTargets && m.saveTargets[key] != null) {
+      const tgt = m.saveTargets[key];
+      const r = evalFormula('1d20');
+      pushLog(e.name, 'Save ' + key, r.total, 'vs ' + tgt + ' → ' + (r.total >= tgt ? 'SAVE' : 'FAIL'));
+    } else if (m && m.stats && m.stats[key] != null) {
+      const mod = m.stats[key];
+      const r = evalFormula('1d20' + fmtMod(mod));
+      pushLog(e.name, 'Save ' + key + ' ' + fmtMod(mod), r.total, r.detail + ' — GM sets DC');
+    } else {
+      const r = evalFormula('1d20');
+      pushLog(e.name, 'Save ' + key, r.total, r.detail);
+    }
+  }
+  function rollEntryMorale(e) {
+    const ml = e.monster && e.monster.moraleML;
+    const r = evalFormula('2d6');
+    if (ml != null) pushLog(e.name, 'Morale', r.total, r.detail + ' vs ML ' + ml + ' → ' + (r.total <= ml ? 'holds' : 'breaks'));
+    else pushLog(e.name, 'Morale', r.total, r.detail + ' (2d6 — set ML to auto-judge)');
+  }
+
+  /* ---- combat render ---- */
+  function renderCombat() {
+    renderCombatBar();
+    renderTracker();
+    renderCombatantDetail();
+  }
+  function renderCombatBar() {
+    $('#cb-round').textContent = state.combat.round || 1;
+    const act = state.combat.entries.find(e => e.id === state.combat.activeId);
+    $('#cb-turn-name').textContent = act ? act.name : '—';
+    const sel = $('#cb-add-char');
+    sel.innerHTML = '<option value="">+ Add character…</option>' +
+      state.characters.map(c => '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>').join('');
+    sel.value = '';
+  }
+  function statusTagsHtml(e) {
+    if (!Array.isArray(e.statuses) || !e.statuses.length) return '';
+    return '<span class="cbt-tags">' + e.statuses.map(s => {
+      const desc = statusDescOf(s.name);
+      const tip = (desc ? desc + '  ·  ' : '') + 'added round ' + (s.round || '?');
+      return '<span class="status-tag" data-name="' + escapeHtml(s.name) + '" tabindex="0">' +
+        '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '"></i>' +
+        '<span class="status-name">' + escapeHtml(s.name) + '</span>' +
+        '<button class="status-x" title="Remove ' + escapeHtml(s.name) + '" aria-label="Remove">✕</button>' +
+        '<span class="status-tip">' + escapeHtml(tip) + '</span>' +
+      '</span>';
+    }).join('') + '</span>';
+  }
+  function rowHtml(e) {
+    const cls = ['cbt-row', 'side-' + e.side];
+    if (e.id === state.combat.activeId) cls.push('is-active');
+    if (e.id === state.combat.selectedId) cls.push('is-selected');
+    if (entryDown(e)) cls.push('is-down');
+    const m = e.kind === 'monster' ? e.monster : null;
+    const ch = e.kind === 'character' ? combatCharFor(e) : null;
+    const ac = m ? acDisplay(m) : (ch ? (charQuickAC(ch) || '—') : '—');
+    const sv = m ? (m.savesText || '') : '';
+    const atk = m ? (m.attacksText || '') : '';
+    const maxHp = entryMaxHp(e);
+    return '<li class="' + cls.join(' ') + '" data-id="' + e.id + '" draggable="true">' +
+      '<div class="cbt-line1">' +
+        '<span class="cbt-drag" title="Drag to reorder">⠿</span>' +
+        '<button class="cbt-side" title="Ally / Enemy / Neutral — click to cycle">●</button>' +
+        '<span class="cbt-name">' + escapeHtml(e.name) + '</span>' +
+        '<span class="cbt-kind">' + e.kind + '</span>' +
+        (e.id === state.combat.activeId ? '<span class="cbt-turnflag">◀ turn</span>' : '') +
+        '<button class="cbt-remove" title="Remove from combat">✕</button>' +
+      '</div>' +
+      '<div class="cbt-line2">' +
+        '<label class="chip">HD <input class="cbt-hd" type="text" value="' + escapeHtml(String(e.hd || '')) + '" /></label>' +
+        '<label class="chip">HP <input class="cbt-hp" type="number" step="1" value="' + entryHp(e) + '" />' +
+          '<span class="cbt-max">/ ' + (maxHp || '—') + '</span></label>' +
+        '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
+        (sv ? '<span class="chip chip-dim">Sv ' + escapeHtml(sv) + '</span>' : '') +
+        (atk ? '<span class="chip chip-dim">' + escapeHtml(atk) + '</span>' : '') +
+        statusTagsHtml(e) +
+      '</div>' +
+    '</li>';
+  }
+  function renderTracker() {
+    const list = $('#tracker-list');
+    const ents = state.combat.entries;
+    $('#tracker-empty').hidden = ents.length > 0;
+    list.innerHTML = ents.map(rowHtml).join('');
+  }
+  function chip(l, v) {
+    return '<span class="chip"><span class="chip-l">' + escapeHtml(l) + '</span> ' + escapeHtml(String(v)) + '</span>';
+  }
+  function renderCombatantDetail() {
+    const host = $('#combatant-detail');
+    const ent = selectedEntry();
+    if (!ent) { host.innerHTML = '<p class="hint">Select a combatant for details, attacks &amp; saves.</p>'; return; }
+    let h = '';
+    if (ent.kind === 'monster') {
+      const m = ent.monster;
+      h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">' + escapeHtml(m.source || 'monster') + '</span></div>';
+      h += '<div class="cd-stats">' +
+        chip('AC', acDisplay(m)) +
+        (m.ac && m.ac.thac0 != null ? chip('THAC0', m.ac.thac0) : '') +
+        chip('HD', ent.hd || '—') +
+        chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
+        (m.move ? chip('MV', m.move) : '') +
+        (m.align ? chip('AL', m.align) : '') +
+        (m.xp != null ? chip('XP', m.xp) : '') +
+      '</div>';
+      if (m.attacks && m.attacks.length) {
+        h += '<div class="cd-sec"><span class="cd-lbl">Attacks</span>' +
+          m.attacks.map((a, i) => '<button class="btn cbt-atk" data-i="' + i + '">' + escapeHtml(atkLabel(a)) + '</button>').join('') +
+          '<button class="btn cbt-atkroll">d20' + fmtMod(m.atkBonus || 0) + '</button></div>';
+      }
+      const sk = m.saveTargets ? Object.keys(m.saveTargets) : (m.stats ? ['S', 'D', 'C', 'I', 'W', 'Ch'] : []);
+      if (sk.length) {
+        h += '<div class="cd-sec"><span class="cd-lbl">Saves</span>' +
+          sk.map(k => {
+            const v = m.saveTargets ? m.saveTargets[k] : fmtMod(m.stats[k]);
+            return '<button class="btn cbt-save" data-k="' + k + '">' + k + ' ' + v + '</button>';
+          }).join('') + '</div>';
+      }
+      h += '<div class="cd-sec"><span class="cd-lbl">Morale</span><button class="btn cbt-morale">2d6' +
+        (m.moraleML != null ? ' vs ML ' + m.moraleML : '') + '</button></div>';
+      if (m.abilities && m.abilities.length) {
+        h += '<div class="cd-abils">' + m.abilities.map(a =>
+          '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
+      }
+      if (m.desc) h += '<p class="cd-desc">' + escapeHtml(m.desc) + '</p>';
+      h += '<details class="cd-raw"><summary>Raw stat block</summary><pre>' + escapeHtml(m.raw || '') + '</pre></details>';
+    } else {
+      const ch = combatCharFor(ent);
+      h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">character' +
+        (ch && ch.system ? ' · ' + escapeHtml(ch.system) : '') + '</span></div>';
+      h += '<div class="cd-stats">' + chip('HD', ent.hd || '—') +
+        chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—') + '  (linked to sheet)') + '</div>';
+      if (ch) h += '<div class="cd-sheet markdown-body">' + marked.parse(ch.body || '') + '</div>';
+      else h += '<p class="hint">Character not found — it may have been deleted.</p>';
+    }
+    if (Array.isArray(ent.statuses) && ent.statuses.length) {
+      h += '<div class="cd-sec"><span class="cd-lbl">Status</span><span class="cd-statuses">' +
+        ent.statuses.map(s =>
+          '<span class="status-tag" data-name="' + escapeHtml(s.name) + '" tabindex="0">' +
+          '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '"></i>' +
+          '<span class="status-name">' + escapeHtml(s.name) + '</span>' +
+          '<button class="status-x" title="Remove ' + escapeHtml(s.name) + '">✕</button>' +
+          '<span class="status-tip">' + escapeHtml((statusDescOf(s.name) ? statusDescOf(s.name) + '  ·  ' : '') + 'added round ' + (s.round || '?')) + '</span>' +
+          '</span>').join('') +
+        '</span></div>';
+    }
+    h += '<p class="hint cd-ctx-hint">Right-click a combatant in the tracker to add a status.</p>';
+    host.innerHTML = h;
+    annotate(host);
+  }
+
+  /* ---- drag & drop ---- */
+  let dragId = null;
+  function clearDropMarks() {
+    $$('#tracker-list .cbt-row').forEach(r => r.classList.remove('drop-before', 'drop-after'));
+  }
+  function onDragStart(e) {
+    const row = e.target.closest('.cbt-row');
+    if (!row) return;
+    dragId = row.dataset.id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragId);
+    row.classList.add('dragging');
+  }
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const row = e.target.closest('.cbt-row');
+    clearDropMarks();
+    if (!row || row.dataset.id === dragId) return;
+    const rect = row.getBoundingClientRect();
+    row.classList.add(e.clientY > rect.top + rect.height / 2 ? 'drop-after' : 'drop-before');
+  }
+  function onDrop(e) {
+    e.preventDefault();
+    const row = e.target.closest('.cbt-row');
+    clearDropMarks();
+    if (!row || !dragId) return;
+    const ents = state.combat.entries;
+    const from = ents.findIndex(x => x.id === dragId);
+    if (from < 0) return;
+    const rect = row.getBoundingClientRect();
+    const after = e.clientY > rect.top + rect.height / 2;
+    const [moved] = ents.splice(from, 1);
+    let to = ents.findIndex(x => x.id === row.dataset.id);
+    if (to < 0) to = ents.length;
+    else if (after) to++;
+    ents.splice(to, 0, moved);
+    save();
+    renderCombat();
+  }
+  function onDragEnd() {
+    dragId = null;
+    $$('#tracker-list .cbt-row').forEach(r => r.classList.remove('drop-before', 'drop-after', 'dragging'));
+  }
+
+  /* ---- tracker events ---- */
+  function onTrackerClick(e) {
+    const row = e.target.closest('.cbt-row');
+    if (!row) return;
+    const id = row.dataset.id;
+    if (e.target.closest('.status-x')) {
+      removeStatus(id, e.target.closest('.status-tag').dataset.name);
+      return;
+    }
+    if (e.target.closest('.status-tag')) { setSelected(id); return; }
+    if (e.target.closest('.cbt-remove')) { removeEntry(id); return; }
+    if (e.target.closest('.cbt-side')) { cycleSide(id); return; }
+    setSelected(id);
+  }
+  function onTrackerContextMenu(e) {
+    const row = e.target.closest('.cbt-row');
+    if (!row) return;
+    e.preventDefault();
+    setSelected(row.dataset.id);
+    openCtxMenu(e.clientX, e.clientY, row.dataset.id);
+  }
+  function onTrackerInput(e) {
+    const row = e.target.closest('.cbt-row');
+    if (!row) return;
+    const ent = state.combat.entries.find(x => x.id === row.dataset.id);
+    if (!ent) return;
+    if (e.target.classList.contains('cbt-hd')) { ent.hd = e.target.value; saveDebounced(); }
+    else if (e.target.classList.contains('cbt-hp')) { setEntryHp(ent, e.target.value); }
+  }
+  function onTrackerChange(e) {
+    if (e.target.classList.contains('cbt-hd') || e.target.classList.contains('cbt-hp')) {
+      renderTracker();
+      renderCombatantDetail();
+    }
+  }
+  function onDetailClick(e) {
+    const ent = selectedEntry();
+    if (!ent) return;
+    if (e.target.closest('.status-x')) {
+      removeStatus(ent.id, e.target.closest('.status-tag').dataset.name);
+      return;
+    }
+    const atkBtn = e.target.closest('.cbt-atk');
+    if (atkBtn && ent.monster) { const a = ent.monster.attacks[+atkBtn.dataset.i]; if (a) rollEntryAttack(ent, a); return; }
+    if (e.target.closest('.cbt-save')) { rollEntrySave(ent, e.target.closest('.cbt-save').dataset.k); return; }
+    if (e.target.closest('.cbt-morale')) { rollEntryMorale(ent); return; }
+    if (e.target.closest('.cbt-atkroll')) {
+      const b = (ent.monster && ent.monster.atkBonus) || 0;
+      const r = evalFormula('1d20' + fmtMod(b));
+      pushLog(ent.name, 'Attack ' + fmtMod(b), r.total, r.detail);
+      return;
+    }
+    const roll = e.target.closest('.roll');
+    if (roll) doRoll(roll.dataset.formula, ent.name);
+  }
+  function onCombatKey(e) {
+    if (!$('#tab-combat').classList.contains('is-active')) return;
+    if (!$('#monster-modal').hidden || !$('#paste-modal').hidden) return;
+    const t = e.target;
+    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveSelection(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveSelection(-1); }
+    else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); nextTurn(); }
+    else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); prevTurn(); }
+  }
+
+  /* ---- monster library modal ---- */
+  function openMonsterModal() {
+    $('#monster-modal').hidden = false;
+    $('#mm-msg').textContent = '';
+    renderLibrary();
+    $('#mm-search').focus();
+  }
+  function closeMonsterModal() { $('#monster-modal').hidden = true; }
+
+  function renderLibrary() {
+    const q = ($('#mm-search').value || '').toLowerCase().trim();
+    const mn = parseFloat($('#mm-hd-min').value);
+    const mx = parseFloat($('#mm-hd-max').value);
+    const list = $('#mm-lib-list');
+    const items = state.monsters.filter(d => {
+      if (q && !(d.name || '').toLowerCase().includes(q)) return false;
+      const h = d.hdNum != null ? d.hdNum : MonsterParse.hdNum(d.hd);
+      if (!isNaN(mn) && h < mn) return false;
+      if (!isNaN(mx) && h > mx) return false;
+      return true;
+    }).sort((a, b) => (a.hdNum || 0) - (b.hdNum || 0) || String(a.name).localeCompare(b.name));
+    if (!items.length) {
+      list.innerHTML = '<li class="mm-empty hint">No monsters match. Paste a stat block on the right to add one.</li>';
+      return;
+    }
+    list.innerHTML = items.map(d => {
+      const meta = ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
+      return '<li data-id="' + d.id + '"><div class="mm-li-main"><b>' + escapeHtml(d.name) + '</b>' +
+        '<span class="mm-li-meta">' + escapeHtml(meta) + '</span></div>' +
+        '<div class="mm-li-actions"><button class="btn mm-add">Add</button>' +
+        '<button class="btn mm-del" title="Remove from library">✕</button></div></li>';
+    }).join('');
+  }
+  function onLibClick(e) {
+    const li = e.target.closest('li[data-id]');
+    if (!li) return;
+    const d = state.monsters.find(x => x.id === li.dataset.id);
+    if (!d) return;
+    if (e.target.closest('.mm-add')) {
+      addMonsterEntry(d);
+      $('#mm-msg').textContent = 'Added ' + d.name + ' to combat.';
+    } else if (e.target.closest('.mm-del')) {
+      if (confirm('Remove "' + d.name + '" from the library?')) {
+        state.monsters = state.monsters.filter(x => x.id !== d.id);
+        save();
+        renderLibrary();
+      }
+    }
+  }
+  function parseAndAdd(text, alsoCombat) {
+    const defs = (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
+    if (!defs.length) {
+      $('#mm-msg').textContent = 'No stat blocks found — each needs an "AC …" line, blank line between monsters.';
+      return;
+    }
+    const added = [];
+    defs.forEach(d => { d.id = uid(); state.monsters.push(d); added.push(d); });
+    save();
+    if (alsoCombat) added.forEach(addMonsterEntry);
+    renderLibrary();
+    renderCombat();
+    $('#mm-paste-area').value = '';
+    $('#mm-msg').textContent = 'Added ' + added.length + ' monster' + (added.length > 1 ? 's' : '') +
+      ' to the library' + (alsoCombat ? ' and to combat.' : '.');
+  }
+
+  function wireCombat() {
+    $('#cb-round-dec').addEventListener('click', () => setRound(-1));
+    $('#cb-round-inc').addEventListener('click', () => setRound(1));
+    $('#cb-turn-prev').addEventListener('click', prevTurn);
+    $('#cb-turn-next').addEventListener('click', nextTurn);
+    $('#cb-add-char').addEventListener('change', e => { if (e.target.value) { addCharEntry(e.target.value); e.target.value = ''; } });
+    $('#cb-add-monster').addEventListener('click', openMonsterModal);
+    $('#cb-clear').addEventListener('click', () => {
+      if (!state.combat.entries.length || confirm('Clear all combatants and reset to round 1?')) {
+        state.combat = { round: 1, activeId: null, selectedId: null, entries: [] };
+        save();
+        renderCombat();
+      }
+    });
+
+    const list = $('#tracker-list');
+    list.addEventListener('click', onTrackerClick);
+    list.addEventListener('input', onTrackerInput);
+    list.addEventListener('change', onTrackerChange);
+    list.addEventListener('contextmenu', onTrackerContextMenu);
+    list.addEventListener('dragstart', onDragStart);
+    list.addEventListener('dragover', onDragOver);
+    list.addEventListener('drop', onDrop);
+    list.addEventListener('dragend', onDragEnd);
+
+    $('#combatant-detail').addEventListener('click', onDetailClick);
+
+    // context menu
+    $('#ctx-menu').addEventListener('click', onCtxMenuClick);
+    document.addEventListener('mousedown', e => {
+      if (!$('#ctx-menu').hidden && !e.target.closest('#ctx-menu')) closeCtxMenu();
+    });
+    document.addEventListener('scroll', closeCtxMenu, true);
+    window.addEventListener('resize', closeCtxMenu);
+
+    $('#mm-close').addEventListener('click', closeMonsterModal);
+    $('#monster-modal').addEventListener('click', e => { if (e.target === $('#monster-modal')) closeMonsterModal(); });
+    $('#mm-search').addEventListener('input', renderLibrary);
+    $('#mm-hd-min').addEventListener('input', renderLibrary);
+    $('#mm-hd-max').addEventListener('input', renderLibrary);
+    $('#mm-lib-list').addEventListener('click', onLibClick);
+    $('#mm-parse-add').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, true));
+    $('#mm-parse-lib').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, false));
+
+    document.addEventListener('keydown', onCombatKey);
+  }
+
+  const MONSTER_SEED_TEXT = [
+    'BEAR, POLAR',
+    'A mighty, white bear that thrives in arctic environments.',
+    'AC 13, HP 34, ATK 2 claw +6 (2d6), MV near (climb), S +4, D +1, C +3, I -2, W +1, Ch -2, AL N, LV 7',
+    'Crush. Deals an extra die of damage if it hits the same target with both claws.',
+    'Thick Fur. Cold immune.',
+    '',
+    'COUATL',
+    'A human-sized snake with scales made of jewels and a corona of iridescent feathers.',
+    'AC 16, HP 42, ATK 3 bite +6 (2d6 + poison), MV near (fly), S +2, D +3, C +2, I +4, W +4, Ch +5, AL L, LV 9',
+    'Change Shape. In place of attacks, transform into any similarly-sized creature.',
+    'Poison. DC 15 CON or fall into natural, deep sleep for 1d8 hours.',
+    'Restore. In place of attacks, touch one creature to remove a curse, affliction, or heal 3d8 HP.',
+    '',
+    'Brownie',
+    '1½′ tall humanoids, related to pixies and halflings. They are shy, but friendly with other Lawful creatures.',
+    'AC 3 [16] Hd ½ (2hp) Att Knife (1d3) THAC0 19 [0] Mv 120′ (40′) sv D6 W7 P9 B11 S9 (Cleric 9) ML 7 AL Lawful XP 5 nA 3d6 (5d8) TT S',
+    '▶ Surprise: Never surprised.',
+    '▶ Dimension door: Once per day, can teleport to a known location within 360′.',
+    '▶ Ventriloquism: Can cause their voice to emanate from anywhere within 60′.',
+    '',
+    'Bulette',
+    '15′ long, hard-shelled reptiles with huge maws, tiny eyes, and a shark-like crest upon the back.',
+    'AC 0 [19] Hd 9* (40hp) Att Bite (4d12) + 2 × claw (3d6) THAC0 12 [+7] Mv 150′ (50′) / 30′ (10′) burrowing sv D8 W9 P10 B10 S12 (9) ML 11 AL Neutral XP 1,600 nA 0 (1d2) TT None',
+    '▶ Ravenous: Will attack anything living.',
+    '▶ Leap: If cornered, can leap forward 20′, attacking with all 4 claws.',
+    '▶ Armour plates: Neck plates can be fashioned into magical shields.'
+  ].join('\n');
+
+  async function seedMonsters() {
+    let defs = null;
+    try {
+      const r = await fetch(MONSTERS_URL);
+      if (r.ok) defs = await r.json();
+    } catch (e) { /* file:// or offline */ }
+    if (!Array.isArray(defs) || !defs.length) {
+      defs = window.MonsterParse ? MonsterParse.parseMonsters(MONSTER_SEED_TEXT) : [];
+    }
+    defs.forEach(d => { d.id = d.id || uid(); });
+    state.monsters = defs;
+    state.monstersSeeded = true;
+    save();
+    renderLibrary();
+    renderCombatBar();
+  }
+
   /* ------------------------------------------------------------------ */
   /* Clipboard / paste modal                                            */
   /* ------------------------------------------------------------------ */
@@ -530,19 +1327,21 @@
       try { data = JSON.parse(reader.result); }
       catch (e) { alert('Import failed: not valid JSON.'); return; }
       if (!data || !Array.isArray(data.characters)) { alert('Import failed: no "characters" array.'); return; }
-      const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters into current data.');
+      const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters + monsters into current data.');
       if (replace) {
-        state = Object.assign({ version: 1, activeId: null, characters: [], log: [] }, data);
+        state = Object.assign(JSON.parse(JSON.stringify(STATE_DEFAULTS)), data);
       } else {
         data.characters.forEach(c => { c.id = uid(); state.characters.push(c); });
+        if (Array.isArray(data.monsters)) data.monsters.forEach(m => { m.id = uid(); state.monsters.push(m); });
         if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-MAX_LOG);
       }
-      state.characters.forEach(ensureCharShape);
+      ensureStateShape();
       if (!activeChar() && state.characters.length) state.activeId = state.characters[0].id;
       mode = 'view';
       save();
       refreshCharUI();
       renderLog();
+      renderCombat();
     };
     reader.readAsText(file);
   }
@@ -699,6 +1498,7 @@ Credits: 0`;
       if (!b) return;
       $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
+      if (b.dataset.tab === 'combat') renderCombat();
     });
 
     // Character toolbar
@@ -736,7 +1536,9 @@ Credits: 0`;
     });
     $('#btn-paste-close').addEventListener('click', closePasteModal);
     $('#paste-modal').addEventListener('click', e => { if (e.target === $('#paste-modal')) closePasteModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePasteModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closePasteModal(); closeMonsterModal(); closeCtxMenu(); }
+    });
 
     // Dice
     $('#dice-custom').addEventListener('submit', e => {
@@ -775,12 +1577,13 @@ Credits: 0`;
 
     wireConsumables();
     wireNotes();
+    wireCombat();
   }
 
   /* ------------------------------------------------------------------ */
   /* Init                                                               */
   /* ------------------------------------------------------------------ */
-  function init() {
+  async function init() {
     if (typeof marked !== 'undefined') {
       marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
     }
@@ -788,8 +1591,11 @@ Credits: 0`;
     buildDiceGrid();
     renderLog();
     refreshCharUI();
+    renderCombat();
     wire();
-    if (!had && !state.characters.length) seed();
+    if (!had && !state.characters.length) await seed();
+    if (!state.monsters.length && !state.monstersSeeded) await seedMonsters();
+    renderCombat();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

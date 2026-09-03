@@ -1,0 +1,232 @@
+[
+  {
+    "id": "seed-1",
+    "name": "BEAR, POLAR",
+    "source": "shadowdark",
+    "desc": "A mighty, white bear that thrives in arctic environments.",
+    "raw": "BEAR, POLAR\nA mighty, white bear that \nthrives in arctic environments. \nAC 13, HP 34, ATK 2 claw +6 (2d6), \nMV near (climb), S +4, D +1, C +3, I \n-2, W +1, Ch -2, AL N, LV 7\nCrush. Deals an extra die of \ndamage if it hits the same target \nwith both claws.\nThick Fur. Cold immune.",
+    "ac": {
+      "asc": 13,
+      "desc": null,
+      "thac0": null
+    },
+    "hd": "7",
+    "hp": 34,
+    "move": "near (climb)",
+    "align": "N",
+    "xp": null,
+    "moraleML": null,
+    "atkBonus": 6,
+    "attacksText": "2 claw +6 (2d6)",
+    "attacks": [
+      {
+        "label": "claw",
+        "count": 2,
+        "toHit": 6,
+        "damage": "2d6",
+        "note": "",
+        "raw": "2 claw +6 (2d6)"
+      }
+    ],
+    "stats": {
+      "S": 4,
+      "D": 1,
+      "C": 3,
+      "I": -2,
+      "W": 1,
+      "Ch": -2
+    },
+    "saveTargets": null,
+    "savesText": "S +4  D +1  C +3  I -2  W +1  Ch -2",
+    "abilities": [
+      {
+        "name": "Crush",
+        "text": "Deals an extra die of damage if it hits the same target with both claws."
+      },
+      {
+        "name": "Thick Fur",
+        "text": "Cold immune."
+      }
+    ],
+    "hdNum": 7
+  },
+  {
+    "id": "seed-2",
+    "name": "COUATL",
+    "source": "shadowdark",
+    "desc": "A human-sized snake with scales made of jewels and a corona of iridescent feathers.",
+    "raw": "COUATL\nA human-sized snake with \nscales made of jewels and a \ncorona of iridescent feathers.\nAC 16, HP 42, ATK 3 bite +6 (2d6 + \npoison), MV near (fly), S +2, D +3, \nC +2, I +4, W +4, Ch +5, AL L, LV 9 \nChange Shape. In place of \nattacks, transform into any \nsimilarly-sized creature.\nPoison. DC 15 CON or fall into \nnatural, deep sleep for 1d8 hours. \nRestore. In place of attacks, \ntouch one creature to remove a \ncurse, affliction, or heal 3d8 HP.",
+    "ac": {
+      "asc": 16,
+      "desc": null,
+      "thac0": null
+    },
+    "hd": "9",
+    "hp": 42,
+    "move": "near (fly)",
+    "align": "L",
+    "xp": null,
+    "moraleML": null,
+    "atkBonus": 6,
+    "attacksText": "3 bite +6 (2d6 + poison)",
+    "attacks": [
+      {
+        "label": "bite",
+        "count": 3,
+        "toHit": 6,
+        "damage": "2d6",
+        "note": "poison",
+        "raw": "3 bite +6 (2d6 + poison)"
+      }
+    ],
+    "stats": {
+      "S": 2,
+      "D": 3,
+      "C": 2,
+      "I": 4,
+      "W": 4,
+      "Ch": 5
+    },
+    "saveTargets": null,
+    "savesText": "S +2  D +3  C +2  I +4  W +4  Ch +5",
+    "abilities": [
+      {
+        "name": "Change Shape",
+        "text": "In place of attacks, transform into any similarly-sized creature."
+      },
+      {
+        "name": "Poison",
+        "text": "DC 15 CON or fall into natural, deep sleep for 1d8 hours."
+      },
+      {
+        "name": "Restore",
+        "text": "In place of attacks, touch one creature to remove a curse, affliction, or heal 3d8 HP."
+      }
+    ],
+    "hdNum": 9
+  },
+  {
+    "id": "seed-3",
+    "name": "Brownie",
+    "source": "ose",
+    "desc": "1½′ tall humanoids, related to pixies and halflings. They are shy, but friendly with other Lawful creatures. Dwell in peaceful meadows.",
+    "raw": "Brownie\n1½′ tall humanoids, related to pixies and \nhalflings. They are shy, but friendly with \nother Lawful creatures. Dwell in peaceful \nmeadows.\nAC 3 [16] Hd ½ (2hp) Att Knife (1d3) \nTHAC0 19 [0] Mv 120′ (40′) sv D6 W7 P9 \nB11 S9 (Cleric 9) ML 7 AL Lawful XP 5 nA \n3d6 (5d8) TT S\n▶ Surprise: Never surprised.\n▶ Dimension door: Once per day, can \nteleport to a known location within 360′. \n▶ Ventriloquism: Can cause their voice \nto emanate from anywhere within 60′ \n(e.g. a statue, a tapestry, an animal).\n▶ Dancing lights: Can conjure bobbing \nlights within 60′.",
+    "ac": {
+      "asc": 16,
+      "desc": 3,
+      "thac0": 19
+    },
+    "hd": "½",
+    "hp": 2,
+    "move": "120′ (40′)",
+    "align": "Lawful",
+    "xp": 5,
+    "moraleML": 7,
+    "atkBonus": 0,
+    "attacksText": "Knife (1d3)",
+    "attacks": [
+      {
+        "label": "Knife",
+        "count": 1,
+        "toHit": 0,
+        "damage": "1d3",
+        "note": "",
+        "raw": "Knife (1d3)"
+      }
+    ],
+    "stats": null,
+    "saveTargets": {
+      "D": 6,
+      "W": 7,
+      "P": 9,
+      "B": 11,
+      "S": 9
+    },
+    "savesText": "D6 W7 P9 B11 S9",
+    "abilities": [
+      {
+        "name": "Surprise",
+        "text": "Never surprised."
+      },
+      {
+        "name": "Dimension door",
+        "text": "Once per day, can teleport to a known location within 360′."
+      },
+      {
+        "name": "Ventriloquism",
+        "text": "Can cause their voice to emanate from anywhere within 60′ (e.g. a statue, a tapestry, an animal)."
+      },
+      {
+        "name": "Dancing lights",
+        "text": "Can conjure bobbing lights within 60′."
+      }
+    ],
+    "hdNum": 0.5
+  },
+  {
+    "id": "seed-4",
+    "name": "Bulette",
+    "source": "ose",
+    "desc": "15′ long, hard-shelled reptiles with huge maws, tiny eyes, and a shark-like crest upon the back. Have a ravenous appetite for the flesh of horses and humanoids (except elves). Love to dig halflings and gnomes out of their burrows.",
+    "raw": "Bulette\n15′ long, hard-shelled reptiles with huge \nmaws, tiny eyes, and a shark-like crest \nupon the back. Have a ravenous appetite \nfor the flesh of horses and humanoids \n(except elves). Love to dig halflings and \ngnomes out of their burrows.\nAC 0 [19] Hd 9* (40hp) Att Bite (4d12) + 2 \n× claw (3d6) THAC0 12 [+7] Mv 150′ (50′) \n/ 30′ (10′) burrowing sv D8 W9 P10 B10 S12 \n(9) ML 11 AL Neutral XP 1,600 nA 0 (1d2) \nTT None\n▶ Ravenous: Will attack anything living. \n▶ Leap: If cornered, can leap forward \n20′, attacking with all 4 claws.\n▶ Armour plates: Neck plates can be \nfashioned into magical shields.\n▶ Origin: Rumoured to be the result of \na wizard’s experiments in cross-breeding \nturtles, armadillos, and demons.",
+    "ac": {
+      "asc": 19,
+      "desc": 0,
+      "thac0": 12
+    },
+    "hd": "9*",
+    "hp": 40,
+    "move": "150′ (50′) / 30′ (10′) burrowing",
+    "align": "Neutral",
+    "xp": 1600,
+    "moraleML": 11,
+    "atkBonus": 7,
+    "attacksText": "Bite (4d12) + 2 × claw (3d6)",
+    "attacks": [
+      {
+        "label": "Bite",
+        "count": 1,
+        "toHit": 7,
+        "damage": "4d12",
+        "note": "",
+        "raw": "Bite (4d12)"
+      },
+      {
+        "label": "claw",
+        "count": 2,
+        "toHit": 7,
+        "damage": "3d6",
+        "note": "",
+        "raw": "2 × claw (3d6)"
+      }
+    ],
+    "stats": null,
+    "saveTargets": {
+      "D": 8,
+      "W": 9,
+      "P": 10,
+      "B": 10,
+      "S": 12
+    },
+    "savesText": "D8 W9 P10 B10 S12",
+    "abilities": [
+      {
+        "name": "Ravenous",
+        "text": "Will attack anything living."
+      },
+      {
+        "name": "Leap",
+        "text": "If cornered, can leap forward 20′, attacking with all 4 claws."
+      },
+      {
+        "name": "Armour plates",
+        "text": "Neck plates can be fashioned into magical shields."
+      },
+      {
+        "name": "Origin",
+        "text": "Rumoured to be the result of a wizard’s experiments in cross-breeding turtles, armadillos, and demons."
+      }
+    ],
+    "hdNum": 9
+  }
+]
