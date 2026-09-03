@@ -548,11 +548,13 @@ button, input, textarea, select {
 /* ---------- Right-click context menu ---------- */
 .ctx-menu {
   position: fixed; z-index: 60;
-  min-width: 190px; max-height: 70vh; overflow-y: auto;
+  display: flex; flex-direction: column;
+  min-width: 190px; max-height: 80vh; overflow: hidden;
   background: var(--bg-2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 4px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, .5);
 }
+.ctx-menu > .ctx-head, .ctx-menu > .ctx-side, .ctx-menu > .ctx-sub, .ctx-menu > .ctx-new { flex: none; }
 .ctx-menu[hidden] { display: none; }
 .ctx-head {
   padding: 5px 8px 6px; font-size: 11px; text-transform: uppercase;
@@ -565,7 +567,11 @@ button, input, textarea, select {
   border-top: 1px solid var(--border); margin-top: 4px;
 }
 .ctx-side > i:first-child { color: var(--accent-2); }
-.ctx-list { display: flex; flex-direction: column; max-height: 40vh; overflow-y: auto; }
+.ctx-list {
+  display: flex; flex-direction: column;
+  flex: 1 1 auto; min-height: 0;
+  overflow-y: auto; overscroll-behavior: contain;
+}
 .ctx-item {
   display: flex; align-items: center; gap: 9px;
   width: 100%; text-align: left;

@@ -1493,7 +1493,11 @@
     document.addEventListener('mousedown', e => {
       if (!$('#ctx-menu').hidden && !e.target.closest('#ctx-menu')) closeCtxMenu();
     });
-    document.addEventListener('scroll', closeCtxMenu, true);
+    document.addEventListener('scroll', e => {
+      // ignore scrolling that happens *inside* the menu itself
+      if (e.target instanceof Element && e.target.closest('#ctx-menu')) return;
+      closeCtxMenu();
+    }, true);
     window.addEventListener('resize', closeCtxMenu);
 
     $('#mm-close').addEventListener('click', closeMonsterModal);
