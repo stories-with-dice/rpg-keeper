@@ -186,6 +186,10 @@
             <input id="mm-search" type="text" placeholder="Search name&hellip;" autocomplete="off" />
             <label>HD&nbsp;<input id="mm-hd-min" type="number" step="0.5" placeholder="min" /></label>
             <label>&ndash;&nbsp;<input id="mm-hd-max" type="number" step="0.5" placeholder="max" /></label>
+            <button id="mm-roll" class="btn" title="Pick a random monster from the filtered list">
+              <i class="fa-solid fa-dice-d20"></i> Roll
+            </button>
+            <span class="mm-count" id="mm-count"></span>
           </div>
           <ul id="mm-lib-list" class="mm-lib-list"></ul>
         </div>
@@ -202,7 +206,24 @@
     </div>
   </div>
 
+  <div class="modal" id="monster-edit-modal" hidden>
+    <div class="modal-box">
+      <div class="mm-head">
+        <h3>Edit monster &mdash; <span id="me-name"></span></h3>
+        <button id="me-close" class="btn">&times;</button>
+      </div>
+      <p class="hint">Edit the stat block below. Saving re-parses it (Shadowdark / OSE format), keeping this monster&rsquo;s place in the library. Combatants already added to the tracker are not changed.</p>
+      <textarea id="me-area" spellcheck="false"></textarea>
+      <div class="modal-actions">
+        <button id="me-save" class="btn btn-primary">Save</button>
+        <button id="me-cancel" class="btn">Cancel</button>
+        <span id="me-msg" class="hint"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="ctx-menu" id="ctx-menu" hidden></div>
+  <div class="mm-preview" id="mm-preview" hidden></div>
 
   <script src="js/marked.min.js"></script>
   <script src="js/monsters.js"></script>

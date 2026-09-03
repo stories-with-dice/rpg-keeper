@@ -251,15 +251,20 @@
     btn.textContent = 'Apply ' + (sh ? 'SH ' : '') + 'damage to ' + ent.name + ' (' + unit + ')';
   }
 
+  // Set a monster's HD, keeping any "*"/"+" suffix and half-HD steps.
+  function setEntryHd(ent, n) {
+    n = Math.max(0, Math.round(Number(n) * 2) / 2);
+    const suffix = (String(ent.hd).match(/[*+]/g) || []).join('');
+    ent.hd = n === 0 ? '0' : String(n) + suffix;
+    save();
+  }
+
   function applyEntryDamage(ent, amount, target) {
     amount = Math.max(0, Math.round(amount));
     if (target === 'hd') {
-      const suffix = (String(ent.hd).match(/[*+]/g) || []).join('');
       const before = MonsterParse.hdNum(ent.hd);
-      const after = Math.max(0, before - amount);
-      ent.hd = after === 0 ? '0' : String(after) + suffix;
-      save();
-      return { before: before, after: after, unit: 'HD' };
+      setEntryHd(ent, before - amount);
+      return { before: before, after: Math.max(0, before - amount), unit: 'HD' };
     }
     const before = entryHp(ent);
     const after = Math.max(0, before - amount);
@@ -300,10 +305,20 @@
     }
     const perDie = vals.map(v => v + '→' + shDie(v));
     const shTotal = vals.reduce((a, v) => a + shDie(v), 0);
-    const target = ent.kind === 'monster' ? 'hd' : 'hp';
-    const res = applyEntryDamage(ent, shTotal, target);
+
+    let res, extra = '';
+    if (ent.kind === 'monster' && shTotal > 0 &&
+        MonsterParse.hdNum(ent.hd) <= 0 && entryHp(ent) > 0) {
+      // No hit dice left but still standing on HP — this SH hit finishes it.
+      const before = entryHp(ent);
+      setEntryHp(ent, 0);
+      res = { before: before, after: 0, unit: 'HP' };
+      extra = '  (0 HD → HP to 0)';
+    } else {
+      res = applyEntryDamage(ent, shTotal, ent.kind === 'monster' ? 'hd' : 'hp');
+    }
     pushNote(ent.name,
-      'SH damage ' + shTotal + ' → ' + res.unit + ' ' + res.before + '→' + res.after,
+      'SH damage ' + shTotal + ' → ' + res.unit + ' ' + res.before + '→' + res.after + extra,
       'roll ' + (lastRoll.normalized || '') + ' dice [' + vals.join(', ') + ']; ' + flatNote +
       'per-die [' + perDie.join(', ') + ']; sum ' + shTotal + '  ·  round ' + round);
     renderCombat();
@@ -692,9 +707,7 @@
     save();
   }
   function entryDown(e) {
-    if (entryHp(e) <= 0) return true;
-    const hd = String(e.hd == null ? '' : e.hd).trim();
-    return hd !== '' && MonsterParse.hdNum(hd) === 0;
+    return entryHp(e) <= 0;
   }
   function charQuickAC(ch) {
     const m = (ch && ch.body || '').match(/\bAC\b[^0-9\n]{0,4}(\d{1,2})/i);
@@ -790,6 +803,15 @@
     save();
     renderTracker();
   }
+  function toggleSide(id) {
+    const e = state.combat.entries.find(x => x.id === id);
+    if (!e) return;
+    e.side = e.side === 'ally' ? 'enemy' : 'ally';
+    pushNote(e.name, 'side → ' + e.side, 'round ' + (state.combat.round || 1));
+    save();
+    renderTracker();
+    renderCombatantDetail();
+  }
   function setSelected(id) {
     state.combat.selectedId = id;
     saveDebounced();
@@ -873,9 +895,14 @@
           (on ? '<i class="fa-solid fa-check ctx-check"></i>' : '') +
           '</button>';
       }).join('');
+    const other = e.side === 'ally' ? 'enemy' : 'ally';
     const m = $('#ctx-menu');
     m.innerHTML =
-      '<div class="ctx-head">' + escapeHtml(e.name) + ' &middot; status</div>' +
+      '<div class="ctx-head">' + escapeHtml(e.name) + '</div>' +
+      '<button class="ctx-item ctx-side">' +
+        '<i class="fa-solid ' + (other === 'ally' ? 'fa-shield-halved' : 'fa-skull') + '"></i>' +
+        '<span>Change side &rarr; ' + other + '</span></button>' +
+      '<div class="ctx-sub">Status</div>' +
       '<div class="ctx-list">' + items + '</div>' +
       '<button class="ctx-item ctx-new"><i class="fa-solid fa-plus"></i><span>New condition&hellip;</span></button>';
     m.hidden = false;
@@ -889,6 +916,11 @@
   function onCtxMenuClick(e) {
     const item = e.target.closest('.ctx-item');
     if (!item || ctxEntryId == null) return;
+    if (item.classList.contains('ctx-side')) {
+      toggleSide(ctxEntryId);
+      closeCtxMenu();
+      return;
+    }
     if (item.classList.contains('ctx-new')) {
       const name = prompt('New condition name:');
       if (name && name.trim()) {
@@ -1027,9 +1059,17 @@
         '<button class="cbt-remove" title="Remove from combat">✕</button>' +
       '</div>' +
       '<div class="cbt-line2">' +
-        '<label class="chip">HD <input class="cbt-hd" type="text" value="' + escapeHtml(String(e.hd || '')) + '" /></label>' +
-        '<label class="chip">HP <input class="cbt-hp" type="number" step="1" value="' + entryHp(e) + '" />' +
-          '<span class="cbt-max">/ ' + (maxHp || '—') + '</span></label>' +
+        (e.kind === 'monster'
+          ? '<span class="chip cbt-step"><span class="chip-l">HD</span>' +
+              '<button class="cbt-stepbtn cbt-hd-dec" type="button" aria-label="HD −1">&minus;</button>' +
+              '<input class="cbt-hd" type="text" inputmode="decimal" value="' + escapeHtml(String(e.hd || '')) + '" />' +
+              '<button class="cbt-stepbtn cbt-hd-inc" type="button" aria-label="HD +1">+</button></span>'
+          : '') +
+        '<span class="chip cbt-step"><span class="chip-l">HP</span>' +
+          '<button class="cbt-stepbtn cbt-hp-dec" type="button" aria-label="HP −1">&minus;</button>' +
+          '<input class="cbt-hp" type="number" step="1" value="' + entryHp(e) + '" />' +
+          '<span class="cbt-max">/ ' + (maxHp || '—') + '</span>' +
+          '<button class="cbt-stepbtn cbt-hp-inc" type="button" aria-label="HP +1">+</button></span>' +
         '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
         (sv ? '<span class="chip chip-dim">Sv ' + escapeHtml(sv) + '</span>' : '') +
         (atk ? '<span class="chip chip-dim">' + escapeHtml(atk) + '</span>' : '') +
@@ -1092,7 +1132,7 @@
       const ch = combatCharFor(ent);
       h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">character' +
         (ch && ch.system ? ' · ' + escapeHtml(ch.system) : '') + '</span></div>';
-      h += '<div class="cd-stats">' + chip('HD', ent.hd || '—') +
+      h += '<div class="cd-stats">' +
         chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—') + '  (linked to sheet)') + '</div>';
       if (ch) h += '<div class="cd-sheet markdown-body">' + marked.parse(ch.body || '') + '</div>';
       else h += '<p class="hint">Character not found — it may have been deleted.</p>';
@@ -1170,7 +1210,21 @@
     if (e.target.closest('.status-tag')) { setSelected(id); return; }
     if (e.target.closest('.cbt-remove')) { removeEntry(id); return; }
     if (e.target.closest('.cbt-side')) { cycleSide(id); return; }
+    if (e.target.closest('.cbt-hp-inc')) { stepEntry(id, 'hp', +1); return; }
+    if (e.target.closest('.cbt-hp-dec')) { stepEntry(id, 'hp', -1); return; }
+    if (e.target.closest('.cbt-hd-inc')) { stepEntry(id, 'hd', +1); return; }
+    if (e.target.closest('.cbt-hd-dec')) { stepEntry(id, 'hd', -1); return; }
     setSelected(id);
+  }
+  function stepEntry(id, field, delta) {
+    const ent = state.combat.entries.find(x => x.id === id);
+    if (!ent) return;
+    state.combat.selectedId = id;
+    if (field === 'hp') setEntryHp(ent, entryHp(ent) + delta);
+    else if (ent.kind === 'monster') setEntryHd(ent, MonsterParse.hdNum(ent.hd) + delta);
+    renderTracker();
+    renderCombatantDetail();
+    updateApplyButton();
   }
   function onTrackerContextMenu(e) {
     const row = e.target.closest('.cbt-row');
@@ -1221,7 +1275,7 @@
   }
   function onCombatKey(e) {
     if (!$('#tab-combat').classList.contains('is-active')) return;
-    if (!$('#monster-modal').hidden || !$('#paste-modal').hidden) return;
+    if (!$('#monster-modal').hidden || !$('#monster-edit-modal').hidden || !$('#paste-modal').hidden) return;
     const t = e.target;
     if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); moveSelection(1); }
@@ -1231,38 +1285,67 @@
   }
 
   /* ---- monster library modal ---- */
+  let libFiltered = [];   // monsters matching the current filters (render order)
+  let libRolledId = null;  // last "Roll" result, highlighted
+
   function openMonsterModal() {
     $('#monster-modal').hidden = false;
     $('#mm-msg').textContent = '';
+    libRolledId = null;
     renderLibrary();
     $('#mm-search').focus();
   }
-  function closeMonsterModal() { $('#monster-modal').hidden = true; }
+  function closeMonsterModal() {
+    $('#monster-modal').hidden = true;
+    hideLibPreview();
+  }
 
-  function renderLibrary() {
+  function libMatches() {
     const q = ($('#mm-search').value || '').toLowerCase().trim();
     const mn = parseFloat($('#mm-hd-min').value);
     const mx = parseFloat($('#mm-hd-max').value);
-    const list = $('#mm-lib-list');
-    const items = state.monsters.filter(d => {
+    return state.monsters.filter(d => {
       if (q && !(d.name || '').toLowerCase().includes(q)) return false;
       const h = d.hdNum != null ? d.hdNum : MonsterParse.hdNum(d.hd);
       if (!isNaN(mn) && h < mn) return false;
       if (!isNaN(mx) && h > mx) return false;
       return true;
     }).sort((a, b) => (a.hdNum || 0) - (b.hdNum || 0) || String(a.name).localeCompare(b.name));
-    if (!items.length) {
+  }
+
+  function renderLibrary() {
+    libFiltered = libMatches();
+    const list = $('#mm-lib-list');
+    $('#mm-roll').disabled = libFiltered.length < 1;
+    $('#mm-count').textContent = libFiltered.length + ' / ' + state.monsters.length;
+    if (!libFiltered.length) {
       list.innerHTML = '<li class="mm-empty hint">No monsters match. Paste a stat block on the right to add one.</li>';
       return;
     }
-    list.innerHTML = items.map(d => {
+    list.innerHTML = libFiltered.map(d => {
       const meta = ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
-      return '<li data-id="' + d.id + '"><div class="mm-li-main"><b>' + escapeHtml(d.name) + '</b>' +
+      return '<li data-id="' + d.id + '"' + (d.id === libRolledId ? ' class="is-rolled"' : '') + '>' +
+        '<div class="mm-li-main"><b>' + escapeHtml(d.name) + '</b>' +
         '<span class="mm-li-meta">' + escapeHtml(meta) + '</span></div>' +
-        '<div class="mm-li-actions"><button class="btn mm-add">Add</button>' +
-        '<button class="btn mm-del" title="Remove from library">✕</button></div></li>';
+        '<div class="mm-li-actions">' +
+          '<button class="btn mm-add">Add</button>' +
+          '<button class="btn mm-edit">Edit</button>' +
+          '<button class="btn mm-del" title="Remove from library">✕</button>' +
+        '</div></li>';
     }).join('');
   }
+
+  function rollLibrary() {
+    if (!libFiltered.length) return;
+    const d = libFiltered[Math.floor(Math.random() * libFiltered.length)];
+    libRolledId = d.id;
+    renderLibrary();
+    const li = $('#mm-lib-list [data-id="' + d.id + '"]');
+    if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    $('#mm-msg').textContent = 'Rolled → ' + d.name + '  (HD ' + (d.hd || '?') + ', ' + libFiltered.length + ' options)';
+    pushNote('Library', 'rolled → ' + d.name, 'HD ' + (d.hd || '?') + ', ' + libFiltered.length + ' options');
+  }
+
   function onLibClick(e) {
     const li = e.target.closest('li[data-id]');
     if (!li) return;
@@ -1271,13 +1354,95 @@
     if (e.target.closest('.mm-add')) {
       addMonsterEntry(d);
       $('#mm-msg').textContent = 'Added ' + d.name + ' to combat.';
+    } else if (e.target.closest('.mm-edit')) {
+      openMonsterEdit(d.id);
     } else if (e.target.closest('.mm-del')) {
       if (confirm('Remove "' + d.name + '" from the library?')) {
         state.monsters = state.monsters.filter(x => x.id !== d.id);
+        if (libRolledId === d.id) libRolledId = null;
         save();
         renderLibrary();
       }
     }
+  }
+
+  /* ---- library hover preview ---- */
+  function monsterCardHtml(d) {
+    const bits = [
+      'AC ' + (d.ac ? acDisplay(d) : '?'),
+      'HD ' + (d.hd || '?'),
+      'HP ' + (d.hp || '?')
+    ];
+    if (d.move) bits.push('MV ' + d.move);
+    if (d.align) bits.push('AL ' + d.align);
+    if (d.moraleML != null) bits.push('ML ' + d.moraleML);
+    let h = '<div class="mmp-head"><b>' + escapeHtml(d.name) + '</b> <span>' + escapeHtml(d.source || '') + '</span></div>' +
+      '<div class="mmp-line">' + escapeHtml(bits.join('  ·  ')) + '</div>';
+    if (d.attacksText) h += '<div class="mmp-line"><span>ATK</span> ' + escapeHtml(d.attacksText) + '</div>';
+    if (d.savesText) h += '<div class="mmp-line"><span>SV</span> ' + escapeHtml(d.savesText) + '</div>';
+    if (Array.isArray(d.abilities) && d.abilities.length) {
+      h += '<div class="mmp-abils">' + d.abilities.map(a =>
+        '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
+    }
+    if (d.desc) h += '<p class="mmp-desc">' + escapeHtml(d.desc) + '</p>';
+    return h;
+  }
+  let libPreviewId = null;
+  function showLibPreview(li) {
+    if (li.dataset.id === libPreviewId && !$('#mm-preview').hidden) return;
+    const d = state.monsters.find(x => x.id === li.dataset.id);
+    if (!d) return;
+    libPreviewId = li.dataset.id;
+    const pop = $('#mm-preview');
+    pop.innerHTML = monsterCardHtml(d);
+    pop.hidden = false;
+    const r = li.getBoundingClientRect();
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let left = r.right + 10;
+    if (left + pw > window.innerWidth - 8) left = r.left - pw - 10;
+    if (left < 8) left = 8;
+    let top = r.top;
+    if (top + ph > window.innerHeight - 8) top = Math.max(8, window.innerHeight - ph - 8);
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+  }
+  function hideLibPreview() { $('#mm-preview').hidden = true; libPreviewId = null; }
+
+  /* ---- monster edit modal ---- */
+  let editMonsterId = null;
+  function openMonsterEdit(id) {
+    const d = state.monsters.find(x => x.id === id);
+    if (!d) return;
+    editMonsterId = id;
+    hideLibPreview();
+    $('#me-name').textContent = d.name;
+    $('#me-area').value = d.raw || '';
+    $('#me-msg').textContent = '';
+    $('#monster-edit-modal').hidden = false;
+    $('#me-area').focus();
+  }
+  function closeMonsterEdit() {
+    $('#monster-edit-modal').hidden = true;
+    editMonsterId = null;
+  }
+  function saveMonsterEdit() {
+    if (editMonsterId == null) return;
+    const idx = state.monsters.findIndex(x => x.id === editMonsterId);
+    if (idx < 0) { closeMonsterEdit(); return; }
+    const text = $('#me-area').value;
+    const parsed = window.MonsterParse ? MonsterParse.parseOne(text) : null;
+    if (!parsed) {
+      $('#me-msg').textContent = 'Could not parse — needs a name line, an "AC …" line, and stats.';
+      return;
+    }
+    parsed.id = editMonsterId;
+    parsed.raw = text.trim();
+    state.monsters[idx] = parsed;
+    save();
+    hideLibPreview();
+    renderLibrary();
+    closeMonsterEdit();
+    $('#mm-msg').textContent = 'Saved ' + parsed.name + '.';
   }
   function parseAndAdd(text, alsoCombat) {
     const defs = (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
@@ -1333,12 +1498,26 @@
 
     $('#mm-close').addEventListener('click', closeMonsterModal);
     $('#monster-modal').addEventListener('click', e => { if (e.target === $('#monster-modal')) closeMonsterModal(); });
-    $('#mm-search').addEventListener('input', renderLibrary);
-    $('#mm-hd-min').addEventListener('input', renderLibrary);
-    $('#mm-hd-max').addEventListener('input', renderLibrary);
+    const rerenderLib = () => { libRolledId = null; renderLibrary(); };
+    $('#mm-search').addEventListener('input', rerenderLib);
+    $('#mm-hd-min').addEventListener('input', rerenderLib);
+    $('#mm-hd-max').addEventListener('input', rerenderLib);
+    $('#mm-roll').addEventListener('click', rollLibrary);
     $('#mm-lib-list').addEventListener('click', onLibClick);
+    $('#mm-lib-list').addEventListener('mouseover', e => {
+      const li = e.target.closest('li[data-id]');
+      if (li) showLibPreview(li);
+    });
+    $('#mm-lib-list').addEventListener('mouseleave', hideLibPreview);
+    $('#mm-lib-list').addEventListener('scroll', hideLibPreview);
     $('#mm-parse-add').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, true));
     $('#mm-parse-lib').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, false));
+
+    // monster edit modal
+    $('#me-close').addEventListener('click', closeMonsterEdit);
+    $('#me-cancel').addEventListener('click', closeMonsterEdit);
+    $('#me-save').addEventListener('click', saveMonsterEdit);
+    $('#monster-edit-modal').addEventListener('click', e => { if (e.target === $('#monster-edit-modal')) closeMonsterEdit(); });
 
     document.addEventListener('keydown', onCombatKey);
 
@@ -1688,7 +1867,7 @@ Credits: 0`;
     $('#btn-paste-close').addEventListener('click', closePasteModal);
     $('#paste-modal').addEventListener('click', e => { if (e.target === $('#paste-modal')) closePasteModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { closePasteModal(); closeMonsterModal(); closeCtxMenu(); }
+      if (e.key === 'Escape') { closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); }
     });
 
     // Dice
