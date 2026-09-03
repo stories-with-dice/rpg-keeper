@@ -24,6 +24,7 @@
   const STATE_DEFAULTS = {
     version: 1, activeId: null, characters: [], log: [],
     monsters: [], monstersSeeded: false, conditions: [],
+    settings: { scarletHeroes: false },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
@@ -70,6 +71,7 @@
     if (!Array.isArray(state.characters)) state.characters = [];
     if (!Array.isArray(state.monsters)) state.monsters = [];
     if (!Array.isArray(state.log)) state.log = [];
+    state.settings = Object.assign({ scarletHeroes: false }, state.settings || {});
     if (!Array.isArray(state.conditions) || !state.conditions.length) {
       state.conditions = CONDITION_SEED.map(c => Object.assign({ id: uid() }, c));
     }
@@ -151,13 +153,15 @@
         note = ' ' + dm[3];
       }
       const sum = kept.reduce((a, b) => a + b, 0);
-      return { value: sum, text: '[' + rolls.join(', ') + ']' + note };
+      return { value: sum, text: '[' + rolls.join(', ') + ']' + note, rolls: kept, sides: sides };
     }
     if (/^\d+$/.test(token)) return { value: parseInt(token, 10), text: token };
     return null;
   }
 
-  // Evaluate a whole formula string -> { total, detail, normalized } or null.
+  // Evaluate a whole formula string -> { total, detail, normalized, dice, flat } or null.
+  //   dice: [{ value, sides, sign }] for every individual die kept
+  //   flat: signed sum of all constant terms
   function evalFormula(formula) {
     let expr = String(formula || '').trim().toLowerCase().replace(/\s+/g, '');
     if (!expr) return null;
@@ -167,22 +171,28 @@
     }
     const re = /([+-]?)(\d*d(?:\d+|%)(?:(?:kh|kl|dh|dl)\d+)?|\d+)/g;
     let m, total = 0, parts = [], matched = false;
+    const dice = [];
+    let flat = 0;
     while ((m = re.exec(expr))) {
       matched = true;
       const sign = m[1] === '-' ? -1 : 1;
       const r = rollTerm(m[2]);
       if (!r) return null;
       total += sign * r.value;
+      if (r.rolls) r.rolls.forEach(v => dice.push({ value: v, sides: r.sides, sign: sign }));
+      else flat += sign * r.value;
       const s = sign < 0 ? '-' : (parts.length ? '+' : '');
       parts.push(/d/.test(m[2]) ? (s + m[2] + ' ' + r.text) : (s + r.text));
     }
     if (!matched) return null;
-    return { total, detail: parts.join(' '), normalized: expr };
+    return { total, detail: parts.join(' '), normalized: expr, dice, flat };
   }
 
   /* ------------------------------------------------------------------ */
   /* Roll + log                                                         */
   /* ------------------------------------------------------------------ */
+  let lastRoll = null; // structured result of the most recent Dice Roller roll (for "Apply damage")
+
   function pushLog(source, formula, total, detail) {
     const entry = { id: uid(), ts: Date.now(), source: source || 'Roll', formula: formula, total: total, detail: detail || '' };
     state.log.push(entry);
@@ -190,6 +200,9 @@
     save();
     appendLogEntry(entry);
     showLast(total, formula, detail);
+    // Any roll that isn't from the Dice Roller replaces what's shown, so retire the apply context.
+    lastRoll = null;
+    updateApplyButton();
     return entry;
   }
 
@@ -206,7 +219,94 @@
   function doRoll(formula, source) {
     const res = evalFormula(formula);
     if (!res) { showLast('—', 'Invalid: ' + formula, ''); return null; }
-    return pushLog(source || 'Roll', res.normalized, res.total, res.detail);
+    const entry = pushLog(source || 'Roll', res.normalized, res.total, res.detail);
+    // pushLog cleared lastRoll; a Dice Roller roll is applyable, so set it now.
+    lastRoll = { total: res.total, dice: res.dice, flat: res.flat, normalized: res.normalized };
+    updateApplyButton();
+    return entry;
+  }
+
+  /* ---- Scarlet Heroes damage translation ---- */
+  function shDie(v) {
+    if (v <= 1) return 0;
+    if (v <= 5) return 1;
+    if (v <= 9) return 2;
+    return 4;
+  }
+
+  function updateApplyButton() {
+    const btn = $('#dice-apply');
+    if (!btn) return;
+    if (!lastRoll) { btn.hidden = true; return; }
+    btn.hidden = false;
+    const ent = selectedEntry();
+    const sh = !!(state.settings && state.settings.scarletHeroes);
+    if (!ent) {
+      btn.textContent = 'Apply damage — select a combatant';
+      btn.disabled = true;
+      return;
+    }
+    btn.disabled = false;
+    const unit = (sh && ent.kind === 'monster') ? 'HD' : 'HP';
+    btn.textContent = 'Apply ' + (sh ? 'SH ' : '') + 'damage to ' + ent.name + ' (' + unit + ')';
+  }
+
+  function applyEntryDamage(ent, amount, target) {
+    amount = Math.max(0, Math.round(amount));
+    if (target === 'hd') {
+      const suffix = (String(ent.hd).match(/[*+]/g) || []).join('');
+      const before = MonsterParse.hdNum(ent.hd);
+      const after = Math.max(0, before - amount);
+      ent.hd = after === 0 ? '0' : String(after) + suffix;
+      save();
+      return { before: before, after: after, unit: 'HD' };
+    }
+    const before = entryHp(ent);
+    const after = Math.max(0, before - amount);
+    setEntryHp(ent, after); // handles character consumable link + save + renderConsumables
+    return { before: before, after: after, unit: 'HP' };
+  }
+
+  function applyDamageToSelected() {
+    const ent = selectedEntry();
+    if (!ent || !lastRoll) return;
+    const round = state.combat.round || 1;
+    const sh = !!(state.settings && state.settings.scarletHeroes);
+
+    if (!sh) {
+      const dmg = Math.max(0, lastRoll.total);
+      const res = applyEntryDamage(ent, dmg, 'hp');
+      pushNote(ent.name, 'damage ' + dmg + ' → ' + res.unit + ' ' + res.before + '→' + res.after,
+        (lastRoll.normalized || '') + ' = ' + lastRoll.total + '  ·  round ' + round);
+      renderCombat();
+      return;
+    }
+
+    // Scarlet Heroes: translate each die, bonus onto the single highest die first.
+    let vals = (lastRoll.dice || []).filter(d => d.sign > 0).map(d => d.value);
+    let flatNote = '';
+    if (lastRoll.flat) {
+      if (vals.length) {
+        let mi = 0;
+        for (let i = 1; i < vals.length; i++) if (vals[i] > vals[mi]) mi = i;
+        const boosted = vals[mi] + lastRoll.flat;
+        flatNote = 'bonus ' + (lastRoll.flat >= 0 ? '+' : '') + lastRoll.flat +
+          ' on highest die (' + vals[mi] + '→' + boosted + '); ';
+        vals[mi] = boosted;
+      } else {
+        vals = [lastRoll.flat];
+        flatNote = 'no dice — treating flat ' + lastRoll.flat + ' as one die; ';
+      }
+    }
+    const perDie = vals.map(v => v + '→' + shDie(v));
+    const shTotal = vals.reduce((a, v) => a + shDie(v), 0);
+    const target = ent.kind === 'monster' ? 'hd' : 'hp';
+    const res = applyEntryDamage(ent, shTotal, target);
+    pushNote(ent.name,
+      'SH damage ' + shTotal + ' → ' + res.unit + ' ' + res.before + '→' + res.after,
+      'roll ' + (lastRoll.normalized || '') + ' dice [' + vals.join(', ') + ']; ' + flatNote +
+      'per-die [' + perDie.join(', ') + ']; sum ' + shTotal + '  ·  round ' + round);
+    renderCombat();
   }
 
   function showLast(total, formula, detail) {
@@ -615,9 +715,11 @@
     if (m.ac.desc != null) return '[' + m.ac.desc + ']';
     return '—';
   }
-  function atkLabel(a) {
-    return (a.label || 'attack') + (a.count > 1 ? ' ×' + a.count : '') + ' ' + fmtMod(a.toHit || 0) +
-      (a.damage ? ' · ' + a.damage : '') + (a.note ? ' (' + a.note + ')' : '');
+  function atkHitLabel(a) {
+    return (a.label || 'attack') + (a.count > 1 ? ' ×' + a.count : '') + ' ' + fmtMod(a.toHit || 0);
+  }
+  function atkDmgLabel(a) {
+    return 'dmg ' + a.damage + (a.note ? ' (' + a.note + ')' : '');
   }
   function selectedEntry() {
     return state.combat.entries.find(e => e.id === state.combat.selectedId) || null;
@@ -693,6 +795,7 @@
     saveDebounced();
     renderTracker();
     renderCombatantDetail();
+    updateApplyButton();
   }
 
   /* ---- status conditions ---- */
@@ -841,6 +944,7 @@
     saveDebounced();
     renderTracker();
     renderCombatantDetail();
+    updateApplyButton();
     const row = $('#tracker-list [data-id="' + ents[i].id + '"]');
     if (row) row.scrollIntoView({ block: 'nearest' });
   }
@@ -848,17 +952,8 @@
   /* ---- combat rolls ---- */
   function rollEntryAttack(e, atk) {
     const bonus = atk.toHit != null ? atk.toHit : (e.monster && e.monster.atkBonus) || 0;
-    const n = Math.max(1, atk.count || 1);
-    const bits = [];
-    let firstTotal = null;
-    for (let k = 0; k < n; k++) {
-      const hit = evalFormula('1d20' + fmtMod(bonus));
-      let s = (n > 1 ? '#' + (k + 1) + ' ' : '') + 'to-hit ' + hit.total;
-      if (atk.damage) { const dmg = evalFormula(atk.damage); if (dmg) s += ', dmg ' + dmg.total + ' [' + atk.damage + ']'; }
-      if (firstTotal == null) firstTotal = hit.total;
-      bits.push(s);
-    }
-    pushLog(e.name, (atk.label || 'attack') + ' ' + fmtMod(bonus) + (atk.damage ? ' (' + atk.damage + ')' : ''), firstTotal, bits.join('  |  '));
+    const r = evalFormula('1d20' + fmtMod(bonus));
+    pushLog(e.name, (atk.label || 'attack') + ' to-hit ' + fmtMod(bonus), r.total, r.detail);
   }
   function rollEntrySave(e, key) {
     const m = e.monster;
@@ -887,6 +982,7 @@
     renderCombatBar();
     renderTracker();
     renderCombatantDetail();
+    updateApplyButton();
   }
   function renderCombatBar() {
     $('#cb-round').textContent = state.combat.round || 1;
@@ -969,8 +1065,12 @@
       '</div>';
       if (m.attacks && m.attacks.length) {
         h += '<div class="cd-sec"><span class="cd-lbl">Attacks</span>' +
-          m.attacks.map((a, i) => '<button class="btn cbt-atk" data-i="' + i + '">' + escapeHtml(atkLabel(a)) + '</button>').join('') +
-          '<button class="btn cbt-atkroll">d20' + fmtMod(m.atkBonus || 0) + '</button></div>';
+          m.attacks.map((a, i) =>
+            '<span class="cd-atk-pair">' +
+              '<button class="btn cbt-atk" data-i="' + i + '" title="Roll 1d20 to hit">' + escapeHtml(atkHitLabel(a)) + '</button>' +
+              (a.damage ? '<button class="btn cbt-dmg" data-i="' + i + '" title="Roll damage only">' + escapeHtml(atkDmgLabel(a)) + '</button>' : '') +
+            '</span>').join('') +
+          '<button class="btn cbt-atkroll" title="Roll 1d20 to hit">d20' + fmtMod(m.atkBonus || 0) + '</button></div>';
       }
       const sk = m.saveTargets ? Object.keys(m.saveTargets) : (m.stats ? ['S', 'D', 'C', 'I', 'W', 'Ch'] : []);
       if (sk.length) {
@@ -1098,6 +1198,12 @@
     if (!ent) return;
     if (e.target.closest('.status-x')) {
       removeStatus(ent.id, e.target.closest('.status-tag').dataset.name);
+      return;
+    }
+    const dmgBtn = e.target.closest('.cbt-dmg');
+    if (dmgBtn && ent.monster) {
+      const a = ent.monster.attacks[+dmgBtn.dataset.i];
+      if (a && a.damage) doRoll(a.damage, ent.name); // rolls damage only; enables "Apply damage"
       return;
     }
     const atkBtn = e.target.closest('.cbt-atk');
@@ -1235,16 +1341,42 @@
     $('#mm-parse-lib').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, false));
 
     document.addEventListener('keydown', onCombatKey);
+
+    $('#dice-apply').addEventListener('click', applyDamageToSelected);
+  }
+
+  /* ---- settings ---- */
+  function renderSettings() {
+    $('#set-scarlet-heroes').checked = !!(state.settings && state.settings.scarletHeroes);
+    $('#set-lib-count').textContent = state.monsters.length + ' monster' +
+      (state.monsters.length === 1 ? '' : 's') + ' in the library.';
+  }
+  function wireSettings() {
+    $('#set-scarlet-heroes').addEventListener('change', e => {
+      state.settings.scarletHeroes = e.target.checked;
+      save();
+      updateApplyButton();
+      pushNote('Settings', 'Scarlet Heroes damage resolution ' + (e.target.checked ? 'enabled' : 'disabled'));
+    });
+    $('#set-reload-monsters').addEventListener('click', async () => {
+      if (!confirm('Replace the monster library with the bundled defaults? Monsters you added by pasting will be lost (combat entries are unaffected).')) return;
+      state.monstersSeeded = false;
+      state.monsters = [];
+      await seedMonsters();
+      renderSettings();
+      renderCombat();
+      pushNote('Settings', 'Monster library reloaded (' + state.monsters.length + ')');
+    });
   }
 
   const MONSTER_SEED_TEXT = [
-    'BEAR, POLAR',
+    'Bear, Polar',
     'A mighty, white bear that thrives in arctic environments.',
     'AC 13, HP 34, ATK 2 claw +6 (2d6), MV near (climb), S +4, D +1, C +3, I -2, W +1, Ch -2, AL N, LV 7',
     'Crush. Deals an extra die of damage if it hits the same target with both claws.',
     'Thick Fur. Cold immune.',
     '',
-    'COUATL',
+    'Couatl',
     'A human-sized snake with scales made of jewels and a corona of iridescent feathers.',
     'AC 16, HP 42, ATK 3 bite +6 (2d6 + poison), MV near (fly), S +2, D +3, C +2, I +4, W +4, Ch +5, AL L, LV 9',
     'Change Shape. In place of attacks, transform into any similarly-sized creature.',
@@ -1263,24 +1395,42 @@
     'AC 0 [19] Hd 9* (40hp) Att Bite (4d12) + 2 × claw (3d6) THAC0 12 [+7] Mv 150′ (50′) / 30′ (10′) burrowing sv D8 W9 P10 B10 S12 (9) ML 11 AL Neutral XP 1,600 nA 0 (1d2) TT None',
     '▶ Ravenous: Will attack anything living.',
     '▶ Leap: If cornered, can leap forward 20′, attacking with all 4 claws.',
-    '▶ Armour plates: Neck plates can be fashioned into magical shields.'
+    '▶ Armour plates: Neck plates can be fashioned into magical shields.',
+    '',
+    'Kobold, Sorcerer',
+    'A scaly dog-lizard painted with colorful stripes and rattling a hefty leg bone strung with beads and feathers.',
+    'AC 13 (leather), HP 13, ATK 1 club +1 (1d4) or 1 spell +2, MV near, S -2, D +2, C +0, I -1, W +1, Ch +2, AL C, LV 3',
+    'Dodge. 1/day, an attack that would hit misses instead.',
+    'Scorpion Sting (CHA Spell). DC 11. Near range, one target. 1d6 damage and target has DISADV on next attack roll or check.',
+    'Spider Swarm (CHA Spell). DC 12. A spider swarm appears within near. Stays 1d4 rounds. Follows sorcerer\'s commands.'
   ].join('\n');
 
   async function seedMonsters() {
     let defs = null;
-    try {
-      const r = await fetch(MONSTERS_URL);
-      if (r.ok) defs = await r.json();
-    } catch (e) { /* file:// or offline */ }
+    // 1) bundled <script> copy — works over file:// where fetch() is blocked
+    if (Array.isArray(window.MONSTER_LIBRARY) && window.MONSTER_LIBRARY.length) {
+      defs = window.MONSTER_LIBRARY;
+    }
+    // 2) fetch the JSON (fine when served over http)
+    if (!defs) {
+      try {
+        const r = await fetch(MONSTERS_URL);
+        if (r.ok) defs = await r.json();
+      } catch (e) { /* file:// or offline */ }
+    }
+    // 3) last resort: parse the tiny inline sample
     if (!Array.isArray(defs) || !defs.length) {
       defs = window.MonsterParse ? MonsterParse.parseMonsters(MONSTER_SEED_TEXT) : [];
     }
-    defs.forEach(d => { d.id = d.id || uid(); });
+    // clone so state mutations never touch the shared constant
+    defs = JSON.parse(JSON.stringify(defs));
+    defs.forEach(d => { if (!d.id) d.id = uid(); });
     state.monsters = defs;
     state.monstersSeeded = true;
     save();
     renderLibrary();
     renderCombatBar();
+    renderSettings();
   }
 
   /* ------------------------------------------------------------------ */
@@ -1342,6 +1492,7 @@
       refreshCharUI();
       renderLog();
       renderCombat();
+      renderSettings();
     };
     reader.readAsText(file);
   }
@@ -1578,6 +1729,7 @@ Credits: 0`;
     wireConsumables();
     wireNotes();
     wireCombat();
+    wireSettings();
   }
 
   /* ------------------------------------------------------------------ */
@@ -1592,6 +1744,7 @@ Credits: 0`;
     renderLog();
     refreshCharUI();
     renderCombat();
+    renderSettings();
     wire();
     if (!had && !state.characters.length) await seed();
     if (!state.monsters.length && !state.monstersSeeded) await seedMonsters();

@@ -1,0 +1,10 @@
+{
+  "name": "osr-characters",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OSR character store + combat tracker (static HTML/CSS/JS app). No build step.",
+  "scripts": {
+    "test": "node --test",
+    "convert-bestiary": "node scripts/convert-bestiary.js"
+  }
+}

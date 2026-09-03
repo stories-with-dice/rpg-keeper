@@ -309,6 +309,33 @@ button, input, textarea, select {
 }
 .dice-last .total { font-size: 20px; font-weight: 700; color: var(--accent); }
 .dice-last .detail { color: var(--text-dim); font-size: 12px; }
+.dice-apply {
+  width: 100%;
+  margin-top: 8px;
+  background: #3a2f4e;
+  border-color: #5a4a7a;
+}
+.dice-apply:hover:not(:disabled) { background: #473a61; }
+.dice-apply:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ---------- Settings ---------- */
+#tab-settings h2 { color: var(--accent); }
+.setting-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 640px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  cursor: pointer;
+}
+.setting-row input[type="checkbox"] { margin-top: 3px; flex: none; width: 16px; height: 16px; }
+.setting-text { display: flex; flex-direction: column; gap: 4px; }
+.setting-text .hint { margin: 0; }
+.setting-row-action { align-items: center; justify-content: space-between; cursor: default; margin-top: 10px; }
+.setting-row-action .btn { flex: none; }
 
 /* ---------- Session log ---------- */
 .log-panel {
@@ -552,6 +579,13 @@ button, input, textarea, select {
 .cd-sec { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
 .cd-lbl { color: var(--text-dim); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; min-width: 58px; }
 .cd-sec .btn { padding: 4px 9px; font-size: 12px; }
+.cd-atk-pair { display: inline-flex; gap: 2px; }
+.cd-atk-pair .cbt-atk { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.cd-atk-pair .cbt-dmg {
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+  color: var(--accent-2); border-color: var(--accent-2);
+}
+.cd-atk-pair .cbt-dmg:hover { background: rgba(110, 168, 254, 0.16); }
 .cd-abils { margin: 8px 0; }
 .cd-abils p { margin: .3em 0; }
 .cd-abils b { color: var(--accent); }

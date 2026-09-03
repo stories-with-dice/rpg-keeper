@@ -38,15 +38,21 @@
   }
 
   // "2 claw +6 (2d6)"  |  "Bite (4d12) + 2 × claw (3d6)"  |  "3 bite +6 (2d6 + poison)"
+  // "2 tentacle (near) +5 (1d8 + curse) or 1 tail +5 (3d6)"  |  "2 claw +5 (1d8) and 1 mandible +5 (1d10)"
   function parseAttacks(text, defaultToHit) {
     const out = [];
     if (!text) return out;
+    // Normalize a spaced to-hit sign, e.g. "1 bite + 9 (1d8)" -> "1 bite +9 (1d8)".
+    // Only when the number is a trailing bonus (before "(", "," or end) — not an OSE
+    // multi-attack separator like " + 2 × claw".
+    text = String(text).replace(/([+-])\s+(\d+)(?=\s*[(,]|\s*$)/g, '$1$2');
     const parens = [];
-    const masked = String(text).replace(/\([^)]*\)/g, m => {
+    const masked = text.replace(/\([^)]*\)/g, m => {
       parens.push(m);
       return '@' + (parens.length - 1) + '@';
     });
-    masked.split(/ \+ /).forEach(seg => {
+    // Attacks are separated by " + " (OSE multi-attack), " or " (SD alternatives), or " and ".
+    masked.split(/ \+ | or | and /i).forEach(seg => {
       let g = seg.trim();
       if (!g) return;
       const restore = t => t.replace(/@(\d+)@/g, (_, i) => parens[+i] || '');
@@ -56,7 +62,9 @@
       let toHit = null;
       const hm = g.match(/([+-]\d+)\s*(?:to\s*hit)?(?=\s|@|$)/i);
       if (hm) toHit = parseInt(hm[1], 10);
-      const parenText = (restore(g).match(/\(([^)]*)\)/) || [, ''])[1];
+      // Prefer the parenthetical that actually holds damage dice (skips "(near)", "(close/near)" ranges).
+      const groups = (restore(g).match(/\([^)]*\)/g) || []).map(p => p.slice(1, -1));
+      const parenText = groups.find(p => /\d*d\d+/i.test(p)) || groups[0] || '';
       const damage = firstDice(parenText);
       let note = parenText.replace(/\d*d\d+(?:\s*[+-]\s*\d+)*/i, '').replace(/^[\s+,-]+/, '').replace(/[\s,]+$/, '').trim();
       let label = g.replace(/@\d+@/g, '').replace(/[+-]\d+\s*(?:to\s*hit)?/i, '').trim();
@@ -90,8 +98,10 @@
 
     const tail = rest.split(/\bLV\s*\d+\s*/i);
     const abText = tail.length > 1 ? tail.slice(1).join(' ').trim() : '';
+    // New ability starts at a Title-case name (1-4 words), optionally followed by a
+    // parenthetical like "(CHA Spell)", then a period: "Dodge. …", "Scorpion Sting (CHA Spell). …".
     const pieces = abText
-      ? abText.split(/(?<=\.)\s+(?=[A-Z][a-z]+(?:\s[A-Z][a-z]+){0,2}\.(?:\s|$))/)
+      ? abText.split(/(?<=\.)\s+(?=[A-Z][a-z]+(?:\s[A-Z][a-z]+){0,3}(?:\s*\([^)]*\))?\.(?:\s|$))/)
       : [];
     def.abilities = pieces.map(p => splitNameText(p)).filter(a => a.text);
   }
@@ -175,14 +185,54 @@
     return def;
   }
 
-  function parseMonsters(text) {
-    const blocks = String(text || '').replace(/\r\n?/g, '\n').split(/\n[ \t]*\n+/);
+  // Is line j the start of a new monster (its name line)? Used to split blocks
+  // that hold several stat blocks with no blank line between them.
+  function isNameLine(lines, j, floor) {
+    if (j <= floor) return false;
+    const l = (lines[j] || '').trim();
+    if (!l) return false;
+    if (/^▶/.test(l)) return false;
+    if (/^(AC|HP|ATK|Att|THAC0|MV|Mv|sv|ML|AL|XP|CR|Hd)\b/i.test(l)) return false;
+    if (/[.!?]$/.test(l)) return false;                 // names don't end with sentence punctuation
+    if (l.length > 48 && l !== l.toUpperCase()) return false;
+    const prev = (lines[j - 1] || '').trim();
+    return prev === '' || /[.!?)”’"']$/.test(prev) || /^▶/.test(prev); // prev line ends a sentence / ability
+  }
+
+  // A pasted block may contain multiple monsters with no blank line between them.
+  function splitBlock(block) {
+    const lines = block.replace(/\r/g, '').split('\n');
+    const acAt = [];
+    lines.forEach((l, i) => { if (/^\s*AC[\s\d]/i.test(l)) acAt.push(i); });
+    if (acAt.length <= 1) return [block];
+    const bounds = [0];
+    for (let k = 1; k < acAt.length; k++) {
+      let name = -1;
+      for (let j = acAt[k] - 1; j > acAt[k - 1]; j--) {
+        if (isNameLine(lines, j, acAt[k - 1])) { name = j; break; }
+      }
+      if (name < 0) name = Math.max(bounds[bounds.length - 1] + 1, acAt[k] - 1);
+      if (name > bounds[bounds.length - 1]) bounds.push(name);
+    }
+    bounds.push(lines.length);
     const out = [];
-    blocks.forEach(b => {
-      if (!b.trim()) return;
-      const def = parseOne(b);
-      if (def) out.push(def);
-      else if (out.length) out[out.length - 1].raw += '\n\n' + b.trim();
+    for (let i = 0; i < bounds.length - 1; i++) {
+      const seg = lines.slice(bounds[i], bounds[i + 1]).join('\n').trim();
+      if (seg) out.push(seg);
+    }
+    return out;
+  }
+
+  function parseMonsters(text) {
+    const chunks = String(text || '').replace(/\r\n?/g, '\n').split(/\n[ \t]*\n+/);
+    const out = [];
+    chunks.forEach(chunk => {
+      if (!chunk.trim()) return;
+      splitBlock(chunk).forEach(b => {
+        const def = parseOne(b);
+        if (def) out.push(def);
+        else if (out.length) out[out.length - 1].raw += '\n\n' + b.trim();
+      });
     });
     return out;
   }
