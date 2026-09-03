@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OSR Character &amp; Combat Manager</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>OSR Manager</h1>
+    <nav class="tabs" id="tabs">
+      <button class="tab-btn is-active" data-tab="character">Character</button>
+      <button class="tab-btn" data-tab="combat">Combat</button>
+    </nav>
+    <div class="header-actions">
+      <button id="btn-export" class="btn">Export</button>
+      <button id="btn-import" class="btn">Import</button>
+      <input type="file" id="file-import" accept="application/json,.json" hidden />
+    </div>
+  </header>
+
+  <div class="layout">
+    <main class="main">
+      <!-- ===== Character tab ===== -->
+      <section class="tab-panel is-active" id="tab-character">
+        <div class="char-toolbar">
+          <label class="field">
+            <span>Character</span>
+            <select id="char-select"></select>
+          </label>
+          <button id="btn-new-blank" class="btn">New blank</button>
+          <button id="btn-new-paste" class="btn btn-primary">Paste from clipboard</button>
+          <button id="btn-new-text" class="btn">New from text&hellip;</button>
+          <button id="btn-rename" class="btn">Rename</button>
+          <button id="btn-delete" class="btn btn-danger">Delete</button>
+        </div>
+
+        <div id="char-empty" class="empty-state">
+          <p>No characters yet.</p>
+          <p>Use <strong>Paste from clipboard</strong> or <strong>New from text</strong> to create one from a sheet, or <strong>New blank</strong> to start fresh.</p>
+        </div>
+
+        <div id="char-view" hidden>
+          <div class="char-view-header">
+            <div class="char-meta">
+              <span class="char-name" id="view-name"></span>
+              <span class="badge" id="view-system" hidden></span>
+            </div>
+            <div class="view-toggle">
+              <button id="btn-mode-view" class="btn is-active">View</button>
+              <button id="btn-mode-edit" class="btn">Edit</button>
+            </div>
+          </div>
+
+          <div id="mode-view" class="sheet markdown-body"></div>
+
+          <div id="mode-edit" hidden>
+            <textarea id="edit-area" spellcheck="false"></textarea>
+            <div class="edit-actions">
+              <button id="btn-save" class="btn btn-primary">Save</button>
+              <button id="btn-cancel" class="btn">Cancel</button>
+              <span class="hint">Tip: click underlined dice formulas &amp; modifiers in View mode to roll them.</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="notes-section" id="notes-section" hidden>
+          <div class="panel-head">
+            <h3>Notes</h3>
+            <span class="hint">Markdown &middot; bound to the selected character &middot; autosaves</span>
+          </div>
+          <textarea id="notes-area" spellcheck="false" placeholder="Session notes, plans, loot, conditions&hellip; (Markdown)"></textarea>
+        </section>
+      </section>
+
+      <!-- ===== Combat tab ===== -->
+      <section class="tab-panel" id="tab-combat">
+        <div class="empty-state">
+          <p><strong>Combat tracker</strong> is coming soon.</p>
+          <p>The dice roller, consumables, and session log stay available while you build it out.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== Right rail: dice roller + consumables (always visible) ===== -->
+    <div class="rail">
+      <aside class="dice-panel">
+        <h2>Dice Roller</h2>
+        <div class="dice-grid" id="dice-grid"></div>
+        <form class="dice-custom" id="dice-custom">
+          <input type="text" id="custom-formula" placeholder="e.g. 2d6+3, 4d6kh3, 2d20kl1" autocomplete="off" />
+          <button type="submit" class="btn btn-primary">Roll</button>
+        </form>
+        <div class="dice-last" id="dice-last" aria-live="polite"></div>
+      </aside>
+
+      <section class="consumables-panel">
+        <div class="panel-head">
+          <h2>Consumables</h2>
+          <button id="btn-cons-add" class="btn">+ Add</button>
+        </div>
+        <p id="consumables-empty" class="hint">Select a character to track consumables.</p>
+        <div id="consumables-list"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===== Session log (always visible, bottom) ===== -->
+  <section class="log-panel">
+    <div class="log-header">
+      <h2>Session Log</h2>
+      <div class="log-actions">
+        <button id="btn-log-copy" class="btn">Copy</button>
+        <button id="btn-log-clear" class="btn btn-danger">Clear</button>
+      </div>
+    </div>
+    <ol class="log-list" id="log-list"></ol>
+  </section>
+
+  <div class="modal" id="paste-modal" hidden>
+    <div class="modal-box">
+      <h3>New character from text</h3>
+      <p class="hint">Paste a character sheet (plain text or Markdown). The first heading or line becomes the name.</p>
+      <textarea id="paste-area" spellcheck="false" placeholder="Paste sheet here&hellip;"></textarea>
+      <div class="modal-actions">
+        <button id="btn-paste-create" class="btn btn-primary">Create</button>
+        <button id="btn-paste-close" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/marked.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

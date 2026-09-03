@@ -1,0 +1,59 @@
+# Gulzund Blize
+*Human Witch — Level 1 Lawful*
+
+> **AC** 11 · **HP** 5/5 · **Luck** 🍀 0 · **XP** 0
+
+## Abilities
+|     | Score | Mod |
+| --- | ----- | --- |
+| STR | 8 | -1 |
+| DEX | 12 | +1 |
+| CON | 16 | +3 |
+| INT | 10 | +0 |
+| WIS | 10 | +0 |
+| CHA | 19 | +4 |
+
+## Attacks & weapons
+- **Dagger (OBSIDIAN)** — +1 (N), 1d6 (BREAKABLE, FIN)
+- **Spells** — To cast a Witch spell, roll 1d20+4 vs a DC equal to 10 + the spell's tier.
+
+## Talents
+- **Ambitious** — Gain one additional talent roll at 1st level.
+- **Learn Extra Spell** — Learn an additional witch spell of any tier you can cast
+- **+2 CHA or +1 Casting** — +2 to Charisma stat or +1 to witch spellcasting checks
+- **Cauldron**
+- **Stat Bonus**
+
+## Spells
+- Cauldron
+- Charm Person
+- Eyebite
+- Willowman
+
+## Gear (slots: 10)
+
+| Slot # | Item | Slot # | Item |
+| --- | --- | --- | --- |
+| 1 | Dagger (obsidian) | 11 |  |
+| 2 | Backpack (free) | 12 |  |
+| 3 | Flint and steel | 13 |  |
+| 4 | Torch | 14 |  |
+| 5 | Torch | 15 |  |
+| 6 | Iron spikes | 16 |  |
+| 7 |  | 17 |  |
+| 8 |  | 18 |  |
+| 9 |  | 19 |  |
+| 10 |  | 20 |  |
+
+## Languages
+- Common
+- Diabolic
+- Elvish
+- Primordial
+- Sylvan
+
+## Advancement
+- **XP:** 0 · **Next level:** roll HP, gain a talent on the level-up table.
+
+## Bonds / notes
+- Background: Drawn.

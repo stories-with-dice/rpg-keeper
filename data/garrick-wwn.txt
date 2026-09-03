@@ -1,0 +1,27 @@
+Garrick [WWN]
+Level 1 Heroic Expert | Barbarian Background
+
+HP: 19/19 | AC: 14 | AB: +0
+
+ATTRIBUTES
+STR: 14 (+1)
+DEX: 9 (+0)
+CON: 14 (+1)
+INT: 9 (+0)
+WIS: 14 (+1)
+CHA: 11 (+0)
+
+SAVING THROWS
+Physical: 14+ | Evasion: 15+ | Mental: 14+ | Luck: 15+ (+0)
+
+SKILLS
+Survive 2d6+0, Sneak 2d6+0, Stab 2d6+0, Heal 2d6+0, Notice 2d6+0, Convince 2d6+4
+
+FOCI
+Poisoner (Lvl 1), Spirit Familiar (Lvl 1)
+
+EQUIPMENT
+Readied: Short Sword +0 1d6, Throwing Blade, Small Shield, Linothorax
+Stowed: Backpack, Rations (1 week), Waterskin, Tinder Box, Torches (3), Grappling Hook, Rope (50 ft)
+Stored: None
+Credits: 0
