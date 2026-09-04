@@ -33,10 +33,12 @@ Use Export/Import to back up, move between machines, or share a party.
   text after it on the right); with two characters shown, `---` is just a normal rule.
 - **View / Edit** toggle. View renders the sheet as Markdown; Edit is the raw Markdown source
   (Edit always acts on **Character**, not Character B).
-- In View mode, **dice formulas and modifiers are underlined and clickable**:
+- In View mode, **dice formulas and modifiers are underlined and clickable** (blue, dotted):
   - `2d6+3`, `1d20+4`, `4d6kh3`, `1d8 + 2` → rolled as written.
   - A bare `+1` / `-2` / `+0` → rolled as `1d20 ± that`.
   - Every click is logged under the character's name.
+- Also in View mode, **names in `[square brackets]` are underlined (violet, dashed)** and looked up
+  in the **Compendium** on hover — see that tab. Short all-caps tags like `[WWN]` are left alone.
 - **Rename** / **Delete** act on the selected character.
 
 ### Notes
@@ -120,6 +122,35 @@ plus a couple of Old-School Essentials examples.
   **✕** (remove from library).
 - **Paste** pane (right): paste one or more stat blocks and send them to the library, optionally
   also dropping them straight into combat.
+
+---
+
+## Compendium tab
+
+A personal reference of **Items, Spells, Abilities, Rules** and **Other** entries. Each entry has a
+name, a category, and a Markdown body edited in a proper Markdown editor
+([EasyMDE](https://github.com/Ionaru/easy-markdown-editor), vendored). First run seeds a handful of
+examples.
+
+- **+ New entry** opens the editor modal (category defaults to **Other**).
+- **Filter**: tick/untick the category checkboxes; type in **Search** to match entry *names*.
+  **Full text** also searches the body; **Fuzzy** switches to approximate matching
+  ([Fuse.js](https://fusejs.io/), vendored). The count shows *matches / total*.
+- Click a row (or its **Edit**) to edit; **✕** deletes.
+
+### Bracket lookup from a character sheet
+Put an entry's name in `[square brackets]` anywhere in a sheet (View mode). It renders underlined in
+violet; **hover** it to get a popup:
+
+- **Match found** — the entry's Markdown rendered as HTML, plus an **Edit** button. Any dice
+  formula in the description (bare, e.g. `1d6` or `2d6+3` — not in backticks) is clickable just like
+  on a character sheet; the roll is logged under the **entry's name**. Matching is case-insensitive
+  exact first; if nothing matches exactly, the best fuzzy matches are offered and you **scroll**
+  inside the popup to page through them (a `n / N` counter shows in the corner).
+- **No match** — a note and a **Create entry** button (pre-fills the name; category **Other**).
+
+The pure-hover popup closes when the mouse leaves it; clicking **Edit** / **Create** opens the
+full editor modal instead.
 
 ---
 

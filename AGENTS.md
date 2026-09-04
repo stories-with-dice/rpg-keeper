@@ -25,6 +25,8 @@ js/app.js              the whole application — one IIFE, ~1900 lines, section 
 js/monsters.js         pure stat-block parser (no DOM, no storage); UMD-ish
 js/monsters-data.js    GENERATED: window.MONSTER_LIBRARY = [...245 monsters...]
 js/marked.min.js       vendored Markdown parser
+js/fuse.min.js          vendored Fuse.js 7 (UMD → window.Fuse) — fuzzy search for the Compendium
+vendor/easymde/         vendored EasyMDE 2.18 (js bundles CodeMirror+marked; css) — Compendium editor
 data/monsters.json     GENERATED: same content as monsters-data.js (for http fetch / inspection)
 data/bestiary_data.json  source data for the converter (Shadowdark core bestiary)
 data/*.txt             example character sheets (seeded on first run)
@@ -35,8 +37,16 @@ vendor/fontawesome/    icons, referenced by index.html via relative url()
 
 `js/app.js` is organised into sections with `/* ---- name ---- */` banner comments (State, Dice
 engine, Roll + log, character text annotation, Character CRUD, Consumables, Notes, Combat tracker,
-monster library modal, monster edit modal, Settings, Clipboard, Export/import, Dice panel, Seed
-data, Wiring, Init). Find the right section before adding code.
+monster library modal, monster edit modal, Compendium, Settings, Clipboard, Export/import, Dice
+panel, Seed data, Wiring, Init). Find the right section before adding code.
+
+The **Compendium** (`state.compendium`: `{id,name,category,body}`, category ∈ `COMPENDIUM_CATEGORIES`)
+is a reference list edited via an EasyMDE modal. `annotate()` also wraps bare `[bracketed]` text in
+`<span class="comp-ref">` (skipping short all-caps system tags); hovering one opens `#comp-pop`,
+which resolves the name against the compendium (exact, then `Fuse` fuzzy) and renders the entry's
+Markdown, or a "create" prompt. The popup body is run through `annotate(el, { noComp: true })` so
+dice formulas in the description are clickable (logged under the entry name); Edit/Create hand off
+to the modal. The hover popup auto-hides on mouseleave.
 
 ## Run / test / regenerate
 

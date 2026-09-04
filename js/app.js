@@ -24,9 +24,13 @@
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], log: [],
     monsters: [], monstersSeeded: false, conditions: [],
+    compendium: [], compendiumSeeded: false,
     settings: { scarletHeroes: false, theme: 'default' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
+
+  // Compendium entry categories. "Other" is the default for new entries.
+  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Abilities', 'Rules', 'Other'];
 
   // Style themes (dark only) — see the theme blocks in css/app.css.
   const THEMES = ['default', 'fantasy', 'sf', 'horror'];
@@ -94,6 +98,14 @@
       state.activeIdB = null;
     }
     state.monsters.forEach(m => { if (!m.id) m.id = uid(); });
+    if (!Array.isArray(state.compendium)) state.compendium = [];
+    state.compendium.forEach(en => {
+      if (!en.id) en.id = uid();
+      en.name = en.name == null ? '' : String(en.name);
+      en.category = COMPENDIUM_CATEGORIES.indexOf(en.category) === -1 ? 'Other' : en.category;
+      en.body = en.body == null ? '' : String(en.body);
+      if (!en.createdAt) en.createdAt = Date.now();
+    });
     if (!state.combat || typeof state.combat !== 'object') state.combat = {};
     state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
     if (!Array.isArray(state.combat.entries)) state.combat.entries = [];
@@ -418,29 +430,44 @@
   /* ------------------------------------------------------------------ */
   const DICE_RE = /\b\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?(?:\s*[+-]\s*\d+)*\b/gi;
   const MOD_RE  = /(?<![\w.])[+-]\d+(?![\w.\d])/g;
+  // Bracketed compendium references: [Longsword], [Bless]. Skipped: short
+  // all-caps/system tags like [WWN], [SD], and anything with markdown link
+  // punctuation left in it.
+  const COMP_RE = /\[([^\[\]\n]{1,60})\]/g;
+  function isSystemTag(s) { return /^[A-Z0-9][A-Z0-9 .+\-/]{0,7}$/.test(s.trim()); }
 
-  function findMatches(text) {
+  function findMatches(text, opts) {
     const spans = [];
     let m;
+    if (!(opts && opts.noComp)) {
+      COMP_RE.lastIndex = 0;
+      while ((m = COMP_RE.exec(text))) {
+        const inner = m[1].trim();
+        if (!inner || isSystemTag(inner)) continue;
+        spans.push({ kind: 'comp', start: m.index, end: m.index + m[0].length, label: m[0], name: inner });
+      }
+    }
     DICE_RE.lastIndex = 0;
     while ((m = DICE_RE.exec(text))) {
       const raw = m[0];
       if (!/d\d/i.test(raw)) continue;
-      spans.push({ start: m.index, end: m.index + raw.length, formula: raw.replace(/\s+/g, ''), label: raw });
+      const s = m.index, e = m.index + raw.length;
+      if (spans.some(sp => s < sp.end && e > sp.start)) continue;
+      spans.push({ kind: 'roll', start: s, end: e, formula: raw.replace(/\s+/g, ''), label: raw });
     }
     MOD_RE.lastIndex = 0;
     while ((m = MOD_RE.exec(text))) {
       const s = m.index, e = m.index + m[0].length;
       if (spans.some(sp => s < sp.end && e > sp.start)) continue;
-      spans.push({ start: s, end: e, formula: '1d20' + m[0], label: m[0] });
+      spans.push({ kind: 'roll', start: s, end: e, formula: '1d20' + m[0], label: m[0] });
     }
     spans.sort((a, b) => a.start - b.start);
     return spans;
   }
 
-  function processTextNode(node) {
+  function processTextNode(node, opts) {
     const text = node.nodeValue;
-    const spans = findMatches(text);
+    const spans = findMatches(text, opts);
     if (!spans.length) return;
     const frag = document.createDocumentFragment();
     let pos = 0;
@@ -448,10 +475,17 @@
       if (sp.start < pos) return;
       if (sp.start > pos) frag.appendChild(document.createTextNode(text.slice(pos, sp.start)));
       const el = document.createElement('span');
-      el.className = 'roll';
-      el.textContent = sp.label;
-      el.dataset.formula = sp.formula;
-      el.title = 'Roll ' + sp.formula;
+      if (sp.kind === 'comp') {
+        el.className = 'comp-ref';
+        el.textContent = sp.label;
+        el.dataset.name = sp.name;
+        el.title = sp.name + ' — hover for the Compendium entry';
+      } else {
+        el.className = 'roll';
+        el.textContent = sp.label;
+        el.dataset.formula = sp.formula;
+        el.title = 'Roll ' + sp.formula;
+      }
       frag.appendChild(el);
       pos = sp.end;
     });
@@ -459,7 +493,7 @@
     node.parentNode.replaceChild(frag, node);
   }
 
-  function annotate(root) {
+  function annotate(root, opts) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
         if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
@@ -467,7 +501,7 @@
         while (p && p !== root) {
           const t = p.nodeName;
           if (t === 'CODE' || t === 'PRE' || t === 'A') return NodeFilter.FILTER_REJECT;
-          if (p.classList && p.classList.contains('roll')) return NodeFilter.FILTER_REJECT;
+          if (p.classList && (p.classList.contains('roll') || p.classList.contains('comp-ref'))) return NodeFilter.FILTER_REJECT;
           p = p.parentNode;
         }
         return NodeFilter.FILTER_ACCEPT;
@@ -475,7 +509,7 @@
     });
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(processTextNode);
+    nodes.forEach(n => processTextNode(n, opts));
   }
 
   /* ------------------------------------------------------------------ */
@@ -1682,6 +1716,299 @@
     $('#dice-apply').addEventListener('click', applyDamageToSelected);
   }
 
+  /* ================================================================== */
+  /* Compendium                                                          */
+  /* ================================================================== */
+
+  // Resolve a name to compendium entries: exact (case-insensitive) matches
+  // first; if none, the best fuzzy matches (needs js/fuse.min.js).
+  function compByExactName(q) {
+    const n = String(q || '').trim().toLowerCase();
+    if (!n) return [];
+    return state.compendium.filter(e => e.name.trim().toLowerCase() === n);
+  }
+  function compFuzzy(q, fullText) {
+    const term = String(q || '').trim();
+    if (!term || !state.compendium.length || typeof Fuse === 'undefined') return [];
+    const fuse = new Fuse(state.compendium, {
+      keys: fullText ? ['name', 'body'] : ['name'],
+      threshold: 0.45, ignoreLocation: true
+    });
+    return fuse.search(term).map(r => r.item);
+  }
+  function compResolve(name) {
+    const exact = compByExactName(name);
+    if (exact.length) return exact;
+    return compFuzzy(name, false).slice(0, 8);
+  }
+
+  /* ---- Compendium tab ---- */
+  let compCatFilter = null; // Set of enabled categories (lazily = all)
+  function compCats() {
+    if (!compCatFilter) compCatFilter = new Set(COMPENDIUM_CATEGORIES);
+    return compCatFilter;
+  }
+  function renderCompCats() {
+    const on = compCats();
+    $('#comp-cats').innerHTML = COMPENDIUM_CATEGORIES.map(c =>
+      '<label class="comp-cat"><input type="checkbox" data-cat="' + escapeHtml(c) + '"' +
+      (on.has(c) ? ' checked' : '') + ' /> ' + escapeHtml(c) + '</label>').join('');
+  }
+  function compExcerpt(body) {
+    const line = String(body || '').split(/\r?\n/).map(s => s.trim()).find(Boolean) || '';
+    return line.replace(/[#>*_`~[\]]/g, '').slice(0, 140);
+  }
+  function compListMatches() {
+    const on = compCats();
+    let list = state.compendium.filter(e => on.has(e.category));
+    const term = $('#comp-search').value.trim();
+    if (term) {
+      const fullText = $('#comp-fulltext').checked;
+      if ($('#comp-fuzzy').checked) {
+        const ids = new Set(compFuzzy(term, fullText).map(e => e.id));
+        list = list.filter(e => ids.has(e.id));
+      } else {
+        const t = term.toLowerCase();
+        list = list.filter(e => e.name.toLowerCase().indexOf(t) !== -1 ||
+          (fullText && e.body.toLowerCase().indexOf(t) !== -1));
+      }
+    }
+    return list.slice().sort((a, b) =>
+      a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+  }
+  function renderCompendium() {
+    renderCompCats();
+    const list = compListMatches();
+    $('#comp-count').textContent = list.length + ' / ' + state.compendium.length;
+    $('#comp-empty').hidden = state.compendium.length > 0;
+    $('#comp-list').innerHTML = list.map(e =>
+      '<li class="comp-row" data-id="' + e.id + '">' +
+        '<div class="comp-row-head">' +
+          '<span class="comp-name">' + escapeHtml(e.name || '(unnamed)') + '</span>' +
+          '<span class="badge">' + escapeHtml(e.category) + '</span>' +
+          '<button class="btn comp-row-edit">Edit</button>' +
+          '<button class="btn btn-danger comp-row-del" title="Delete">&times;</button>' +
+        '</div>' +
+        (compExcerpt(e.body) ? '<div class="comp-excerpt">' + escapeHtml(compExcerpt(e.body)) + '</div>' : '') +
+      '</li>').join('');
+  }
+
+  /* ---- editor modal (EasyMDE) ---- */
+  let compMDE = null;
+  let compEditId = null;
+  function compMdeInstance() {
+    if (compMDE) return compMDE;
+    if (typeof EasyMDE === 'undefined') return null;
+    const fa = (n, i, t) => ({ name: n, action: EasyMDE[i], className: 'fa-solid ' + t, title: n[0].toUpperCase() + n.slice(1) });
+    compMDE = new EasyMDE({
+      element: $('#comp-f-body'),
+      autoDownloadFontAwesome: false,
+      spellChecker: false,
+      status: false,
+      minHeight: '240px',
+      placeholder: 'Describe this entry in Markdown…',
+      toolbar: [
+        fa('bold', 'toggleBold', 'fa-bold'),
+        fa('italic', 'toggleItalic', 'fa-italic'),
+        fa('heading', 'toggleHeadingSmaller', 'fa-heading'),
+        '|',
+        fa('quote', 'toggleBlockquote', 'fa-quote-left'),
+        fa('unordered-list', 'toggleUnorderedList', 'fa-list-ul'),
+        fa('ordered-list', 'toggleOrderedList', 'fa-list-ol'),
+        '|',
+        fa('link', 'drawLink', 'fa-link'),
+        fa('table', 'drawTable', 'fa-table-cells'),
+        fa('code', 'toggleCodeBlock', 'fa-code'),
+        '|',
+        { name: 'preview', action: EasyMDE.togglePreview, className: 'fa-solid fa-eye no-disable', title: 'Toggle preview' }
+      ]
+    });
+    return compMDE;
+  }
+  function compEditorValue() { return compMDE ? compMDE.value() : $('#comp-f-body').value; }
+  function openCompEntry(id, opts) {
+    opts = opts || {};
+    compEditId = id || null;
+    const en = id ? state.compendium.find(e => e.id === id) : null;
+    $('#comp-modal-title').textContent = en ? 'Edit Compendium entry' : 'New Compendium entry';
+    $('#comp-f-name').value = en ? en.name : (opts.name || '');
+    $('#comp-f-cat').innerHTML = COMPENDIUM_CATEGORIES.map(c =>
+      '<option' + ((en ? en.category : 'Other') === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>').join('');
+    $('#comp-msg').textContent = '';
+    $('#comp-delete').hidden = !en;
+    $('#comp-modal').hidden = false;
+    const mde = compMdeInstance();
+    if (mde) { mde.value(en ? en.body : ''); setTimeout(() => mde.codemirror.refresh(), 0); }
+    else { $('#comp-f-body').value = en ? en.body : ''; }
+    setTimeout(() => $('#comp-f-name').focus(), 0);
+  }
+  function closeCompEntry() { $('#comp-modal').hidden = true; compEditId = null; }
+  function saveCompEntry() {
+    const name = $('#comp-f-name').value.trim();
+    if (!name) { $('#comp-msg').textContent = 'Name is required.'; return; }
+    const category = $('#comp-f-cat').value;
+    const body = compEditorValue();
+    let en = compEditId ? state.compendium.find(e => e.id === compEditId) : null;
+    const creating = !en;
+    if (en) {
+      en.name = name; en.category = category; en.body = body; en.updatedAt = Date.now();
+    } else {
+      en = { id: uid(), name: name, category: category, body: body, createdAt: Date.now(), updatedAt: Date.now() };
+      state.compendium.push(en);
+    }
+    save();
+    renderCompendium();
+    refreshCompPop();
+    pushNote('Compendium', (creating ? 'created' : 'updated') + ' "' + name + '" (' + category + ')');
+    closeCompEntry();
+  }
+  function deleteCompEntry() {
+    if (!compEditId) return;
+    const en = state.compendium.find(e => e.id === compEditId);
+    if (!en || !confirm('Delete "' + (en.name || 'this entry') + '" from the Compendium?')) return;
+    state.compendium = state.compendium.filter(e => e.id !== compEditId);
+    save();
+    renderCompendium();
+    refreshCompPop();
+    closeCompEntry();
+  }
+
+  /* ---- hover popup on [bracketed] references ---- */
+  let compPop = { name: null, matches: [], idx: 0, anchor: null };
+  let compPopHideT = null;
+  function compPopHtml() {
+    const list = compPop.matches;
+    if (!list.length) {
+      return '<div class="cpop-head"><b>' + escapeHtml(compPop.name) + '</b></div>' +
+        '<p class="cpop-none">No Compendium entry found for this item.</p>' +
+        '<div class="cpop-actions"><button class="btn btn-primary" data-act="create">Create entry</button></div>';
+    }
+    const en = list[compPop.idx];
+    const nav = list.length > 1
+      ? '<span class="cpop-nav">' + (compPop.idx + 1) + ' / ' + list.length + ' &middot; scroll</span>' : '';
+    return '<div class="cpop-head"><b>' + escapeHtml(en.name) + '</b>' +
+      '<span class="badge">' + escapeHtml(en.category) + '</span>' + nav + '</div>' +
+      '<div class="cpop-body markdown-body">' + marked.parse(en.body || '*(no description yet)*') + '</div>' +
+      '<div class="cpop-actions"><button class="btn" data-act="edit">Edit</button></div>';
+  }
+  function positionCompPop(anchor) {
+    if (!anchor) return;
+    const pop = $('#comp-pop');
+    pop.style.left = '0px'; pop.style.top = '0px';
+    const r = anchor.getBoundingClientRect();
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let left = r.left;
+    if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+    if (left < 8) left = 8;
+    let top = r.bottom + 8;
+    if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 8);
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+  }
+  // Render the popup and make any dice formulas in the entry body clickable
+  // (same treatment as the character sheet; clicks log under the entry name).
+  function paintCompPop() {
+    const pop = $('#comp-pop');
+    pop.innerHTML = compPopHtml();
+    const body = pop.querySelector('.cpop-body');
+    if (body) annotate(body, { noComp: true });
+    positionCompPop(compPop.anchor);
+  }
+  function showCompPop(anchor) {
+    clearTimeout(compPopHideT);
+    const name = anchor.dataset.name;
+    if (compPop.anchor !== anchor || $('#comp-pop').hidden) {
+      compPop = { name: name, matches: compResolve(name), idx: 0, anchor: anchor };
+    }
+    $('#comp-pop').hidden = false;
+    paintCompPop();
+  }
+  function scheduleHideCompPop() {
+    clearTimeout(compPopHideT);
+    compPopHideT = setTimeout(() => { $('#comp-pop').hidden = true; compPop.anchor = null; }, 160);
+  }
+  function hideCompPopNow() { clearTimeout(compPopHideT); $('#comp-pop').hidden = true; compPop.anchor = null; }
+  function refreshCompPop() {
+    if ($('#comp-pop').hidden || !compPop.anchor) return;
+    compPop.matches = compResolve(compPop.name);
+    if (compPop.idx >= compPop.matches.length) compPop.idx = 0;
+    paintCompPop();
+  }
+
+  function wireCompendium() {
+    $('#comp-new').addEventListener('click', () => openCompEntry(null, {}));
+    $('#comp-search').addEventListener('input', renderCompendium);
+    $('#comp-fulltext').addEventListener('change', renderCompendium);
+    $('#comp-fuzzy').addEventListener('change', renderCompendium);
+    $('#comp-cats').addEventListener('change', e => {
+      const cb = e.target.closest('input[data-cat]');
+      if (!cb) return;
+      const on = compCats();
+      if (cb.checked) on.add(cb.dataset.cat); else on.delete(cb.dataset.cat);
+      renderCompendium();
+    });
+    $('#comp-list').addEventListener('click', e => {
+      const row = e.target.closest('.comp-row');
+      if (!row) return;
+      if (e.target.closest('.comp-row-del')) {
+        const en = state.compendium.find(x => x.id === row.dataset.id);
+        if (en && confirm('Delete "' + (en.name || 'this entry') + '"?')) {
+          state.compendium = state.compendium.filter(x => x.id !== en.id);
+          save(); renderCompendium(); refreshCompPop();
+        }
+        return;
+      }
+      openCompEntry(row.dataset.id);
+    });
+
+    $('#comp-close').addEventListener('click', closeCompEntry);
+    $('#comp-cancel').addEventListener('click', closeCompEntry);
+    $('#comp-save').addEventListener('click', saveCompEntry);
+    $('#comp-delete').addEventListener('click', deleteCompEntry);
+    $('#comp-modal').addEventListener('click', e => { if (e.target === $('#comp-modal')) closeCompEntry(); });
+
+    const view = $('#mode-view');
+    view.addEventListener('mouseover', e => {
+      const ref = e.target.closest('.comp-ref');
+      if (ref) showCompPop(ref);
+    });
+    view.addEventListener('mouseout', e => {
+      const ref = e.target.closest('.comp-ref');
+      if (!ref) return;
+      const to = e.relatedTarget;
+      if (to && to.closest && to.closest('#comp-pop')) return;
+      scheduleHideCompPop();
+    });
+    const pop = $('#comp-pop');
+    pop.addEventListener('mouseenter', () => clearTimeout(compPopHideT));
+    pop.addEventListener('mouseleave', scheduleHideCompPop);
+    pop.addEventListener('wheel', e => {
+      if (compPop.matches.length < 2) return;
+      e.preventDefault();
+      const n = compPop.matches.length;
+      compPop.idx = (compPop.idx + (e.deltaY > 0 ? 1 : -1) + n) % n;
+      paintCompPop();
+    }, { passive: false });
+    pop.addEventListener('click', e => {
+      const roll = e.target.closest('.roll');
+      if (roll) {
+        const en = compPop.matches[compPop.idx];
+        clearTimeout(compPopHideT);
+        doRoll(roll.dataset.formula, en ? en.name : (compPop.name || 'Compendium'));
+        return;
+      }
+      const act = e.target.closest('[data-act]');
+      if (!act) return;
+      if (act.dataset.act === 'create') openCompEntry(null, { name: compPop.name });
+      else if (act.dataset.act === 'edit' && compPop.matches[compPop.idx]) openCompEntry(compPop.matches[compPop.idx].id);
+      hideCompPopNow();
+    });
+    document.addEventListener('mousedown', e => {
+      if (!$('#comp-pop').hidden && !e.target.closest('#comp-pop') && !e.target.closest('.comp-ref')) hideCompPopNow();
+    });
+    document.addEventListener('scroll', () => { if (!$('#comp-pop').hidden) hideCompPopNow(); }, true);
+  }
+
   /* ---- settings ---- */
   function renderSettings() {
     $('#set-scarlet-heroes').checked = !!(state.settings && state.settings.scarletHeroes);
@@ -1841,6 +2168,13 @@
           }
         });
         if (Array.isArray(data.monsters)) data.monsters.forEach(m => { m.id = uid(); state.monsters.push(m); });
+        if (Array.isArray(data.compendium)) data.compendium.forEach(en => {
+          const key = String(en.name || '').toLowerCase() + '\0' + en.category;
+          if (!state.compendium.some(x => (x.name.toLowerCase() + '\0' + x.category) === key)) {
+            state.compendium.push({ id: uid(), name: String(en.name || ''), category: en.category,
+              body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() });
+          }
+        });
         if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-MAX_LOG);
       }
       ensureStateShape();
@@ -1851,6 +2185,7 @@
       refreshCharUI();
       renderLog();
       renderCombat();
+      renderCompendium();
       renderSettings();
     };
     reader.readAsText(file);
@@ -1998,6 +2333,24 @@ Credits: 0`;
     }
   }
 
+  // A few starter Compendium entries (first run only). Reference any of these
+  // from a character sheet by putting the name in [square brackets].
+  const COMPENDIUM_SEED = [
+    { category: 'Items', name: 'Torch', body: 'Sheds light in a **near** radius for 1 hour of real time. A lit torch can be swung as an improvised weapon for 1d4 fire damage.' },
+    { category: 'Items', name: 'Rope, 50 ft', body: 'Hemp rope. Holds up to ~400 lbs before fraying. Takes 1 slot.' },
+    { category: 'Spells', name: 'Cure Wounds', body: '*Tier 1.* Touch a living creature to heal 1d6 HP. Undead take 1d6 damage instead (WIS save for half).' },
+    { category: 'Rules', name: 'Morale', body: 'When a fight turns against them, roll 2d6 vs the creature\'s **ML**. On a result **higher** than ML, they flee or surrender. Leaders at 0 HP, or losing half their number, trigger a check.' },
+    { category: 'Abilities', name: 'Rage', body: 'Once per day, enter a rage for up to 10 rounds: **+2** to hit and 1d6 extra damage in melee, and halve incoming physical damage. While raging you cannot cast spells or retreat.' }
+  ];
+  function seedCompendium() {
+    state.compendiumSeeded = true;
+    if (state.compendium.length) { save(); return; }
+    COMPENDIUM_SEED.forEach(e => state.compendium.push(
+      { id: uid(), name: e.name, category: e.category, body: e.body, createdAt: Date.now(), updatedAt: Date.now() }));
+    save();
+    renderCompendium();
+  }
+
   /* ------------------------------------------------------------------ */
   /* Wiring                                                             */
   /* ------------------------------------------------------------------ */
@@ -2009,6 +2362,7 @@ Credits: 0`;
       $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
       if (b.dataset.tab === 'combat') renderCombat();
+      if (b.dataset.tab === 'compendium') renderCompendium();
     });
 
     // Character toolbar
@@ -2062,7 +2416,7 @@ Credits: 0`;
     $('#btn-paste-close').addEventListener('click', closePasteModal);
     $('#paste-modal').addEventListener('click', e => { if (e.target === $('#paste-modal')) closePasteModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); }
+      if (e.key === 'Escape') { closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); closeCompEntry(); hideCompPopNow(); }
     });
 
     // Dice
@@ -2103,6 +2457,7 @@ Credits: 0`;
     wireConsumables();
     wireNotes();
     wireCombat();
+    wireCompendium();
     wireSettings();
   }
 
@@ -2119,10 +2474,12 @@ Credits: 0`;
     renderLog();
     refreshCharUI();
     renderCombat();
+    renderCompendium();
     renderSettings();
     wire();
     if (!had && !state.characters.length) await seed();
     if (!state.monsters.length && !state.monstersSeeded) await seedMonsters();
+    if (!state.compendium.length && !state.compendiumSeeded) seedCompendium();
     renderCombat();
   }
 
