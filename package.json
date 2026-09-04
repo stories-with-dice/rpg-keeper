@@ -5,6 +5,10 @@
   "description": "OSR character store + combat tracker (static HTML/CSS/JS app). No build step.",
   "scripts": {
     "test": "node --test",
-    "convert-bestiary": "node scripts/convert-bestiary.js"
+    "convert-bestiary": "node scripts/convert-bestiary.js",
+    "convert-spells": "node scripts/convert-spells-from-shadowdark-resources.js"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
   }
 }

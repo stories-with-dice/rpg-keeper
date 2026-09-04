@@ -1913,7 +1913,10 @@
   let compEditId = null;
   function compMdeInstance() {
     if (compMDE) return compMDE;
-    compMDE = buildMDE($('#comp-f-body'), { minHeight: '240px', placeholder: 'Describe this entry in Markdown…' });
+    compMDE = buildMDE($('#comp-f-body'), {
+      minHeight: '240px', placeholder: 'Describe this entry in Markdown…',
+      onSubmit: () => saveCompEntry()
+    });
     return compMDE;
   }
   function compEditorValue() { return compMDE ? compMDE.value() : $('#comp-f-body').value; }
@@ -2052,12 +2055,40 @@
   function openSelMenu(x, y, text, tgt) {
     const m = $('#sel-menu');
     const short = text.length > 44 ? text.slice(0, 42) + '…' : text;
-    m.innerHTML = '<button class="ctx-item" data-act="add-comp" type="button">' +
-      '<i class="fa-solid fa-book"></i><span>Add &ldquo;' + escapeHtml(short) + '&rdquo; to Compendium</span></button>';
+    const r = compResolve(text);
+    const matches = r.items;
+    let html = '<div class="ctx-head">Add &ldquo;' + escapeHtml(short) + '&rdquo;</div>';
+    if (matches.length) {
+      html += '<div class="ctx-sub">' + (r.fuzzy ? 'Similar entries' : 'Matching entries') + '</div>' +
+        '<div class="ctx-list">' + matches.map((en, i) => {
+          const sc = r.scores && r.scores[i];
+          const pct = r.fuzzy && typeof sc === 'number'
+            ? '<span class="ctx-check">&asymp;' + Math.round((1 - sc) * 100) + '%</span>' : '';
+          return '<button class="ctx-item" data-act="link" data-id="' + en.id + '" type="button">' +
+            '<i class="fa-solid fa-book"></i><span>' + escapeHtml(en.name) + '</span>' +
+            '<span class="badge">' + escapeHtml(en.category) + '</span>' + pct + '</button>';
+        }).join('') + '</div>';
+    }
+    html += '<button class="ctx-item ctx-new" data-act="add-comp" type="button">' +
+      '<i class="fa-solid fa-plus"></i><span>' +
+      (matches.length ? 'Create new entry&hellip;' : 'Add &ldquo;' + escapeHtml(short) + '&rdquo; to Compendium') +
+      '</span></button>';
+    m.innerHTML = html;
     m.hidden = false;
     m.style.left = Math.max(4, Math.min(x, window.innerWidth - m.offsetWidth - 8)) + 'px';
     m.style.top = Math.max(4, Math.min(y, window.innerHeight - m.offsetHeight - 8)) + 'px';
     selMenuData = { text: text, tgt: tgt };
+  }
+  // Link the current selection to an existing Compendium entry (no editor):
+  // the selected text is replaced with [entry.name], even when that name
+  // differs from what was selected.
+  function linkSelToExisting(en) {
+    const d = selMenuData;
+    if (!d || !en) return;
+    pendingCompLink = { charId: d.tgt.ch.id, part: d.tgt.part, find: d.text };
+    pushNote('Compendium', 'linked "' + d.text + '" to "' + en.name + '" (' + en.category + ' · ' +
+      (en.source || COMPENDIUM_DEFAULT_SOURCE) + ')');
+    applyPendingCompLink(en.name);
   }
   function closeSelMenu() { $('#sel-menu').hidden = true; selMenuData = null; }
 
@@ -2228,15 +2259,23 @@
     if (!compAC || !item) return;
     const insert = item.name + ']';
     if (compAC.kind === 'cm') {
+      // CodeMirror records replaceRange in its own undo history (Ctrl-Z works).
       compAC.cm.replaceRange(insert, compAC.qStart, compAC.cm.getCursor());
       compAC.cm.focus();
     } else {
-      const ta = compAC.ta, caret = ta.selectionStart, v = ta.value;
-      ta.value = v.slice(0, compAC.qStart) + insert + v.slice(caret);
-      const c = compAC.qStart + insert.length;
-      ta.setSelectionRange(c, c);
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      const ta = compAC.ta, caret = ta.selectionStart;
       ta.focus();
+      // Replace via execCommand so it lands on the native undo stack — assigning
+      // ta.value directly would wipe it and make Ctrl-Z a no-op.
+      ta.setSelectionRange(compAC.qStart, caret);
+      let ok = false;
+      try { ok = document.execCommand('insertText', false, insert); } catch (e) { ok = false; }
+      if (!ok) {
+        const v = ta.value, c = compAC.qStart + insert.length;
+        ta.value = v.slice(0, compAC.qStart) + insert + v.slice(caret);
+        ta.setSelectionRange(c, c);
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     }
     closeAC();
   }
@@ -2312,6 +2351,26 @@
       if (cb.checked) compSrcOff.delete(cb.dataset.src); else compSrcOff.add(cb.dataset.src);
       renderCompendium();
     });
+    // Right-click a Category/Source filter to isolate it: only that one stays
+    // ticked, so the list shows just its entries.
+    $('#comp-cats').addEventListener('contextmenu', e => {
+      const lbl = e.target.closest('label.comp-cat');
+      const cb = lbl && lbl.querySelector('input[data-cat]');
+      if (!cb) return;
+      e.preventDefault();
+      compCatFilter = new Set([cb.dataset.cat]);
+      renderCompendium();
+    });
+    $('#comp-sources').addEventListener('contextmenu', e => {
+      const lbl = e.target.closest('label.comp-cat');
+      const cb = lbl && lbl.querySelector('input[data-src]');
+      if (!cb) return;
+      e.preventDefault();
+      const target = cb.dataset.src;
+      compSrcOff.clear();
+      compSources().forEach(s => { if (s !== target) compSrcOff.add(s); });
+      renderCompendium();
+    });
     $('#comp-list').addEventListener('click', e => {
       const row = e.target.closest('.comp-row');
       if (!row) return;
@@ -2331,6 +2390,15 @@
     $('#comp-save').addEventListener('click', saveCompEntry);
     $('#comp-delete').addEventListener('click', deleteCompEntry);
     $('#comp-modal').addEventListener('click', e => { if (e.target === $('#comp-modal')) closeCompEntry(); });
+    // Enter saves (Shift+Enter is a newline in the body). When EasyMDE is
+    // loaded, its CodeMirror instance has the same onSubmit wired directly
+    // (see compMdeInstance) — skip it here to avoid saving twice.
+    $('#comp-modal').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target.closest('.CodeMirror')) return;
+      e.preventDefault();
+      saveCompEntry();
+    });
 
     // --- stackable hover popups: refs live in the sheet or inside popup bodies
     const intoSafe = to => to && to.closest && (to.closest('.comp-pop') || to.closest('.comp-ref'));
@@ -2574,12 +2642,14 @@
     if (Array.isArray(window.MONSTER_LIBRARY) && window.MONSTER_LIBRARY.length) {
       defs = window.MONSTER_LIBRARY;
     }
-    // 2) fetch the JSON (fine when served over http)
-    if (!defs) {
+    // 2) fetch the JSON (fine when served over http; skipped on file:// —
+    // fetch() is blocked there and the browser logs the failed request to
+    // the console regardless of the try/catch)
+    if (!defs && location.protocol !== 'file:') {
       try {
         const r = await fetch(MONSTERS_URL);
         if (r.ok) defs = await r.json();
-      } catch (e) { /* file:// or offline */ }
+      } catch (e) { /* offline */ }
     }
     // 3) last resort: parse the tiny inline sample
     if (!Array.isArray(defs) || !defs.length) {
@@ -2805,12 +2875,17 @@ Credits: 0`;
 
   async function seed() {
     const fallback = [SEED_WWN, SEED_SD];
+    const isFile = location.protocol === 'file:';
     for (let i = 0; i < SEED_FILES.length; i++) {
       let text = null;
-      try {
-        const res = await fetch(SEED_FILES[i]);
-        if (res.ok) text = await res.text();
-      } catch (e) { /* file:// or offline — use fallback */ }
+      // fetch() is blocked on file:// and the browser logs the failed
+      // request to the console regardless of the try/catch — skip it there.
+      if (!isFile) {
+        try {
+          const res = await fetch(SEED_FILES[i]);
+          if (res.ok) text = await res.text();
+        } catch (e) { /* offline — use fallback */ }
+      }
       createCharacter(text && text.trim() ? text : fallback[i]);
     }
     if (state.characters.length) {
@@ -2821,22 +2896,30 @@ Credits: 0`;
   }
 
   // Default Compendium seed lives in js/compendium-seed.js (loaded before this
-  // script). It exposes window.COMPENDIUM_SEED (array of { name, body }) and
-  // window.COMPENDIUM_SEED_VERSION.
+  // script). It exposes window.COMPENDIUM_SEED (array of { name, category, body }),
+  // window.COMPENDIUM_SEED_VERSION, and window.COMPENDIUM_SEED_READY — a promise
+  // that resolves once compendium-seed.js's attempt to fetch + fold in the
+  // optional data/spells.json has settled (COMPENDIUM_SEED is the same array
+  // either way, so nothing here needs to change to pick up the extra entries).
   const COMPENDIUM_SEED = (typeof window !== 'undefined' && Array.isArray(window.COMPENDIUM_SEED))
     ? window.COMPENDIUM_SEED : [];
   const COMPENDIUM_SEED_VERSION = (typeof window !== 'undefined' && Number(window.COMPENDIUM_SEED_VERSION)) || 1;
+  const COMPENDIUM_SEED_READY = (typeof window !== 'undefined' && window.COMPENDIUM_SEED_READY &&
+    typeof window.COMPENDIUM_SEED_READY.then === 'function') ? window.COMPENDIUM_SEED_READY : Promise.resolve();
 
   // Add every default entry not already present (matched by name, case-insensitive),
-  // tagging each as category "Items", source "Shadowdark Core". Returns the count
-  // added. Runs on first load (version bump) and from Settings → Reseed defaults.
+  // using each entry's own `category` (default "Items") and source "Shadowdark
+  // Core". Returns the count added. Runs on first load (version bump) and from
+  // Settings → Reseed defaults.
   function seedCompendium() {
     const have = new Set(state.compendium.map(e => (e.name || '').toLowerCase()));
     let added = 0;
     COMPENDIUM_SEED.forEach(e => {
       if (!e || !e.name || have.has(String(e.name).toLowerCase())) return;
       state.compendium.push({
-        id: uid(), name: e.name, category: 'Items', source: 'Shadowdark Core',
+        id: uid(), name: e.name,
+        category: COMPENDIUM_CATEGORIES.indexOf(e.category) === -1 ? 'Items' : e.category,
+        source: 'Shadowdark Core',
         body: e.body || '', createdAt: Date.now(), updatedAt: Date.now()
       });
       added++;
@@ -2933,11 +3016,20 @@ Credits: 0`;
       openSelMenu(e.clientX, e.clientY, text, tgt);
     });
     $('#sel-menu').addEventListener('click', e => {
-      if (!e.target.closest('[data-act="add-comp"]') || !selMenuData) return;
+      const item = e.target.closest('.ctx-item');
+      if (!item || !selMenuData) return;
       const d = selMenuData;
-      closeSelMenu();
-      pendingCompLink = { charId: d.tgt.ch.id, part: d.tgt.part, find: d.text };
-      openCompEntry(null, { name: d.text.replace(/\s+/g, ' ').trim() });
+      if (item.dataset.act === 'link') {
+        const en = state.compendium.find(x => x.id === item.dataset.id);
+        linkSelToExisting(en);
+        closeSelMenu();
+        return;
+      }
+      if (item.dataset.act === 'add-comp') {
+        closeSelMenu();
+        pendingCompLink = { charId: d.tgt.ch.id, part: d.tgt.part, find: d.text };
+        openCompEntry(null, { name: d.text.replace(/\s+/g, ' ').trim() });
+      }
     });
     document.addEventListener('mousedown', e => {
       if (!$('#sel-menu').hidden && !(e.target instanceof Element && e.target.closest('#sel-menu'))) closeSelMenu();
@@ -3017,10 +3109,108 @@ Credits: 0`;
     wire();
     if (!had && !state.characters.length) await seed();
     if (!state.monsters.length && !state.monstersSeeded) await seedMonsters();
-    if ((state.compendiumSeedVersion || 0) < COMPENDIUM_SEED_VERSION) seedCompendium();
+    if ((state.compendiumSeedVersion || 0) < COMPENDIUM_SEED_VERSION) {
+      await COMPENDIUM_SEED_READY; // let the optional data/spells.json fetch settle first
+      seedCompendium();
+    }
     renderCombat();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  /* ------------------------------------------------------------------ */
+  /* Test seam                                                          */
+  /* ------------------------------------------------------------------ */
+  // Exposes internals to test/*.test.js. Inert unless the harness opts in by
+  // setting window.__OSR_ENABLE_TEST_SEAM__ before this script runs (see
+  // test/helpers/boot.js) — so a normal page load is untouched.
+  function installTestSeam() {
+    if (typeof window === 'undefined' || !window.__OSR_ENABLE_TEST_SEAM__) return;
+    window.__OSR_TEST__ = {
+      ready: null,
+
+      // --- state access (state is reassigned by load()/importData) ---
+      get state() { return state; },
+      set state(v) { state = v; },
+      get mode() { return mode; },
+      get lastRoll() { return lastRoll; },
+
+      // --- constants ---
+      STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
+      THEMES, THEME_LABELS, CONDITION_SEED, COMPENDIUM_SEED, COMPENDIUM_SEED_VERSION, COMPENDIUM_SEED_READY,
+      DICE_PRESETS,
+
+      // --- pure helpers ---
+      escapeHtml, evalFormula, rollTerm, rollDie, shDie,
+      isSystemTag, findMatches, annotate,
+      detectNameSystem, splitBodyColumns,
+      charDetectHp, charQuickAC, acDisplay, atkHitLabel, atkDmgLabel,
+      uniqueName, clampConsumable, hpTrackerLabel, linkifyInText,
+      compByExactName, compFuzzy, compResolve, compExcerpt, compListMatches,
+      libMatches, logToText, fmtTime,
+      charViewTarget, openSelMenu, closeSelMenu, linkSelToExisting,
+      get selMenuData() { return selMenuData; },
+      get pendingCompLink() { return pendingCompLink; },
+
+      // --- lifecycle ---
+      load, save, ensureStateShape, ensureConsumablesShape, ensureHpTracker,
+      applyTheme, seed, seedMonsters, seedCompendium,
+      exportData, importData,
+
+      // --- character actions ---
+      createCharacter, renameChar, deleteChar, saveEdit, activeChar, charB,
+
+      // --- combat actions ---
+      addCharEntry, addMonsterEntry, removeEntry, cycleSide, toggleSide,
+      toggleStatus, removeStatus, defineCondition,
+      nextTurn, prevTurn, setRound, moveSelection, turnIndex,
+      setSelected, selectedEntry,
+      entryHp, entryMaxHp, setEntryHp, setEntryHd, applyEntryDamage, entryDown,
+
+      // --- dice / damage ---
+      doRoll, applyDamageToSelected, updateApplyButton,
+
+      // --- render ---
+      renderAll() {
+        refreshCharUI(); renderCombat(); renderCompendium();
+        renderSettings(); renderLog(); renderConsumables();
+      },
+
+      // Wipe to an already-migrated empty state (no async seeding) and clear the
+      // transient UI/filter state that lives outside `state`. Tests that want the
+      // real seed data call seed()/seedMonsters()/seedCompendium().
+      reset() {
+        state = JSON.parse(JSON.stringify(STATE_DEFAULTS));
+        state.monstersSeeded = true;
+        state.compendiumSeeded = true;
+        state.compendiumSeedVersion = COMPENDIUM_SEED_VERSION;
+        ensureStateShape();
+        lastRoll = null;
+        mode = 'view';
+        compCatFilter = null;
+        compSrcOff.clear();
+        compEditId = null;
+        pendingCompLink = null;
+        selMenuData = null;
+        ctxEntryId = null;
+        ['#comp-search', '#comp-fulltext', '#comp-fuzzy', '#custom-formula',
+          '#notes-area', '#paste-area', '#mm-search', '#mm-hd-min', '#mm-hd-max']
+          .forEach(sel => {
+            const el = $(sel);
+            if (!el) return;
+            if (el.type === 'checkbox') el.checked = false; else el.value = '';
+          });
+        save();
+        this.renderAll();
+      }
+    };
+  }
+
+  function boot() {
+    installTestSeam();
+    const p = init();
+    if (typeof window !== 'undefined' && window.__OSR_TEST__) window.__OSR_TEST__.ready = p;
+    return p;
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 })();

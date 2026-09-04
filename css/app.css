@@ -295,6 +295,15 @@ button, input, textarea, select {
 #edit-host.has-cols .edit-col-area { min-height: 520px; }
 .edit-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .hint { color: var(--text-dim); font-size: 12px; }
+.modal-box kbd {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  font-family: inherit;
+  font-size: 11px;
+}
 
 /* ---------- Markdown rendering ---------- */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {

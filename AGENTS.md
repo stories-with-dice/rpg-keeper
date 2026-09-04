@@ -24,17 +24,35 @@ css/app.css            all styles (one file, dark only; palette + fonts are CSS 
 js/app.js              the whole application — one IIFE, ~1900 lines, section banners
 js/monsters.js         pure stat-block parser (no DOM, no storage); UMD-ish
 js/monsters-data.js    GENERATED: window.MONSTER_LIBRARY = [...245 monsters...]
-js/compendium-seed.js   hand-maintained: window.COMPENDIUM_SEED / _VERSION (Shadowdark core gear)
+js/spells-data.js      GENERATED: window.SPELLS_LIBRARY = [...85 spells...] (for file:// — fetch is blocked there)
+js/compendium-seed.js   hand-maintained gear + window.COMPENDIUM_SEED / _VERSION; folds in SPELLS_LIBRARY
 js/marked.min.js       vendored Markdown parser
 js/fuse.min.js          vendored Fuse.js 7 (UMD → window.Fuse) — fuzzy search for the Compendium
 vendor/easymde/         vendored EasyMDE 2.18 (js bundles CodeMirror+marked; css) — Compendium editor
 data/monsters.json     GENERATED: same content as monsters-data.js (for http fetch / inspection)
 data/bestiary_data.json  source data for the converter (Shadowdark core bestiary)
+data/spell_data.json   source data for the spell converter (Shadowdark core spells)
+data/spells.json       GENERATED: same content as spells-data.js (for http fetch / inspection)
 data/*.txt             example character sheets (seeded on first run)
 scripts/convert-bestiary.js   CLI: bestiary_data.json -> monsters.json + monsters-data.js
+scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> data/spells.json +
+                       js/spells-data.js, { name, category:"Spells", body } entries compendium-seed.js reads
 test/monsters.test.js  node:test suite for the parser + converter
+test/logic.test.js     node:test unit tests for js/app.js internals (dice engine, Scarlet Heroes,
+                       state migration, annotate, compendium resolve, combat, …)
+test/ui.test.js        node:test integration tests that drive the real DOM (index.html + js/app.js)
+                       through the app's delegated listeners and assert on render + persistence
+test/helpers/boot.js   boots the app inside jsdom for the two suites above (EasyMDE omitted → the
+                       Journal / Compendium editors fall back to plain <textarea>s, as designed)
 vendor/fontawesome/    icons, referenced by index.html via relative url()
 ```
+
+`test/logic.test.js` and `test/ui.test.js` reach into `js/app.js` (a closed IIFE) through a test
+seam at the bottom: `installTestSeam()` publishes `window.__OSR_TEST__` **only** when the harness has
+set `window.__OSR_ENABLE_TEST_SEAM__` first, so a normal page load is untouched. `T.reset()` wipes to
+a clean already-migrated state between tests. `jsdom` is the one **dev** dependency (`npm install`
+once); the shipped app still has zero runtime deps and no build step. Values returned from the app
+live in jsdom's realm — compare them with the non-strict `assert`, not `assert/strict`.
 
 `js/app.js` is organised into sections with `/* ---- name ---- */` banner comments (State, Dice
 engine, Roll + log, character text annotation, Character CRUD, Consumables, Notes, Combat tracker,
@@ -43,7 +61,12 @@ panel, Seed data, Wiring, Init). Find the right section before adding code.
 
 The **Compendium** (`state.compendium`: `{id,name,category,source,body}`, category ∈
 `COMPENDIUM_CATEGORIES`, source is free text defaulting to `Unknown`) is a reference list edited via
-an EasyMDE modal, filterable by category and by source. The default seed lives in its own file,
+an EasyMDE modal, filterable by category and by source — click a checkbox to toggle it, right-click
+one to isolate it (unticks every other checkbox in that row, `#comp-cats` or `#comp-sources`). The
+entry editor's `Enter` saves (same as clicking Save) and `Shift+Enter` inserts a newline in the body,
+via `onSubmit` on the EasyMDE `compMdeInstance()` plus a `#comp-modal` keydown fallback for the
+plain-textarea case; `Escape` cancels (the app-wide Escape handler already covers every modal). The
+default seed lives in its own file,
 `js/compendium-seed.js` (`window.COMPENDIUM_SEED` / `COMPENDIUM_SEED_VERSION`); `seedCompendium()`
 adds missing-by-name entries and stamps `state.compendiumSeedVersion`, so raising the version in the
 seed file re-seeds on next load. Settings → **Reseed defaults** calls `seedCompendium()` directly;
@@ -63,10 +86,16 @@ Typing `[` + ≥2 chars in the sheet editor, `#notes-area`, or the entry's EasyM
 `#comp-ac`, a name-substring autocomplete (`acFromTextarea` / `acFromCM`); ↑/↓/Enter/Tab/click →
 `acAccept()` inserts `[Name]`.
 
-Right-clicking a text selection in the rendered sheet (`#mode-view`) shows `#sel-menu`; choosing
-"Add … to Compendium" stashes `pendingCompLink` ({charId, part, find}) and opens the entry editor.
-`saveCompEntry` then calls `applyPendingCompLink(name)`, which `linkifyInText`-replaces the selected
-text in that character's `body` (or the correct half of a `---`-split view) with `[name]` and
+Right-clicking a text selection in the rendered sheet (`#mode-view`) calls `openSelMenu`, which runs
+the selection through `compResolve` (same exact→fuzzy lookup the hover popups use) and shows
+`#sel-menu`: any matching entries first (each a `data-act="link"` item, with a `≈NN%` badge when it's
+a fuzzy match), then an always-present `data-act="add-comp"` item ("Create new entry…" if there were
+matches, else the original "Add … to Compendium"). Picking a match calls `linkSelToExisting(entry)`
+directly — no editor. Picking "add-comp" stashes `pendingCompLink` ({charId, part, find}) and opens
+the entry editor instead; `saveCompEntry` then calls `applyPendingCompLink(name)`. Either path ends
+in `applyPendingCompLink(name)`, which `linkifyInText`-replaces the selected text in that character's
+`body` (or the correct half of a `---`-split view) with `[name]` — using the entry's actual name, so
+picking a match whose title differs from the selected text still relinks it correctly — and
 re-renders. `charViewTarget(node)` maps a selection node to its character/column.
 
 ## Run / test / regenerate
@@ -80,10 +109,14 @@ npm test                   # === node --test
 
 # rebuild the monster library after editing data/bestiary_data.json or the converter
 npm run convert-bestiary   # writes BOTH data/monsters.json and js/monsters-data.js
+
+# rebuild the spell seed after editing data/spell_data.json or the converter
+npm run convert-spells     # writes BOTH data/spells.json and js/spells-data.js
 ```
 
 `data/monsters.json` and `js/monsters-data.js` **must stay in sync** — a test asserts it. Always
-run the converter and commit both, never hand-edit either.
+run the converter and commit both, never hand-edit either. Same relationship between
+`data/spells.json` and `js/spells-data.js` (no test asserts it yet, but treat it the same way).
 
 ## State model
 
@@ -176,9 +209,14 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
 `fetch()` is blocked on `file://`, so nothing load-bearing may depend on it:
 
 - Monsters: `seedMonsters()` tries `window.MONSTER_LIBRARY` (from `js/monsters-data.js`, a
-  `<script>` tag — works on `file://`), then `fetch('data/monsters.json')`, then a tiny inline
-  `MONSTER_SEED_TEXT` parsed on the fly.
-- Characters: `seed()` tries `fetch('data/*.txt')`, then inline `SEED_WWN` / `SEED_SD` constants.
+  `<script>` tag — works on `file://`), then `fetch('data/monsters.json')` (skipped on `file://`),
+  then a tiny inline `MONSTER_SEED_TEXT` parsed on the fly.
+- Spells: `loadSpells()` in `js/compendium-seed.js` tries `window.SPELLS_LIBRARY` (from
+  `js/spells-data.js`, a `<script>` tag — works on `file://`), then `fetch('data/spells.json')`
+  (skipped on `file://`); either way its entries are folded into `COMPENDIUM_SEED` before
+  `seedCompendium()` reads it.
+- Characters: `seed()` tries `fetch('data/*.txt')` (skipped on `file://`), then inline `SEED_WWN` /
+  `SEED_SD` constants.
 - `window.MONSTER_LIBRARY` is a shared constant — `seedMonsters()` **deep-clones** it before putting
   it in `state`. Any code that copies a seed/def into mutable state must clone.
 
@@ -191,7 +229,9 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
 5. New close-on-outside-click popup → whitelist its subtree in the global capture listeners.
 6. Parser change → update `test/monsters.test.js`, run `npm test`, run `npm run convert-bestiary`,
    commit both generated files.
-7. `npm test` must stay green. Manually sanity-check from `file://` (not just a served copy).
+7. New app logic or UI behaviour → add coverage in `test/logic.test.js` / `test/ui.test.js`; if you
+   need a new internal, add it to the `installTestSeam()` export in `js/app.js`.
+8. `npm test` must stay green. Manually sanity-check from `file://` (not just a served copy).
 
 ## Commit attribution
 
