@@ -24,10 +24,15 @@ Use Export/Import to back up, move between machines, or share a party.
 
 ## Character tab
 
-- Pick a character from the dropdown. Create one with **New blank**, **Paste from clipboard**
-  (reads a sheet off your clipboard), or **New from text…** (paste into a box). The first heading or
-  line becomes the name; `[WWN]` / "Shadowdark" in the text sets a system badge.
-- **View / Edit** toggle. View renders the sheet as Markdown; Edit is the raw Markdown source.
+- Pick a character from the **Character** dropdown. Create one with **New blank**, **Paste from
+  clipboard** (reads a sheet off your clipboard), or **New from text…** (paste into a box). The first
+  heading or line becomes the name; `[WWN]` / "Shadowdark" in the text sets a system badge.
+- A campaign can hold several characters. The **Character B** dropdown puts a second character
+  side by side, one per column. With **Character B** set to *— none —*, the single sheet is split
+  into two columns at the first standalone `---` line in its Markdown (text before it on the left,
+  text after it on the right); with two characters shown, `---` is just a normal rule.
+- **View / Edit** toggle. View renders the sheet as Markdown; Edit is the raw Markdown source
+  (Edit always acts on **Character**, not Character B).
 - In View mode, **dice formulas and modifiers are underlined and clickable**:
   - `2d6+3`, `1d20+4`, `4d6kh3`, `1d8 + 2` → rolled as written.
   - A bare `+1` / `-2` / `+0` → rolled as `1d20 ± that`.
@@ -38,9 +43,10 @@ Use Export/Import to back up, move between machines, or share a party.
 A per-character Markdown scratchpad below the sheet. Autosaves as you type.
 
 ### Consumables (right side)
-Per-character trackers with **− / value / +** and an optional **max**. Every new character gets an
-**HP** line (starts `0 / 0`; auto-filled from the sheet's `HP: x/y` when you add the character to
-combat). Add lines for rations, torches, arrows, rage uses… Delete a line with **✕**.
+Campaign-wide trackers with **− / value / +** and an optional **max**, shared across every character.
+Each character gets an **HP (Name)** line (starts `0 / 0`; auto-filled from that character's
+sheet `HP: x/y` when you add them to combat, and renamed if you rename the character).
+Add lines for rations, torches, arrows, rage uses… Delete a line with **✕**.
 Blank or `0` max means "no upper limit".
 
 ---
@@ -119,6 +125,10 @@ plus a couple of Old-School Essentials examples.
 
 ## Settings tab
 
+- **Style theme** (default **Default**). Recolours and re-fonts the whole app; dark mode only.
+  **Fantasy** — parchment & gold on mahogany, serif type. **Sci-fi** — cyan on cold slate, wide
+  caps. **Horror** — bone & blood on near-black. The choice is saved with your data and included in
+  Export/Import.
 - **Scarlet Heroes damage resolution** (default **off**). When on, **Apply damage** translates
   *each* damage die individually — `1 → 0`, `2–5 → 1`, `6–9 → 2`, `10+ → 4` — sums the results, and
   applies that to a **monster's HD** or a **character's HP**. A flat damage bonus is folded into the

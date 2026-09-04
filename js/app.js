@@ -22,11 +22,21 @@
   /* State                                                              */
   /* ------------------------------------------------------------------ */
   const STATE_DEFAULTS = {
-    version: 1, activeId: null, characters: [], log: [],
+    version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], log: [],
     monsters: [], monstersSeeded: false, conditions: [],
-    settings: { scarletHeroes: false },
+    settings: { scarletHeroes: false, theme: 'default' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
+
+  // Style themes (dark only) — see the theme blocks in css/app.css.
+  const THEMES = ['default', 'fantasy', 'sf', 'horror'];
+  const THEME_LABELS = { default: 'Default', fantasy: 'Fantasy', sf: 'Sci-fi', horror: 'Horror' };
+
+  function applyTheme() {
+    const t = (state.settings && state.settings.theme) || 'default';
+    if (t === 'default') delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = t;
+  }
 
   // Prepopulated status conditions (common OSR set). icon = Font Awesome class.
   const CONDITION_SEED = [
@@ -71,12 +81,18 @@
     if (!Array.isArray(state.characters)) state.characters = [];
     if (!Array.isArray(state.monsters)) state.monsters = [];
     if (!Array.isArray(state.log)) state.log = [];
-    state.settings = Object.assign({ scarletHeroes: false }, state.settings || {});
+    state.settings = Object.assign({ scarletHeroes: false, theme: 'default' }, state.settings || {});
+    if (THEMES.indexOf(state.settings.theme) === -1) state.settings.theme = 'default';
     if (!Array.isArray(state.conditions) || !state.conditions.length) {
       state.conditions = CONDITION_SEED.map(c => Object.assign({ id: uid() }, c));
     }
     state.conditions.forEach(c => { if (!c.id) c.id = uid(); if (!c.icon) c.icon = DEFAULT_STATUS_ICON; });
     state.characters.forEach(ensureCharShape);
+    ensureConsumablesShape();
+    if (state.activeIdB && (state.activeIdB === state.activeId ||
+        !state.characters.some(c => c.id === state.activeIdB))) {
+      state.activeIdB = null;
+    }
     state.monsters.forEach(m => { if (!m.id) m.id = uid(); });
     if (!state.combat || typeof state.combat !== 'object') state.combat = {};
     state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
@@ -94,17 +110,46 @@
 
   // Backfill fields added in later versions so older saves keep working.
   function ensureCharShape(ch) {
-    if (!Array.isArray(ch.consumables)) {
-      ch.consumables = [{ id: uid(), name: 'HP', value: 0, max: 0 }];
+    if (typeof ch.notes !== 'string') ch.notes = '';
+    return ch;
+  }
+
+  // Trackers ("consumables") are campaign-global, not per-character. Every
+  // character gets one "HP (Name)" tracker, seeded at 0/0.
+  function hpTrackerLabel(ch) { return 'HP (' + (ch ? ch.name : '') + ')'; }
+
+  function ensureHpTracker(ch) {
+    if (!ch) return;
+    const label = hpTrackerLabel(ch);
+    if (!state.consumables.some(c => c.name === label)) {
+      state.consumables.push({ id: uid(), name: label, value: 0, max: 0 });
     }
-    ch.consumables.forEach(c => {
+  }
+
+  function ensureConsumablesShape() {
+    if (!Array.isArray(state.consumables)) state.consumables = [];
+    // Migrate the old per-character `ch.consumables` into the shared list.
+    state.characters.forEach(ch => {
+      if (!Array.isArray(ch.consumables)) return;
+      ch.consumables.forEach(c => {
+        if (/^\s*hp\s*$/i.test(c.name || '')) {
+          const label = hpTrackerLabel(ch);
+          const ex = state.consumables.find(x => x.name === label);
+          if (ex) { if (!ex.value && !ex.max) { ex.value = Number(c.value) || 0; ex.max = Number(c.max) || 0; } }
+          else state.consumables.push({ id: uid(), name: label, value: Number(c.value) || 0, max: Number(c.max) || 0 });
+        } else {
+          state.consumables.push({ id: c.id || uid(), name: String(c.name || ''), value: Number(c.value) || 0, max: Number(c.max) || 0 });
+        }
+      });
+      delete ch.consumables;
+    });
+    state.characters.forEach(ensureHpTracker);
+    state.consumables.forEach(c => {
       if (!c.id) c.id = uid();
       c.name = c.name == null ? '' : String(c.name);
       c.value = Number(c.value) || 0;
       c.max = Number(c.max) || 0;
     });
-    if (typeof ch.notes !== 'string') ch.notes = '';
-    return ch;
   }
 
   function clampConsumable(c) {
@@ -462,31 +507,55 @@
       nameLocked: !!opts.name,
       body: body != null ? body : '# New Character\n\n*System — Level 1*\n\n> **AC** 10 · **HP** 6/6\n\n## Abilities\n\n- STR +0\n- DEX +0\n',
       notes: '',
-      consumables: [{ id: uid(), name: 'HP', value: 0, max: 0 }],
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
     state.characters.push(ch);
+    ensureHpTracker(ch);
     state.activeId = ch.id;
     mode = 'view';
     save();
     refreshCharUI();
   }
 
-  function refreshCharUI() {
-    if (state.characters.length && !activeChar()) state.activeId = state.characters[0].id;
+  // Second column character, if one is selected and it isn't the same as A.
+  function charB() {
+    if (!state.activeIdB || state.activeIdB === state.activeId) return null;
+    return state.characters.find(c => c.id === state.activeIdB) || null;
+  }
 
-    const sel = $('#char-select');
+  function fillCharOptions(sel, selectedId, opts) {
+    opts = opts || {};
     sel.innerHTML = '';
+    if (opts.noneLabel != null) {
+      const o = document.createElement('option');
+      o.value = ''; o.textContent = opts.noneLabel;
+      if (!selectedId) o.selected = true;
+      sel.appendChild(o);
+    }
     state.characters.forEach(c => {
+      if (opts.exclude && c.id === opts.exclude) return;
       const o = document.createElement('option');
       o.value = c.id;
       o.textContent = c.name + (c.system ? ' (' + c.system + ')' : '');
-      if (c.id === state.activeId) o.selected = true;
+      if (c.id === selectedId) o.selected = true;
       sel.appendChild(o);
     });
+  }
+
+  function refreshCharUI() {
+    if (state.characters.length && !activeChar()) state.activeId = state.characters[0].id;
+    if (state.activeIdB && (state.activeIdB === state.activeId ||
+        !state.characters.some(c => c.id === state.activeIdB))) {
+      state.activeIdB = null;
+    }
+
+    fillCharOptions($('#char-select'), state.activeId, {});
+    fillCharOptions($('#char-select-b'), state.activeIdB, { noneLabel: '— none —', exclude: state.activeId });
+    $('#char-select-b').disabled = state.characters.length < 2;
 
     const ch = activeChar();
+    const b = charB();
     const has = state.characters.length > 0;
     $('#char-empty').hidden = has;
     $('#char-view').hidden = !ch;
@@ -494,15 +563,93 @@
     $('#btn-rename').disabled = !ch;
     $('#btn-delete').disabled = !ch;
 
-    if (ch) {
+    // The single header meta only makes sense for one character; two-character
+    // mode labels each column instead.
+    const meta = $('#char-meta');
+    if (ch && !b) {
+      meta.hidden = false;
       $('#view-name').textContent = ch.name;
-      const b = $('#view-system');
-      b.hidden = !ch.system;
-      b.textContent = ch.system || '';
+      const sb = $('#view-system');
+      sb.hidden = !ch.system;
+      sb.textContent = ch.system || '';
+    } else {
+      meta.hidden = true;
+    }
+
+    if (ch) {
       setMode(mode);
       renderNotes();
     }
     renderConsumables();
+  }
+
+  // Split a sheet body at the FIRST standalone `---` line: text before it goes
+  // in the left column, text after it in the right. Returns [left, null] when
+  // there is no such line.
+  function splitBodyColumns(body) {
+    const lines = String(body || '').split(/\r?\n/);
+    const idx = lines.findIndex(l => /^\s*---\s*$/.test(l));
+    if (idx === -1) return [body || '', null];
+    return [lines.slice(0, idx).join('\n'), lines.slice(idx + 1).join('\n')];
+  }
+
+  function charColHtml(md, head) {
+    return '<div class="char-col">' +
+      (head || '') +
+      '<div class="char-col-body markdown-body">' + marked.parse(md || '') + '</div>' +
+      '</div>';
+  }
+
+  function charColHead(ch) {
+    return '<div class="char-col-head"><span class="char-name">' + escapeHtml(ch.name) + '</span>' +
+      (ch.system ? '<span class="badge">' + escapeHtml(ch.system) + '</span>' : '') + '</div>';
+  }
+
+  function renderCharView() {
+    const host = $('#mode-view');
+    const a = activeChar();
+    const b = charB();
+    if (!a) { host.innerHTML = ''; host.classList.remove('has-cols'); return; }
+    if (b) {
+      // Two characters — one per column. Any `---` in a body is a plain rule.
+      host.classList.add('has-cols');
+      host.innerHTML = '<div class="char-cols">' +
+        charColHtml(a.body, charColHead(a)) +
+        charColHtml(b.body, charColHead(b)) + '</div>';
+    } else {
+      const parts = splitBodyColumns(a.body);
+      if (parts[1] == null) {
+        host.classList.remove('has-cols');
+        host.innerHTML = marked.parse(a.body || '');
+      } else {
+        host.classList.add('has-cols');
+        host.innerHTML = '<div class="char-cols">' +
+          charColHtml(parts[0]) + charColHtml(parts[1]) + '</div>';
+      }
+    }
+    annotate(host);
+  }
+
+  // Edit mode mirrors View mode's layout: one textarea per selected character,
+  // side by side in two columns when Character B is also selected.
+  function renderCharEdit() {
+    const host = $('#edit-host');
+    const a = activeChar();
+    const b = charB();
+    if (!a) { host.innerHTML = ''; host.classList.remove('has-cols'); return; }
+    const areaHtml = ch =>
+      '<textarea class="edit-col-area" spellcheck="false" data-id="' + ch.id + '">' +
+      escapeHtml(ch.body || '') + '</textarea>';
+    if (b) {
+      host.classList.add('has-cols');
+      host.innerHTML = '<div class="char-cols">' +
+        '<div class="char-col">' + charColHead(a) + areaHtml(a) + '</div>' +
+        '<div class="char-col">' + charColHead(b) + areaHtml(b) + '</div>' +
+        '</div>';
+    } else {
+      host.classList.remove('has-cols');
+      host.innerHTML = areaHtml(a);
+    }
   }
 
   function setMode(m) {
@@ -513,22 +660,32 @@
     $('#mode-view').hidden = m !== 'view';
     $('#mode-edit').hidden = m !== 'edit';
     if (!ch) return;
-    if (m === 'view') {
-      $('#mode-view').innerHTML = marked.parse(ch.body || '');
-      annotate($('#mode-view'));
-    } else {
-      $('#edit-area').value = ch.body || '';
-    }
+    if (m === 'view') renderCharView();
+    else renderCharEdit();
+  }
+
+  // Keep the character's "HP (Name)" tracker label in sync when the name changes.
+  function renameHpTracker(oldLabel, ch) {
+    if (hpTrackerLabel(ch) === oldLabel) return;
+    const hpc = state.consumables.find(c => c.name === oldLabel);
+    if (hpc) hpc.name = hpTrackerLabel(ch);
+    ensureHpTracker(ch);
   }
 
   function saveEdit() {
-    const ch = activeChar();
-    if (!ch) return;
-    ch.body = $('#edit-area').value;
-    ch.updatedAt = Date.now();
-    const det = detectNameSystem(ch.body);
-    if (!ch.nameLocked) ch.name = det.name;
-    if (det.system) ch.system = det.system;
+    const areas = $$('#edit-host .edit-col-area');
+    if (!areas.length) return;
+    areas.forEach(area => {
+      const ch = state.characters.find(c => c.id === area.dataset.id);
+      if (!ch) return;
+      const oldLabel = hpTrackerLabel(ch);
+      ch.body = area.value;
+      ch.updatedAt = Date.now();
+      const det = detectNameSystem(ch.body);
+      if (!ch.nameLocked) ch.name = det.name;
+      if (det.system) ch.system = det.system;
+      renameHpTracker(oldLabel, ch);
+    });
     save();
     setMode('view');
     refreshCharUI();
@@ -539,8 +696,10 @@
     if (!ch) return;
     const n = prompt('Character name:', ch.name);
     if (n == null) return;
+    const oldLabel = hpTrackerLabel(ch);
     ch.name = n.trim() || ch.name;
     ch.nameLocked = true;
+    renameHpTracker(oldLabel, ch);
     save();
     refreshCharUI();
   }
@@ -549,24 +708,25 @@
     const ch = activeChar();
     if (!ch) return;
     if (!confirm('Delete "' + ch.name + '"? This cannot be undone.')) return;
+    const label = hpTrackerLabel(ch);
     state.characters = state.characters.filter(c => c.id !== ch.id);
+    state.consumables = state.consumables.filter(c => c.name !== label);
+    if (state.activeIdB === ch.id) state.activeIdB = null;
     state.activeId = state.characters.length ? state.characters[0].id : null;
     save();
     refreshCharUI();
   }
 
   /* ------------------------------------------------------------------ */
-  /* Consumables (bound to the active character)                        */
+  /* Consumables (campaign-global trackers, shared across characters)   */
   /* ------------------------------------------------------------------ */
   function renderConsumables() {
-    const ch = activeChar();
     const list = $('#consumables-list');
-    $('#consumables-empty').hidden = !!ch;
-    $('#btn-cons-add').disabled = !ch;
+    $('#consumables-empty').hidden = state.consumables.length > 0;
+    $('#btn-cons-add').disabled = false;
     list.innerHTML = '';
-    if (!ch) return;
 
-    ch.consumables.forEach(c => {
+    state.consumables.forEach(c => {
       const row = document.createElement('div');
       row.className = 'cons-row';
       row.dataset.id = c.id;
@@ -586,13 +746,12 @@
 
   function consFor(el) {
     const row = el.closest('.cons-row');
-    const ch = activeChar();
-    if (!row || !ch) return {};
-    return { ch, row, c: ch.consumables.find(x => x.id === row.dataset.id) };
+    if (!row) return {};
+    return { row, c: state.consumables.find(x => x.id === row.dataset.id) };
   }
 
   function bump(el, delta) {
-    const { ch, c, row } = consFor(el);
+    const { c, row } = consFor(el);
     if (!c) return;
     c.value += delta;
     clampConsumable(c);
@@ -602,9 +761,7 @@
 
   function wireConsumables() {
     $('#btn-cons-add').addEventListener('click', () => {
-      const ch = activeChar();
-      if (!ch) return;
-      ch.consumables.push({ id: uid(), name: '', value: 0, max: 0 });
+      state.consumables.push({ id: uid(), name: '', value: 0, max: 0 });
       save();
       renderConsumables();
       const rows = $('#consumables-list').querySelectorAll('.cons-name');
@@ -616,10 +773,10 @@
       if (e.target.closest('.cons-inc')) bump(e.target, +1);
       else if (e.target.closest('.cons-dec')) bump(e.target, -1);
       else if (e.target.closest('.cons-del')) {
-        const { ch, c } = consFor(e.target);
+        const { c } = consFor(e.target);
         if (!c) return;
-        if (ch.consumables.length === 1 || confirm('Delete "' + (c.name || 'this consumable') + '"?')) {
-          ch.consumables = ch.consumables.filter(x => x.id !== c.id);
+        if (state.consumables.length === 1 || confirm('Delete "' + (c.name || 'this tracker') + '"?')) {
+          state.consumables = state.consumables.filter(x => x.id !== c.id);
           save();
           renderConsumables();
         }
@@ -680,8 +837,8 @@
     return e.kind === 'character' ? state.characters.find(c => c.id === e.charId) || null : null;
   }
   function hpConsumable(ch) {
-    if (!ch || !Array.isArray(ch.consumables)) return null;
-    return ch.consumables.find(c => /^\s*hp\s*$/i.test(c.name || '')) || null;
+    if (!ch) return null;
+    return state.consumables.find(c => c.name === hpTrackerLabel(ch)) || null;
   }
   function entryHp(e) {
     if (e.kind === 'character') {
@@ -754,15 +911,12 @@
   function addCharEntry(charId) {
     const ch = state.characters.find(c => c.id === charId);
     if (!ch) return;
-    // Seed the linked HP consumable from the sheet if it's still the untouched 0/0 default.
+    // Seed the linked HP tracker from the sheet if it's still the untouched 0/0 default.
     const det = charDetectHp(ch);
     if (det) {
+      ensureHpTracker(ch);
       const hpc = hpConsumable(ch);
-      if (hpc) {
-        if ((hpc.value || 0) === 0 && (hpc.max || 0) === 0) { hpc.value = det.value; hpc.max = det.max; }
-      } else {
-        ch.consumables.push({ id: uid(), name: 'HP', value: det.value, max: det.max });
-      }
+      if (hpc && (hpc.value || 0) === 0 && (hpc.max || 0) === 0) { hpc.value = det.value; hpc.max = det.max; }
       save();
       renderConsumables();
     }
@@ -1531,10 +1685,26 @@
   /* ---- settings ---- */
   function renderSettings() {
     $('#set-scarlet-heroes').checked = !!(state.settings && state.settings.scarletHeroes);
+    const sel = $('#set-theme');
+    if (sel && !sel.options.length) {
+      THEMES.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t; o.textContent = THEME_LABELS[t] || t;
+        sel.appendChild(o);
+      });
+    }
+    if (sel) sel.value = (state.settings && state.settings.theme) || 'default';
     $('#set-lib-count').textContent = state.monsters.length + ' monster' +
       (state.monsters.length === 1 ? '' : 's') + ' in the library.';
   }
   function wireSettings() {
+    $('#set-theme').addEventListener('change', e => {
+      const t = THEMES.indexOf(e.target.value) === -1 ? 'default' : e.target.value;
+      state.settings.theme = t;
+      applyTheme();
+      save();
+      pushNote('Settings', 'Style theme → ' + (THEME_LABELS[t] || t));
+    });
     $('#set-scarlet-heroes').addEventListener('change', e => {
       state.settings.scarletHeroes = e.target.checked;
       save();
@@ -1665,6 +1835,11 @@
         state = Object.assign(JSON.parse(JSON.stringify(STATE_DEFAULTS)), data);
       } else {
         data.characters.forEach(c => { c.id = uid(); state.characters.push(c); });
+        if (Array.isArray(data.consumables)) data.consumables.forEach(c => {
+          if (!state.consumables.some(x => x.name === c.name)) {
+            state.consumables.push({ id: uid(), name: String(c.name || ''), value: Number(c.value) || 0, max: Number(c.max) || 0 });
+          }
+        });
         if (Array.isArray(data.monsters)) data.monsters.forEach(m => { m.id = uid(); state.monsters.push(m); });
         if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-MAX_LOG);
       }
@@ -1672,6 +1847,7 @@
       if (!activeChar() && state.characters.length) state.activeId = state.characters[0].id;
       mode = 'view';
       save();
+      applyTheme();
       refreshCharUI();
       renderLog();
       renderCombat();
@@ -1838,6 +2014,13 @@ Credits: 0`;
     // Character toolbar
     $('#char-select').addEventListener('change', e => {
       state.activeId = e.target.value;
+      if (state.activeIdB === state.activeId) state.activeIdB = null;
+      mode = 'view';
+      save();
+      refreshCharUI();
+    });
+    $('#char-select-b').addEventListener('change', e => {
+      state.activeIdB = e.target.value || null;
       mode = 'view';
       save();
       refreshCharUI();
@@ -1854,12 +2037,20 @@ Credits: 0`;
     $('#btn-save').addEventListener('click', saveEdit);
     $('#btn-cancel').addEventListener('click', () => setMode('view'));
 
-    // Clickable rolls inside the rendered sheet
+    // Clickable rolls inside the rendered sheet. In two-character mode a click
+    // in the right column is logged under character B.
     $('#mode-view').addEventListener('click', e => {
       const el = e.target.closest('.roll');
       if (!el) return;
-      const ch = activeChar();
-      doRoll(el.dataset.formula, ch ? ch.name : 'Character');
+      const a = activeChar();
+      const b = charB();
+      let name = a ? a.name : 'Character';
+      if (b) {
+        const cols = $$('#mode-view .char-cols > .char-col');
+        const col = e.target.closest('.char-cols > .char-col');
+        if (col && cols[1] === col) name = b.name;
+      }
+      doRoll(el.dataset.formula, name);
     });
 
     // Paste modal
@@ -1923,6 +2114,7 @@ Credits: 0`;
       marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
     }
     const had = load();
+    applyTheme();
     buildDiceGrid();
     renderLog();
     refreshCharUI();

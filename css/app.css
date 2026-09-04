@@ -11,6 +11,95 @@
   --ok: #5cb85c;
   --radius: 6px;
   color-scheme: dark;
+
+  /* Typography — overridden per theme */
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-head: var(--font-body);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --head-spacing: normal;
+  --head-transform: none;
+
+  /* Component colours derived from the palette above */
+  --primary-bg: #33507e;
+  --primary-border: #3f63a0;
+  --primary-bg-hover: #3d5f95;
+  --danger-bg: #5a2e2e;
+  --danger-border: #7a3a3a;
+  --danger-bg-hover: #6d3838;
+  --apply-bg: #3a2f4e;
+  --apply-border: #5a4a7a;
+  --apply-bg-hover: #473a61;
+  --roll-tint: rgba(110, 168, 254, .16);
+}
+
+/* ============================================================= *
+ * Style themes (dark only). Set via Settings → Style theme;
+ * applied as data-theme on <html>. Each overrides the palette
+ * and fonts while keeping the same layout and high contrast.
+ * ============================================================= */
+
+/* Fantasy — candlelit tomes: warm mahogany, parchment text, gold. */
+:root[data-theme="fantasy"] {
+  --bg: #1b1610;
+  --bg-2: #241e16;
+  --bg-3: #2e2619;
+  --border: #4b3f2c;
+  --text: #efe4cf;
+  --text-dim: #b6a583;
+  --accent: #d9b45c;
+  --accent-2: #9cc08c;
+  --danger: #cd5f4c;
+  --ok: #8bb15c;
+  --font-body: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "Times New Roman", serif;
+  --font-head: var(--font-body);
+  --head-spacing: .01em;
+  --primary-bg: #4a3c22; --primary-border: #6d5830; --primary-bg-hover: #5a4a2b;
+  --danger-bg: #582e26; --danger-border: #7c4038; --danger-bg-hover: #693830;
+  --apply-bg: #3f341f; --apply-border: #6d5830; --apply-bg-hover: #4b3e27;
+  --roll-tint: rgba(217, 180, 92, .18);
+}
+
+/* Sci-fi — cold command console: slate black, cyan, wide caps. */
+:root[data-theme="sf"] {
+  --bg: #0e1317;
+  --bg-2: #141b21;
+  --bg-3: #1c262d;
+  --border: #2e3d47;
+  --text: #e3edf2;
+  --text-dim: #93a8b3;
+  --accent: #4bd6d0;
+  --accent-2: #77b0ff;
+  --danger: #ff6b6b;
+  --ok: #4bd6a0;
+  --font-body: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-head: "Bahnschrift", "DIN Alternate", "Eurostile", Consolas, ui-monospace, var(--font-body);
+  --head-spacing: .08em;
+  --head-transform: uppercase;
+  --primary-bg: #1b3f4a; --primary-border: #2d6070; --primary-bg-hover: #234f5c;
+  --danger-bg: #4a2626; --danger-border: #6e3a3a; --danger-bg-hover: #5a2e2e;
+  --apply-bg: #1e3a44; --apply-border: #356; --apply-bg-hover: #274853;
+  --roll-tint: rgba(75, 214, 208, .16);
+}
+
+/* Horror — dim and bloodstained: near-black, bone text, deep red. */
+:root[data-theme="horror"] {
+  --bg: #131110;
+  --bg-2: #1a1716;
+  --bg-3: #241e1d;
+  --border: #3e3230;
+  --text: #ddd4cf;
+  --text-dim: #9c8d88;
+  --accent: #cf473f;
+  --accent-2: #cf8a6a;
+  --danger: #e0554f;
+  --ok: #83a05e;
+  --font-body: Constantia, Georgia, "Times New Roman", "Palatino Linotype", serif;
+  --font-head: Constantia, Georgia, "Times New Roman", serif;
+  --head-spacing: .02em;
+  --primary-bg: #4a2320; --primary-border: #6e332e; --primary-bg-hover: #5a2b27;
+  --danger-bg: #5a2626; --danger-border: #7a3535; --danger-bg-hover: #6b2e2e;
+  --apply-bg: #3a2020; --apply-border: #5e3030; --apply-bg-hover: #472828;
+  --roll-tint: rgba(207, 71, 63, .20);
 }
 
 * { box-sizing: border-box; }
@@ -20,10 +109,16 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font: 14px/1.5 var(--font-body);
 }
 
-h1, h2, h3 { margin: 0 0 .5em; font-weight: 600; }
+h1, h2, h3 {
+  margin: 0 0 .5em;
+  font-weight: 600;
+  font-family: var(--font-head);
+  letter-spacing: var(--head-spacing);
+  text-transform: var(--head-transform);
+}
 h1 { font-size: 18px; }
 h2 { font-size: 15px; }
 
@@ -75,10 +170,10 @@ button, input, textarea, select {
 }
 .btn:hover { border-color: var(--text-dim); }
 .btn.is-active { border-color: var(--accent); color: var(--accent); }
-.btn-primary { background: #33507e; border-color: #3f63a0; }
-.btn-primary:hover { background: #3d5f95; }
-.btn-danger { background: #5a2e2e; border-color: #7a3a3a; }
-.btn-danger:hover { background: #6d3838; }
+.btn-primary { background: var(--primary-bg); border-color: var(--primary-border); }
+.btn-primary:hover { background: var(--primary-bg-hover); }
+.btn-danger { background: var(--danger-bg); border-color: var(--danger-border); }
+.btn-danger:hover { background: var(--danger-bg-hover); }
 
 /* ---------- Layout ---------- */
 .layout {
@@ -136,7 +231,7 @@ button, input, textarea, select {
   border-bottom: 1px solid var(--border);
 }
 .char-meta { display: flex; align-items: center; gap: 10px; }
-.char-name { font-size: 16px; font-weight: 600; color: var(--accent); }
+.char-name { font-size: 16px; font-weight: 600; color: var(--accent); font-family: var(--font-head); }
 .badge {
   font-size: 11px;
   text-transform: uppercase;
@@ -147,11 +242,37 @@ button, input, textarea, select {
   padding: 2px 8px;
   color: var(--text-dim);
 }
-.view-toggle { display: flex; gap: 4px; }
+.view-toggle { display: flex; gap: 4px; margin-left: auto; }
+
+.char-meta[hidden] { display: none; }
 
 .sheet { max-width: 70ch; }
 
-#edit-area {
+/* Two-column character view: two characters side by side, or one character
+   split at the first `---` line in its sheet. */
+#mode-view.has-cols { max-width: none; }
+.char-cols {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+.char-cols > .char-col {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.char-col-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 820px) {
+  .char-cols { flex-direction: column; gap: 14px; }
+}
+
+.edit-col-area {
   width: 100%;
   min-height: 460px;
   resize: vertical;
@@ -159,15 +280,22 @@ button, input, textarea, select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.55;
 }
+#edit-host.has-cols .edit-col-area { min-height: 520px; }
 .edit-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 .hint { color: var(--text-dim); font-size: 12px; }
 
 /* ---------- Markdown rendering ---------- */
-.markdown-body h1, .markdown-body h2, .markdown-body h3 { color: var(--accent); margin-top: 1em; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: var(--accent);
+  margin-top: 1em;
+  font-family: var(--font-head);
+  text-transform: none;
+  letter-spacing: normal;
+}
 .markdown-body h1 { font-size: 20px; }
 .markdown-body h2 { font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
 .markdown-body table { border-collapse: collapse; margin: .6em 0; }
@@ -197,7 +325,7 @@ button, input, textarea, select {
   cursor: pointer;
   color: var(--accent-2);
 }
-.roll:hover { background: rgba(110,168,254,.16); border-radius: 3px; }
+.roll:hover { background: var(--roll-tint); border-radius: 3px; }
 
 /* ---------- Right rail ---------- */
 .rail {
@@ -312,10 +440,10 @@ button, input, textarea, select {
 .dice-apply {
   width: 100%;
   margin-top: 8px;
-  background: #3a2f4e;
-  border-color: #5a4a7a;
+  background: var(--apply-bg);
+  border-color: var(--apply-border);
 }
-.dice-apply:hover:not(:disabled) { background: #473a61; }
+.dice-apply:hover:not(:disabled) { background: var(--apply-bg-hover); }
 .dice-apply:disabled { opacity: .55; cursor: not-allowed; }
 
 /* ---------- Settings ---------- */
@@ -336,6 +464,7 @@ button, input, textarea, select {
 .setting-text .hint { margin: 0; }
 .setting-row-action { align-items: center; justify-content: space-between; cursor: default; margin-top: 10px; }
 .setting-row-action .btn { flex: none; }
+#set-theme { min-width: 140px; cursor: pointer; }
 
 /* ---------- Session log ---------- */
 .log-panel {
@@ -354,7 +483,7 @@ button, input, textarea, select {
   padding: 0;
   max-height: 240px;
   overflow-y: auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 12.5px;
 }
 .log-list li {
@@ -397,7 +526,7 @@ button, input, textarea, select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   resize: vertical;
 }
@@ -417,7 +546,7 @@ button, input, textarea, select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -524,7 +653,7 @@ button, input, textarea, select {
   cursor: default; outline: none;
 }
 .status-tag > i { font-size: 11px; }
-.status-tag:hover, .status-tag:focus-visible { background: rgba(110, 168, 254, 0.16); }
+.status-tag:hover, .status-tag:focus-visible { background: var(--roll-tint); }
 .status-x {
   display: none;
   background: transparent; border: 0; color: inherit;
@@ -605,7 +734,7 @@ button, input, textarea, select {
   border-top-left-radius: 0; border-bottom-left-radius: 0;
   color: var(--accent-2); border-color: var(--accent-2);
 }
-.cd-atk-pair .cbt-dmg:hover { background: rgba(110, 168, 254, 0.16); }
+.cd-atk-pair .cbt-dmg:hover { background: var(--roll-tint); }
 .cd-abils { margin: 8px 0; }
 .cd-abils p { margin: .3em 0; }
 .cd-abils b { color: var(--accent); }
@@ -654,7 +783,7 @@ button, input, textarea, select {
 .mm-paste textarea {
   width: 100%; min-height: 300px; resize: vertical;
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+  padding: 10px; font-family: var(--font-mono); font-size: 12.5px;
 }
 .mm-paste-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
 

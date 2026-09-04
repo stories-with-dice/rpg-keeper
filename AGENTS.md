@@ -18,7 +18,9 @@ dependencies, or CDN `<script>`/`<link>` tags. Everything third-party is **vendo
 
 ```
 index.html            markup; loads the scripts at the bottom in order
-css/app.css            all styles (one file, dark theme, CSS custom properties on :root)
+css/app.css            all styles (one file, dark only; palette + fonts are CSS custom properties
+                       on :root, re-declared in :root[data-theme="fantasy"|"sf"|"horror"] blocks —
+                       style themes chosen in Settings, applied as data-theme on <html> by applyTheme())
 js/app.js              the whole application — one IIFE, ~1900 lines, section banners
 js/monsters.js         pure stat-block parser (no DOM, no storage); UMD-ish
 js/monsters-data.js    GENERATED: window.MONSTER_LIBRARY = [...245 monsters...]
@@ -63,6 +65,14 @@ run the converter and commit both, never hand-edit either.
   `state` is included in Export/Import with no extra code.
 - Entries created at runtime (`addCharEntry`, `addMonsterEntry`) must include every field
   `ensureStateShape` expects — it only runs on load/import, not on new entries.
+- **Trackers ("consumables") are campaign-global**: `state.consumables`, not `character.consumables`
+  (older per-character saves are migrated by `ensureConsumablesShape()`). Each character owns one
+  `HP (Name)` tracker — `hpTrackerLabel()` / `ensureHpTracker()` create it, rename/edit keep the
+  label in sync, delete removes it. Combat HP for a character reads/writes that tracker via
+  `hpConsumable()`.
+- The Character tab can show two characters at once (`state.activeId` + `state.activeIdB`), rendered
+  one per column by `renderCharView()`; a lone character's sheet is split into two columns at the
+  first `---` line.
 
 ## Rendering & DOM conventions
 

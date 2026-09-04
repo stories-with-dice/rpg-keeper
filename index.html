@@ -31,6 +31,10 @@
             <span>Character</span>
             <select id="char-select"></select>
           </label>
+          <label class="field">
+            <span>Character B</span>
+            <select id="char-select-b"></select>
+          </label>
           <button id="btn-new-blank" class="btn">New blank</button>
           <button id="btn-new-paste" class="btn btn-primary">Paste from clipboard</button>
           <button id="btn-new-text" class="btn">New from text&hellip;</button>
@@ -45,7 +49,7 @@
 
         <div id="char-view" hidden>
           <div class="char-view-header">
-            <div class="char-meta">
+            <div class="char-meta" id="char-meta">
               <span class="char-name" id="view-name"></span>
               <span class="badge" id="view-system" hidden></span>
             </div>
@@ -58,7 +62,7 @@
           <div id="mode-view" class="sheet markdown-body"></div>
 
           <div id="mode-edit" hidden>
-            <textarea id="edit-area" spellcheck="false"></textarea>
+            <div id="edit-host"></div>
             <div class="edit-actions">
               <button id="btn-save" class="btn btn-primary">Save</button>
               <button id="btn-cancel" class="btn">Cancel</button>
@@ -108,6 +112,15 @@
       <!-- ===== Settings tab ===== -->
       <section class="tab-panel" id="tab-settings">
         <h2>Settings</h2>
+
+        <div class="setting-row setting-row-action">
+          <span class="setting-text">
+            <b>Style theme</b>
+            <span class="hint">Recolours and re-fonts the whole app. Dark mode only. <b>Fantasy</b> &mdash; parchment &amp; gold on mahogany; <b>Sci-fi</b> &mdash; cyan on slate, wide caps; <b>Horror</b> &mdash; bone &amp; blood on near-black.</span>
+          </span>
+          <select id="set-theme" class="btn"></select>
+        </div>
+
         <label class="setting-row">
           <input type="checkbox" id="set-scarlet-heroes" />
           <span class="setting-text">
@@ -144,7 +157,7 @@
           <h2>Consumables</h2>
           <button id="btn-cons-add" class="btn">+ Add</button>
         </div>
-        <p id="consumables-empty" class="hint">Select a character to track consumables.</p>
+        <p id="consumables-empty" class="hint">Campaign trackers &mdash; shared across characters. Use <strong>+ Add</strong> for rations, torches, arrows&hellip;</p>
         <div id="consumables-list"></div>
       </section>
     </div>
