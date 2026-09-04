@@ -139,19 +139,25 @@ name, a **category**, a **source**, and a Markdown body edited in a proper Markd
   ([Fuse.js](https://fusejs.io/), vendored). The count shows *matches / total*.
 - Click a row (or its **Edit**) to edit; **✕** deletes.
 
-### Bracket lookup from a character sheet
-Put an entry's name in `[square brackets]` anywhere in a sheet (View mode). It renders underlined in
-violet; **hover** it to get a popup:
+### Bracket lookup
+Put an entry's name in `[square brackets]` in a sheet (View mode), the Notes box, or **another
+Compendium entry's body**. It renders underlined in violet; **hover** it for a popup:
 
-- **Match found** — the entry's Markdown rendered as HTML, plus an **Edit** button. Any dice
-  formula in the description (bare, e.g. `1d6` or `2d6+3` — not in backticks) is clickable just like
-  on a character sheet; the roll is logged under the **entry's name**. Matching is case-insensitive
-  exact first; if nothing matches exactly, the best fuzzy matches are offered and you **scroll**
-  inside the popup to page through them (a `n / N` counter shows in the corner).
+- **Match found** — the entry's Markdown rendered as HTML, plus an **Edit** button. Bare dice
+  formulas in the description (`1d6`, `2d6+3` — not in backticks) are clickable and logged under the
+  **entry's name**. Nested `[refs]` in the body are themselves hoverable. Matching is
+  case-insensitive exact first, then fuzzy; with several matches, the `‹ n / N ›` arrows in the
+  header (or **↑ / ↓** while hovering) page through them. The body scrolls normally when it's long.
 - **No match** — a note and a **Create entry** button (pre-fills the name; category **Other**).
 
-The pure-hover popup closes when the mouse leaves it; clicking **Edit** / **Create** opens the
-full editor modal instead.
+Popups **stack** — hovering a link inside a popup opens another, and the whole chain stays while the
+mouse is anywhere in it. Each popup has a **📌 pin** (keeps it open after the mouse leaves) and an
+**×**. **Esc** closes every popup; clicking elsewhere closes the unpinned ones.
+
+### `[` autocomplete
+In the sheet editor, the Notes box, and the Compendium entry editor, typing `[` followed by **2+
+characters** pops a search of Compendium entry names. **↑ / ↓** to move, **Enter / Tab** or click to
+insert `[Name]`, **Esc** to dismiss.
 
 ---
 

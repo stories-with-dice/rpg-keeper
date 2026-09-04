@@ -48,12 +48,19 @@ an EasyMDE modal, filterable by category and by source. The default seed lives i
 adds missing-by-name entries and stamps `state.compendiumSeedVersion`, so raising the version in the
 seed file re-seeds on next load. Settings → **Reseed defaults** calls `seedCompendium()` directly;
 **Delete all** empties `state.compendium` (version left as-is, so it does not auto-return).
-`annotate()` also wraps bare `[bracketed]` text in
-`<span class="comp-ref">` (skipping short all-caps system tags); hovering one opens `#comp-pop`,
-which resolves the name against the compendium (exact, then `Fuse` fuzzy) and renders the entry's
-Markdown, or a "create" prompt. The popup body is run through `annotate(el, { noComp: true })` so
-dice formulas in the description are clickable (logged under the entry name); Edit/Create hand off
-to the modal. The hover popup auto-hides on mouseleave.
+`annotate()` also wraps bare `[bracketed]` text in `<span class="comp-ref">` (skipping short
+all-caps system tags). Hovering one calls `openCompPop(name, ref)`, which creates a **fresh
+`.comp-pop` node** (they stack) appended to `<body>`, tracked in `compPops`. Popup bodies are run
+through plain `annotate()` (dice roll, nested `[refs]` hover-spawn more popups). The whole chain
+lives/dies together — `cancelHideAllPops()` / `scheduleHideAllPops()` on hover in/out of any popup
+or ref; `pop.pinned` (📌) exempts one from auto-close; `closePop(pop, cascade)` drops a popup and
+its unpinned descendants; Esc / `closeAllCompPops()`. Match navigation is the header `‹ ›` buttons
+and ↑/↓ on `compPopActive` (no wheel hijack — the popup scrolls natively). `refreshCompPop()`
+re-resolves every open popup after an edit.
+
+Typing `[` + ≥2 chars in the sheet editor, `#notes-area`, or the entry's EasyMDE editor opens
+`#comp-ac`, a name-substring autocomplete (`acFromTextarea` / `acFromCM`); ↑/↓/Enter/Tab/click →
+`acAccept()` inserts `[Name]`.
 
 ## Run / test / regenerate
 

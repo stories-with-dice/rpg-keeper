@@ -1839,6 +1839,9 @@
         { name: 'preview', action: EasyMDE.togglePreview, className: 'fa-solid fa-eye no-disable', title: 'Toggle preview' }
       ]
     });
+    // "[" autocomplete inside the entry body (links to other Compendium entries).
+    compMDE.codemirror.on('cursorActivity', cm => acFromCM(cm));
+    compMDE.codemirror.on('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'cm') closeAC(); }, 120));
     return compMDE;
   }
   function compEditorValue() { return compMDE ? compMDE.value() : $('#comp-f-body').value; }
@@ -1899,67 +1902,225 @@
     closeCompEntry();
   }
 
-  /* ---- hover popup on [bracketed] references ---- */
-  let compPop = { name: null, matches: [], idx: 0, anchor: null };
-  let compPopHideT = null;
-  function compPopHtml() {
-    const list = compPop.matches;
-    if (!list.length) {
-      return '<div class="cpop-head"><b>' + escapeHtml(compPop.name) + '</b></div>' +
+  /* ---- hover popups on [bracketed] references (stackable, pinnable) ---- */
+  // Each popup is its own DOM node so links inside one can spawn another and
+  // the whole chain stays open. A pinned popup ignores mouse-leave.
+  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT }]
+  let compPopActive = null;  // popup the mouse is over — target for ↑/↓ match nav
+
+  function popByName(name) { return compPops.find(p => p.name === name) || null; }
+  function popByEl(el) { return compPops.find(p => p.el === el) || null; }
+
+  function popHeadHtml(pop, title, badges) {
+    const nav = pop.matches.length > 1
+      ? '<span class="cpop-nav"><button class="cpop-navbtn" data-nav="-1" title="Previous match">‹</button>' +
+        '<span>' + (pop.idx + 1) + ' / ' + pop.matches.length + '</span>' +
+        '<button class="cpop-navbtn" data-nav="1" title="Next match">›</button></span>'
+      : '';
+    return '<div class="cpop-head"><b>' + title + '</b>' + (badges || '') + nav +
+      '<span class="cpop-tools">' +
+        '<button class="cpop-icon" data-act="pin" title="Pin open" aria-pressed="' + (pop.pinned ? 'true' : 'false') + '">' +
+          '<i class="fa-solid fa-thumbtack"></i></button>' +
+        '<button class="cpop-icon" data-act="close" title="Close">×</button>' +
+      '</span></div>';
+  }
+  function compPopBodyHtml(pop) {
+    if (!pop.matches.length) {
+      return popHeadHtml(pop, escapeHtml(pop.name)) +
         '<p class="cpop-none">No Compendium entry found for this item.</p>' +
         '<div class="cpop-actions"><button class="btn btn-primary" data-act="create">Create entry</button></div>';
     }
-    const en = list[compPop.idx];
-    const nav = list.length > 1
-      ? '<span class="cpop-nav">' + (compPop.idx + 1) + ' / ' + list.length + ' &middot; scroll</span>' : '';
-    return '<div class="cpop-head"><b>' + escapeHtml(en.name) + '</b>' +
-      '<span class="badge">' + escapeHtml(en.category) + '</span>' +
-      '<span class="badge comp-src-badge">' + escapeHtml(en.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>' + nav + '</div>' +
+    const en = pop.matches[pop.idx];
+    return popHeadHtml(pop, escapeHtml(en.name),
+        '<span class="badge">' + escapeHtml(en.category) + '</span>' +
+        '<span class="badge comp-src-badge">' + escapeHtml(en.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>') +
       '<div class="cpop-body markdown-body">' + marked.parse(en.body || '*(no description yet)*') + '</div>' +
       '<div class="cpop-actions"><button class="btn" data-act="edit">Edit</button></div>';
   }
-  function positionCompPop(anchor) {
-    if (!anchor) return;
-    const pop = $('#comp-pop');
-    pop.style.left = '0px'; pop.style.top = '0px';
+  // Render + annotate: dice formulas roll, nested [refs] hover-link.
+  function renderPop(pop) {
+    pop.el.innerHTML = compPopBodyHtml(pop);
+    pop.el.classList.toggle('is-pinned', !!pop.pinned);
+    const body = pop.el.querySelector('.cpop-body');
+    if (body) annotate(body);
+  }
+  function positionPop(pop, anchor) {
+    const el = pop.el;
+    el.style.left = '0px'; el.style.top = '0px';
     const r = anchor.getBoundingClientRect();
-    const pw = pop.offsetWidth, ph = pop.offsetHeight;
-    let left = r.left;
+    const pw = el.offsetWidth, ph = el.offsetHeight;
+    let left = r.left + (pop.parentEl ? 14 : 0);
     if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
     if (left < 8) left = 8;
     let top = r.bottom + 8;
     if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 8);
-    pop.style.left = left + 'px';
-    pop.style.top = top + 'px';
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
   }
-  // Render the popup and make any dice formulas in the entry body clickable
-  // (same treatment as the character sheet; clicks log under the entry name).
-  function paintCompPop() {
-    const pop = $('#comp-pop');
-    pop.innerHTML = compPopHtml();
-    const body = pop.querySelector('.cpop-body');
-    if (body) annotate(body, { noComp: true });
-    positionCompPop(compPop.anchor);
+  function openCompPop(name, anchor) {
+    const parentEl = anchor.closest ? anchor.closest('.comp-pop') : null;
+    cancelHideAllPops();
+    let pop = popByName(name);
+    if (pop) { pop.anchor = anchor; return pop; }
+    const el = document.createElement('div');
+    el.className = 'comp-pop';
+    document.body.appendChild(el);
+    pop = { el: el, name: name, matches: compResolve(name), idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null };
+    compPops.push(pop);
+    renderPop(pop);
+    positionPop(pop, anchor);
+    return pop;
   }
-  function showCompPop(anchor) {
-    clearTimeout(compPopHideT);
-    const name = anchor.dataset.name;
-    if (compPop.anchor !== anchor || $('#comp-pop').hidden) {
-      compPop = { name: name, matches: compResolve(name), idx: 0, anchor: anchor };
+  function closePop(pop, cascade) {
+    if (!pop) return;
+    clearTimeout(pop.hideT);
+    if (pop.el && pop.el.parentNode) pop.el.parentNode.removeChild(pop.el);
+    compPops = compPops.filter(p => p !== pop);
+    if (compPopActive === pop) compPopActive = null;
+    if (cascade) {
+      compPops.slice().forEach(c => {
+        if (c.parentEl === pop.el) { if (c.pinned) c.parentEl = null; else closePop(c, true); }
+      });
     }
-    $('#comp-pop').hidden = false;
-    paintCompPop();
   }
-  function scheduleHideCompPop() {
-    clearTimeout(compPopHideT);
-    compPopHideT = setTimeout(() => { $('#comp-pop').hidden = true; compPop.anchor = null; }, 160);
+  function scheduleHidePop(pop) {
+    if (!pop || pop.pinned) return;
+    clearTimeout(pop.hideT);
+    pop.hideT = setTimeout(() => closePop(pop, true), 180);
   }
-  function hideCompPopNow() { clearTimeout(compPopHideT); $('#comp-pop').hidden = true; compPop.anchor = null; }
+  // The whole open chain lives or dies together: any hover in it keeps all of
+  // it alive; leaving it (to somewhere that isn't a popup or a ref) fades the
+  // unpinned ones after a short grace.
+  function cancelHideAllPops() { compPops.forEach(p => clearTimeout(p.hideT)); }
+  function scheduleHideAllPops() { compPops.forEach(scheduleHidePop); }
+  function closeAllCompPops() {
+    compPops.slice().forEach(p => { clearTimeout(p.hideT); if (p.el.parentNode) p.el.parentNode.removeChild(p.el); });
+    compPops = [];
+    compPopActive = null;
+  }
+  function closeUnpinnedCompPops() {
+    compPops.slice().forEach(p => { if (!p.pinned) closePop(p, false); });
+  }
+  // Kept under the old names used elsewhere (Escape handler, Settings, edits).
+  function hideCompPopNow() { closeAllCompPops(); }
   function refreshCompPop() {
-    if ($('#comp-pop').hidden || !compPop.anchor) return;
-    compPop.matches = compResolve(compPop.name);
-    if (compPop.idx >= compPop.matches.length) compPop.idx = 0;
-    paintCompPop();
+    compPops.slice().forEach(pop => {
+      pop.matches = compResolve(pop.name);
+      if (pop.idx >= pop.matches.length) pop.idx = 0;
+      renderPop(pop);
+    });
+  }
+
+  /* ---- "[" autocomplete across the Compendium (edit surfaces) ---- */
+  // Fires in the character-sheet editor, the per-character Notes box, and the
+  // Compendium entry's EasyMDE editor once ≥2 chars are typed after a "[".
+  let compAC = null; // { kind:'ta'|'cm', ta, cm, qStart, items, sel }
+
+  function acSearch(q) {
+    const t = String(q || '').trim().toLowerCase();
+    if (t.length < 2) return [];
+    const starts = [], has = [];
+    state.compendium.forEach(e => {
+      const i = (e.name || '').toLowerCase().indexOf(t);
+      if (i === 0) starts.push(e); else if (i > 0) has.push(e);
+    });
+    const byName = (a, b) => a.name.localeCompare(b.name);
+    return starts.sort(byName).concat(has.sort(byName)).slice(0, 8);
+  }
+  function acRender() {
+    const el = $('#comp-ac');
+    if (!compAC) return;
+    if (!compAC.items.length) { el.innerHTML = '<div class="ac-none">no matches</div>'; return; }
+    el.innerHTML = '<ul class="ac-list">' + compAC.items.map((e, i) =>
+      '<li class="ac-item' + (i === compAC.sel ? ' is-sel' : '') + '" data-i="' + i + '">' +
+        '<span class="ac-name">' + escapeHtml(e.name) + '</span>' +
+        '<span class="badge">' + escapeHtml(e.category) + '</span></li>').join('') + '</ul>';
+  }
+  function acPlace(x, y, bottom) {
+    const el = $('#comp-ac');
+    el.hidden = false;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    let left = x; if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8; if (left < 8) left = 8;
+    let top = bottom + 4; if (top + h > window.innerHeight - 8) top = Math.max(8, y - h - 4);
+    el.style.left = left + 'px'; el.style.top = top + 'px';
+  }
+  function closeAC() { if (!compAC) return; compAC = null; $('#comp-ac').hidden = true; }
+  function acMove(d) {
+    if (!compAC || !compAC.items.length) return;
+    const n = compAC.items.length;
+    compAC.sel = (compAC.sel + d + n) % n;
+    acRender();
+    const s = $('#comp-ac .ac-item.is-sel');
+    if (s) s.scrollIntoView({ block: 'nearest' });
+  }
+  function acAccept(item) {
+    if (!compAC || !item) return;
+    const insert = item.name + ']';
+    if (compAC.kind === 'cm') {
+      compAC.cm.replaceRange(insert, compAC.qStart, compAC.cm.getCursor());
+      compAC.cm.focus();
+    } else {
+      const ta = compAC.ta, caret = ta.selectionStart, v = ta.value;
+      ta.value = v.slice(0, compAC.qStart) + insert + v.slice(caret);
+      const c = compAC.qStart + insert.length;
+      ta.setSelectionRange(c, c);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.focus();
+    }
+    closeAC();
+  }
+  function textareaCaretXY(ta, index) {
+    const div = document.createElement('div');
+    const cs = getComputedStyle(ta);
+    ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'letterSpacing',
+     'textTransform', 'wordSpacing', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+     'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'boxSizing', 'tabSize']
+      .forEach(p => { div.style[p] = cs[p]; });
+    div.style.position = 'absolute';
+    div.style.visibility = 'hidden';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.overflowWrap = 'break-word';
+    div.style.width = ta.clientWidth + 'px';
+    div.textContent = ta.value.slice(0, index);
+    const span = document.createElement('span');
+    span.textContent = ta.value.slice(index) || '.';
+    div.appendChild(span);
+    document.body.appendChild(div);
+    const r = ta.getBoundingClientRect();
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.3;
+    const xy = { left: r.left + span.offsetLeft - ta.scrollLeft, top: r.top + span.offsetTop - ta.scrollTop };
+    div.remove();
+    return { left: xy.left, top: xy.top, bottom: xy.top + lh };
+  }
+  function acFromTextarea(ta) {
+    if (!ta || ta.selectionStart !== ta.selectionEnd) return closeAC();
+    const pos = ta.selectionStart, v = ta.value;
+    let i = pos - 1, guard = 0;
+    while (i >= 0 && guard++ < 80) {
+      const ch = v[i];
+      if (ch === '[') break;
+      if (ch === ']' || ch === '\n') { i = -1; break; }
+      i--;
+    }
+    if (i < 0 || v[i] !== '[') return closeAC();
+    const qStart = i + 1, q = v.slice(qStart, pos);
+    if (q.length < 2 || /[[\]\n]/.test(q)) return closeAC();
+    const items = acSearch(q);
+    compAC = { kind: 'ta', ta: ta, cm: null, qStart: qStart, items: items, sel: items.length ? 0 : -1 };
+    acRender();
+    const c = textareaCaretXY(ta, pos);
+    acPlace(c.left, c.top, c.bottom);
+  }
+  function acFromCM(cm) {
+    if (!cm || cm.somethingSelected()) return closeAC();
+    const cur = cm.getCursor();
+    const m = cm.getLine(cur.line).slice(0, cur.ch).match(/\[([^[\]]*)$/);
+    if (!m || m[1].length < 2) return closeAC();
+    const q = m[1], items = acSearch(q);
+    compAC = { kind: 'cm', ta: null, cm: cm, qStart: { line: cur.line, ch: cur.ch - q.length }, items: items, sel: items.length ? 0 : -1 };
+    acRender();
+    const c = cm.cursorCoords(true, 'window');
+    acPlace(c.left, c.top, c.bottom);
   }
 
   function wireCompendium() {
@@ -2000,46 +2161,109 @@
     $('#comp-delete').addEventListener('click', deleteCompEntry);
     $('#comp-modal').addEventListener('click', e => { if (e.target === $('#comp-modal')) closeCompEntry(); });
 
-    const view = $('#mode-view');
-    view.addEventListener('mouseover', e => {
-      const ref = e.target.closest('.comp-ref');
-      if (ref) showCompPop(ref);
+    // --- stackable hover popups: refs live in the sheet or inside popup bodies
+    const intoSafe = to => to && to.closest && (to.closest('.comp-pop') || to.closest('.comp-ref'));
+    document.addEventListener('mouseover', e => {
+      const t = e.target;
+      const ref = t.closest && t.closest('.comp-ref');
+      if (ref) { openCompPop(ref.dataset.name, ref); return; }
+      const popEl = t.closest && t.closest('.comp-pop');
+      if (popEl) { compPopActive = popByEl(popEl); cancelHideAllPops(); }
     });
-    view.addEventListener('mouseout', e => {
-      const ref = e.target.closest('.comp-ref');
-      if (!ref) return;
-      const to = e.relatedTarget;
-      if (to && to.closest && to.closest('#comp-pop')) return;
-      scheduleHideCompPop();
+    document.addEventListener('mouseout', e => {
+      const t = e.target;
+      if (!(t.closest && (t.closest('.comp-ref') || t.closest('.comp-pop')))) return;
+      if (intoSafe(e.relatedTarget)) return;
+      compPopActive = null;
+      scheduleHideAllPops();
     });
-    const pop = $('#comp-pop');
-    pop.addEventListener('mouseenter', () => clearTimeout(compPopHideT));
-    pop.addEventListener('mouseleave', scheduleHideCompPop);
-    pop.addEventListener('wheel', e => {
-      if (compPop.matches.length < 2) return;
-      e.preventDefault();
-      const n = compPop.matches.length;
-      compPop.idx = (compPop.idx + (e.deltaY > 0 ? 1 : -1) + n) % n;
-      paintCompPop();
-    }, { passive: false });
-    pop.addEventListener('click', e => {
+    document.addEventListener('click', e => {
+      const popEl = e.target.closest && e.target.closest('.comp-pop');
+      if (!popEl) return;
+      const pop = popByEl(popEl);
+      if (!pop) return;
       const roll = e.target.closest('.roll');
       if (roll) {
-        const en = compPop.matches[compPop.idx];
-        clearTimeout(compPopHideT);
-        doRoll(roll.dataset.formula, en ? en.name : (compPop.name || 'Compendium'));
+        cancelHideAllPops();
+        const en = pop.matches[pop.idx];
+        doRoll(roll.dataset.formula, en ? en.name : (pop.name || 'Compendium'));
+        return;
+      }
+      const navb = e.target.closest('[data-nav]');
+      if (navb && pop.matches.length > 1) {
+        const n = pop.matches.length;
+        pop.idx = (pop.idx + (Number(navb.dataset.nav) || 1) + n) % n;
+        renderPop(pop);
         return;
       }
       const act = e.target.closest('[data-act]');
       if (!act) return;
-      if (act.dataset.act === 'create') openCompEntry(null, { name: compPop.name });
-      else if (act.dataset.act === 'edit' && compPop.matches[compPop.idx]) openCompEntry(compPop.matches[compPop.idx].id);
-      hideCompPopNow();
+      if (act.dataset.act === 'pin') {
+        pop.pinned = !pop.pinned;
+        pop.el.classList.toggle('is-pinned', pop.pinned);
+        act.setAttribute('aria-pressed', pop.pinned ? 'true' : 'false');
+        if (pop.pinned) clearTimeout(pop.hideT); else scheduleHidePop(pop);
+      } else if (act.dataset.act === 'close') {
+        closePop(pop, true);
+      } else if (act.dataset.act === 'edit' && pop.matches[pop.idx]) {
+        openCompEntry(pop.matches[pop.idx].id);
+        closePop(pop, false);
+      } else if (act.dataset.act === 'create') {
+        openCompEntry(null, { name: pop.name });
+        closePop(pop, false);
+      }
     });
     document.addEventListener('mousedown', e => {
-      if (!$('#comp-pop').hidden && !e.target.closest('#comp-pop') && !e.target.closest('.comp-ref')) hideCompPopNow();
+      if (compPops.length && !(e.target.closest && (e.target.closest('.comp-pop') || e.target.closest('.comp-ref') || e.target.closest('#comp-ac')))) {
+        closeUnpinnedCompPops();
+      }
     });
-    document.addEventListener('scroll', () => { if (!$('#comp-pop').hidden) hideCompPopNow(); }, true);
+    // A scroll dismisses popups / autocomplete — but only when it's the page or
+    // a panel scrolling, NOT the widget's own body or CodeMirror auto-scrolling
+    // as you type (that was closing the "[" search the instant it opened).
+    document.addEventListener('scroll', e => {
+      const t = e.target, c = t && t.closest ? sel => t.closest(sel) : () => null;
+      if (compPops.length && !c('.comp-pop')) closeUnpinnedCompPops();
+      if (compAC && !c('#comp-ac') && !c('.CodeMirror')) closeAC();
+    }, true);
+    document.addEventListener('keydown', e => {
+      if (compAC || !compPopActive || compPopActive.matches.length < 2) return;
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      const n = compPopActive.matches.length;
+      compPopActive.idx = (compPopActive.idx + (e.key === 'ArrowDown' ? 1 : -1) + n) % n;
+      renderPop(compPopActive);
+    });
+
+    // --- "[" autocomplete wiring
+    $('#edit-host').addEventListener('input', e => {
+      if (e.target.classList && e.target.classList.contains('edit-col-area')) acFromTextarea(e.target);
+    });
+    $('#edit-host').addEventListener('keyup', e => {
+      if (e.target.classList && e.target.classList.contains('edit-col-area') && /^(Arrow|Home|End)/.test(e.key)) acFromTextarea(e.target);
+    });
+    $('#edit-host').addEventListener('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'ta') closeAC(); }, 120), true);
+    const notesEl = $('#notes-area');
+    notesEl.addEventListener('input', () => acFromTextarea(notesEl));
+    notesEl.addEventListener('keyup', e => { if (/^(Arrow|Home|End)/.test(e.key)) acFromTextarea(notesEl); });
+    notesEl.addEventListener('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'ta') closeAC(); }, 120));
+    $('#comp-ac').addEventListener('mousedown', e => {
+      const li = e.target.closest('.ac-item');
+      if (li && compAC) { e.preventDefault(); acAccept(compAC.items[Number(li.dataset.i)]); }
+    });
+    document.addEventListener('keydown', e => {
+      if (!compAC) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); acMove(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); acMove(-1); }
+      else if ((e.key === 'Enter' || e.key === 'Tab') && compAC.sel >= 0) { e.preventDefault(); e.stopPropagation(); acAccept(compAC.items[compAC.sel]); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeAC(); }
+    }, true);
+    document.addEventListener('mousedown', e => {
+      if (!compAC) return;
+      const inEditor = e.target.closest && (e.target.closest('#comp-ac') || e.target === compAC.ta ||
+        (compAC.cm && compAC.cm.getWrapperElement().contains(e.target)));
+      if (!inEditor) closeAC();
+    });
   }
 
   /* ---- settings ---- */
@@ -2500,7 +2724,7 @@ Credits: 0`;
     $('#btn-paste-close').addEventListener('click', closePasteModal);
     $('#paste-modal').addEventListener('click', e => { if (e.target === $('#paste-modal')) closePasteModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); closeCompEntry(); hideCompPopNow(); }
+      if (e.key === 'Escape') { closeAC(); closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); closeCompEntry(); closeAllCompPops(); }
     });
 
     // Dice

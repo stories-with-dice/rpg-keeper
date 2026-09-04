@@ -879,24 +879,54 @@ button, input, textarea, select {
 }
 #comp-modal .modal-box-lg { max-height: 92vh; overflow: auto; }
 
-/* Bracketed-reference hover popup */
+/* Bracketed-reference hover popups (stackable) */
 .comp-pop {
   position: fixed; z-index: 70;
   width: min(420px, 46vw); max-height: 60vh; overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 10px 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
   font-size: 13px; line-height: 1.5;
 }
 .comp-pop[hidden] { display: none; }
-.cpop-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.comp-pop.is-pinned {
+  border-color: var(--comp-ref);
+  box-shadow: 0 0 0 1px var(--comp-ref) inset, 0 10px 30px rgba(0, 0, 0, .5);
+}
+.cpop-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
 .cpop-head b { color: var(--comp-ref); font-size: 14px; }
-.cpop-nav { margin-left: auto; color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+.cpop-head .comp-src-badge { margin-right: 0; }
+.cpop-nav { display: inline-flex; align-items: center; gap: 4px; color: var(--text-dim); font-size: 11px; }
+.cpop-tools { margin-left: auto; display: inline-flex; gap: 2px; align-self: flex-start; }
+.cpop-navbtn, .cpop-icon {
+  background: transparent; border: 0; color: var(--text-dim);
+  cursor: pointer; padding: 1px 5px; font-size: 13px; line-height: 1; border-radius: 4px;
+}
+.cpop-navbtn:hover, .cpop-icon:hover { color: var(--text); background: var(--bg-3); }
+.cpop-icon[aria-pressed="true"] { color: var(--comp-ref); }
 .cpop-body { font-size: 12.5px; }
 .cpop-body > :first-child { margin-top: 0; }
 .cpop-body > :last-child { margin-bottom: 0; }
 .cpop-none { color: var(--text-dim); font-style: italic; margin: 4px 0 8px; }
 .cpop-actions { display: flex; gap: 6px; margin-top: 8px; }
 .cpop-actions .btn { padding: 3px 10px; font-size: 12px; }
+
+/* "[" autocomplete dropdown */
+.comp-ac {
+  position: fixed; z-index: 85;
+  min-width: 180px; max-width: 340px; max-height: 244px; overflow-y: auto;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5); font-size: 13px;
+}
+.comp-ac[hidden] { display: none; }
+.comp-ac .ac-list { list-style: none; margin: 0; padding: 4px; }
+.comp-ac .ac-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 8px; border-radius: 4px; cursor: pointer;
+}
+.comp-ac .ac-item .ac-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.comp-ac .ac-item.is-sel { background: var(--comp-ref-tint); }
+.comp-ac .ac-none { padding: 6px 10px; color: var(--text-dim); font-style: italic; }
 
 /* ---------- EasyMDE — dark, theme-aware ---------- */
 .EasyMDEContainer .CodeMirror {
