@@ -1842,6 +1842,20 @@
     // "[" autocomplete inside the entry body (links to other Compendium entries).
     compMDE.codemirror.on('cursorActivity', cm => acFromCM(cm));
     compMDE.codemirror.on('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'cm') closeAC(); }, 120));
+    // "[" or "]" with a selection wraps it in [ ] instead of replacing it
+    // (mirrors the character-sheet editor).
+    compMDE.codemirror.on('keydown', (cm, e) => {
+      if (e.key !== '[' && e.key !== ']') return;
+      if (e.ctrlKey || e.metaKey || e.altKey || !cm.somethingSelected()) return;
+      e.preventDefault();
+      cm.operation(() => {
+        cm.replaceSelections(cm.getSelections().map(t => '[' + t + ']'), 'around');
+        cm.setSelections(cm.listSelections().map(r => {
+          const a = r.from(), h = r.to();
+          return { anchor: { line: a.line, ch: a.ch + 1 }, head: { line: h.line, ch: h.ch - 1 } };
+        }));
+      });
+    });
     return compMDE;
   }
   function compEditorValue() { return compMDE ? compMDE.value() : $('#comp-f-body').value; }
@@ -1870,7 +1884,7 @@
     else { $('#comp-f-body').value = en ? en.body : ''; }
     setTimeout(() => $('#comp-f-name').focus(), 0);
   }
-  function closeCompEntry() { $('#comp-modal').hidden = true; compEditId = null; }
+  function closeCompEntry() { $('#comp-modal').hidden = true; compEditId = null; pendingCompLink = null; }
   function saveCompEntry() {
     const name = $('#comp-f-name').value.trim();
     if (!name) { $('#comp-msg').textContent = 'Name is required.'; return; }
@@ -1889,6 +1903,7 @@
     renderCompendium();
     refreshCompPop();
     pushNote('Compendium', (creating ? 'created' : 'updated') + ' "' + name + '" (' + category + ' · ' + source + ')');
+    applyPendingCompLink(en.name);
     closeCompEntry();
   }
   function deleteCompEntry() {
@@ -1901,6 +1916,92 @@
     refreshCompPop();
     closeCompEntry();
   }
+
+  /* ---- View-mode selection → new Compendium entry (rewrites the sheet) ---- */
+  // Set by the "Add to Compendium" context-menu item; consumed by saveCompEntry.
+  let pendingCompLink = null;  // { charId, part: 0|1|null, find: <selected text> }
+  let selMenuData = null;      // { text, tgt } while #sel-menu is open
+
+  // Which character (and, for a split single-char view, which half) owns the
+  // node the selection sits in.
+  function charViewTarget(node) {
+    const a = activeChar();
+    if (!a) return null;
+    const el = node && node.nodeType === 1 ? node : (node && node.parentNode);
+    const col = el && el.closest ? el.closest('#mode-view .char-cols > .char-col') : null;
+    if (charB()) {
+      if (!col) return { ch: a, part: null };
+      const cols = $$('#mode-view .char-cols > .char-col');
+      return { ch: cols[1] === col ? charB() : a, part: null };
+    }
+    if (col) {
+      const cols = $$('#mode-view .char-cols > .char-col');
+      return { ch: a, part: cols[1] === col ? 1 : 0 };
+    }
+    return { ch: a, part: null };
+  }
+
+  // Replace the first occurrence of `find` in `text` with `link`. Falls back to
+  // a whitespace-tolerant match (a rendered selection can collapse newlines /
+  // markdown punctuation). Returns { ok, text }.
+  function linkifyInText(text, find, link) {
+    const src = String(text || '');
+    const i = src.indexOf(find);
+    if (i !== -1) return { ok: true, text: src.slice(0, i) + link + src.slice(i + find.length) };
+    const toks = find.trim().split(/\s+/).filter(Boolean)
+      .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (!toks.length) return { ok: false, text: src };
+    const m = src.match(new RegExp(toks.join('[\\s\\S]{0,3}?')));
+    if (m) return { ok: true, text: src.slice(0, m.index) + link + src.slice(m.index + m[0].length) };
+    return { ok: false, text: src };
+  }
+
+  function applyPendingCompLink(entryName) {
+    const p = pendingCompLink;
+    pendingCompLink = null;
+    if (!p) return;
+    const ch = state.characters.find(c => c.id === p.charId);
+    if (!ch) return;
+    const link = '[' + entryName + ']';
+    let res;
+    if (p.part == null) {
+      res = linkifyInText(ch.body || '', p.find, link);
+      if (res.ok) ch.body = res.text;
+    } else {
+      const lines = String(ch.body || '').split(/\r?\n/);
+      const si = lines.findIndex(l => /^\s*---\s*$/.test(l));
+      if (si === -1) {
+        res = linkifyInText(ch.body || '', p.find, link);
+        if (res.ok) ch.body = res.text;
+      } else {
+        let left = lines.slice(0, si).join('\n'), right = lines.slice(si + 1).join('\n');
+        res = linkifyInText(p.part === 1 ? right : left, p.find, link);
+        if (res.ok) {
+          if (p.part === 1) right = res.text; else left = res.text;
+          ch.body = left + '\n' + lines[si] + '\n' + right;
+        }
+      }
+    }
+    if (!res || !res.ok) {
+      pushNote('Compendium', 'created "' + entryName + '" (couldn\'t locate the selected text to link)');
+      return;
+    }
+    ch.updatedAt = Date.now();
+    save();
+    refreshCharUI();
+  }
+
+  function openSelMenu(x, y, text, tgt) {
+    const m = $('#sel-menu');
+    const short = text.length > 44 ? text.slice(0, 42) + '…' : text;
+    m.innerHTML = '<button class="ctx-item" data-act="add-comp" type="button">' +
+      '<i class="fa-solid fa-book"></i><span>Add &ldquo;' + escapeHtml(short) + '&rdquo; to Compendium</span></button>';
+    m.hidden = false;
+    m.style.left = Math.max(4, Math.min(x, window.innerWidth - m.offsetWidth - 8)) + 'px';
+    m.style.top = Math.max(4, Math.min(y, window.innerHeight - m.offsetHeight - 8)) + 'px';
+    selMenuData = { text: text, tgt: tgt };
+  }
+  function closeSelMenu() { $('#sel-menu').hidden = true; selMenuData = null; }
 
   /* ---- hover popups on [bracketed] references (stackable, pinnable) ---- */
   // Each popup is its own DOM node so links inside one can spawn another and
@@ -2171,6 +2272,7 @@
       if (popEl) { compPopActive = popByEl(popEl); cancelHideAllPops(); }
     });
     document.addEventListener('mouseout', e => {
+      if (dragPop) return;
       const t = e.target;
       if (!(t.closest && (t.closest('.comp-ref') || t.closest('.comp-pop')))) return;
       if (intoSafe(e.relatedTarget)) return;
@@ -2233,6 +2335,36 @@
       const n = compPopActive.matches.length;
       compPopActive.idx = (compPopActive.idx + (e.key === 'ArrowDown' ? 1 : -1) + n) % n;
       renderPop(compPopActive);
+    });
+
+    // Drag a pinned popup by its header.
+    let dragPop = null, dragDX = 0, dragDY = 0;
+    document.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      const head = e.target.closest && e.target.closest('.cpop-head');
+      if (!head || e.target.closest('button')) return;
+      const pop = popByEl(head.closest('.comp-pop'));
+      if (!pop || !pop.pinned) return;
+      e.preventDefault();
+      cancelHideAllPops();
+      dragPop = pop;
+      const r = pop.el.getBoundingClientRect();
+      dragDX = e.clientX - r.left;
+      dragDY = e.clientY - r.top;
+      pop.el.classList.add('is-dragging');
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragPop) return;
+      const el = dragPop.el, w = el.offsetWidth, h = el.offsetHeight;
+      const left = Math.max(4, Math.min(e.clientX - dragDX, window.innerWidth - w - 4));
+      const top = Math.max(4, Math.min(e.clientY - dragDY, window.innerHeight - h - 4));
+      el.style.left = left + 'px';
+      el.style.top = top + 'px';
+    });
+    document.addEventListener('mouseup', () => {
+      if (!dragPop) return;
+      dragPop.el.classList.remove('is-dragging');
+      dragPop = null;
     });
 
     // --- "[" autocomplete wiring
@@ -2715,6 +2847,29 @@ Credits: 0`;
       doRoll(el.dataset.formula, name);
     });
 
+    // Right-click a text selection in View mode → "Add … to Compendium".
+    $('#mode-view').addEventListener('contextmenu', e => {
+      const sel = window.getSelection();
+      const text = sel ? sel.toString().replace(/\s+$/, '').replace(/^\s+/, '') : '';
+      if (!text || !sel.anchorNode || !$('#mode-view').contains(sel.anchorNode)) return;
+      e.preventDefault();
+      const tgt = charViewTarget(sel.anchorNode);
+      if (!tgt || !tgt.ch) return;
+      openSelMenu(e.clientX, e.clientY, text, tgt);
+    });
+    $('#sel-menu').addEventListener('click', e => {
+      if (!e.target.closest('[data-act="add-comp"]') || !selMenuData) return;
+      const d = selMenuData;
+      closeSelMenu();
+      pendingCompLink = { charId: d.tgt.ch.id, part: d.tgt.part, find: d.text };
+      openCompEntry(null, { name: d.text.replace(/\s+/g, ' ').trim() });
+    });
+    document.addEventListener('mousedown', e => {
+      if (!$('#sel-menu').hidden && !(e.target instanceof Element && e.target.closest('#sel-menu'))) closeSelMenu();
+    });
+    document.addEventListener('scroll', closeSelMenu, true);
+    window.addEventListener('resize', closeSelMenu);
+
     // Paste modal
     $('#btn-paste-create').addEventListener('click', () => {
       const t = $('#paste-area').value;
@@ -2724,7 +2879,7 @@ Credits: 0`;
     $('#btn-paste-close').addEventListener('click', closePasteModal);
     $('#paste-modal').addEventListener('click', e => { if (e.target === $('#paste-modal')) closePasteModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { closeAC(); closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); closeCompEntry(); closeAllCompPops(); }
+      if (e.key === 'Escape') { closeAC(); closeSelMenu(); closePasteModal(); closeMonsterEdit(); closeMonsterModal(); closeCtxMenu(); closeCompEntry(); closeAllCompPops(); }
     });
 
     // Dice

@@ -150,14 +150,20 @@ Compendium entry's body**. It renders underlined in violet; **hover** it for a p
   header (or **↑ / ↓** while hovering) page through them. The body scrolls normally when it's long.
 - **No match** — a note and a **Create entry** button (pre-fills the name; category **Other**).
 
+**Make a link from the sheet:** in View mode, select some text, **right-click → "Add … to
+Compendium"**. The editor opens with that text as the name; on **Save**, the sheet's Markdown source
+has that text replaced with `[Entry Name]`, so it becomes a live link.
+
 Popups **stack** — hovering a link inside a popup opens another, and the whole chain stays while the
 mouse is anywhere in it. Each popup has a **📌 pin** (keeps it open after the mouse leaves) and an
-**×**. **Esc** closes every popup; clicking elsewhere closes the unpinned ones.
+**×**. **Esc** closes every popup; clicking elsewhere closes the unpinned ones. A **pinned** popup
+can be **dragged by its header** to reposition it.
 
 ### `[` autocomplete
 In the sheet editor, the Notes box, and the Compendium entry editor, typing `[` followed by **2+
 characters** pops a search of Compendium entry names. **↑ / ↓** to move, **Enter / Tab** or click to
-insert `[Name]`, **Esc** to dismiss.
+insert `[Name]`, **Esc** to dismiss. With text selected, pressing `[` or `]` in any of those editors
+wraps the selection in `[ ]` instead of replacing it.
 
 ---
 

@@ -893,6 +893,10 @@ button, input, textarea, select {
   border-color: var(--comp-ref);
   box-shadow: 0 0 0 1px var(--comp-ref) inset, 0 10px 30px rgba(0, 0, 0, .5);
 }
+.comp-pop.is-pinned .cpop-head { cursor: move; }
+.comp-pop.is-pinned .cpop-head button { cursor: pointer; }
+.comp-pop.is-dragging { user-select: none; }
+.comp-pop.is-dragging .cpop-body { pointer-events: none; }
 .cpop-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
 .cpop-head b { color: var(--comp-ref); font-size: 14px; }
 .cpop-head .comp-src-badge { margin-right: 0; }

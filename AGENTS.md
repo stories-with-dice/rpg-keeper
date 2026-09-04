@@ -53,7 +53,8 @@ all-caps system tags). Hovering one calls `openCompPop(name, ref)`, which create
 `.comp-pop` node** (they stack) appended to `<body>`, tracked in `compPops`. Popup bodies are run
 through plain `annotate()` (dice roll, nested `[refs]` hover-spawn more popups). The whole chain
 lives/dies together — `cancelHideAllPops()` / `scheduleHideAllPops()` on hover in/out of any popup
-or ref; `pop.pinned` (📌) exempts one from auto-close; `closePop(pop, cascade)` drops a popup and
+or ref; `pop.pinned` (📌) exempts one from auto-close and makes its `.cpop-head` a drag handle;
+`closePop(pop, cascade)` drops a popup and
 its unpinned descendants; Esc / `closeAllCompPops()`. Match navigation is the header `‹ ›` buttons
 and ↑/↓ on `compPopActive` (no wheel hijack — the popup scrolls natively). `refreshCompPop()`
 re-resolves every open popup after an edit.
@@ -61,6 +62,12 @@ re-resolves every open popup after an edit.
 Typing `[` + ≥2 chars in the sheet editor, `#notes-area`, or the entry's EasyMDE editor opens
 `#comp-ac`, a name-substring autocomplete (`acFromTextarea` / `acFromCM`); ↑/↓/Enter/Tab/click →
 `acAccept()` inserts `[Name]`.
+
+Right-clicking a text selection in the rendered sheet (`#mode-view`) shows `#sel-menu`; choosing
+"Add … to Compendium" stashes `pendingCompLink` ({charId, part, find}) and opens the entry editor.
+`saveCompEntry` then calls `applyPendingCompLink(name)`, which `linkifyInText`-replaces the selected
+text in that character's `body` (or the correct half of a `---`-split view) with `[name]` and
+re-renders. `charViewTarget(node)` maps a selection node to its character/column.
 
 ## Run / test / regenerate
 
