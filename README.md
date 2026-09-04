@@ -128,13 +128,14 @@ plus a couple of Old-School Essentials examples.
 ## Compendium tab
 
 A personal reference of **Items, Spells, Abilities, Rules** and **Other** entries. Each entry has a
-name, a category, and a Markdown body edited in a proper Markdown editor
-([EasyMDE](https://github.com/Ionaru/easy-markdown-editor), vendored). First run seeds a handful of
-examples.
+name, a **category**, a **source**, and a Markdown body edited in a proper Markdown editor
+([EasyMDE](https://github.com/Ionaru/easy-markdown-editor), vendored). It comes seeded with the
+**Shadowdark RPG core gear** (weapons, armor, basic gear) as Items sourced *Shadowdark Core*.
 
-- **+ New entry** opens the editor modal (category defaults to **Other**).
-- **Filter**: tick/untick the category checkboxes; type in **Search** to match entry *names*.
-  **Full text** also searches the body; **Fuzzy** switches to approximate matching
+- **+ New entry** opens the editor modal — category defaults to **Other**, source to **Unknown**
+  (the source box offers your existing sources as suggestions).
+- **Filter**: tick/untick the **Category** and **Source** checkboxes; type in **Search** to match
+  entry *names*. **Full text** also searches the body; **Fuzzy** switches to approximate matching
   ([Fuse.js](https://fusejs.io/), vendored). The count shows *matches / total*.
 - Click a row (or its **Edit**) to edit; **✕** deletes.
 
@@ -167,6 +168,10 @@ full editor modal instead.
   drops its HP to 0. Off: the raw rolled total comes off HP.
 - **Monster library → Reload defaults** — replaces the library with the bundled set (your
   pasted-in monsters are lost; combatants already in the tracker are untouched).
+- **Compendium → Reseed defaults** — adds back any bundled entry (the Shadowdark core gear) that
+  isn't already present, matched by name; your own entries and edits are left alone.
+- **Compendium → Delete all** — clears every Compendium entry after a confirmation. They don't come
+  back on reload; use **Reseed defaults** to restore the bundled gear.
 
 ---
 

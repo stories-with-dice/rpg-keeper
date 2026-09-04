@@ -24,13 +24,14 @@
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], log: [],
     monsters: [], monstersSeeded: false, conditions: [],
-    compendium: [], compendiumSeeded: false,
+    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0,
     settings: { scarletHeroes: false, theme: 'default' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
   // Compendium entry categories. "Other" is the default for new entries.
   const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Abilities', 'Rules', 'Other'];
+  const COMPENDIUM_DEFAULT_SOURCE = 'Unknown';
 
   // Style themes (dark only) — see the theme blocks in css/app.css.
   const THEMES = ['default', 'fantasy', 'sf', 'horror'];
@@ -103,6 +104,7 @@
       if (!en.id) en.id = uid();
       en.name = en.name == null ? '' : String(en.name);
       en.category = COMPENDIUM_CATEGORIES.indexOf(en.category) === -1 ? 'Other' : en.category;
+      en.source = en.source == null || String(en.source).trim() === '' ? COMPENDIUM_DEFAULT_SOURCE : String(en.source).trim();
       en.body = en.body == null ? '' : String(en.body);
       if (!en.createdAt) en.createdAt = Date.now();
     });
@@ -1743,16 +1745,27 @@
   }
 
   /* ---- Compendium tab ---- */
-  let compCatFilter = null; // Set of enabled categories (lazily = all)
+  let compCatFilter = null;          // Set of enabled categories (lazily = all)
+  const compSrcOff = new Set();      // Set of DISABLED sources (new sources default on)
   function compCats() {
     if (!compCatFilter) compCatFilter = new Set(COMPENDIUM_CATEGORIES);
     return compCatFilter;
+  }
+  function compSources() {
+    return Array.from(new Set(state.compendium.map(e => e.source || COMPENDIUM_DEFAULT_SOURCE)))
+      .sort((a, b) => a.localeCompare(b));
   }
   function renderCompCats() {
     const on = compCats();
     $('#comp-cats').innerHTML = COMPENDIUM_CATEGORIES.map(c =>
       '<label class="comp-cat"><input type="checkbox" data-cat="' + escapeHtml(c) + '"' +
       (on.has(c) ? ' checked' : '') + ' /> ' + escapeHtml(c) + '</label>').join('');
+    const srcs = compSources();
+    $('#comp-sources').innerHTML = srcs.length
+      ? srcs.map(s =>
+        '<label class="comp-cat"><input type="checkbox" data-src="' + escapeHtml(s) + '"' +
+        (compSrcOff.has(s) ? '' : ' checked') + ' /> ' + escapeHtml(s) + '</label>').join('')
+      : '<span class="hint">—</span>';
   }
   function compExcerpt(body) {
     const line = String(body || '').split(/\r?\n/).map(s => s.trim()).find(Boolean) || '';
@@ -1760,7 +1773,8 @@
   }
   function compListMatches() {
     const on = compCats();
-    let list = state.compendium.filter(e => on.has(e.category));
+    let list = state.compendium.filter(e =>
+      on.has(e.category) && !compSrcOff.has(e.source || COMPENDIUM_DEFAULT_SOURCE));
     const term = $('#comp-search').value.trim();
     if (term) {
       const fullText = $('#comp-fulltext').checked;
@@ -1778,6 +1792,7 @@
   }
   function renderCompendium() {
     renderCompCats();
+    updateCompSrcDatalist();
     const list = compListMatches();
     $('#comp-count').textContent = list.length + ' / ' + state.compendium.length;
     $('#comp-empty').hidden = state.compendium.length > 0;
@@ -1786,6 +1801,7 @@
         '<div class="comp-row-head">' +
           '<span class="comp-name">' + escapeHtml(e.name || '(unnamed)') + '</span>' +
           '<span class="badge">' + escapeHtml(e.category) + '</span>' +
+          '<span class="badge comp-src-badge">' + escapeHtml(e.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>' +
           '<button class="btn comp-row-edit">Edit</button>' +
           '<button class="btn btn-danger comp-row-del" title="Delete">&times;</button>' +
         '</div>' +
@@ -1826,6 +1842,13 @@
     return compMDE;
   }
   function compEditorValue() { return compMDE ? compMDE.value() : $('#comp-f-body').value; }
+  function updateCompSrcDatalist() {
+    const dl = $('#comp-src-list');
+    if (!dl) return;
+    const opts = compSources().slice();
+    if (opts.indexOf(COMPENDIUM_DEFAULT_SOURCE) === -1) opts.unshift(COMPENDIUM_DEFAULT_SOURCE);
+    dl.innerHTML = opts.map(s => '<option value="' + escapeHtml(s) + '"></option>').join('');
+  }
   function openCompEntry(id, opts) {
     opts = opts || {};
     compEditId = id || null;
@@ -1834,6 +1857,8 @@
     $('#comp-f-name').value = en ? en.name : (opts.name || '');
     $('#comp-f-cat').innerHTML = COMPENDIUM_CATEGORIES.map(c =>
       '<option' + ((en ? en.category : 'Other') === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>').join('');
+    updateCompSrcDatalist();
+    $('#comp-f-src').value = en ? (en.source || COMPENDIUM_DEFAULT_SOURCE) : COMPENDIUM_DEFAULT_SOURCE;
     $('#comp-msg').textContent = '';
     $('#comp-delete').hidden = !en;
     $('#comp-modal').hidden = false;
@@ -1847,19 +1872,20 @@
     const name = $('#comp-f-name').value.trim();
     if (!name) { $('#comp-msg').textContent = 'Name is required.'; return; }
     const category = $('#comp-f-cat').value;
+    const source = $('#comp-f-src').value.trim() || COMPENDIUM_DEFAULT_SOURCE;
     const body = compEditorValue();
     let en = compEditId ? state.compendium.find(e => e.id === compEditId) : null;
     const creating = !en;
     if (en) {
-      en.name = name; en.category = category; en.body = body; en.updatedAt = Date.now();
+      en.name = name; en.category = category; en.source = source; en.body = body; en.updatedAt = Date.now();
     } else {
-      en = { id: uid(), name: name, category: category, body: body, createdAt: Date.now(), updatedAt: Date.now() };
+      en = { id: uid(), name: name, category: category, source: source, body: body, createdAt: Date.now(), updatedAt: Date.now() };
       state.compendium.push(en);
     }
     save();
     renderCompendium();
     refreshCompPop();
-    pushNote('Compendium', (creating ? 'created' : 'updated') + ' "' + name + '" (' + category + ')');
+    pushNote('Compendium', (creating ? 'created' : 'updated') + ' "' + name + '" (' + category + ' · ' + source + ')');
     closeCompEntry();
   }
   function deleteCompEntry() {
@@ -1887,7 +1913,8 @@
     const nav = list.length > 1
       ? '<span class="cpop-nav">' + (compPop.idx + 1) + ' / ' + list.length + ' &middot; scroll</span>' : '';
     return '<div class="cpop-head"><b>' + escapeHtml(en.name) + '</b>' +
-      '<span class="badge">' + escapeHtml(en.category) + '</span>' + nav + '</div>' +
+      '<span class="badge">' + escapeHtml(en.category) + '</span>' +
+      '<span class="badge comp-src-badge">' + escapeHtml(en.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>' + nav + '</div>' +
       '<div class="cpop-body markdown-body">' + marked.parse(en.body || '*(no description yet)*') + '</div>' +
       '<div class="cpop-actions"><button class="btn" data-act="edit">Edit</button></div>';
   }
@@ -1945,6 +1972,12 @@
       if (!cb) return;
       const on = compCats();
       if (cb.checked) on.add(cb.dataset.cat); else on.delete(cb.dataset.cat);
+      renderCompendium();
+    });
+    $('#comp-sources').addEventListener('change', e => {
+      const cb = e.target.closest('input[data-src]');
+      if (!cb) return;
+      if (cb.checked) compSrcOff.delete(cb.dataset.src); else compSrcOff.add(cb.dataset.src);
       renderCompendium();
     });
     $('#comp-list').addEventListener('click', e => {
@@ -2023,6 +2056,9 @@
     if (sel) sel.value = (state.settings && state.settings.theme) || 'default';
     $('#set-lib-count').textContent = state.monsters.length + ' monster' +
       (state.monsters.length === 1 ? '' : 's') + ' in the library.';
+    const cn = state.compendium.length;
+    $('#set-comp-count').textContent = cn + ' entr' + (cn === 1 ? 'y' : 'ies') +
+      ' in the Compendium (' + COMPENDIUM_SEED.length + ' in the default seed).';
   }
   function wireSettings() {
     $('#set-theme').addEventListener('change', e => {
@@ -2046,6 +2082,26 @@
       renderSettings();
       renderCombat();
       pushNote('Settings', 'Monster library reloaded (' + state.monsters.length + ')');
+    });
+    $('#set-reseed-compendium').addEventListener('click', () => {
+      const added = seedCompendium();
+      renderSettings();
+      pushNote('Settings', 'Compendium reseeded — ' + added + ' added, ' + state.compendium.length + ' total');
+      alert(added
+        ? 'Added ' + added + ' default ' + (added === 1 ? 'entry' : 'entries') + '.'
+        : 'Every default entry is already in the Compendium.');
+    });
+    $('#set-clear-compendium').addEventListener('click', () => {
+      if (!state.compendium.length) { alert('The Compendium is already empty.'); return; }
+      const n = state.compendium.length;
+      if (!confirm('Delete ALL ' + n + ' Compendium entries? This cannot be undone. (Reseed defaults brings the bundled gear back.)')) return;
+      state.compendium = [];
+      compSrcOff.clear();
+      save();
+      hideCompPopNow();
+      renderCompendium();
+      renderSettings();
+      pushNote('Settings', 'Compendium cleared — ' + n + ' entries deleted');
     });
   }
 
@@ -2172,6 +2228,7 @@
           const key = String(en.name || '').toLowerCase() + '\0' + en.category;
           if (!state.compendium.some(x => (x.name.toLowerCase() + '\0' + x.category) === key)) {
             state.compendium.push({ id: uid(), name: String(en.name || ''), category: en.category,
+              source: en.source || COMPENDIUM_DEFAULT_SOURCE,
               body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() });
           }
         });
@@ -2333,22 +2390,32 @@ Credits: 0`;
     }
   }
 
-  // A few starter Compendium entries (first run only). Reference any of these
-  // from a character sheet by putting the name in [square brackets].
-  const COMPENDIUM_SEED = [
-    { category: 'Items', name: 'Torch', body: 'Sheds light in a **near** radius for 1 hour of real time. A lit torch can be swung as an improvised weapon for 1d4 fire damage.' },
-    { category: 'Items', name: 'Rope, 50 ft', body: 'Hemp rope. Holds up to ~400 lbs before fraying. Takes 1 slot.' },
-    { category: 'Spells', name: 'Cure Wounds', body: '*Tier 1.* Touch a living creature to heal 1d6 HP. Undead take 1d6 damage instead (WIS save for half).' },
-    { category: 'Rules', name: 'Morale', body: 'When a fight turns against them, roll 2d6 vs the creature\'s **ML**. On a result **higher** than ML, they flee or surrender. Leaders at 0 HP, or losing half their number, trigger a check.' },
-    { category: 'Abilities', name: 'Rage', body: 'Once per day, enter a rage for up to 10 rounds: **+2** to hit and 1d6 extra damage in melee, and halve incoming physical damage. While raging you cannot cast spells or retreat.' }
-  ];
+  // Default Compendium seed lives in js/compendium-seed.js (loaded before this
+  // script). It exposes window.COMPENDIUM_SEED (array of { name, body }) and
+  // window.COMPENDIUM_SEED_VERSION.
+  const COMPENDIUM_SEED = (typeof window !== 'undefined' && Array.isArray(window.COMPENDIUM_SEED))
+    ? window.COMPENDIUM_SEED : [];
+  const COMPENDIUM_SEED_VERSION = (typeof window !== 'undefined' && Number(window.COMPENDIUM_SEED_VERSION)) || 1;
+
+  // Add every default entry not already present (matched by name, case-insensitive),
+  // tagging each as category "Items", source "Shadowdark Core". Returns the count
+  // added. Runs on first load (version bump) and from Settings → Reseed defaults.
   function seedCompendium() {
+    const have = new Set(state.compendium.map(e => (e.name || '').toLowerCase()));
+    let added = 0;
+    COMPENDIUM_SEED.forEach(e => {
+      if (!e || !e.name || have.has(String(e.name).toLowerCase())) return;
+      state.compendium.push({
+        id: uid(), name: e.name, category: 'Items', source: 'Shadowdark Core',
+        body: e.body || '', createdAt: Date.now(), updatedAt: Date.now()
+      });
+      added++;
+    });
     state.compendiumSeeded = true;
-    if (state.compendium.length) { save(); return; }
-    COMPENDIUM_SEED.forEach(e => state.compendium.push(
-      { id: uid(), name: e.name, category: e.category, body: e.body, createdAt: Date.now(), updatedAt: Date.now() }));
+    state.compendiumSeedVersion = COMPENDIUM_SEED_VERSION;
     save();
     renderCompendium();
+    return added;
   }
 
   /* ------------------------------------------------------------------ */
@@ -2390,6 +2457,23 @@ Credits: 0`;
     $('#btn-mode-edit').addEventListener('click', () => setMode('edit'));
     $('#btn-save').addEventListener('click', saveEdit);
     $('#btn-cancel').addEventListener('click', () => setMode('view'));
+
+    // In the character editor, typing "[" or "]" while text is selected wraps
+    // the selection in brackets instead of replacing it.
+    $('#edit-host').addEventListener('keydown', e => {
+      if (e.key !== '[' && e.key !== ']') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const ta = e.target;
+      if (!ta.classList || !ta.classList.contains('edit-col-area')) return;
+      const s = ta.selectionStart, en = ta.selectionEnd;
+      if (s == null || s === en) return; // nothing selected — insert normally
+      e.preventDefault();
+      const v = ta.value;
+      ta.value = v.slice(0, s) + '[' + v.slice(s, en) + ']' + v.slice(en);
+      ta.selectionStart = s + 1;
+      ta.selectionEnd = en + 1;
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    });
 
     // Clickable rolls inside the rendered sheet. In two-character mode a click
     // in the right column is logged under character B.
@@ -2479,7 +2563,7 @@ Credits: 0`;
     wire();
     if (!had && !state.characters.length) await seed();
     if (!state.monsters.length && !state.monstersSeeded) await seedMonsters();
-    if (!state.compendium.length && !state.compendiumSeeded) seedCompendium();
+    if ((state.compendiumSeedVersion || 0) < COMPENDIUM_SEED_VERSION) seedCompendium();
     renderCombat();
   }
 

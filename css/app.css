@@ -482,6 +482,7 @@ button, input, textarea, select {
 .setting-text .hint { margin: 0; }
 .setting-row-action { align-items: center; justify-content: space-between; cursor: default; margin-top: 10px; }
 .setting-row-action .btn { flex: none; }
+.setting-actions { display: flex; gap: 6px; flex: none; }
 #set-theme { min-width: 140px; cursor: pointer; }
 
 /* ---------- Session log ---------- */
@@ -843,7 +844,10 @@ button, input, textarea, select {
 }
 .comp-check { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-dim); white-space: nowrap; }
 .comp-count { color: var(--text-dim); font-size: 12px; margin-left: auto; }
-.comp-cats { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 12px; }
+.comp-filter-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.comp-filter-row:last-of-type { margin-bottom: 12px; }
+.comp-filter-label { flex: 0 0 62px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-dim); }
+.comp-cats { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .comp-cat { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; }
 
 .comp-list { list-style: none; margin: 0; padding: 0; }
@@ -854,14 +858,22 @@ button, input, textarea, select {
 .comp-row:hover { border-color: var(--text-dim); }
 .comp-row-head { display: flex; align-items: center; gap: 8px; }
 .comp-name { font-weight: 600; color: var(--comp-ref); }
-.comp-row-head .badge { margin-right: auto; }
+.comp-src-badge {
+  margin-right: auto;
+  background: transparent;
+  border-style: dashed;
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+}
 .comp-row-edit, .comp-row-del { padding: 3px 9px; font-size: 12px; }
 .comp-excerpt { margin-top: 5px; color: var(--text-dim); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Compendium editor modal */
 .comp-form { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
-.comp-form .comp-f-name { flex: 1 1 260px; }
-.comp-form .comp-f-cat { flex: 0 0 160px; }
+.comp-form .comp-f-name { flex: 1 1 220px; }
+.comp-form .comp-f-cat { flex: 0 0 150px; }
+.comp-form .comp-f-src { flex: 0 0 170px; }
 .comp-form .field select, .comp-form .field input {
   background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; width: 100%;
 }

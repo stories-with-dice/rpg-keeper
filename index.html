@@ -120,7 +120,8 @@
           <label class="comp-check"><input type="checkbox" id="comp-fuzzy" /> Fuzzy</label>
           <span class="comp-count" id="comp-count"></span>
         </div>
-        <div class="comp-cats" id="comp-cats"></div>
+        <div class="comp-filter-row"><span class="comp-filter-label">Category</span><div class="comp-cats" id="comp-cats"></div></div>
+        <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="comp-sources"></div></div>
         <p id="comp-empty" class="hint">No entries yet. Use <strong>+ New entry</strong>, or hover a <code>[bracketed]</code> item on a character sheet and create one.</p>
         <ul class="comp-list" id="comp-list"></ul>
       </section>
@@ -151,6 +152,17 @@
             <span class="hint" id="set-lib-count">&nbsp;</span>
           </span>
           <button id="set-reload-monsters" class="btn">Reload defaults</button>
+        </div>
+
+        <div class="setting-row setting-row-action">
+          <span class="setting-text">
+            <b>Compendium</b>
+            <span class="hint" id="set-comp-count">&nbsp;</span>
+          </span>
+          <span class="setting-actions">
+            <button id="set-reseed-compendium" class="btn">Reseed defaults</button>
+            <button id="set-clear-compendium" class="btn btn-danger">Delete all</button>
+          </span>
         </div>
       </section>
     </main>
@@ -266,6 +278,11 @@
           <span>Category</span>
           <select id="comp-f-cat"></select>
         </label>
+        <label class="field comp-f-src">
+          <span>Source</span>
+          <input id="comp-f-src" type="text" list="comp-src-list" autocomplete="off" />
+          <datalist id="comp-src-list"></datalist>
+        </label>
       </div>
       <textarea id="comp-f-body"></textarea>
       <div class="modal-actions">
@@ -286,6 +303,7 @@
   <script src="vendor/easymde/easymde.min.js"></script>
   <script src="js/monsters.js"></script>
   <script src="js/monsters-data.js"></script>
+  <script src="js/compendium-seed.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
