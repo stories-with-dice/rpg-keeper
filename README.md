@@ -41,8 +41,12 @@ Use Export/Import to back up, move between machines, or share a party.
   in the **Compendium** on hover — see that tab. Short all-caps tags like `[WWN]` are left alone.
 - **Rename** / **Delete** act on the selected character.
 
-### Notes
-A per-character Markdown scratchpad below the sheet. Autosaves as you type.
+### Journal
+A **campaign-wide** Markdown composer below the sheet (a proper editor —
+[EasyMDE](https://github.com/Ionaru/easy-markdown-editor), with the `[` Compendium autocomplete).
+Press **Enter** to log the current text to the **Session Log** as a *Journal* entry (rendered as
+Markdown there) and clear the box; **Shift+Enter** inserts a new line. The unsent draft is saved and
+survives reloads.
 
 ### Consumables (right side)
 Campaign-wide trackers with **− / value / +** and an optional **max**, shared across every character.
@@ -140,7 +144,7 @@ name, a **category**, a **source**, and a Markdown body edited in a proper Markd
 - Click a row (or its **Edit**) to edit; **✕** deletes.
 
 ### Bracket lookup
-Put an entry's name in `[square brackets]` in a sheet (View mode), the Notes box, or **another
+Put an entry's name in `[square brackets]` in a sheet (View mode), the Journal, or **another
 Compendium entry's body**. It renders underlined in violet; **hover** it for a popup:
 
 - **Match found** — the entry's Markdown rendered as HTML, plus an **Edit** button. Bare dice
@@ -148,6 +152,8 @@ Compendium entry's body**. It renders underlined in violet; **hover** it for a p
   **entry's name**. Nested `[refs]` in the body are themselves hoverable. Matching is
   case-insensitive exact first, then fuzzy; with several matches, the `‹ n / N ›` arrows in the
   header (or **↑ / ↓** while hovering) page through them. The body scrolls normally when it's long.
+- **Fuzzy match** (no exact name) — a line at the top says so, with the match confidence (e.g.
+  *88%*), and a **New** button sits next to **Edit** to create the entry you actually meant.
 - **No match** — a note and a **Create entry** button (pre-fills the name; category **Other**).
 
 **Make a link from the sheet:** in View mode, select some text, **right-click → "Add … to
@@ -160,7 +166,7 @@ mouse is anywhere in it. Each popup has a **📌 pin** (keeps it open after the 
 can be **dragged by its header** to reposition it.
 
 ### `[` autocomplete
-In the sheet editor, the Notes box, and the Compendium entry editor, typing `[` followed by **2+
+In the sheet editor, the Journal, and the Compendium entry editor, typing `[` followed by **2+
 characters** pops a search of Compendium entry names. **↑ / ↓** to move, **Enter / Tab** or click to
 insert `[Name]`, **Esc** to dismiss. With text selected, pressing `[` or `]` in any of those editors
 wraps the selection in `[ ]` instead of replacing it.

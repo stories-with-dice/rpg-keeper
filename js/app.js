@@ -22,7 +22,7 @@
   /* State                                                              */
   /* ------------------------------------------------------------------ */
   const STATE_DEFAULTS = {
-    version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], log: [],
+    version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
     monsters: [], monstersSeeded: false, conditions: [],
     compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0,
     settings: { scarletHeroes: false, theme: 'default' },
@@ -99,6 +99,14 @@
       state.activeIdB = null;
     }
     state.monsters.forEach(m => { if (!m.id) m.id = uid(); });
+    // Notes are campaign-global. Fold any old per-character notes into it once.
+    if (typeof state.notes !== 'string') state.notes = '';
+    state.characters.forEach(ch => {
+      if (typeof ch.notes === 'string' && ch.notes.trim()) {
+        state.notes += (state.notes ? '\n\n' : '') + '## ' + (ch.name || 'Character') + '\n\n' + ch.notes.trim();
+      }
+      delete ch.notes;
+    });
     if (!Array.isArray(state.compendium)) state.compendium = [];
     state.compendium.forEach(en => {
       if (!en.id) en.id = uid();
@@ -124,7 +132,6 @@
 
   // Backfill fields added in later versions so older saves keep working.
   function ensureCharShape(ch) {
-    if (typeof ch.notes !== 'string') ch.notes = '';
     return ch;
   }
 
@@ -265,9 +272,11 @@
     return entry;
   }
 
-  // A non-roll log line (status changes, etc.) — no "= total" column.
-  function pushNote(source, text, detail) {
+  // A non-roll log line (status changes, journal entries, …) — no "= total".
+  // opts.md renders `text` as Markdown in the log.
+  function pushNote(source, text, detail, opts) {
     const entry = { id: uid(), ts: Date.now(), source: source || '—', formula: text, total: '', detail: detail || '' };
+    if (opts && opts.md && typeof marked !== 'undefined') entry.md = marked.parse(String(text || ''));
     state.log.push(entry);
     if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
     save();
@@ -404,7 +413,9 @@
     li.innerHTML =
       '<span class="log-time">' + fmtTime(e.ts) + '</span>' +
       '<span class="log-src">' + escapeHtml(e.source) + '</span>' +
-      '<span class="log-formula">' + escapeHtml(e.formula) + '</span>' +
+      (e.md
+        ? '<span class="log-formula log-md markdown-body">' + e.md + '</span>'
+        : '<span class="log-formula">' + escapeHtml(e.formula) + '</span>') +
       (hasTotal ? '<span class="log-total">= ' + escapeHtml(String(e.total)) + '</span>' : '') +
       (e.detail ? '<span class="log-detail">' + escapeHtml(e.detail) + '</span>' : '');
     list.appendChild(li);
@@ -542,7 +553,6 @@
       system: opts.system || det.system,
       nameLocked: !!opts.name,
       body: body != null ? body : '# New Character\n\n*System — Level 1*\n\n> **AC** 10 · **HP** 6/6\n\n## Abilities\n\n- STR +0\n- DEX +0\n',
-      notes: '',
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
@@ -595,7 +605,6 @@
     const has = state.characters.length > 0;
     $('#char-empty').hidden = has;
     $('#char-view').hidden = !ch;
-    $('#notes-section').hidden = !ch;
     $('#btn-rename').disabled = !ch;
     $('#btn-delete').disabled = !ch;
 
@@ -612,10 +621,8 @@
       meta.hidden = true;
     }
 
-    if (ch) {
-      setMode(mode);
-      renderNotes();
-    }
+    if (ch) setMode(mode);
+    renderNotes();
     renderConsumables();
   }
 
@@ -838,28 +845,60 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Notes (Markdown, bound to the active character)                    */
+  /* Notes — campaign-wide Markdown journal composer                    */
   /* ------------------------------------------------------------------ */
+  // Enter logs the current text to the Session Log and clears the box;
+  // Shift-Enter inserts a newline. The unsent draft persists as state.notes.
   let notesTimer = null;
+  let notesMDE = null;
+
+  function submitNote() {
+    if (!notesMDE) return;
+    const text = notesMDE.value().trim();
+    if (!text) return;
+    pushNote('Journal', text, '', { md: true });
+    notesMDE.value('');
+    state.notes = '';
+    save();
+  }
 
   function renderNotes() {
-    const ch = activeChar();
-    if (!ch) return;
-    const area = $('#notes-area');
-    if (document.activeElement !== area) area.value = ch.notes || '';
+    if (!notesMDE) { $('#notes-area').value = state.notes || ''; return; }
+    if (!notesMDE.codemirror.hasFocus()) notesMDE.value(state.notes || '');
   }
 
   function wireNotes() {
-    const area = $('#notes-area');
-    area.addEventListener('input', () => {
-      const ch = activeChar();
-      if (!ch) return;
-      ch.notes = area.value;
-      ch.updatedAt = Date.now();
-      clearTimeout(notesTimer);
-      notesTimer = setTimeout(save, 300);
+    notesMDE = buildMDE($('#notes-area'), {
+      minHeight: '150px',
+      placeholder: 'Journal entry (Markdown)… Enter to log it, Shift-Enter for a new line',
+      onSubmit: submitNote
     });
-    area.addEventListener('blur', save);
+    if (!notesMDE) {
+      const area = $('#notes-area');
+      area.addEventListener('input', () => {
+        state.notes = area.value;
+        clearTimeout(notesTimer);
+        notesTimer = setTimeout(save, 300);
+      });
+      area.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitNoteFromTextarea(area); }
+      });
+      area.addEventListener('blur', save);
+      return;
+    }
+    notesMDE.codemirror.on('change', () => {
+      state.notes = notesMDE.value();
+      clearTimeout(notesTimer);
+      notesTimer = setTimeout(save, 400);
+    });
+    notesMDE.codemirror.on('blur', save);
+    renderNotes();
+  }
+  function submitNoteFromTextarea(area) {
+    const text = area.value.trim();
+    if (!text) return;
+    pushNote('Journal', text, '', { md: true });
+    area.value = ''; state.notes = ''; save();
   }
 
   /* ================================================================== */
@@ -1729,19 +1768,22 @@
     if (!n) return [];
     return state.compendium.filter(e => e.name.trim().toLowerCase() === n);
   }
+  // Returns Fuse results: [{ item, score }] (score 0 = perfect, 1 = worst).
   function compFuzzy(q, fullText) {
     const term = String(q || '').trim();
     if (!term || !state.compendium.length || typeof Fuse === 'undefined') return [];
     const fuse = new Fuse(state.compendium, {
       keys: fullText ? ['name', 'body'] : ['name'],
-      threshold: 0.45, ignoreLocation: true
+      threshold: 0.45, ignoreLocation: true, includeScore: true
     });
-    return fuse.search(term).map(r => r.item);
+    return fuse.search(term);
   }
+  // { fuzzy, items:[entry…], scores:[0..1 | null …] }. Exact name matches win.
   function compResolve(name) {
     const exact = compByExactName(name);
-    if (exact.length) return exact;
-    return compFuzzy(name, false).slice(0, 8);
+    if (exact.length) return { fuzzy: false, items: exact, scores: exact.map(() => null) };
+    const res = compFuzzy(name, false).slice(0, 8);
+    return { fuzzy: true, items: res.map(r => r.item), scores: res.map(r => (typeof r.score === 'number' ? r.score : null)) };
   }
 
   /* ---- Compendium tab ---- */
@@ -1779,7 +1821,7 @@
     if (term) {
       const fullText = $('#comp-fulltext').checked;
       if ($('#comp-fuzzy').checked) {
-        const ids = new Set(compFuzzy(term, fullText).map(e => e.id));
+        const ids = new Set(compFuzzy(term, fullText).map(r => r.item.id));
         list = list.filter(e => ids.has(e.id));
       } else {
         const t = term.toLowerCase();
@@ -1809,20 +1851,20 @@
       '</li>').join('');
   }
 
-  /* ---- editor modal (EasyMDE) ---- */
-  let compMDE = null;
-  let compEditId = null;
-  function compMdeInstance() {
-    if (compMDE) return compMDE;
+  /* ---- shared EasyMDE builder (Compendium editor + campaign Notes) ---- */
+  // Standard dark toolbar, "[" autocomplete, and "[ ]" wrap-selection. Pass
+  // opts.onSubmit(cm) to make plain Enter fire it (Shift-Enter still newlines).
+  function buildMDE(element, opts) {
+    opts = opts || {};
     if (typeof EasyMDE === 'undefined') return null;
     const fa = (n, i, t) => ({ name: n, action: EasyMDE[i], className: 'fa-solid ' + t, title: n[0].toUpperCase() + n.slice(1) });
-    compMDE = new EasyMDE({
-      element: $('#comp-f-body'),
+    const mde = new EasyMDE({
+      element: element,
       autoDownloadFontAwesome: false,
       spellChecker: false,
       status: false,
-      minHeight: '240px',
-      placeholder: 'Describe this entry in Markdown…',
+      minHeight: opts.minHeight || '160px',
+      placeholder: opts.placeholder || '',
       toolbar: [
         fa('bold', 'toggleBold', 'fa-bold'),
         fa('italic', 'toggleItalic', 'fa-italic'),
@@ -1839,23 +1881,39 @@
         { name: 'preview', action: EasyMDE.togglePreview, className: 'fa-solid fa-eye no-disable', title: 'Toggle preview' }
       ]
     });
-    // "[" autocomplete inside the entry body (links to other Compendium entries).
-    compMDE.codemirror.on('cursorActivity', cm => acFromCM(cm));
-    compMDE.codemirror.on('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'cm') closeAC(); }, 120));
-    // "[" or "]" with a selection wraps it in [ ] instead of replacing it
-    // (mirrors the character-sheet editor).
-    compMDE.codemirror.on('keydown', (cm, e) => {
+    const cm = mde.codemirror;
+    // "[" autocomplete against the Compendium.
+    cm.on('cursorActivity', c => acFromCM(c));
+    cm.on('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'cm') closeAC(); }, 120));
+    // "[" / "]" with a selection wraps it in [ ] instead of replacing it.
+    cm.on('keydown', (c, e) => {
       if (e.key !== '[' && e.key !== ']') return;
-      if (e.ctrlKey || e.metaKey || e.altKey || !cm.somethingSelected()) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || !c.somethingSelected()) return;
       e.preventDefault();
-      cm.operation(() => {
-        cm.replaceSelections(cm.getSelections().map(t => '[' + t + ']'), 'around');
-        cm.setSelections(cm.listSelections().map(r => {
+      c.operation(() => {
+        c.replaceSelections(c.getSelections().map(t => '[' + t + ']'), 'around');
+        c.setSelections(c.listSelections().map(r => {
           const a = r.from(), h = r.to();
           return { anchor: { line: a.line, ch: a.ch + 1 }, head: { line: h.line, ch: h.ch - 1 } };
         }));
       });
     });
+    if (opts.onSubmit) {
+      cm.on('keydown', (c, e) => {
+        if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || compAC) return;
+        e.preventDefault();
+        opts.onSubmit(c);
+      });
+    }
+    return mde;
+  }
+
+  /* ---- Compendium entry editor (EasyMDE) ---- */
+  let compMDE = null;
+  let compEditId = null;
+  function compMdeInstance() {
+    if (compMDE) return compMDE;
+    compMDE = buildMDE($('#comp-f-body'), { minHeight: '240px', placeholder: 'Describe this entry in Markdown…' });
     return compMDE;
   }
   function compEditorValue() { return compMDE ? compMDE.value() : $('#comp-f-body').value; }
@@ -2032,11 +2090,20 @@
         '<div class="cpop-actions"><button class="btn btn-primary" data-act="create">Create entry</button></div>';
     }
     const en = pop.matches[pop.idx];
+    let fuzz = '';
+    if (pop.fuzzy) {
+      const sc = pop.scores && pop.scores[pop.idx];
+      fuzz = '<div class="cpop-fuzzy">&asymp; no exact match &mdash; showing a fuzzy match' +
+        (typeof sc === 'number' ? ' <b>' + Math.round((1 - sc) * 100) + '%</b>' : '') + '</div>';
+    }
     return popHeadHtml(pop, escapeHtml(en.name),
         '<span class="badge">' + escapeHtml(en.category) + '</span>' +
         '<span class="badge comp-src-badge">' + escapeHtml(en.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>') +
+      fuzz +
       '<div class="cpop-body markdown-body">' + marked.parse(en.body || '*(no description yet)*') + '</div>' +
-      '<div class="cpop-actions"><button class="btn" data-act="edit">Edit</button></div>';
+      '<div class="cpop-actions"><button class="btn" data-act="edit">Edit</button>' +
+      (pop.fuzzy ? '<button class="btn" data-act="create" title="Create &ldquo;' + escapeHtml(pop.name) + '&rdquo;">New</button>' : '') +
+      '</div>';
   }
   // Render + annotate: dice formulas roll, nested [refs] hover-link.
   function renderPop(pop) {
@@ -2066,7 +2133,9 @@
     const el = document.createElement('div');
     el.className = 'comp-pop';
     document.body.appendChild(el);
-    pop = { el: el, name: name, matches: compResolve(name), idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null };
+    const r = compResolve(name);
+    pop = { el: el, name: name, matches: r.items, fuzzy: r.fuzzy, scores: r.scores,
+      idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null };
     compPops.push(pop);
     renderPop(pop);
     positionPop(pop, anchor);
@@ -2106,14 +2175,15 @@
   function hideCompPopNow() { closeAllCompPops(); }
   function refreshCompPop() {
     compPops.slice().forEach(pop => {
-      pop.matches = compResolve(pop.name);
+      const r = compResolve(pop.name);
+      pop.matches = r.items; pop.fuzzy = r.fuzzy; pop.scores = r.scores;
       if (pop.idx >= pop.matches.length) pop.idx = 0;
       renderPop(pop);
     });
   }
 
   /* ---- "[" autocomplete across the Compendium (edit surfaces) ---- */
-  // Fires in the character-sheet editor, the per-character Notes box, and the
+  // Fires in the character-sheet editor, the campaign Notes editor, and the
   // Compendium entry's EasyMDE editor once ≥2 chars are typed after a "[".
   let compAC = null; // { kind:'ta'|'cm', ta, cm, qStart, items, sel }
 
@@ -2372,13 +2442,14 @@
       if (e.target.classList && e.target.classList.contains('edit-col-area')) acFromTextarea(e.target);
     });
     $('#edit-host').addEventListener('keyup', e => {
-      if (e.target.classList && e.target.classList.contains('edit-col-area') && /^(Arrow|Home|End)/.test(e.key)) acFromTextarea(e.target);
+      if (!(e.target.classList && e.target.classList.contains('edit-col-area'))) return;
+      // ↑/↓ navigate the open autocomplete (keydown handled it) — don't re-run
+      // the search, which would reset the selection to the first row.
+      if (compAC && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) return;
+      if (/^(Arrow|Home|End)/.test(e.key)) acFromTextarea(e.target);
     });
     $('#edit-host').addEventListener('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'ta') closeAC(); }, 120), true);
-    const notesEl = $('#notes-area');
-    notesEl.addEventListener('input', () => acFromTextarea(notesEl));
-    notesEl.addEventListener('keyup', e => { if (/^(Arrow|Home|End)/.test(e.key)) acFromTextarea(notesEl); });
-    notesEl.addEventListener('blur', () => setTimeout(() => { if (compAC && compAC.kind === 'ta') closeAC(); }, 120));
+    // (Notes is an EasyMDE editor now — its "[" autocomplete is wired in buildMDE.)
     $('#comp-ac').addEventListener('mousedown', e => {
       const li = e.target.closest('.ac-item');
       if (li && compAC) { e.preventDefault(); acAccept(compAC.items[Number(li.dataset.i)]); }
@@ -2588,6 +2659,9 @@
               body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() });
           }
         });
+        if (typeof data.notes === 'string' && data.notes.trim()) {
+          state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
+        }
         if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-MAX_LOG);
       }
       ensureStateShape();
@@ -2786,6 +2860,7 @@ Credits: 0`;
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
       if (b.dataset.tab === 'combat') renderCombat();
       if (b.dataset.tab === 'compendium') renderCompendium();
+      if (b.dataset.tab === 'character' && notesMDE) setTimeout(() => notesMDE.codemirror.refresh(), 0);
     });
 
     // Character toolbar

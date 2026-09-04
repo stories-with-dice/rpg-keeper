@@ -551,15 +551,21 @@ button, input, textarea, select {
 }
 .modal-actions { display: flex; gap: 8px; margin-top: 10px; }
 
-/* ---------- Notes ---------- */
+/* ---------- Journal (campaign notes) ---------- */
 .notes-section {
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
 }
+.notes-section .panel-head kbd {
+  font: inherit; font-size: 11px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0 4px;
+}
+/* fallback plain textarea (EasyMDE unavailable) */
 #notes-area {
   width: 100%;
-  min-height: 240px;
+  min-height: 150px;
   resize: vertical;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -569,6 +575,17 @@ button, input, textarea, select {
   font-size: 13px;
   line-height: 1.55;
 }
+
+/* Markdown-rendered journal entries in the session log */
+.log-md {
+  flex-basis: 100%;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+.log-md > :first-child { margin-top: 0; }
+.log-md > :last-child { margin-bottom: 0; }
+.log-md p { margin: .25em 0; }
+.log-md ul, .log-md ol { margin: .25em 0; padding-left: 1.3em; }
 
 /* ---------- Combat tracker ---------- */
 .combat-bar {
@@ -912,6 +929,11 @@ button, input, textarea, select {
 .cpop-body > :first-child { margin-top: 0; }
 .cpop-body > :last-child { margin-bottom: 0; }
 .cpop-none { color: var(--text-dim); font-style: italic; margin: 4px 0 8px; }
+.cpop-fuzzy {
+  margin: -2px 0 7px; font-size: 11px; color: var(--text-dim);
+  border-left: 2px solid var(--comp-ref); padding-left: 7px;
+}
+.cpop-fuzzy b { color: var(--comp-ref); font-weight: 700; }
 .cpop-actions { display: flex; gap: 6px; margin-top: 8px; }
 .cpop-actions .btn { padding: 3px 10px; font-size: 12px; }
 

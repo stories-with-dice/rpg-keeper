@@ -101,6 +101,11 @@ run the converter and commit both, never hand-edit either.
   `HP (Name)` tracker — `hpTrackerLabel()` / `ensureHpTracker()` create it, rename/edit keep the
   label in sync, delete removes it. Combat HP for a character reads/writes that tracker via
   `hpConsumable()`.
+- **The Journal is campaign-global** too: `state.notes` (old `character.notes` folded in by
+  `ensureStateShape`). It's an EasyMDE editor (`wireNotes` → `buildMDE`, the shared builder also used
+  by the Compendium editor). Plain Enter → `submitNote()` (logs the text via `pushNote('Journal', …,
+  {md:true})` and clears); Shift-Enter is a newline; the unsent draft persists in `state.notes`.
+  `pushNote`'s `{md:true}` renders the entry as Markdown in the log (`.log-md`).
 - The Character tab can show two characters at once (`state.activeId` + `state.activeIdB`), rendered
   one per column by `renderCharView()`; a lone character's sheet is split into two columns at the
   first `---` line.
