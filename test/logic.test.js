@@ -1,8 +1,9 @@
 'use strict';
 
 /*
- * Unit tests for js/app.js internal logic, reached through the window.__OSR_TEST__
- * seam (see js/app.js "Test seam" and test/helpers/boot.js).
+ * Unit tests for the app's internal logic (js/*.js, all attached to
+ * window.OSR — see AGENTS.md "Layout"), reached through the
+ * window.__OSR_TEST__ seam (see js/main.js "Test seam" and test/helpers/boot.js).
  *
  * One jsdom instance is shared per file; T.reset() gives every test a clean,
  * already-migrated blank state.
@@ -135,6 +136,99 @@ test('rollDie: stays within 1..sides', () => {
     assert.ok(v >= 1 && v <= 20, `got ${v}`);
   }
   window.Math.random = orig;
+});
+
+/* ================================================================== */
+/* Character-sheet variables ("Name: ±N") and $Name substitution      */
+/* ================================================================== */
+
+test('scanVariables: comma/semicolon/pipe/line-bounded "Name: ±N" pairs; a number glued onto more text is rejected', () => {
+  const vars = T.scanVariables('CON: +1, STR: 0, DEX: -1');
+  assert.deepEqual(vars.map(v => [v.name, v.value]), [['CON', 1], ['STR', 0], ['DEX', -1]]);
+
+  // "|" is also a field boundary (this app's own seed sheets use it, e.g.
+  // "HP: 19/19 | AC: 14 | AB: +0") — "HP: 19/19" has "19" glued straight onto
+  // "/19" with no separating space, so it's rejected; "AC: 14" and "AB: +0"
+  // are each a clean field.
+  const piped = T.scanVariables('HP: 19/19 | AC: 14 | AB: +0');
+  assert.deepEqual(piped.map(v => [v.name, v.value]), [['AC', 14], ['AB', 0]]);
+
+  // A space after the number ends the value there — whatever follows in that
+  // field is simply not looked at.
+  assert.deepEqual(T.scanVariables('Cost: 5 gp'), [{ name: 'Cost', value: 5, nameStart: 0, nameEnd: 4, valStart: 6, valEnd: 7 }]);
+});
+
+test('scanVariables: "Name: ±N (extra)" stops at the first number, e.g. an ATTRIBUTES block', () => {
+  const block = 'ATTRIBUTES\nSTR: +1 (14)\nDEX: +0 (9)\nCON: +1 (14)\nINT: +0 (9)\nWIS: +1 (14)\nCHA: +0 (11)';
+  const byName = Object.fromEntries(T.scanVariables(block).map(v => [v.name, v.value]));
+  assert.deepEqual(byName, { STR: 1, DEX: 0, CON: 1, INT: 0, WIS: 1, CHA: 0 });
+
+  // Same stopping rule when the score comes first and the modifier is in
+  // parens instead (e.g. the WWN seed sheet) — the *first* number wins.
+  assert.deepEqual(T.scanVariables('STR: 14 (+1)').map(v => [v.name, v.value]), [['STR', 14]]);
+});
+
+test('charVars: reads a character\'s rendered sheet; last occurrence of a name wins', () => {
+  T.createCharacter('# Hero\n\nCON: -1, Heal: 2, Shoot: +2\n\nCON: +3');
+  const byName = Object.fromEntries(T.charVars(T.activeChar()).map(v => [v.name, v.value]));
+  assert.deepEqual(byName, { CON: 3, Heal: 2, Shoot: 2 });
+  assert.deepEqual(T.charVars(null), []);
+});
+
+test('findMatches: a "Name: ±N" pair renders as a .var-name span plus a .roll.var-value span', () => {
+  const spans = T.findMatches('CON: -1');
+  assert.deepEqual(spans.map(s => s.kind), ['varname', 'roll']);
+  assert.equal(spans[0].varName, 'CON');
+  assert.equal(spans[1].formula, '1d20-1');
+  assert.equal(spans[1].isVar, true);
+});
+
+test('findMatches: an unsigned variable value gets a "+" so it doesn\'t concatenate into a huge die (e.g. "1d200")', () => {
+  const zero = T.findMatches('Survive: 0').find(s => s.kind === 'roll');
+  assert.equal(zero.formula, '1d20+0');
+  const positive = T.findMatches('STR: 14').find(s => s.kind === 'roll');
+  assert.equal(positive.formula, '1d20+14');
+});
+
+test('findMatches: "1d6+$CON+2" is one dice span; a bare "$STR" is its own roll span', () => {
+  const dice = T.findMatches('Attack: 1d6+$CON+2').find(s => s.kind === 'roll' && /d6/.test(s.formula));
+  assert.equal(dice.formula, '1d6+$CON+2');
+  const bare = T.findMatches('Melee bonus: $STR').find(s => s.kind === 'roll');
+  assert.equal(bare.formula, '$STR');
+});
+
+test('findMatches: the "$" is stripped from the displayed label but kept in data-formula', () => {
+  const dice = T.findMatches('1d20+$AB+$STR+$Stab').find(s => s.kind === 'roll');
+  assert.equal(dice.formula, '1d20+$AB+$STR+$Stab');
+  assert.equal(dice.label, '1d20+AB+STR+Stab');
+  const bare = T.findMatches('Melee bonus: $STR').find(s => s.kind === 'roll');
+  assert.equal(bare.formula, '$STR');
+  assert.equal(bare.label, 'STR');
+});
+
+test('formatFormulaDisplay: "$Name" -> "Name (value)" for a hover tooltip, missing ones show "(?)"', () => {
+  const vars = [{ name: 'AB', value: 0 }, { name: 'STR', value: 1 }, { name: 'Stab', value: 1 }];
+  assert.equal(T.formatFormulaDisplay('1d20+$AB+$STR+$Stab', vars), '1d20+AB (0)+STR (1)+Stab (1)');
+  assert.equal(T.formatFormulaDisplay('1d20+$NOPE', vars), '1d20+NOPE (?)');
+});
+
+test('substituteVars: folds a formula\'s leading sign into the variable\'s own value', () => {
+  const vars = [{ name: 'CON', value: -1 }];
+  assert.equal(T.substituteVars('1d6+$CON+2', vars).text, '1d6-1+2');
+  assert.equal(T.substituteVars('1d6-$CON+2', vars).text, '1d6+1+2');
+  assert.equal(T.substituteVars('$CON', vars).text, '-1');
+  const missing = T.substituteVars('$NOPE', vars);
+  assert.deepEqual(missing.missing, ['NOPE']);
+});
+
+test('doRoll: resolves $variables against the passed-in vars before evaluating', () => {
+  rig(face(4, 6));
+  T.doRoll('1d6+$CON+2', 'Test', [{ name: 'CON', value: -1 }]);
+  assert.match(T.logToText(), /1d6-1\+2/);
+  // An unresolved reference makes evalFormula fail -> the usual "Invalid: …".
+  const before = T.state.log.length;
+  T.doRoll('1d6+$NOPE', 'Test', []);
+  assert.equal(T.state.log.length, before); // invalid rolls are shown, not logged
 });
 
 /* ================================================================== */

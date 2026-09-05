@@ -1,8 +1,9 @@
 'use strict';
 
 /*
- * Boots the real app (index.html + js/app.js) inside jsdom and returns handles
- * to drive it. Used by test/ui.test.js and test/logic.test.js.
+ * Boots the real app (index.html + the js/*.js app files, all attaching to
+ * window.OSR — see AGENTS.md "Layout") inside jsdom and returns handles to
+ * drive it. Used by test/ui.test.js and test/logic.test.js.
  *
  * EasyMDE / CodeMirror is deliberately NOT loaded — it needs layout APIs jsdom
  * lacks, and the app already falls back to plain <textarea>s when EasyMDE is
@@ -24,7 +25,22 @@ const SCRIPTS = [
   'js/monsters-data.js',
   'js/spells-data.js',
   'js/compendium-seed.js',
-  'js/app.js',
+  'js/core.js',
+  'js/dice.js',
+  'js/annotate.js',
+  'js/mde.js',
+  'js/characters.js',
+  'js/consumables.js',
+  'js/notes.js',
+  'js/combat.js',
+  'js/monster-modals.js',
+  'js/compendium.js',
+  'js/compendium-popups.js',
+  'js/settings.js',
+  'js/io.js',
+  'js/dice-ui.js',
+  'js/seed.js',
+  'js/main.js',
 ];
 
 const STORAGE_KEY = 'osr_manager_v1';
@@ -73,7 +89,21 @@ async function boot(opts = {}) {
   window.Element.prototype.scrollIntoView = function () {};
   window.URL.createObjectURL = () => 'blob:osr-test';
   window.URL.revokeObjectURL = () => {};
-  document.execCommand = () => true;
+  // Real enough for the app's two uses: 'insertText' (autocomplete accept —
+  // acAccept in js/compendium-popups.js) actually inserts at the focused
+  // input/textarea's selection, since some tests drive that flow through it; anything else
+  // (e.g. 'copy', used as a clipboard-API fallback) is a harmless no-op.
+  document.execCommand = (cmd, _ui, value) => {
+    if (cmd === 'insertText') {
+      const el = document.activeElement;
+      if (el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && 'selectionStart' in el))) {
+        const s = el.selectionStart, e = el.selectionEnd, v = el.value;
+        el.value = v.slice(0, s) + value + v.slice(e);
+        el.setSelectionRange(s + value.length, s + value.length);
+      }
+    }
+    return true;
+  };
   if (!window.navigator.clipboard) {
     Object.defineProperty(window.navigator, 'clipboard', {
       configurable: true,
@@ -96,13 +126,13 @@ async function boot(opts = {}) {
     document.body.appendChild(el);
   }
 
-  // app.js runs init() either now (readyState !== 'loading') or on DOMContentLoaded.
+  // js/main.js runs init() either now (readyState !== 'loading') or on DOMContentLoaded.
   if (document.readyState === 'loading') {
     await new Promise((res) => window.addEventListener('load', res, { once: true }));
   }
 
   const T = window.__OSR_TEST__;
-  if (!T) throw new Error('js/app.js test seam missing — expected window.__OSR_TEST__');
+  if (!T) throw new Error('test seam missing — expected window.__OSR_TEST__ (see js/main.js installTestSeam)');
   await (T.ready || Promise.resolve());
 
   if (!opts.freshSeed && opts.storage == null) T.reset();

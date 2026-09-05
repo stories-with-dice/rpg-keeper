@@ -6,7 +6,7 @@
  *
  * Loaded by index.html as a <script> (works from file://); also require()-able.
  * Each entry is { name, category, body } with a Markdown body. seedCompendium()
- * in js/app.js uses the entry category (default "Items") and source "Shadowdark Core".
+ * in js/compendium.js uses the entry category (default "Items") and source "Shadowdark Core".
  * Damage is written as bare dice (1d4, 1d8, …) so it stays clickable in the
  * hover popup. Bump SEED_VERSION when the content changes to re-run seeding
  * (adds missing-by-name entries) on the next load.
@@ -18,7 +18,7 @@
  * That fetch is skipped outright on file:// — it would only fail there, and
  * browsers log the failed request to the console regardless of the .catch().
  * window.COMPENDIUM_SEED_READY resolves (to DATA) once spell loading has
- * settled either way; js/app.js awaits it — only when a seed is actually due
+ * settled either way; js/main.js awaits it — only when a seed is actually due
  * — before reading COMPENDIUM_SEED.
  */
 (function (root) {

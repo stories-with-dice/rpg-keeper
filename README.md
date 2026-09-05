@@ -41,6 +41,45 @@ Use Export/Import to back up, move between machines, or share a party.
   in the **Compendium** on hover — see that tab. Short all-caps tags like `[WWN]` are left alone.
 - **Rename** / **Delete** act on the selected character.
 
+### Character-sheet variables
+Write `Name: value` anywhere in a sheet — `value` a plain, optionally-signed integer — and it's
+picked up as a **variable** you can reference in dice formulas. In View mode the name is highlighted
+in its own colour and the value keeps its usual blue, clickable-roll underline:
+
+```
+CON: -1, STR: 0, DEX: +1
+```
+
+detects `CON` = -1, `STR` = 0, `DEX` = +1. Several fields can share a line, separated by a comma,
+semicolon, or `|` (in addition to each just being its own line) — e.g. `HP: 10 | AC: 14 | AB: +0`
+detects `AC` and `AB`.
+
+A value can have more after it, as long as a space separates them — parsing simply **stops at the
+first number**, so a common "modifier with the score in parentheses" layout works too:
+
+```
+ATTRIBUTES
+STR: +1 (14)
+DEX: +0 (9)
+CON: +1 (14)
+```
+
+detects `STR` = +1, `DEX` = +0, `CON` = +1 (the `(14)`, `(9)` are never looked at). The same rule
+applies whichever number comes first — `STR: 14 (+1)` instead detects `STR` = 14. A number with
+*no* separating space, like the `19` in `HP: 19/19`, doesn't count — only `HP: 19` (or `HP: 19,
+…`) would.
+
+**Use a variable in a dice formula** with `$Name` — e.g. `1d6+$CON+2` rolls `1d6` plus that
+character's current `CON` plus 2. The rendered formula shows just the name (`1d6+CON+2`); **hover**
+it to see each variable's current value in the tooltip (`1d6+CON (-1)+2`). Typing `$` in the sheet
+editor or the Dice Roller's custom-formula box pops up a list of that character's detected variables
+to pick from. If a name changes or a sheet is edited, `$Name` always resolves against whatever the
+sheet says *right now*.
+
+**Right-click any dice roll** (in a sheet, in Combat, in a Compendium popup, or a Dice Roller preset)
+to open a small popup with a flat **modifier** field and a dropdown to add one of the character's
+variables to the roll — picking one adds another dropdown so you can stack several — before rolling.
+
 ### Journal
 A **campaign-wide** Markdown composer below the sheet (a proper editor —
 [EasyMDE](https://github.com/Ionaru/easy-markdown-editor), with the `[` Compendium autocomplete).

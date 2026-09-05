@@ -32,6 +32,8 @@
   --roll-tint: rgba(110, 168, 254, .16);
   --comp-ref: #b98fe0;
   --comp-ref-tint: rgba(185, 143, 224, .16);
+  --var-name: #6fd6a0;
+  --var-name-tint: rgba(111, 214, 160, .16);
 }
 
 /* ============================================================= *
@@ -61,6 +63,8 @@
   --roll-tint: rgba(217, 180, 92, .18);
   --comp-ref: #c8a0dc;
   --comp-ref-tint: rgba(200, 160, 220, .18);
+  --var-name: #c97a6d;
+  --var-name-tint: rgba(201, 122, 109, .18);
 }
 
 /* Sci-fi — cold command console: slate black, cyan, wide caps. */
@@ -85,6 +89,8 @@
   --roll-tint: rgba(75, 214, 208, .16);
   --comp-ref: #c9a2ff;
   --comp-ref-tint: rgba(201, 162, 255, .16);
+  --var-name: #e0c25c;
+  --var-name-tint: rgba(224, 194, 92, .16);
 }
 
 /* Horror — dim and bloodstained: near-black, bone text, deep red. */
@@ -108,6 +114,8 @@
   --roll-tint: rgba(207, 71, 63, .20);
   --comp-ref: #c093d6;
   --comp-ref-tint: rgba(192, 147, 214, .18);
+  --var-name: #d9c77a;
+  --var-name-tint: rgba(217, 199, 122, .18);
 }
 
 * { box-sizing: border-box; }
@@ -353,6 +361,20 @@ button, input, textarea, select {
   cursor: help;
 }
 .comp-ref:hover { background: var(--comp-ref-tint); border-radius: 3px; }
+
+/* Detected "Name: ±N" variables. The name is a plain highlight; the value
+   stays a clickable .roll (still rolls 1d20+N) but gets a solid, var-colored
+   underline instead of the usual dotted one, plus its own hover tint. */
+.var-name {
+  color: var(--var-name);
+  font-weight: 600;
+  border-bottom: 1px dotted var(--var-name);
+}
+.roll.var-value {
+  text-decoration-style: solid;
+  text-decoration-color: var(--var-name);
+}
+.roll.var-value:hover { background: var(--var-name-tint); }
 
 /* ---------- Right rail ---------- */
 .rail {
@@ -962,6 +984,36 @@ button, input, textarea, select {
 .comp-ac .ac-item .ac-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .comp-ac .ac-item.is-sel { background: var(--comp-ref-tint); }
 .comp-ac .ac-none { padding: 6px 10px; color: var(--text-dim); font-style: italic; }
+
+/* ---------- Right-click "roll with modifiers" popup ---------- */
+.roll-popup {
+  position: fixed; z-index: 90;
+  width: 240px;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  font-size: 13px;
+}
+.roll-popup[hidden] { display: none; }
+.rp-head { margin-bottom: 8px; }
+.rp-head span { color: var(--accent-2); font-family: var(--font-mono); }
+.rp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.rp-row input[type="number"] {
+  width: 80px; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; font: inherit;
+}
+.rp-vars { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.rp-var-row { display: flex; align-items: center; gap: 6px; }
+.rp-var-row select {
+  flex: 1; min-width: 0; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; font: inherit;
+}
+.rp-var-del { padding: 2px 8px; }
+.rp-preview {
+  color: var(--text-dim); font-family: var(--font-mono); font-size: 12px;
+  margin-bottom: 8px; word-break: break-all;
+}
+.rp-actions { display: flex; gap: 6px; }
+.rp-actions .btn { flex: 1; }
 
 /* ---------- EasyMDE — dark, theme-aware ---------- */
 .EasyMDEContainer .CodeMirror {

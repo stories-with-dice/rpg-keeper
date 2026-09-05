@@ -184,6 +184,59 @@ test('View mode: [bracketed] names render as .comp-ref, short system tags do not
   assert.deepEqual(refs.map(r => r.dataset.name).sort(), ['Longsword', 'Shield']);
 });
 
+test('View mode: a "Name: ±N" declaration highlights as .var-name + .roll.var-value; a $ref in a formula uses it', () => {
+  T.createCharacter('# Hero\n\nCON: -1\n\nAttack: 1d6+$CON+2');
+  T.renderAll();
+  const varName = $('#mode-view .var-name');
+  assert.ok(varName, 'the variable name is highlighted');
+  assert.equal(varName.textContent, 'CON');
+  const varValue = $('#mode-view .roll.var-value');
+  assert.ok(varValue, 'the value stays a clickable roll, flagged as a variable');
+  assert.equal(varValue.dataset.formula, '1d20-1');
+  const dice = $$('#mode-view .roll').find(el => el.dataset.formula === '1d6+$CON+2');
+  assert.ok(dice, 'the $CON reference stays part of the same dice span');
+  assert.equal(dice.textContent, '1d6+CON+2', 'the "$" is not shown, only used internally for rolling');
+  assert.match(dice.title, /1d6\+CON \(-1\)\+2/, 'hovering shows the variable\'s current value');
+  rig(face(4, 6));
+  click(dice);
+  assert.match(logText(), /1d6-1\+2/, 'CON (-1) was substituted before rolling');
+});
+
+test('Dice Roller: typing "$" suggests detected variables; picking one inserts the identifier', () => {
+  T.createCharacter('# Hero\n\nCON: -1, Heal: +2');
+  T.renderAll();
+  const inp = $('#custom-formula');
+  setValue(inp, '1d6+$CO');
+  assert.equal($('#comp-ac').hidden, false, 'the $ suggestion popup opened');
+  const item = $('#comp-ac .ac-item');
+  assert.match(item.textContent, /CON/);
+  item.dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+  assert.equal(inp.value, '1d6+$CON', 'the "$" stays; only the typed query is corrected/completed');
+  assert.equal($('#comp-ac').hidden, true);
+});
+
+test('Right-click a dice formula opens the roll popup; a modifier and stacked variables all roll together', () => {
+  T.createCharacter('# Hero\n\nCON: -1, STR: +2\n\nAttack: 1d6');
+  T.renderAll();
+  const dice = $$('#mode-view .roll').find(el => el.dataset.formula === '1d6');
+  dice.dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  assert.equal($('#roll-popup').hidden, false, 'the roll popup opened');
+  assert.equal($('#sel-menu').hidden, true, '"Add to Compendium" did not also open');
+  assert.equal($('#rp-formula').textContent, '1d6');
+
+  setValue($('#rp-mod'), '3');
+  const selects = () => $$('#rp-vars .rp-var-select');
+  assert.equal(selects().length, 1, 'one empty variable picker to start, none selected by default');
+  setValue(selects()[0], 'CON');
+  assert.equal(selects().length, 2, 'picking one adds a second picker to stack another');
+  setValue(selects()[1], 'STR');
+
+  rig(face(4, 6));
+  click($('#rp-roll'));
+  assert.equal($('#roll-popup').hidden, true);
+  assert.match(logText(), /1d6\+3-1\+2/, 'base formula + modifier + CON(-1) + STR(+2)');
+});
+
 test('Right-click "Add to Compendium" with an existing match: links the selection, replacing text with the entry\'s title', () => {
   T.state.compendium = [
     { id: 'lant1', name: 'Lantern', category: 'Items', source: 'Core', body: 'Sheds light.', createdAt: 1 },
@@ -229,6 +282,18 @@ test('Character B dropdown: enabled once two characters exist, shows both column
   setValue($('#char-select-b'), alphaId);
   assert.equal(T.state.activeIdB, alphaId);
   assert.ok($('#mode-view .char-cols'));
+});
+
+test('Character B dropdown: $refs in each column resolve against that column\'s own character', () => {
+  T.createCharacter('# Alpha\n\nCON: +2\n\nAttack: 1d6+$CON');
+  T.createCharacter('# Beta\n\nCON: -3\n\nAttack: 1d6+$CON');
+  T.renderAll(); // Beta is active (created last); no need to switch it
+  const alphaId = T.state.characters.find(c => c.name === 'Alpha').id;
+  setValue($('#char-select-b'), alphaId);
+  const cols = $$('#mode-view .char-cols > .char-col');
+  const rollIn = col => Array.from(col.querySelectorAll('.roll')).find(el => el.dataset.formula === '1d6+$CON');
+  assert.match(rollIn(cols[0]).title, /CON \(-3\)/, 'left column (Beta, active) shows its own CON');
+  assert.match(rollIn(cols[1]).title, /CON \(2\)/, 'right column (Alpha, B) shows its own CON');
 });
 
 /* ================================================================== */

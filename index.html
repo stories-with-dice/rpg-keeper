@@ -301,6 +301,20 @@
   <div class="mm-preview" id="mm-preview" hidden></div>
   <div class="comp-ac" id="comp-ac" hidden></div>
 
+  <div class="roll-popup" id="roll-popup" hidden>
+    <div class="rp-head">Roll <span id="rp-formula"></span></div>
+    <label class="rp-row">
+      <span>Modifier</span>
+      <input type="number" id="rp-mod" step="1" placeholder="0" />
+    </label>
+    <div class="rp-vars" id="rp-vars"></div>
+    <div class="rp-preview" id="rp-preview"></div>
+    <div class="rp-actions">
+      <button id="rp-roll" class="btn btn-primary" type="button">Roll</button>
+      <button id="rp-cancel" class="btn" type="button">Cancel</button>
+    </div>
+  </div>
+
   <script src="js/marked.min.js"></script>
   <script src="js/fuse.min.js"></script>
   <script src="vendor/easymde/easymde.min.js"></script>
@@ -308,6 +322,23 @@
   <script src="js/monsters-data.js"></script>
   <script src="js/spells-data.js"></script>
   <script src="js/compendium-seed.js"></script>
-  <script src="js/app.js"></script>
+  <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
+       all attach to window.OSR, so load order only requires core.js first. -->
+  <script src="js/core.js"></script>
+  <script src="js/dice.js"></script>
+  <script src="js/annotate.js"></script>
+  <script src="js/mde.js"></script>
+  <script src="js/characters.js"></script>
+  <script src="js/consumables.js"></script>
+  <script src="js/notes.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/monster-modals.js"></script>
+  <script src="js/compendium.js"></script>
+  <script src="js/compendium-popups.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/io.js"></script>
+  <script src="js/dice-ui.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
