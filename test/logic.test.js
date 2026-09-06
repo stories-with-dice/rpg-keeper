@@ -691,6 +691,106 @@ test('applyDamageToSelected: SH hit on a 0-HD monster that still has HP drops HP
 });
 
 /* ================================================================== */
+/* Monster browser: filtering, the fields form, and the PL generator  */
+/* ================================================================== */
+
+test('filterMonsters: name substring + HD min/max, sorted by HD then name', () => {
+  const list = [
+    { name: 'Rat', hd: '1', hdNum: 1 },
+    { name: 'Bear', hd: '5', hdNum: 5 },
+    { name: 'Goblin', hd: '1', hdNum: 1 },
+  ];
+  assert.deepEqual(T.filterMonsters(list, { q: 'go' }).map(m => m.name), ['Goblin']);
+  assert.deepEqual(T.filterMonsters(list, { hdMin: 1, hdMax: 1 }).map(m => m.name).sort(), ['Goblin', 'Rat']);
+  // HD ascending, then name — Goblin/Rat tie at HD 1 so sort alphabetically.
+  assert.deepEqual(T.filterMonsters(list, {}).map(m => m.name), ['Goblin', 'Rat', 'Bear']);
+});
+
+test('monster-form: populate -> collect round-trips a Shadowdark def', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  host.innerHTML = T.monsterFormHtml();
+  T.wireMonsterForm(host);
+  const def = {
+    name: 'Test Ooze', source: 'shadowdark', desc: 'A blob.', raw: 'ignored on populate',
+    ac: { asc: 12, desc: null, thac0: null }, hd: '3', hp: 15,
+    move: 'near', align: 'N', xp: 50, moraleML: null,
+    atkBonus: 2, attacksText: 'ignored on populate',
+    attacks: [{ label: 'slam', count: 1, toHit: 2, damage: '1d6', note: '', raw: '' }],
+    stats: { S: 1, D: 0, C: 2, I: -3, W: 0, Ch: -2 }, saveTargets: null, savesText: '',
+    abilities: [{ name: 'Split', text: 'Splits in two when damaged.' }]
+  };
+  T.populateMonsterForm(host, def);
+  const collected = T.collectMonsterForm(host);
+  assert.equal(collected.name, 'Test Ooze');
+  assert.equal(collected.source, 'shadowdark');
+  assert.equal(collected.hd, '3');
+  assert.equal(collected.hp, 15);
+  assert.equal(collected.ac.asc, 12);
+  assert.equal(collected.atkBonus, 2);
+  assert.deepEqual(collected.stats, { S: 1, D: 0, C: 2, I: -3, W: 0, Ch: -2 });
+  assert.equal(collected.savesText, 'S +1  D +0  C +2  I -3  W +0  Ch -2');
+  // attacksText/attacks are *derived* from the attack row, not read back from
+  // the input def's own (here deliberately wrong) attacksText.
+  assert.equal(collected.attacksText, 'slam +2 (1d6)');
+  assert.deepEqual(collected.attacks, [{ label: 'slam', count: 1, toHit: 2, damage: '1d6', note: '', raw: '' }]);
+  assert.deepEqual(collected.abilities, [{ name: 'Split', text: 'Splits in two when damaged.' }]);
+  host.remove();
+});
+
+test('monster-form: OSE schema derives ascending AC from descending, and savesText from save targets', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  host.innerHTML = T.monsterFormHtml();
+  T.wireMonsterForm(host);
+  T.populateMonsterForm(host, { name: 'Test Ghoul', source: 'ose' });
+  host.querySelector('.mf-f-ac-desc').value = '4';
+  host.querySelector('.mf-f-thac0').value = '16';
+  host.querySelector('.mf-f-sv-D').value = '10';
+  host.querySelector('.mf-f-sv-W').value = '11';
+  host.querySelector('.mf-f-sv-P').value = '12';
+  host.querySelector('.mf-f-sv-B').value = '13';
+  host.querySelector('.mf-f-sv-S').value = '14';
+  const collected = T.collectMonsterForm(host);
+  assert.equal(collected.source, 'ose');
+  assert.equal(collected.ac.desc, 4);
+  assert.equal(collected.ac.asc, 15); // 19 - descending AC, matching the parser's own convention
+  assert.equal(collected.ac.thac0, 16);
+  assert.deepEqual(collected.saveTargets, { D: 10, W: 11, P: 12, B: 13, S: 14 });
+  assert.equal(collected.savesText, 'D10 W11 P12 B13 S14');
+  host.remove();
+});
+
+test('generateMonster: deterministic given a rigged RNG (PL table roll -> LV/AC/HP/attacks/abilities)', () => {
+  // d20 -> 7 (row index 6: Insectoid, offset 0); PL 1 -> LV 1 -> one HP die;
+  // then the attack-count d4.
+  rig([face(7, 20), face(3, 8), face(2, 4)]);
+  const def = T.generateMonster(1, 0);
+  assert.equal(def.name, 'PL 1 Insectoid Creature');
+  assert.equal(def.source, 'shadowdark');
+  assert.deepEqual(def.ac, { asc: 11, desc: null, thac0: null });
+  assert.equal(def.hd, '1');
+  assert.equal(def.hdNum, 1);
+  assert.equal(def.hp, 3);
+  assert.equal(def.atkBonus, 1);
+  assert.equal(def.attacksText, '2 attack +1 (1d8)');
+  assert.deepEqual(def.attacks, [{ label: 'attack', count: 2, toHit: 1, damage: '1d8', note: '', raw: '' }]);
+  assert.deepEqual(def.abilities, [{ name: 'Strength', text: 'Eats metal' }, { name: 'Weakness', text: 'Electricity' }]);
+});
+
+test('generateMonster: LV floors at 0 (min 1 HP); the Nth mutation rolls the Nth "Monster Mutations" column', () => {
+  // d20 -> 1 (row index 0: Beastlike, offset -3); PL 3 -> LV 0 -> zero HP
+  // dice rolled (floors to 1 HP); then the attack-count d4; then two
+  // mutation d12s, one per requested mutation.
+  rig([face(1, 20), face(4, 4), face(1, 12), face(12, 12)]);
+  const def = T.generateMonster(3, 2);
+  assert.equal(def.hd, '0');
+  assert.equal(def.hp, 1);
+  const mutations = def.abilities.filter(a => a.name === 'Mutation').map(a => a.text);
+  assert.deepEqual(mutations, ['Shapechanger', 'Acidic saliva']);
+});
+
+/* ================================================================== */
 /* Character CRUD                                                     */
 /* ================================================================== */
 

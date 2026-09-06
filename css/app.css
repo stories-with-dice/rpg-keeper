@@ -491,6 +491,10 @@ button, input, textarea, select {
   margin-top: 8px;
   background: var(--apply-bg);
   border-color: var(--apply-border);
+  white-space: normal;
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 1.35;
 }
 .dice-apply:hover:not(:disabled) { background: var(--apply-bg-hover); }
 .dice-apply:disabled { opacity: .55; cursor: not-allowed; }
@@ -854,6 +858,34 @@ button, input, textarea, select {
 }
 .mm-paste-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
 
+/* Add/edit: "Paste text" / "Fill in fields" toggle, shared by #monster-modal
+   and #monster-edit-modal (see js/monster-modals.js / js/monster-form.js). */
+.mm-mode-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+.mm-mode-toggle .btn { padding: 4px 10px; font-size: 12px; }
+
+/* ---------- Monster fields form (js/monster-form.js) ---------- */
+.mf { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow: auto; padding-right: 4px; }
+.mf-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.mf-row .field { flex: 1 1 100px; min-width: 80px; }
+.mf-name { flex: 2 1 200px; }
+.mf-schema { flex: 1 1 170px; }
+.mf-desc textarea { width: 100%; resize: vertical; min-height: 44px; }
+.mf input, .mf select, .mf textarea {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 5px 8px; color: inherit; width: 100%; font: inherit;
+}
+.mf-stat, .mf-sv { flex: 0 0 52px; }
+.mf-schema-block[hidden] { display: none; }
+.mf-sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.mf-sec-head span { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-dim); }
+.mf-sec-head .btn { padding: 3px 9px; font-size: 12px; }
+.mf-atks, .mf-abils { display: flex; flex-direction: column; gap: 6px; }
+.mf-atk-row, .mf-abil-row { display: flex; gap: 6px; align-items: center; }
+.mf-atk-row input, .mf-abil-row input { flex: 1 1 0; min-width: 0; }
+.mf-atk-count { flex: 0 0 44px !important; }
+.mf-atk-tohit { flex: 0 0 60px !important; }
+.mf-atk-del, .mf-abil-del { flex: none; padding: 3px 9px; }
+
 /* ---------- Library hover preview ---------- */
 .mm-preview {
   position: fixed; z-index: 70; pointer-events: none;
@@ -881,6 +913,26 @@ button, input, textarea, select {
   .mm-cols { grid-template-columns: 1fr; }
   .comp-pop { width: min(92vw, 380px); }
 }
+
+/* ---------- Bestiary tab ---------- */
+.mb-gen {
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+  padding: 10px 12px; margin-bottom: 14px;
+}
+.mb-gen-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.mb-gen-head i { color: var(--accent); }
+.mb-gen-row { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.mb-gen-row .field { flex: 0 0 110px; }
+.mb-gen-row input {
+  background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 8px; color: inherit; width: 100%;
+}
+.mb-hd-field { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-dim); }
+.mb-hd-field input {
+  width: 64px; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 8px; color: inherit;
+}
+.mb-row { cursor: default; }
 
 /* ---------- Compendium tab ---------- */
 .comp-toolbar {

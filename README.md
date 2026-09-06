@@ -164,7 +164,42 @@ plus a couple of Old-School Essentials examples.
 - Per row: **Add** (to combat), **Edit** (opens the stat block in an editor — saving re-parses it),
   **✕** (remove from library).
 - **Paste** pane (right): paste one or more stat blocks and send them to the library, optionally
-  also dropping them straight into combat.
+  also dropping them straight into combat. A **Paste text / Fill in fields** toggle above it switches
+  to a structured form instead (see the **Bestiary** tab below) — the same toggle appears when you
+  **Edit** a monster, so editing isn't raw-text-only either.
+
+---
+
+## Bestiary tab
+
+A persistent, filterable view of the whole monster library — same idea as the Compendium tab, but for
+monsters. **+ New monster** and Combat's own **+ Add monster…** open the exact same modal described
+above; **Search** and **HD** min/max filter the list the same way the modal's own do. Per row:
+**Add to Combat**, **Edit**, **✕** (remove from library).
+
+### Fill in fields
+Instead of pasting a stat block, switch the add/edit modal to **Fill in fields** and pick a **Format**
+— **Shadowdark** (a single AC, and S/D/C/I/W/Ch stat modifiers) or **Old-School Essentials** (a
+descending AC — the matching ascending AC is derived automatically — THAC0, D/W/P/B/S save targets,
+and Morale). Add as many **Attacks** (label, count, to-hit, damage, note) and **Abilities**
+(name + description) rows as the monster needs with **+ Add**; **✕** removes a row. Saving builds the
+monster's stat-block text from whatever you entered, so it displays (and can be switched back to
+**Paste text**) just like a pasted one.
+
+### Random monster generator
+Rolls a monster following the Shadowdark core rulebook's Monster Generator and Monster Mutations
+tables, for a given **Party Level**:
+
+- Its AC is `Party Level + 10`; a **Combat** roll sets its Level (and attack bonus) somewhere around
+  that Party Level, and picks a flavor **Quality** (e.g. *Draconic*, *Undead*, *Ooze*) with a
+  matching **Strength** and **Weakness**.
+- Its HP is rolled from its Level (in d8s); it has a random number of attacks (1-4), each a d8.
+- The **Mutations** stepper (0-3) adds that many extra special abilities, each from the rulebook's
+  own numbered mutation table.
+
+**Generate…** doesn't add the result straight to the library — it lands in the add modal's **Fill in
+fields** form (with an editable placeholder name like "PL 3 Draconic Creature") so you can review,
+rename, or tweak anything before saving it for real.
 
 ---
 

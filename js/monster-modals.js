@@ -7,27 +7,80 @@
   'use strict';
   const { $, escapeHtml, uid } = OSR;
 
+  /* ---- shared "fill in fields" host: build once per modal, then just
+     populate/collect against it (see js/monster-form.js) ---- */
+  function ensureMonsterFormBuilt(host) {
+    if (host.dataset.built) return;
+    host.innerHTML = OSR.monsterFormHtml();
+    OSR.wireMonsterForm(host);
+    host.dataset.built = '1';
+  }
+  // The "Paste text" / "Fill in fields" toggle shared by both monster
+  // modals: `root` is the .mm-mode wrapper (#mm-mode or #me-mode).
+  function setMonsterMode(root, mode) {
+    root.querySelectorAll('.mm-mode-btn').forEach(b => b.classList.toggle('is-active', b.dataset.mode === mode));
+    root.querySelector('.mm-mode-paste').hidden = mode !== 'paste';
+    root.querySelector('.mm-mode-fields').hidden = mode !== 'fields';
+  }
+  function activeMonsterMode(root) {
+    const btn = root.querySelector('.mm-mode-btn.is-active');
+    return btn ? btn.dataset.mode : 'paste';
+  }
+  function wireMonsterModeToggle(root) {
+    root.querySelectorAll('.mm-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => setMonsterMode(root, btn.dataset.mode));
+    });
+  }
+
   /* ---- monster library modal ---- */
   let libFiltered = [];   // monsters matching the current filters (render order)
   let libRolledId = null;  // last "Roll" result, highlighted
 
-  function openMonsterModal() {
+  // opts.prefill (a def — see the generator in js/monster-browser.js) opens
+  // straight into "Fill in fields", pre-populated, for review before saving;
+  // a plain call opens today's default "browse + paste" view.
+  function openMonsterModal(opts) {
+    opts = opts || {};
     $('#monster-modal').hidden = false;
     $('#mm-msg').textContent = '';
     libRolledId = null;
     renderLibrary();
-    $('#mm-search').focus();
+    ensureMonsterFormBuilt($('#mm-fields-host'));
+    if (opts.prefill) {
+      OSR.populateMonsterForm($('#mm-fields-host'), opts.prefill);
+      setMonsterMode($('#mm-mode'), 'fields');
+    } else {
+      $('#mm-paste-area').value = '';
+      OSR.populateMonsterForm($('#mm-fields-host'), {});
+      setMonsterMode($('#mm-mode'), 'paste');
+      $('#mm-search').focus();
+    }
   }
   function closeMonsterModal() {
     $('#monster-modal').hidden = true;
     hideLibPreview();
   }
+  function addFromFields(alsoCombat) {
+    const def = OSR.collectMonsterForm($('#mm-fields-host'));
+    if (!def.name || def.name === 'Unnamed') { $('#mm-msg').textContent = 'Name is required.'; return; }
+    def.id = uid();
+    OSR.state.monsters.push(def);
+    OSR.save();
+    if (alsoCombat) OSR.addMonsterEntry(def);
+    renderLibrary();
+    OSR.renderCombat();
+    OSR.populateMonsterForm($('#mm-fields-host'), {});
+    $('#mm-msg').textContent = 'Added ' + def.name + ' to the library' + (alsoCombat ? ' and to combat.' : '.');
+  }
 
-  function libMatches() {
-    const q = ($('#mm-search').value || '').toLowerCase().trim();
-    const mn = parseFloat($('#mm-hd-min').value);
-    const mx = parseFloat($('#mm-hd-max').value);
-    return OSR.state.monsters.filter(d => {
+  // Shared by this modal's library list and the Bestiary tab
+  // (js/monster-browser.js) — each has its own search/HD inputs but the same
+  // filter+sort logic.
+  function filterMonsters(list, opts) {
+    opts = opts || {};
+    const q = String(opts.q || '').toLowerCase().trim();
+    const mn = opts.hdMin, mx = opts.hdMax;
+    return list.filter(d => {
       if (q && !(d.name || '').toLowerCase().includes(q)) return false;
       const h = d.hdNum != null ? d.hdNum : MonsterParse.hdNum(d.hd);
       if (!isNaN(mn) && h < mn) return false;
@@ -36,7 +89,16 @@
     }).sort((a, b) => (a.hdNum || 0) - (b.hdNum || 0) || String(a.name).localeCompare(b.name));
   }
 
+  function libMatches() {
+    return filterMonsters(OSR.state.monsters, {
+      q: $('#mm-search').value,
+      hdMin: parseFloat($('#mm-hd-min').value),
+      hdMax: parseFloat($('#mm-hd-max').value)
+    });
+  }
+
   function renderLibrary() {
+    if (OSR.renderMonsterBrowser) OSR.renderMonsterBrowser(); // keep the Bestiary tab in sync
     libFiltered = libMatches();
     const list = $('#mm-lib-list');
     $('#mm-roll').disabled = libFiltered.length < 1;
@@ -141,6 +203,9 @@
     $('#me-name').textContent = d.name;
     $('#me-area').value = d.raw || '';
     $('#me-msg').textContent = '';
+    ensureMonsterFormBuilt($('#me-fields-host'));
+    OSR.populateMonsterForm($('#me-fields-host'), d);
+    setMonsterMode($('#me-mode'), 'paste');
     $('#monster-edit-modal').hidden = false;
     $('#me-area').focus();
   }
@@ -152,14 +217,20 @@
     if (editMonsterId == null) return;
     const idx = OSR.state.monsters.findIndex(x => x.id === editMonsterId);
     if (idx < 0) { closeMonsterEdit(); return; }
-    const text = $('#me-area').value;
-    const parsed = window.MonsterParse ? MonsterParse.parseOne(text) : null;
-    if (!parsed) {
-      $('#me-msg').textContent = 'Could not parse — needs a name line, an "AC …" line, and stats.';
-      return;
+    let parsed;
+    if (activeMonsterMode($('#me-mode')) === 'fields') {
+      parsed = OSR.collectMonsterForm($('#me-fields-host'));
+      if (!parsed.name || parsed.name === 'Unnamed') { $('#me-msg').textContent = 'Name is required.'; return; }
+    } else {
+      const text = $('#me-area').value;
+      parsed = window.MonsterParse ? MonsterParse.parseOne(text) : null;
+      if (!parsed) {
+        $('#me-msg').textContent = 'Could not parse — needs a name line, an "AC …" line, and stats.';
+        return;
+      }
+      parsed.raw = text.trim();
     }
     parsed.id = editMonsterId;
-    parsed.raw = text.trim();
     OSR.state.monsters[idx] = parsed;
     OSR.save();
     hideLibPreview();
@@ -201,16 +272,20 @@
     $('#mm-lib-list').addEventListener('scroll', hideLibPreview);
     $('#mm-parse-add').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, true));
     $('#mm-parse-lib').addEventListener('click', () => parseAndAdd($('#mm-paste-area').value, false));
+    wireMonsterModeToggle($('#mm-mode'));
+    $('#mm-fields-add').addEventListener('click', () => addFromFields(true));
+    $('#mm-fields-lib').addEventListener('click', () => addFromFields(false));
 
     // monster edit modal
     $('#me-close').addEventListener('click', closeMonsterEdit);
     $('#me-cancel').addEventListener('click', closeMonsterEdit);
     $('#me-save').addEventListener('click', saveMonsterEdit);
     $('#monster-edit-modal').addEventListener('click', e => { if (e.target === $('#monster-edit-modal')) closeMonsterEdit(); });
+    wireMonsterModeToggle($('#me-mode'));
   }
 
   Object.assign(OSR, {
-    openMonsterModal, closeMonsterModal, libMatches, renderLibrary, rollLibrary, onLibClick,
+    filterMonsters, openMonsterModal, closeMonsterModal, libMatches, renderLibrary, rollLibrary, onLibClick,
     monsterCardHtml, showLibPreview, hideLibPreview,
     openMonsterEdit, closeMonsterEdit, saveMonsterEdit, parseAndAdd, wireMonsterModals
   });

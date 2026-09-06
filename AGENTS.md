@@ -33,7 +33,12 @@ js/consumables.js       campaign-global trackers (rations, torches, … + each c
 js/notes.js             the campaign Journal (EasyMDE via js/mde.js)
 js/combat.js            the combat tracker: entries, HP/HD, status conditions, turn order, drag-to-
                        reorder, rolls, and Scarlet Heroes damage translation
-js/monster-modals.js    the "Add monster" library modal and the monster edit modal
+js/monster-form.js      the schema-aware (Shadowdark | OSE) "fill in fields" monster form, shared by
+                       both monster modals — template, populate from a def, collect back into one
+js/monster-modals.js    the "Add monster" modal (shared by Combat and the Bestiary tab) and the
+                       monster edit modal — each has a "Paste text" / "Fill in fields" toggle
+js/monster-browser.js   the Bestiary tab (filterable library list, mirrors js/compendium.js) and the
+                       Party-Level random monster generator (Shadowdark core rules)
 js/compendium.js        Compendium entry CRUD, category/source filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
 js/settings.js          the Settings tab
@@ -188,7 +193,8 @@ run the converter and commit both, never hand-edit either. Same relationship bet
 - **Event handling is delegation.** Listeners are attached once to stable containers in `js/main.js`'s
   `wire()`, which calls each subsystem's own `wireX()` (`wireCombat`, `wireConsumables`, `wireNotes`,
   `wireSettings`, `wireCharacters`, `wireIO`, `wireDicePanel`, `wireCompendiumEntries`,
-  `wireCompendiumPopups`, `wireRollPopup`, …); handlers use `e.target.closest('.some-class')`. Don't
+  `wireCompendiumPopups`, `wireRollPopup`, `wireMonsterBrowser`, …); handlers use
+  `e.target.closest('.some-class')`. Don't
   attach per-element listeners inside `render*()`.
 - **Visibility is toggled with `el.hidden = true/false`**, not `style.display`. Gotcha: the `[hidden]`
   attribute loses to any CSS rule that sets `display:` (this bit us with `.modal { display:flex }`).
@@ -296,6 +302,45 @@ Notes on the tricky bits (there are tests for all of these):
   (`Scorpion Sting (CHA Spell). …`). OSE abilities split on `▶`.
 - If you change parsing behaviour, update `test/monsters.test.js` and re-run `npm run convert-bestiary`
   (the seed is produced by this parser).
+
+## The Bestiary tab, the shared monster modal, and the PL generator
+
+The **Bestiary** tab (`js/monster-browser.js`, `#tab-bestiary`) is a persistent, filterable view of
+`state.monsters` — same pattern as the Compendium tab (`filterMonsters()` factored out of the old
+`libMatches()` so both this tab's inputs and the modal's own `#mm-search`/`#mm-hd-min`/`#mm-hd-max`
+share one filter+sort implementation). Its **+ New monster**, and Combat's own **+ Add monster…**,
+both open the *same* `#monster-modal` (`OSR.openMonsterModal()`) — there is only one add flow.
+
+**The shared modal's two input modes** (`js/monster-modals.js`): a `.mm-mode-toggle` switches between
+`.mm-mode-paste` (the original raw-stat-block textarea + `MonsterParse.parseOne`/`parseMonsters`) and
+`.mm-mode-fields` (`js/monster-form.js`'s structured form). `setMonsterMode(root, mode)` /
+`activeMonsterMode(root)` operate on whichever `.mm-mode` wrapper is passed (`#mm-mode` for add,
+`#me-mode` for edit) — the same toggle code serves both modals. `openMonsterEdit(id)` populates
+**both** the raw textarea and the fields form from the monster's current `def`, defaulting to paste
+mode (today's behavior) but letting you switch either way; `saveMonsterEdit()` reads whichever mode
+is active. `ensureMonsterFormBuilt(host)` injects `OSR.monsterFormHtml()` into a host div and wires it
+exactly once (`host.dataset.built`) — `populateMonsterForm`/`collectMonsterForm` are called on every
+open/save after that, never touching the listeners again.
+
+**`js/monster-form.js`** is schema-aware (a `<select>` toggles Shadowdark vs OSE field blocks via
+`.mf-schema-block[data-schema]`) and produces/consumes exactly the `def` shape from `js/monsters.js`.
+Attacks and abilities are dynamic rows (`.mf-atk-row`/`.mf-abil-row`, `+ Add` buttons, delegated
+`✕` removal) — `collectMonsterForm` *derives* `attacksText`/`savesText` from those rows/stat inputs
+(same formatting the parser itself produces) and synthesizes a best-effort `raw` stat-block string
+(`buildRawFromDef`) so a field-built monster displays, and round-trips through "Paste text" mode,
+the same as a pasted one. The form's markup uses **class selectors, not ids** (`.mf-f-name`, etc.) —
+since `populateMonsterForm`/`collectMonsterForm` always take a `root` element, the identical template
+can be injected into both `#mm-fields-host` (add) and `#me-fields-host` (edit) with no id collisions.
+
+**The generator** (`js/monster-browser.js`'s `generateMonster(pl, mutationCount)`) implements the
+Shadowdark core rulebook's "Monster Generator" (pg 190, a d20 table of `{offset, quality, strength,
+weakness}` — `LV = max(0, pl + offset)`, `atkBonus = LV`, `AC = pl + 10`, HP = `LV`d8 rolled (min 1),
+one attack entry with a rolled `1d4` count dealing `1d8`) and "Monster Mutations" (pg 191, **three**
+separate d12 columns — `MUTATION_TABLES[0..2]` — rolling N mutations uses columns `1..N` in that
+order, per the rulebook's "Mutation 1/2/3" headers). Quality becomes part of `desc`; Strength,
+Weakness, and any mutations become `abilities` entries so they render like any other special ability.
+Generating never adds to the library directly — it calls `OSR.openMonsterModal({ prefill: generateMonster(pl, n) })`,
+landing the roll in the fields form (with an editable placeholder name) for review before Save.
 
 ## The converter (`scripts/convert-bestiary.js`)
 

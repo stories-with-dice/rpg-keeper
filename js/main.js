@@ -15,6 +15,7 @@
       $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
       if (b.dataset.tab === 'combat') OSR.renderCombat();
+      if (b.dataset.tab === 'bestiary') OSR.renderMonsterBrowser();
       if (b.dataset.tab === 'compendium') OSR.renderCompendium();
       if (b.dataset.tab === 'character' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
     });
@@ -36,6 +37,7 @@
     OSR.wireConsumables();
     OSR.wireNotes();
     OSR.wireCombat();
+    OSR.wireMonsterBrowser();
     OSR.wireCompendiumEntries();
     OSR.wireCompendiumPopups();
     OSR.wireSettings();
@@ -55,6 +57,7 @@
     OSR.renderLog();
     OSR.refreshCharUI();
     OSR.renderCombat();
+    OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderSettings();
     wire();
@@ -84,7 +87,7 @@
     OSR.ready = null;
 
     OSR.renderAll = function () {
-      OSR.refreshCharUI(); OSR.renderCombat(); OSR.renderCompendium();
+      OSR.refreshCharUI(); OSR.renderCombat(); OSR.renderMonsterBrowser(); OSR.renderCompendium();
       OSR.renderSettings(); OSR.renderLog(); OSR.renderConsumables();
     };
 
@@ -106,7 +109,8 @@
       OSR.closeAC();
       OSR.closeRollPopup();
       ['#comp-search', '#comp-fulltext', '#comp-fuzzy', '#custom-formula',
-        '#notes-area', '#paste-area', '#mm-search', '#mm-hd-min', '#mm-hd-max']
+        '#notes-area', '#paste-area', '#mm-search', '#mm-hd-min', '#mm-hd-max',
+        '#mb-search', '#mb-hd-min', '#mb-hd-max']
         .forEach(sel => {
           const el = $(sel);
           if (!el) return;

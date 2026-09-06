@@ -15,6 +15,7 @@
     <nav class="tabs" id="tabs">
       <button class="tab-btn is-active" data-tab="character">Character</button>
       <button class="tab-btn" data-tab="combat">Combat</button>
+      <button class="tab-btn" data-tab="bestiary">Bestiary</button>
       <button class="tab-btn" data-tab="compendium">Compendium</button>
       <button class="tab-btn" data-tab="settings">Settings</button>
     </nav>
@@ -110,6 +111,29 @@
         <ol class="tracker-list" id="tracker-list"></ol>
         <p id="tracker-empty" class="hint">No combatants yet. Add a character or monster above.</p>
         <div id="combatant-detail" class="combatant-detail"></div>
+      </section>
+
+      <!-- ===== Bestiary tab ===== -->
+      <section class="tab-panel" id="tab-bestiary">
+        <div class="mb-gen">
+          <div class="mb-gen-head"><i class="fa-solid fa-dice-d20"></i> <b>Random monster generator</b>
+            <span class="hint">Shadowdark core rules &mdash; rolls a Combat/Quality/Strength/Weakness result for a Party Level, then lands it in the add form to review before saving.</span>
+          </div>
+          <div class="mb-gen-row">
+            <label class="field"><span>Party Level</span><input id="mb-gen-pl" type="number" step="1" min="0" value="1" /></label>
+            <label class="field"><span>Mutations</span><input id="mb-gen-mutations" type="number" step="1" min="0" max="3" value="0" /></label>
+            <button id="mb-generate" class="btn btn-primary"><i class="fa-solid fa-dice-d20"></i> Generate&hellip;</button>
+          </div>
+        </div>
+        <div class="comp-toolbar">
+          <button id="mb-new" class="btn btn-primary">+ New monster</button>
+          <input id="mb-search" type="text" placeholder="Search name&hellip;" autocomplete="off" />
+          <label class="mb-hd-field">HD&nbsp;<input id="mb-hd-min" type="number" step="0.5" placeholder="min" /></label>
+          <label class="mb-hd-field">&ndash;&nbsp;<input id="mb-hd-max" type="number" step="0.5" placeholder="max" /></label>
+          <span class="comp-count" id="mb-count"></span>
+        </div>
+        <p id="mb-empty" class="hint">No monsters in the library yet. Use <strong>+ New monster</strong>, <strong>Generate&hellip;</strong>, or paste a stat block.</p>
+        <ul class="comp-list" id="mb-list"></ul>
       </section>
 
       <!-- ===== Compendium tab ===== -->
@@ -236,11 +260,26 @@
           <ul id="mm-lib-list" class="mm-lib-list"></ul>
         </div>
         <div class="mm-paste">
-          <p class="hint">Paste one or more stat blocks (Shadowdark / OSE). Leave a blank line between monsters.</p>
-          <textarea id="mm-paste-area" spellcheck="false" placeholder="BEAR, POLAR&#10;A mighty white bear&hellip;&#10;AC 13, HP 34, ATK 2 claw +6 (2d6), MV near, S +4, D +1, C +3, I -2, W +1, Ch -2, AL N, LV 7"></textarea>
-          <div class="mm-paste-actions">
-            <button id="mm-parse-add" class="btn btn-primary">Parse &rarr; library + combat</button>
-            <button id="mm-parse-lib" class="btn">Parse &rarr; library only</button>
+          <div class="mm-mode" id="mm-mode">
+            <div class="mm-mode-toggle">
+              <button type="button" class="btn is-active mm-mode-btn" data-mode="paste">Paste text</button>
+              <button type="button" class="btn mm-mode-btn" data-mode="fields">Fill in fields</button>
+            </div>
+            <div class="mm-mode-paste">
+              <p class="hint">Paste one or more stat blocks (Shadowdark / OSE). Leave a blank line between monsters.</p>
+              <textarea id="mm-paste-area" spellcheck="false" placeholder="BEAR, POLAR&#10;A mighty white bear&hellip;&#10;AC 13, HP 34, ATK 2 claw +6 (2d6), MV near, S +4, D +1, C +3, I -2, W +1, Ch -2, AL N, LV 7"></textarea>
+              <div class="mm-paste-actions">
+                <button id="mm-parse-add" class="btn btn-primary">Parse &rarr; library + combat</button>
+                <button id="mm-parse-lib" class="btn">Parse &rarr; library only</button>
+              </div>
+            </div>
+            <div class="mm-mode-fields" hidden>
+              <div id="mm-fields-host"></div>
+              <div class="mm-paste-actions">
+                <button id="mm-fields-add" class="btn btn-primary">Add &rarr; library + combat</button>
+                <button id="mm-fields-lib" class="btn">Add &rarr; library only</button>
+              </div>
+            </div>
           </div>
           <div id="mm-msg" class="hint"></div>
         </div>
@@ -249,13 +288,24 @@
   </div>
 
   <div class="modal" id="monster-edit-modal" hidden>
-    <div class="modal-box">
+    <div class="modal-box modal-box-lg">
       <div class="mm-head">
         <h3>Edit monster &mdash; <span id="me-name"></span></h3>
         <button id="me-close" class="btn">&times;</button>
       </div>
-      <p class="hint">Edit the stat block below. Saving re-parses it (Shadowdark / OSE format), keeping this monster&rsquo;s place in the library. Combatants already added to the tracker are not changed.</p>
-      <textarea id="me-area" spellcheck="false"></textarea>
+      <p class="hint">Saving re-parses (Paste text) or rebuilds (Fill in fields) the stat block, keeping this monster&rsquo;s place in the library. Combatants already added to the tracker are not changed.</p>
+      <div class="mm-mode" id="me-mode">
+        <div class="mm-mode-toggle">
+          <button type="button" class="btn is-active mm-mode-btn" data-mode="paste">Paste text</button>
+          <button type="button" class="btn mm-mode-btn" data-mode="fields">Fill in fields</button>
+        </div>
+        <div class="mm-mode-paste">
+          <textarea id="me-area" spellcheck="false"></textarea>
+        </div>
+        <div class="mm-mode-fields" hidden>
+          <div id="me-fields-host"></div>
+        </div>
+      </div>
       <div class="modal-actions">
         <button id="me-save" class="btn btn-primary">Save</button>
         <button id="me-cancel" class="btn">Cancel</button>
@@ -332,7 +382,9 @@
   <script src="js/consumables.js"></script>
   <script src="js/notes.js"></script>
   <script src="js/combat.js"></script>
+  <script src="js/monster-form.js"></script>
   <script src="js/monster-modals.js"></script>
+  <script src="js/monster-browser.js"></script>
   <script src="js/compendium.js"></script>
   <script src="js/compendium-popups.js"></script>
   <script src="js/settings.js"></script>

@@ -406,6 +406,104 @@ test('Combat: ✕ removes a row; Clear empties the tracker', () => {
 });
 
 /* ================================================================== */
+/* Bestiary tab                                                       */
+/* ================================================================== */
+
+test('Bestiary tab: lists monsters, filters by name and HD, shows a count', () => {
+  T.state.monsters = [
+    { id: 'm1', name: 'Goblin', source: 'shadowdark', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [] },
+    { id: 'm2', name: 'Bear', source: 'shadowdark', hd: '5', hdNum: 5, hp: 30, ac: { asc: 13 }, attacks: [], abilities: [] },
+  ];
+  tab('bestiary');
+  T.renderAll();
+  assert.equal($$('#mb-list .mb-row').length, 2);
+  assert.match($('#mb-count').textContent, /2 \/ 2/);
+  setValue($('#mb-search'), 'gob');
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Goblin']);
+  setValue($('#mb-search'), '');
+  setValue($('#mb-hd-min'), '5');
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Bear']);
+});
+
+test('Bestiary "+ New monster" and Combat\'s "+ Add monster…" open the same shared modal', () => {
+  tab('bestiary');
+  click($('#mb-new'));
+  assert.equal($('#monster-modal').hidden, false);
+  click($('#mm-close'));
+  tab('combat');
+  click($('#cb-add-monster'));
+  assert.equal($('#monster-modal').hidden, false);
+});
+
+test('Bestiary: "Fill in fields" builds a monster and adds it to the library', () => {
+  T.state.monsters = [];
+  tab('bestiary');
+  T.renderAll();
+  click($('#mb-new'));
+  click($('#mm-mode .mm-mode-btn[data-mode="fields"]'));
+  assert.equal($('#mm-mode .mm-mode-fields').hidden, false);
+  const host = $('#mm-fields-host');
+  setValue(host.querySelector('.mf-f-name'), 'Field Beastie');
+  setValue(host.querySelector('.mf-f-hd'), '2');
+  setValue(host.querySelector('.mf-f-hp'), '9');
+  setValue(host.querySelector('.mf-f-ac-asc'), '13');
+  click($('#mm-fields-lib'));
+  const added = T.state.monsters.find(m => m.name === 'Field Beastie');
+  assert.ok(added, 'the monster was added to the library');
+  assert.equal(added.hd, '2');
+  assert.equal(added.hp, 9);
+  assert.equal(added.ac.asc, 13);
+  assert.equal(added.source, 'shadowdark');
+  assert.ok($$('#mb-list .comp-name').some(n => n.textContent === 'Field Beastie'), 'appears in the Bestiary list');
+});
+
+test('Bestiary generator: rolls a monster and lands it in the fields form for review before saving', () => {
+  T.state.monsters = [];
+  tab('bestiary');
+  T.renderAll();
+  setValue($('#mb-gen-pl'), '2');
+  setValue($('#mb-gen-mutations'), '1');
+  click($('#mb-generate'));
+  assert.equal($('#monster-modal').hidden, false);
+  assert.equal($('#mm-mode .mm-mode-fields').hidden, false, 'opens straight into "Fill in fields"');
+  const host = $('#mm-fields-host');
+  const name = host.querySelector('.mf-f-name').value;
+  assert.match(name, /^PL 2 .+ Creature$/);
+  assert.equal(host.querySelector('.mf-f-schema').value, 'shadowdark');
+  const abilityNames = $$('.mf-abil-row .mf-abil-name').map(el => el.value);
+  assert.deepEqual(abilityNames, ['Strength', 'Weakness', 'Mutation']);
+  // Rename it, then save — the review step lets the roll be edited first.
+  setValue(host.querySelector('.mf-f-name'), 'My Named Horror');
+  click($('#mm-fields-lib'));
+  const saved = T.state.monsters.find(m => m.name === 'My Named Horror');
+  assert.ok(saved, 'saved under the edited name');
+  assert.equal(saved.source, 'shadowdark');
+});
+
+test('Bestiary: Edit switches an existing (pasted) monster to "Fill in fields", prefilled, and saves changes', () => {
+  T.state.monsters = [
+    { id: 'm1', name: 'Ogre', source: 'shadowdark', desc: 'A brute.', raw: 'Ogre\nAC 12, HP 20, LV 4',
+      ac: { asc: 12, desc: null, thac0: null }, hd: '4', hdNum: 4, hp: 20, move: 'near', align: 'C',
+      xp: null, moraleML: null, atkBonus: 4, attacksText: '1 club +4 (1d10)',
+      attacks: [{ label: 'club', count: 1, toHit: 4, damage: '1d10', note: '', raw: '' }],
+      stats: null, saveTargets: null, savesText: '', abilities: [] },
+  ];
+  tab('bestiary');
+  T.renderAll();
+  click($('.mb-row[data-id="m1"] .mb-edit'));
+  assert.equal($('#monster-edit-modal').hidden, false);
+  click($('#me-mode .mm-mode-btn[data-mode="fields"]'));
+  const host = $('#me-fields-host');
+  assert.equal(host.querySelector('.mf-f-name').value, 'Ogre');
+  assert.equal(host.querySelector('.mf-f-hp').value, '20');
+  setValue(host.querySelector('.mf-f-hp'), '25');
+  click($('#me-save'));
+  const updated = T.state.monsters.find(m => m.id === 'm1');
+  assert.equal(updated.hp, 25);
+  assert.equal(updated.name, 'Ogre');
+});
+
+/* ================================================================== */
 /* Compendium tab                                                     */
 /* ================================================================== */
 
