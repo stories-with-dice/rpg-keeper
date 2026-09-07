@@ -14,6 +14,16 @@ Keep it that way. Do not introduce a build tool, a framework, TypeScript, JSX, n
 dependencies, or CDN `<script>`/`<link>` tags. Everything third-party is **vendored** (`js/marked.min.js`,
 `vendor/fontawesome/`) so the app works fully offline.
 
+**One opt-in exception:** `.github/workflows/release.yml` runs `npm test` then
+`scripts/bundle-standalone.js` on every push to `main`, and publishes the result as a GitHub
+Release — a single HTML file with every `<script src>`/`<link rel="stylesheet">` and the favicon
+inlined (CSS `url(...)` assets, e.g. the Font Awesome webfonts, go in too, as base64 data URIs), so
+the download needs no other files at all. This doesn't change normal usage (opening the repo's own
+`index.html` still works exactly the same) — it's a separate, purely additive convenience artifact.
+Versioning is a plain incrementing counter (`v1`, `v2`, …, no semver), computed each run from the
+highest existing release tag via `gh release list`. Run it locally with `npm run bundle-standalone`
+(writes `dist/index.html`, gitignored).
+
 ## Layout
 
 ```
@@ -63,6 +73,8 @@ data/*.txt             example character sheets (seeded on first run)
 scripts/convert-bestiary.js   CLI: bestiary_data.json -> monsters.json + monsters-data.js
 scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> data/spells.json +
                        js/spells-data.js, { name, category:"Spells", body } entries compendium-seed.js reads
+scripts/bundle-standalone.js  CLI: index.html + every js/css/vendor/image asset it references ->
+                       one self-contained HTML file (dist/index.html) — see "What this is" above
 test/monsters.test.js  node:test suite for the parser + converter
 test/logic.test.js     node:test unit tests for the app's internals (dice engine, Scarlet Heroes,
                        state migration, annotate, compendium resolve, combat, …)

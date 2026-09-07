@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test",
     "convert-bestiary": "node scripts/convert-bestiary.js",
-    "convert-spells": "node scripts/convert-spells-from-shadowdark-resources.js"
+    "convert-spells": "node scripts/convert-spells-from-shadowdark-resources.js",
+    "bundle-standalone": "node scripts/bundle-standalone.js"
   },
   "devDependencies": {
     "jsdom": "^30.0.1"
