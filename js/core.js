@@ -28,7 +28,7 @@
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
     monsters: [], monstersSeeded: false, conditions: [],
     compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0,
-    settings: { scarletHeroes: false, theme: 'default' },
+    settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
@@ -39,6 +39,12 @@
   // Style themes (dark only) — see the theme blocks in css/app.css.
   const THEMES = ['default', 'fantasy', 'sf', 'horror'];
   const THEME_LABELS = { default: 'Default', fantasy: 'Fantasy', sf: 'Sci-fi', horror: 'Horror' };
+
+  // Game system — set via Settings → System, partitions the Compendium
+  // (state.compendium entries each carry a `system` field). Everything that
+  // predates this feature is 'osr'. See AGENTS.md-style notes in js/settings.js.
+  const SYSTEMS = ['osr', 'ua3e'];
+  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed' };
 
   function applyTheme() {
     const t = (OSR.state.settings && OSR.state.settings.theme) || 'default';
@@ -93,8 +99,9 @@
     if (!Array.isArray(state.characters)) state.characters = [];
     if (!Array.isArray(state.monsters)) state.monsters = [];
     if (!Array.isArray(state.log)) state.log = [];
-    state.settings = Object.assign({ scarletHeroes: false, theme: 'default' }, state.settings || {});
+    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'osr' }, state.settings || {});
     if (THEMES.indexOf(state.settings.theme) === -1) state.settings.theme = 'default';
+    if (SYSTEMS.indexOf(state.settings.system) === -1) state.settings.system = 'osr';
     if (!Array.isArray(state.conditions) || !state.conditions.length) {
       state.conditions = CONDITION_SEED.map(c => Object.assign({ id: uid() }, c));
     }
@@ -105,7 +112,10 @@
         !state.characters.some(c => c.id === state.activeIdB))) {
       state.activeIdB = null;
     }
-    state.monsters.forEach(m => { if (!m.id) m.id = uid(); });
+    state.monsters.forEach(m => {
+      if (!m.id) m.id = uid();
+      m.system = SYSTEMS.indexOf(m.system) === -1 ? 'osr' : m.system;
+    });
     // Notes are campaign-global. Fold any old per-character notes into it once.
     if (typeof state.notes !== 'string') state.notes = '';
     state.characters.forEach(ch => {
@@ -121,6 +131,7 @@
       en.category = COMPENDIUM_CATEGORIES.indexOf(en.category) === -1 ? 'Other' : en.category;
       en.source = en.source == null || String(en.source).trim() === '' ? COMPENDIUM_DEFAULT_SOURCE : String(en.source).trim();
       en.body = en.body == null ? '' : String(en.body);
+      en.system = SYSTEMS.indexOf(en.system) === -1 ? 'osr' : en.system;
       if (!en.createdAt) en.createdAt = Date.now();
     });
     if (!state.combat || typeof state.combat !== 'object') state.combat = {};
@@ -143,16 +154,37 @@
   }
 
   // Trackers ("consumables") are campaign-global, not per-character. Every
-  // character gets one "HP (Name)" tracker, seeded at 0/0.
+  // OSR character gets one "HP (Name)" tracker, seeded at 0/0 — Unknown
+  // Armies characters (charSystemKey(ch) === 'ua3e', see js/characters.js —
+  // a ```ua fence in the body, independent of whichever System is currently
+  // selected) get a "Wounds (Name)" tracker instead, via ensureWoundTracker
+  // below. Bug fix: this used to fire unconditionally for every character.
   function hpTrackerLabel(ch) { return 'HP (' + (ch ? ch.name : '') + ')'; }
 
   function ensureHpTracker(ch) {
     if (!ch) return;
+    if (OSR.charSystemKey && OSR.charSystemKey(ch) !== 'osr') return;
     const state = OSR.state;
     const label = hpTrackerLabel(ch);
     if (!state.consumables.some(c => c.name === label)) {
       state.consumables.push({ id: uid(), name: label, value: 0, max: 0 });
     }
+  }
+
+  // Unknown Armies characters track Wound Threshold instead of HP. Same
+  // campaign-global consumable mechanism as ensureHpTracker(), but only ever
+  // created for a character once a ```ua statblock with a Wound Threshold is
+  // found (see js/characters.js) — plain OSR characters never get one.
+  function woundTrackerLabel(ch) { return 'Wounds (' + (ch ? ch.name : '') + ')'; }
+
+  function ensureWoundTracker(ch, threshold) {
+    if (!ch || threshold == null || !isFinite(threshold)) return;
+    const state = OSR.state;
+    const label = woundTrackerLabel(ch);
+    let c = state.consumables.find(x => x.name === label);
+    if (!c) { c = { id: uid(), value: 0, max: 0 }; state.consumables.push(c); }
+    c.name = label;
+    c.max = Math.max(0, Math.round(threshold));
   }
 
   function ensureConsumablesShape() {
@@ -203,9 +235,10 @@
   Object.assign(OSR, {
     STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
-    THEMES, THEME_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
+    THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
     applyTheme, load, ensureStateShape, ensureCharShape,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
+    woundTrackerLabel, ensureWoundTracker,
     save, activeChar
   });
 })(window.OSR = window.OSR || {});

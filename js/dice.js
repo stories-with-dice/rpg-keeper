@@ -140,6 +140,29 @@
   // An unresolved reference is rejected explicitly here rather than handed
   // to evalFormula: its regex scan skips over unmatched text instead of
   // failing, so "1d6+$NOPE" would otherwise silently roll just "1d6".
+  // Unknown Armies-style percentile roll: "%65" (a target rating, optionally
+  // followed by signed flat modifiers, e.g. "%65+10-5" from the right-click
+  // roll-with-modifiers popup or a $variable substitution) rolls 1d100 and
+  // succeeds on a result <= the (modified) target. Always logs the actual
+  // roll, plus RAW's special results (p.14-15): 00 is always a Fumble, 01 is
+  // always a Crit, and any other doubled roll (11, 22, …) is Matched.
+  function rollPercent(resolved, source) {
+    const m = String(resolved || '').match(/^%(-?\d+)((?:[+-]\d+)*)$/);
+    if (!m) { showLast('—', 'Invalid: ' + resolved, ''); return null; }
+    let target = parseInt(m[1], 10);
+    (m[2].match(/[+-]\d+/g) || []).forEach(mod => { target += parseInt(mod, 10); });
+    target = Math.max(0, Math.min(100, target));
+    const roll = rollDie(100); // 1-100, 100 standing in for "00"
+    const tens = Math.floor((roll % 100) / 10), ones = roll % 10;
+    let verdict = roll <= target ? 'Success' : 'Failure';
+    if (roll === 100) verdict = 'Fumble';
+    else if (roll === 1) verdict = 'Crit';
+    else if (tens === ones) verdict = 'Matched ' + verdict;
+    const entry = pushLog(source || 'Roll', '≤' + target + '%', roll, verdict);
+    OSR.updateApplyButton(); // pushLog already cleared lastRoll — a % roll isn't "damage"
+    return entry;
+  }
+
   function doRoll(formula, source, vars) {
     const raw = String(formula || '');
     let resolved = raw;
@@ -151,6 +174,7 @@
       }
       resolved = sub.text;
     }
+    if (resolved.charAt(0) === '%') return rollPercent(resolved, source);
     const res = evalFormula(resolved);
     if (!res) { showLast('—', 'Invalid: ' + raw, ''); return null; }
     const entry = pushLog(source || 'Roll', res.normalized, res.total, res.detail);
@@ -228,6 +252,6 @@
 
   Object.assign(OSR, {
     rollDie, rollTerm, evalFormula, normVarKey, substituteVars, formatFormulaDisplay,
-    pushLog, pushNote, doRoll, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog
+    pushLog, pushNote, doRoll, rollPercent, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog
   });
 })(window.OSR = window.OSR || {});

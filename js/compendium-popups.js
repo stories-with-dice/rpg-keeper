@@ -141,7 +141,7 @@
     const t = String(q || '').trim().toLowerCase();
     if (t.length < 2) return [];
     const starts = [], has = [];
-    OSR.state.compendium.forEach(e => {
+    OSR.compendiumForSystem().forEach(e => {
       const i = (e.name || '').toLowerCase().indexOf(t);
       if (i === 0) starts.push(e); else if (i > 0) has.push(e);
     });

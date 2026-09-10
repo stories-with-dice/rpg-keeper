@@ -177,6 +177,85 @@ test('View mode: a dice formula in the sheet renders a clickable .roll span logg
   assert.match(logText(), /Archer/);
 });
 
+test('View mode: a bare "NN%" renders as a clickable roll; clicking it logs the actual d100 result and a verdict', () => {
+  T.createCharacter('# Kevin Johnson\n\nCivil War Re-Enactor 65%');
+  T.renderAll();
+  const pct = $$('#mode-view .roll').find(el => el.dataset.formula === '%65');
+  assert.ok(pct, 'a %65 roll span was produced');
+  assert.equal(pct.textContent, '65%');
+  rig(face(30, 100));
+  click(pct);
+  assert.equal(logCount(), 1);
+  const last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.total, 30);
+  assert.equal(last.detail, 'Success');
+  assert.match(logText(), /Kevin Johnson/);
+});
+
+test('View mode: a ```ua fence renders as a computed statblock panel; Edit mode shows the raw fenced text', () => {
+  const body = '# Kevin Johnson [Unknown Armies]\n\n```ua\n' +
+    'Identities\n' +
+    'Civil War Re-Enactor 65%* — Provides Initiative, Substitutes for Dodge, Substitutes for Fitness\n\n' +
+    'Shock\n' +
+    'Helplessness: 1 hardened / 1 failed\n' +
+    'Isolation: 3 hardened / 2 failed\n' +
+    'Self: 2 hardened / 0 failed\n' +
+    'Unnatural: 1 hardened / 2 failed\n' +
+    'Violence: 2 hardened / 3 failed\n' +
+    '```\n';
+  T.state.settings.system = 'ua3e'; // the character dropdown only lists the active system's characters
+  T.createCharacter(body);
+  T.renderAll();
+  const block = $('#mode-view .ua-block');
+  assert.ok(block, 'the fence rendered as a statblock panel');
+  assert.doesNotMatch($('#mode-view').innerHTML, /```/, 'no literal fence markers remain in View mode');
+  assert.match(block.textContent, /Identities/, 'section headers render (bug: they were missing)');
+  // Isolation: nothing Substitutes for Status/Pursuit -> plain computed values.
+  assert.match(block.textContent, /Status 50%/); // Isolation hardened=3 -> 65-15=50
+  assert.match(block.textContent, /Pursuit 30%/);
+  // the computed ability percentage is itself a clickable roll, same as any other NN%
+  const abilityRoll = $$('#mode-view .ua-block .roll').find(el => el.dataset.formula === '%50');
+  assert.ok(abilityRoll, 'the computed Status 50% is clickable');
+  // Civil War Re-Enactor Substitutes for Dodge and Fitness -> the ability
+  // label shows its own 65%, not the plain computed 60%/20%, color-linked via .ua-sub.
+  assert.doesNotMatch(block.textContent, /Fitness 60%/);
+  const fitnessLink = $$('#mode-view .ua-block .ua-ability-label .ua-sub').find(el => el.textContent === 'Fitness');
+  assert.ok(fitnessLink, 'Fitness is color-linked to the substituting identity');
+  const identityLink = $$('#mode-view .ua-block .ua-identities .ua-sub').find(el => el.textContent === 'Civil War Re-Enactor');
+  assert.ok(identityLink, 'the identity name shares the same .ua-sub link');
+
+  click($('#btn-mode-edit'));
+  assert.match($('#edit-host textarea').value, /```ua/, 'Edit mode shows the raw fence, unrendered');
+});
+
+test('View mode: clicking a Shock dot sets Hardened/Failed and recomputes the Abilities table live', () => {
+  const body = '# Kevin Johnson [Unknown Armies]\n\n```ua\nShock\nHelplessness: 1 hardened / 1 failed\n```\n';
+  T.state.settings.system = 'ua3e';
+  T.createCharacter(body);
+  T.renderAll();
+
+  const dots = () => $$('#mode-view .ua-dots[data-meter="Helplessness"][data-field="hardened"] .ua-dot');
+  assert.equal(dots().length, 9);
+  assert.equal($$('#mode-view .ua-dots[data-meter="Helplessness"][data-field="hardened"] .ua-dot.is-filled').length, 1);
+  assert.match($('#mode-view .ua-block').textContent, /Fitness 60%/); // hardened=1 -> 65-5=60
+
+  click(dots()[4]); // dot 5 -> Hardened 5
+  assert.match(T.activeChar().body, /Helplessness: 5 hardened \/ 1 failed/, 'the fence text itself was rewritten');
+  assert.equal($$('#mode-view .ua-dots[data-meter="Helplessness"][data-field="hardened"] .ua-dot.is-filled').length, 5);
+  assert.match($('#mode-view .ua-block').textContent, /Fitness 40%/); // hardened=5 -> 65-25=40
+  assert.doesNotMatch($('#mode-view .ua-block').textContent, /Fitness 60%/);
+
+  // clicking the currently-topmost filled dot again drops it back by one
+  click(dots()[4]);
+  assert.match(T.activeChar().body, /Helplessness: 4 hardened \/ 1 failed/);
+
+  // Failed dots are independent, clamp at 5, and flag Insanity Syndrome at 5
+  const fDots = () => $$('#mode-view .ua-dots[data-meter="Helplessness"][data-field="failed"] .ua-dot');
+  click(fDots()[4]);
+  assert.match(T.activeChar().body, /Helplessness: 4 hardened \/ 5 failed/);
+  assert.match($('#mode-view .ua-block').textContent, /Insanity syndrome/);
+});
+
 test('View mode: [bracketed] names render as .comp-ref, short system tags do not', () => {
   T.createCharacter('# Knight [SD]\n\nCarries a [Longsword] and a [Shield].');
   T.renderAll();
@@ -344,6 +423,26 @@ test('Consumables: + Add appends a row; steppers bump and clamp; ✕ deletes', (
   assert.equal($$('#consumables-list .cons-row').length, 0);
 });
 
+test('Consumables: HP/Wounds trackers only show for the active system; switching System toggles them without deleting either', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.createCharacter('```ua\nWound Threshold: 50\n\nShock\n```\n', { name: 'Kevin' });
+  T.state.consumables.push({ id: 'r1', name: 'Rations', value: 3, max: 3 });
+  T.renderAll();
+
+  const names = () => $$('#consumables-list .cons-name').map(i => i.value).sort();
+  assert.deepEqual(names(), ['HP (Garrick)', 'Rations']);
+
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+  assert.deepEqual(names(), ['Rations', 'Wounds (Kevin)']);
+
+  setValue($('#set-system'), 'osr');
+  assert.deepEqual(names(), ['HP (Garrick)', 'Rations']);
+
+  // still never deleted underneath
+  assert.equal(T.state.consumables.length, 3);
+});
+
 /* ================================================================== */
 /* Combat tab                                                         */
 /* ================================================================== */
@@ -423,6 +522,24 @@ test('Bestiary tab: lists monsters, filters by name and HD, shows a count', () =
   setValue($('#mb-search'), '');
   setValue($('#mb-hd-min'), '5');
   assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Bear']);
+});
+
+test('Bestiary tab: only shows the active system\'s monsters (bug: OSR monsters showed in UA mode and vice versa)', () => {
+  T.state.monsters = [
+    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' },
+  ];
+  tab('bestiary');
+  T.renderAll();
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Goblin']);
+  assert.match($('#mb-count').textContent, /1 \/ 1/);
+
+  T.state.settings.system = 'ua3e';
+  T.renderAll();
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Denizen']);
+
+  // still neither deleted
+  assert.equal(T.state.monsters.length, 2);
 });
 
 test('Bestiary "+ New monster" and Combat\'s "+ Add monster…" open the same shared modal', () => {
@@ -663,6 +780,66 @@ test('Settings: Compendium "Reseed defaults" adds the bundled gear; "Delete all"
   assert.equal(T.state.compendium.length, 0);
 });
 
+test('Settings: System select partitions the Compendium — an entry created under one system is invisible under the other', () => {
+  tab('settings');
+  assert.equal($('#set-system').value, 'osr');
+
+  setValue($('#set-system'), 'ua3e');
+  assert.equal(T.state.settings.system, 'ua3e');
+  assert.equal(savedState().settings.system, 'ua3e');
+  assert.match(logText(), /System/);
+
+  tab('compendium');
+  click($('#comp-new'));
+  setValue($('#comp-f-name'), 'Biblioklept');
+  $('#comp-f-cat').value = 'Other';
+  click($('#comp-save'));
+  assert.match($('#comp-list').textContent, /Biblioklept/);
+  const entry = T.state.compendium.find(e => e.name === 'Biblioklept');
+  assert.equal(entry.system, 'ua3e');
+
+  tab('settings');
+  setValue($('#set-system'), 'osr');
+  tab('compendium');
+  assert.doesNotMatch($('#comp-list').textContent, /Biblioklept/, 'the ua3e entry is hidden under osr');
+  assert.ok(T.state.compendium.some(e => e.name === 'Biblioklept'), 'but it still exists in state');
+});
+
+test('Settings: switching System updates the Character dropdown immediately (bug: UA characters showed while in OSR mode)', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.createCharacter(
+    '# Kevin Johnson [Unknown Armies]\n\n```ua\nShock\nHelplessness: 1 hardened / 1 failed\n```\n',
+    { name: 'Kevin Johnson' }
+  );
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
+  assert.equal($('#view-name').textContent, 'Garrick', 'creating the UA character did not steal focus');
+
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Kevin Johnson (Unknown Armies)']);
+  assert.equal($('#view-name').textContent, 'Kevin Johnson');
+
+  tab('settings');
+  setValue($('#set-system'), 'osr');
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
+});
+
+test('Settings: Compendium "Delete all" only clears the active system\'s entries (bug: used to wipe every system)', () => {
+  T.state.compendium.push(
+    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'u1', name: 'Biblioklept', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
+  );
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+  click($('#set-clear-compendium'));     // confirm() stubbed true
+  assert.equal(T.state.compendium.some(e => e.name === 'Biblioklept'), false, 'the active system was cleared');
+  assert.ok(T.state.compendium.some(e => e.name === 'Longsword'), 'the other system was left alone');
+});
+
 test('Settings: Monster library "Reload defaults" repopulates state.monsters', async () => {
   T.state.monsters = [];
   T.state.monstersSeeded = false;
@@ -671,6 +848,112 @@ test('Settings: Monster library "Reload defaults" repopulates state.monsters', a
   await new Promise(r => setTimeout(r, 30));
   assert.ok(T.state.monsters.length > 0);
   assert.match($('#set-lib-count').textContent, /monster/);
+});
+
+test('Settings: Monster library "Reload defaults" only replaces the OSR portion (bug: wiped every system)', async () => {
+  T.state.monsters = [
+    { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' },
+  ];
+  T.state.monstersSeeded = false;
+  tab('settings');
+  click($('#set-reload-monsters'));      // confirm() stubbed true; seedMonsters() is async
+  await new Promise(r => setTimeout(r, 30));
+  assert.ok(T.state.monsters.some(m => m.name === 'Denizen'), 'the ua3e monster survived the reload');
+  assert.ok(T.state.monsters.some(m => (m.system || 'osr') === 'osr'), 'the bundled osr defaults were (re)added');
+});
+
+test('Settings: switching System updates the Bestiary tab and Combat\'s add-character/add-monster dropdowns immediately', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.state.monsters = [
+    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' },
+  ];
+  T.renderAll();
+  tab('bestiary');
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Goblin']);
+  assert.deepEqual($$('#cb-add-char option').slice(1).map(o => o.textContent), ['Garrick']);
+
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+
+  tab('bestiary');
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Denizen']);
+  assert.deepEqual($$('#cb-add-char option').slice(1).map(o => o.textContent), []);
+});
+
+test('System switch: Compendium, Bestiary, Character dropdown, Combat pickers, and Consumables all partition together, in one flow, with nothing ever deleted', () => {
+  // One of each kind of System-partitioned thing, one per system.
+  T.createCharacter('# Garrick [WWN]\nA warrior.'); // -> HP (Garrick)
+  T.createCharacter('# Kevin [Unknown Armies]\n\n```ua\nWound Threshold: 50\n\nShock\n```\n'); // -> Wounds (Kevin)
+  T.state.compendium.push(
+    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'cu1', name: 'Biblioklept', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
+  );
+  T.state.monsters.push(
+    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'mu1', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' }
+  );
+  T.state.consumables.push({ id: 'r1', name: 'Rations', value: 3, max: 3 }); // not tied to any character
+  T.renderAll();
+
+  function assertOsrView() {
+    tab('character');
+    assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
+    assert.equal($('#view-name').textContent, 'Garrick');
+
+    tab('compendium');
+    assert.deepEqual($$('#comp-list .comp-name').map(n => n.textContent), ['Longsword']);
+
+    tab('bestiary');
+    assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Goblin']);
+
+    tab('combat');
+    assert.deepEqual($$('#cb-add-char option').slice(1).map(o => o.textContent), ['Garrick']);
+    click($('#cb-add-monster'));
+    assert.deepEqual($$('#mm-lib-list .mm-li-main b').map(b => b.textContent), ['Goblin']);
+    click($('#mm-close'));
+
+    assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['HP (Garrick)', 'Rations']);
+  }
+  function assertUaView() {
+    tab('character');
+    assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Kevin (Unknown Armies)']);
+    assert.equal($('#view-name').textContent, 'Kevin');
+
+    tab('compendium');
+    assert.deepEqual($$('#comp-list .comp-name').map(n => n.textContent), ['Biblioklept']);
+
+    tab('bestiary');
+    assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Denizen']);
+
+    tab('combat');
+    assert.deepEqual($$('#cb-add-char option').slice(1).map(o => o.textContent), ['Kevin']);
+    click($('#cb-add-monster'));
+    assert.deepEqual($$('#mm-lib-list .mm-li-main b').map(b => b.textContent), ['Denizen']);
+    click($('#mm-close'));
+
+    assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['Rations', 'Wounds (Kevin)']);
+  }
+
+  assertOsrView(); // default System is 'osr'
+
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+  assertUaView();
+
+  tab('settings');
+  setValue($('#set-system'), 'osr');
+  assertOsrView(); // switching back restores the exact same OSR view
+
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+  assertUaView(); // and back again — idempotent, not a one-shot fluke
+
+  // Nothing was ever deleted by any of the switching above.
+  assert.equal(T.state.characters.length, 2);
+  assert.equal(T.state.compendium.length, 2);
+  assert.equal(T.state.monsters.length, 2);
+  assert.deepEqual(T.state.consumables.map(c => c.name).sort(), ['HP (Garrick)', 'Rations', 'Wounds (Kevin)']);
 });
 
 /* ================================================================== */

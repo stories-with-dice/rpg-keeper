@@ -1,0 +1,40 @@
+# Lucinda Adams [Unknown Armies]
+
+*Biblioklept grad student — the Fifth Wheels*
+
+Lucinda is curvy, pale, wears stylish glasses, and sports shockingly vibrant green hair. She's a twenty-something with more bright colors in her wardrobe than a box of Crayola crayons, and just as many shoes to match.
+
+**Obsession:** Books are alive and must be listened to.
+
+**Possessions:** Wears a pewter replica of the Libra Negra around her neck and has a tattoo of a ritual found in *The Key of Solomon* (Clavicula Salomonis) on her hip. Despite her desire to collect other occult artifacts featured in the books she reads, she's afraid to start — so she frequents oddball museums, like the American Museum of Magic in Marshall, Michigan, and buys refrigerator magnets instead.
+
+**Important Locations:** Big Bay State Park.
+
+After witnessing a bibliomancer performing magick, Lucinda rationalized that souls become trapped in books, and it's her duty to collect and listen to them. Her nose firmly planted in the tomes she steals, Lucinda is a grad student at Loyola University Chicago, well on her way to achieving yet another degree no one has heard of. She's got a bit of a mouth on her, and has no problem standing up for the other outcasts in her family. If no one else steps forward, Lucinda would make an excellent ringleader for the group.
+
+```ua
+Identities
+Biblioklept 65%* — Evaluates the Unnatural, Substitutes for Knowledge, Substitutes for Secrecy
+Obnoxious 55% — Coerces Helplessness, Protects Connect, Substitutes for Lie
+
+Passions
+Fear (Helplessness): Losing her connection to reality.
+Noble: Using magickal knowledge to help people.
+Rage: Those who prey upon the weak or innocent.
+
+Relationships
+Responsibility: The Fifth Wheels 45%
+Favorite: __%
+Guru: __%
+Mentor: __%
+Protégé: __%
+
+Wound Threshold: 50
+
+Shock
+Helplessness: 1 hardened / 0 failed
+Isolation: 3 hardened / 1 failed
+Self: 2 hardened / 1 failed
+Unnatural: 1 hardened / 0 failed
+Violence: 1 hardened / 0 failed
+```

@@ -5,14 +5,36 @@
   'use strict';
   const { $, escapeHtml, uid } = OSR;
 
-  function renderConsumables() {
+  // A per-character "HP (Name)"/"Wounds (Name)" tracker only makes sense
+  // while that character's own system (charSystemKey — a ```ua fence in the
+  // body, not the globally-selected one) matches the active System; HP
+  // belongs to OSR characters, Wounds to Unknown Armies ones (see
+  // ensureHpTracker/ensureWoundTracker in js/core.js). Filtered from view
+  // only, never deleted — switching System back shows it again exactly as it
+  // was, same as the Compendium/Bestiary/Character partitioning. Trackers
+  // that don't belong to any character (Rations, Torches, …) always show.
+  function consumablesForSystem() {
     const state = OSR.state;
+    const owners = new Map(); // tracker label -> owning character
+    state.characters.forEach(ch => {
+      owners.set(OSR.hpTrackerLabel(ch), ch);
+      owners.set(OSR.woundTrackerLabel(ch), ch);
+    });
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    return state.consumables.filter(c => {
+      const owner = owners.get(c.name);
+      return !owner || (OSR.charSystemKey ? OSR.charSystemKey(owner) : 'osr') === sys;
+    });
+  }
+
+  function renderConsumables() {
     const list = $('#consumables-list');
-    $('#consumables-empty').hidden = state.consumables.length > 0;
+    const visible = consumablesForSystem();
+    $('#consumables-empty').hidden = visible.length > 0;
     $('#btn-cons-add').disabled = false;
     list.innerHTML = '';
 
-    state.consumables.forEach(c => {
+    visible.forEach(c => {
       const row = document.createElement('div');
       row.className = 'cons-row';
       row.dataset.id = c.id;
@@ -87,5 +109,5 @@
     });
   }
 
-  Object.assign(OSR, { renderConsumables, wireConsumables });
+  Object.assign(OSR, { consumablesForSystem, renderConsumables, wireConsumables });
 })(window.OSR = window.OSR || {});

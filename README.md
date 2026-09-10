@@ -1,7 +1,9 @@
-# OSR Manager
+# Character Keeper
 
-A single-page app for keeping **OSR / old-school RPG characters** and running **basic combat**.
-Plain HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser.
+A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
+Worlds Without Number, OSE, …) and **Unknown Armies 3rd Edition** — and running **basic combat**.
+Settings → **System** switches which ruleset's characters and Compendium you're looking at. Plain
+HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser.
 
 - **Live:** deployed to GitHub Pages from `main` (see the repo's Pages settings for the URL).
 - **Local:** just open `index.html` in a browser. Everything works from `file://`, including the

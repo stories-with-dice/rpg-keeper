@@ -6,18 +6,31 @@
   'use strict';
   const { $, escapeHtml, uid, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE } = OSR;
 
+  // The Compendium is partitioned by game system (Settings → System) — every
+  // entry carries a `system` field ('osr' | 'ua3e', backfilled to 'osr' by
+  // ensureStateShape for anything that predates this). Only the entries for
+  // the currently active system are ever listed, resolved, or searched.
+  function currentSystem() {
+    return (OSR.state.settings && OSR.state.settings.system) || 'osr';
+  }
+  function compendiumForSystem() {
+    const sys = currentSystem();
+    return OSR.state.compendium.filter(e => (e.system || 'osr') === sys);
+  }
+
   // Resolve a name to compendium entries: exact (case-insensitive) matches
   // first; if none, the best fuzzy matches (needs js/fuse.min.js).
   function compByExactName(q) {
     const n = String(q || '').trim().toLowerCase();
     if (!n) return [];
-    return OSR.state.compendium.filter(e => e.name.trim().toLowerCase() === n);
+    return compendiumForSystem().filter(e => e.name.trim().toLowerCase() === n);
   }
   // Returns Fuse results: [{ item, score }] (score 0 = perfect, 1 = worst).
   function compFuzzy(q, fullText) {
     const term = String(q || '').trim();
-    if (!term || !OSR.state.compendium.length || typeof Fuse === 'undefined') return [];
-    const fuse = new Fuse(OSR.state.compendium, {
+    const pool = compendiumForSystem();
+    if (!term || !pool.length || typeof Fuse === 'undefined') return [];
+    const fuse = new Fuse(pool, {
       keys: fullText ? ['name', 'body'] : ['name'],
       threshold: 0.45, ignoreLocation: true, includeScore: true
     });
@@ -41,7 +54,7 @@
     return compCatFilter;
   }
   function compSources() {
-    return Array.from(new Set(OSR.state.compendium.map(e => e.source || COMPENDIUM_DEFAULT_SOURCE)))
+    return Array.from(new Set(compendiumForSystem().map(e => e.source || COMPENDIUM_DEFAULT_SOURCE)))
       .sort((a, b) => a.localeCompare(b));
   }
   function renderCompCats() {
@@ -62,7 +75,7 @@
   }
   function compListMatches() {
     const on = compCats();
-    let list = OSR.state.compendium.filter(e =>
+    let list = compendiumForSystem().filter(e =>
       on.has(e.category) && !compSrcOff.has(e.source || COMPENDIUM_DEFAULT_SOURCE));
     const term = $('#comp-search').value.trim();
     if (term) {
@@ -83,8 +96,9 @@
     renderCompCats();
     updateCompSrcDatalist();
     const list = compListMatches();
-    $('#comp-count').textContent = list.length + ' / ' + OSR.state.compendium.length;
-    $('#comp-empty').hidden = OSR.state.compendium.length > 0;
+    const total = compendiumForSystem().length;
+    $('#comp-count').textContent = list.length + ' / ' + total;
+    $('#comp-empty').hidden = total > 0;
     $('#comp-list').innerHTML = list.map(e =>
       '<li class="comp-row" data-id="' + e.id + '">' +
         '<div class="comp-row-head">' +
@@ -147,7 +161,7 @@
     if (en) {
       en.name = name; en.category = category; en.source = source; en.body = body; en.updatedAt = Date.now();
     } else {
-      en = { id: uid(), name: name, category: category, source: source, body: body, createdAt: Date.now(), updatedAt: Date.now() };
+      en = { id: uid(), name: name, category: category, source: source, body: body, system: currentSystem(), createdAt: Date.now(), updatedAt: Date.now() };
       OSR.state.compendium.push(en);
     }
     OSR.save();
@@ -194,7 +208,7 @@
       OSR.state.compendium.push({
         id: uid(), name: e.name,
         category: COMPENDIUM_CATEGORIES.indexOf(e.category) === -1 ? 'Items' : e.category,
-        source: 'Shadowdark Core',
+        source: 'Shadowdark Core', system: 'osr',
         body: e.body || '', createdAt: Date.now(), updatedAt: Date.now()
       });
       added++;
@@ -275,6 +289,7 @@
   }
 
   Object.assign(OSR, {
+    currentSystem, compendiumForSystem,
     compByExactName, compFuzzy, compResolve, compExcerpt, compListMatches,
     resetCompendiumFilters, renderCompendium,
     openCompEntry, closeCompEntry, saveCompEntry, deleteCompEntry,

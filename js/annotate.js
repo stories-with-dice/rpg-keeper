@@ -13,6 +13,11 @@
   // part of a dice chain above — e.g. "Melee bonus: $STR" rolls 1d20+STR
   // (evalFormula's own "no dice -> d20" fallback, once $STR is substituted).
   const VARREF_RE = /(?<![\w.$])[+-]?\$([A-Za-z][A-Za-z0-9]*)/g;
+  // A bare "NN%" (Unknown Armies identity/ability/relationship rating, etc.)
+  // becomes a clickable percentile roll: 1d100, success on a result <= NN.
+  // Capped to 0-100 so it doesn't misfire on unrelated percentages ("150% of
+  // normal"); doRoll() (js/dice.js) recognizes the leading '%' sentinel.
+  const PCT_RE = /\b\d{1,3}%(?!\d)/g;
   // Bracketed compendium references: [Longsword], [Bless]. Skipped: short
   // all-caps/system tags like [WWN], [SD], and anything with markdown link
   // punctuation left in it.
@@ -112,6 +117,14 @@
       if (spans.some(sp => s < sp.end && e > sp.start)) continue;
       spans.push({ kind: 'roll', start: s, end: e, formula: m[0].replace(/\s+/g, ''), label: m[0].replace(/\$/g, '') });
     }
+    PCT_RE.lastIndex = 0;
+    while ((m = PCT_RE.exec(text))) {
+      const num = parseInt(m[0], 10);
+      if (num > 100) continue;
+      const s = m.index, e = m.index + m[0].length;
+      if (spans.some(sp => s < sp.end && e > sp.start)) continue;
+      spans.push({ kind: 'roll', start: s, end: e, formula: '%' + num, label: num + '%' });
+    }
     spans.sort((a, b) => a.start - b.start);
     return spans;
   }
@@ -146,7 +159,8 @@
         // rendered text itself (see the "$" stripped from sp.label above).
         const display = sp.formula.indexOf('$') !== -1 && opts && opts.vars
           ? OSR.formatFormulaDisplay(sp.formula, opts.vars) : sp.formula;
-        el.title = sp.isVar ? ('Roll ' + display + ' — variable ' + sp.varName) : ('Roll ' + display);
+        el.title = sp.isVar ? ('Roll ' + display + ' — variable ' + sp.varName)
+          : (sp.formula.charAt(0) === '%' ? ('Roll d100 — success on ' + sp.label + ' or less') : ('Roll ' + display));
         if (sp.isVar) el.dataset.varName = sp.varName;
       }
       frag.appendChild(el);

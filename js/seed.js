@@ -8,7 +8,10 @@
   'use strict';
   const MONSTERS_URL = 'data/monsters.json';
 
-  const SEED_FILES = ['data/garrick-wwn.txt', 'data/gulzund-blize-shadowdark.txt'];
+  const SEED_FILES = [
+    'data/garrick-wwn.txt', 'data/gulzund-blize-shadowdark.txt',
+    'data/kevin-johnson-ua3e.txt', 'data/lucinda-adams-ua3e.txt'
+  ];
 
   // Used only when data/*.txt can't be fetched (e.g. page opened via file://).
   const SEED_WWN = `Garrick [WWN]
@@ -99,8 +102,93 @@ Credits: 0`;
 ## Bonds / notes
 - Background: Drawn.`;
 
+  const SEED_KJ = `# Kevin Johnson [Unknown Armies]
+
+*Civil War re-enactor, father, school custodian — the Fifth Wheels*
+
+Kevin is an older man with dark skin and close-cropped hair, of average height and size, in his mid to late fifties. He dresses plainly and enjoys wearing comfortable shoes and button-down shirts.
+
+**Obsession:** Kevin is obsessed with reconstructing key battles of the past in minute detail, because the Civil War was a struggle worth fighting.
+
+**Possessions:** Collects self-help audiotapes by Tony Robbins and Shonda Rhimes that he plays whenever he's feeling low. Carries an impressive (and extremely valuable) set of Civil War-era surgeon's tools and apothecary jars filled with whiskey, opium, chloroform, and quinine, locked in the trunk of his 2001 Chevy Malibu.
+
+**Important Locations:** Big Bay State Park.
+
+Kevin realized the supernatural was real after he lost time for an hour in 2006 during his last trip to Big Bay State Park on Madeline Island with his then-wife, Nikki, and their daughter, Rachel. He currently lives in San Mateo, California and works as a school custodian. During the summer months, Kevin devotes his energy to filling the shoes of Civil War surgeons, like Jonathan Letterman, and travels thousands of miles to amputate limbs and save dying soldiers. Kevin blames himself for his family problems and takes the brunt of the abuse for his ex-wife's mysterious departure — until he doesn't.
+
+\`\`\`ua
+Identities
+Civil War Re-Enactor 65%* — Provides Initiative, Substitutes for Dodge, Substitutes for Fitness
+Father 35% — Coerces Connect, Evaluates Helplessness, Substitutes for Secrecy
+School Custodian 20% — Evaluates Isolation, Substitutes for Knowledge, Substitutes for Notice
+
+Passions
+Fear (Isolation): Dying alone and unloved.
+Noble: Reconciliation with his ex-wife.
+Rage: Bullies of any kind, especially family members.
+
+Relationships
+Responsibility: Rachel 45%
+Favorite: __%
+Guru: __%
+Mentor: __%
+Protégé: __%
+
+Wound Threshold: 50
+
+Shock
+Helplessness: 1 hardened / 1 failed
+Isolation: 3 hardened / 2 failed
+Self: 2 hardened / 0 failed
+Unnatural: 1 hardened / 2 failed
+Violence: 2 hardened / 3 failed
+\`\`\`
+`;
+
+  const SEED_LA = `# Lucinda Adams [Unknown Armies]
+
+*Biblioklept grad student — the Fifth Wheels*
+
+Lucinda is curvy, pale, wears stylish glasses, and sports shockingly vibrant green hair. She's a twenty-something with more bright colors in her wardrobe than a box of Crayola crayons, and just as many shoes to match.
+
+**Obsession:** Books are alive and must be listened to.
+
+**Possessions:** Wears a pewter replica of the Libra Negra around her neck and has a tattoo of a ritual found in *The Key of Solomon* (Clavicula Salomonis) on her hip. Despite her desire to collect other occult artifacts featured in the books she reads, she's afraid to start — so she frequents oddball museums, like the American Museum of Magic in Marshall, Michigan, and buys refrigerator magnets instead.
+
+**Important Locations:** Big Bay State Park.
+
+After witnessing a bibliomancer performing magick, Lucinda rationalized that souls become trapped in books, and it's her duty to collect and listen to them. Her nose firmly planted in the tomes she steals, Lucinda is a grad student at Loyola University Chicago, well on her way to achieving yet another degree no one has heard of. She's got a bit of a mouth on her, and has no problem standing up for the other outcasts in her family. If no one else steps forward, Lucinda would make an excellent ringleader for the group.
+
+\`\`\`ua
+Identities
+Biblioklept 65%* — Evaluates the Unnatural, Substitutes for Knowledge, Substitutes for Secrecy
+Obnoxious 55% — Coerces Helplessness, Protects Connect, Substitutes for Lie
+
+Passions
+Fear (Helplessness): Losing her connection to reality.
+Noble: Using magickal knowledge to help people.
+Rage: Those who prey upon the weak or innocent.
+
+Relationships
+Responsibility: The Fifth Wheels 45%
+Favorite: __%
+Guru: __%
+Mentor: __%
+Protégé: __%
+
+Wound Threshold: 50
+
+Shock
+Helplessness: 1 hardened / 0 failed
+Isolation: 3 hardened / 1 failed
+Self: 2 hardened / 1 failed
+Unnatural: 1 hardened / 0 failed
+Violence: 1 hardened / 0 failed
+\`\`\`
+`;
+
   async function seed() {
-    const fallback = [SEED_WWN, SEED_SD];
+    const fallback = [SEED_WWN, SEED_SD, SEED_KJ, SEED_LA];
     const isFile = location.protocol === 'file:';
     for (let i = 0; i < SEED_FILES.length; i++) {
       let text = null;
@@ -178,8 +266,11 @@ Credits: 0`;
     }
     // clone so state mutations never touch the shared constant
     defs = JSON.parse(JSON.stringify(defs));
-    defs.forEach(d => { if (!d.id) d.id = OSR.uid(); });
-    OSR.state.monsters = defs;
+    defs.forEach(d => { if (!d.id) d.id = OSR.uid(); d.system = 'osr'; }); // the bundled library is all OSR (Shadowdark/OSE)
+    // Reseeding only ever replaces the OSR-tagged portion of the library —
+    // monsters belonging to another system are preserved (mirrors how the
+    // Compendium's Reseed/Delete all stay scoped to the active system).
+    OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'osr') !== 'osr').concat(defs);
     OSR.state.monstersSeeded = true;
     OSR.save();
     OSR.renderLibrary();

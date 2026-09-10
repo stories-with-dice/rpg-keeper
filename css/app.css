@@ -34,6 +34,8 @@
   --comp-ref-tint: rgba(185, 143, 224, .16);
   --var-name: #6fd6a0;
   --var-name-tint: rgba(111, 214, 160, .16);
+  --ua-sub: #e0839a;
+  --ua-sub-tint: rgba(224, 131, 154, .16);
 }
 
 /* ============================================================= *
@@ -341,6 +343,113 @@ button, input, textarea, select {
   font-size: 12px;
 }
 .markdown-body ul, .markdown-body ol { padding-left: 1.4em; }
+
+/* ---------- Unknown Armies 3rd Edition ```ua statblock panel ---------- */
+.ua-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  padding: 10px 14px;
+  margin: .8em 0;
+}
+.ua-block h4 {
+  margin: .7em 0 .25em;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-dim);
+}
+.ua-block h4:first-child { margin-top: 0; }
+.ua-identities { list-style: none; padding-left: 1.4em; margin: .3em 0; }
+.ua-identities li { margin: .25em 0; }
+.ua-passions { padding-left: 1.4em; margin: .3em 0; }
+.ua-passion { margin: .15em 0; }
+.ua-wound { margin: .5em 0; }
+.ua-burnout {
+  margin: .4em 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+/* Shock meter name: hover for its Defend/Coerce ability (p.19). */
+.ua-meter-name {
+  border-bottom: 1px dotted var(--text-dim);
+  cursor: help;
+  font-weight: 700;
+}
+
+/* Identity feature keywords ("Substitutes for", "Coerces", "Evaluates", …). */
+.ua-feature-kw {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* A live "Substitutes for <Ability>" link: the identity's name, the verb's
+   target in its feature list, and that ability's name (in place of its
+   percentage) in the Abilities table all share this one color, so the link
+   between them reads at a glance. */
+.ua-sub {
+  color: var(--ua-sub);
+  text-decoration: underline;
+  text-decoration-color: var(--ua-sub);
+  text-underline-offset: 2px;
+}
+.ua-ability-label .ua-sub { cursor: help; }
+.ua-ability-label .ua-sub:hover { background: var(--ua-sub-tint); border-radius: 3px; }
+
+/* Per-meter rows: relationship | meter name + Hardened/Failed dot tracks —
+   mirrors the physical sheet's layout (p.6-10 of the sample sheets), where
+   each meter's linked Relationship (p.41) sits right beside it. */
+.ua-meters { display: flex; flex-direction: column; gap: 8px; margin: .4em 0; }
+.ua-meter-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 4px 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+}
+.ua-meter-rel { font-size: 12px; min-width: 0; }
+.ua-rel-role {
+  display: block;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: .03em;
+}
+.ua-rel-val { word-break: break-word; }
+.ua-meter-main { min-width: 0; }
+.ua-meter-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.ua-badge-syndrome {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+.ua-track-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 2px 0; }
+.ua-track-label { font-size: 11px; color: var(--text-dim); flex: none; width: 54px; }
+.ua-dots { display: inline-flex; gap: 3px; flex: none; }
+.ua-dot {
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--text-dim);
+  background: transparent;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.ua-dot:hover { border-color: var(--accent-2); }
+.ua-dot.is-filled { background: var(--accent-2); border-color: var(--accent-2); }
+.ua-dots-failed .ua-dot { border-radius: 2px; }
+.ua-dots-failed .ua-dot:hover { border-color: var(--danger); }
+.ua-dots-failed .ua-dot.is-filled { background: var(--danger); border-color: var(--danger); }
+.ua-track-count { font-size: 11px; color: var(--text-dim); flex: none; }
+.ua-ability-label { margin-left: auto; font-size: 12px; }
 
 .roll {
   text-decoration: underline;

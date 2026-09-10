@@ -232,6 +232,61 @@ test('doRoll: resolves $variables against the passed-in vars before evaluating',
 });
 
 /* ================================================================== */
+/* Unknown Armies percentile rolls — rollPercent / doRoll("%NN")       */
+/* ================================================================== */
+
+test('doRoll("%NN"): success/failure compares the roll to the target, always logging the actual roll', () => {
+  rig(face(42, 100));
+  T.doRoll('%65', 'Kevin Johnson');
+  let last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.formula, '≤65%');
+  assert.equal(last.total, 42);
+  assert.equal(last.detail, 'Success');
+
+  rig(face(70, 100));
+  T.doRoll('%65', 'Kevin Johnson');
+  last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.total, 70);
+  assert.equal(last.detail, 'Failure');
+});
+
+test('doRoll("%NN"): 100 is always a Fumble, 1 is always a Crit, regardless of target', () => {
+  rig(face(100, 100));
+  T.doRoll('%90', 'Test');
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Fumble');
+
+  rig(face(1, 100));
+  T.doRoll('%1', 'Test');
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Crit');
+});
+
+test('doRoll("%NN"): a doubled roll (11, 22, …) is Matched Success/Failure', () => {
+  rig(face(55, 100));
+  T.doRoll('%60', 'Test');
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Matched Success');
+
+  rig(face(55, 100));
+  T.doRoll('%40', 'Test');
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Matched Failure');
+});
+
+test('doRoll("%NN±mod"): flat modifiers (from the roll-with-modifiers popup or a $variable) adjust the target, clamped to 0..100', () => {
+  rig(face(75, 100));
+  T.doRoll('%65+20', 'Test'); // target 85
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Success');
+  T.doRoll('%65-20', 'Test'); // target 45
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Failure');
+  T.doRoll('%50+1000', 'Test'); // clamped to 100 — always succeeds unless a fumble
+  assert.equal(T.state.log[T.state.log.length - 1].detail, 'Success');
+});
+
+test('doRoll("%NN") never sets lastRoll — a percentile roll is not "apply damage"-able', () => {
+  T.lastRoll = { total: 4, dice: [], flat: 0, normalized: '1d6' };
+  T.doRoll('%50', 'Test');
+  assert.equal(T.lastRoll, null);
+});
+
+/* ================================================================== */
 /* Scarlet Heroes translation — shDie / setEntryHd / applyEntryDamage  */
 /* ================================================================== */
 
@@ -330,7 +385,86 @@ test('ensureStateShape: normalizes compendium entries', () => {
   assert.equal(en.category, 'Other');
   assert.equal(en.source, 'Unknown');
   assert.equal(en.body, '');
+  assert.equal(en.system, 'osr'); // backfilled — everything predating the System setting is OSR
   assert.ok(en.id && en.createdAt);
+});
+
+test('ensureStateShape: backfills settings.system to "osr", rejects an unknown system', () => {
+  T.state = { characters: [], settings: {} };
+  T.ensureStateShape();
+  assert.equal(T.state.settings.system, 'osr');
+
+  T.state = { characters: [], settings: { system: 'bogus' } };
+  T.ensureStateShape();
+  assert.equal(T.state.settings.system, 'osr');
+
+  T.state = { characters: [], settings: { system: 'ua3e' } };
+  T.ensureStateShape();
+  assert.equal(T.state.settings.system, 'ua3e'); // a valid, non-default system is preserved
+});
+
+/* ================================================================== */
+/* System setting — Compendium partitioning                           */
+/* ================================================================== */
+
+test('currentSystem / compendiumForSystem: only entries for the active system are listed/resolved', () => {
+  T.state.compendium.push(
+    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'u1', name: 'Biblioklept', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
+  );
+  assert.equal(T.currentSystem(), 'osr');
+  assert.deepEqual(T.compendiumForSystem().map(e => e.name), ['Longsword']);
+  assert.equal(T.compByExactName('Biblioklept').length, 0);
+
+  T.state.settings.system = 'ua3e';
+  assert.deepEqual(T.compendiumForSystem().map(e => e.name), ['Biblioklept']);
+  assert.equal(T.compByExactName('Longsword').length, 0);
+  assert.equal(T.compByExactName('Biblioklept').length, 1);
+});
+
+test('acSearch (the "[" autocomplete): only suggests entries from the active system (bug: leaked every system)', () => {
+  T.state.compendium.push(
+    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'u1', name: 'Loretta', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
+  );
+  assert.deepEqual(T.acSearch('lo').map(e => e.name), ['Longsword']);
+  T.state.settings.system = 'ua3e';
+  assert.deepEqual(T.acSearch('lo').map(e => e.name), ['Loretta']);
+});
+
+test('monstersForSystem: only monsters tagged for the active system are listed (bug: the Bestiary showed every system)', () => {
+  T.state.monsters.push(
+    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' }
+  );
+  assert.deepEqual(T.monstersForSystem().map(m => m.name), ['Goblin']);
+  T.state.settings.system = 'ua3e';
+  assert.deepEqual(T.monstersForSystem().map(m => m.name), ['Denizen']);
+});
+
+test('ensureStateShape: backfills monster.system to "osr"', () => {
+  T.state = { characters: [], monsters: [{ id: 'm1', name: 'Goblin' }] };
+  T.ensureStateShape();
+  assert.equal(T.state.monsters[0].system, 'osr');
+});
+
+const RAT_STATBLOCK = 'Rat\nAC 11, HP 1, ATK 1 bite +1 (1d3), MV near, S -3, D +1, C -2, I -3, W +0, Ch -3, AL N, LV 0';
+
+test('parseAndAdd: a newly-added monster is tagged with the active system', () => {
+  T.state.monsters = [];
+  T.state.settings.system = 'ua3e';
+  T.parseAndAdd(RAT_STATBLOCK, false);
+  assert.equal(T.state.monsters.length, 1);
+  assert.equal(T.state.monsters[0].system, 'ua3e');
+});
+
+test('saveMonsterEdit: editing a monster never reclassifies its system', () => {
+  T.state.monsters = [{ id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' }];
+  T.openMonsterEdit('m1');
+  document.getElementById('me-area').value = RAT_STATBLOCK;
+  T.saveMonsterEdit();
+  assert.equal(T.state.monsters[0].name, 'Rat');
+  assert.equal(T.state.monsters[0].system, 'ua3e', 'the system tag survives the edit even though System is currently osr');
 });
 
 test('ensureStateShape: drops activeIdB when it equals activeId or dangles', () => {
@@ -378,6 +512,25 @@ test('ensureHpTracker: adds one tracker, never duplicates', () => {
   T.ensureHpTracker(ch);
   T.ensureHpTracker(ch);
   assert.equal(T.state.consumables.filter(c => c.name === 'HP (Vex)').length, 1);
+});
+
+test('ensureHpTracker: skips Unknown Armies characters (bug: every character got an HP tracker)', () => {
+  const ch = { id: 'c2', name: 'Kevin', body: '```ua\nShock\n```\n' };
+  T.ensureHpTracker(ch);
+  assert.equal(T.state.consumables.some(c => c.name === 'HP (Kevin)'), false);
+});
+
+test('consumablesForSystem: HP trackers show for OSR, Wounds for ua3e; generic trackers always show', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.'); // gets an HP tracker
+  T.createCharacter('```ua\nWound Threshold: 50\n\nShock\n```\n', { name: 'Kevin' }); // gets a Wounds tracker
+  T.state.consumables.push({ id: 'r1', name: 'Rations', value: 3, max: 3 });
+
+  assert.deepEqual(T.consumablesForSystem().map(c => c.name).sort(), ['HP (Garrick)', 'Rations']);
+  T.state.settings.system = 'ua3e';
+  assert.deepEqual(T.consumablesForSystem().map(c => c.name).sort(), ['Rations', 'Wounds (Kevin)']);
+
+  // never deleted, just hidden
+  assert.ok(T.state.consumables.some(c => c.name === 'HP (Garrick)'));
 });
 
 /* ================================================================== */
@@ -803,12 +956,221 @@ test('createCharacter: detects name/system, adds an HP tracker, becomes active',
   assert.ok(T.state.consumables.some(c => c.name === 'HP (Kagra the Bold)'));
 });
 
+/* ================================================================== */
+/* System setting — Character dropdown partitioning                    */
+/* ================================================================== */
+
+test('charSystemKey: classified by the presence of a ```ua fence, not the free-text `system` label', () => {
+  assert.equal(T.charSystemKey({ body: '# Plain\nHP 4/4' }), 'osr');
+  assert.equal(T.charSystemKey({ body: UA_BODY }), 'ua3e');
+  assert.equal(T.charSystemKey({}), 'osr');
+});
+
+test('refreshCharUI: the Character dropdown only lists the active system\'s characters; a UA character is never selected while System is osr', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.createCharacter(UA_BODY, { name: 'Kevin Johnson' });
+  // Creating the UA character does not select it — System is still 'osr'.
+  assert.equal(T.activeChar().name, 'Garrick');
+  assert.deepEqual(T.charactersForSystem().map(c => c.name), ['Garrick']);
+
+  T.state.settings.system = 'ua3e';
+  T.refreshCharUI();
+  assert.equal(T.activeChar().name, 'Kevin Johnson');
+  assert.deepEqual(T.charactersForSystem().map(c => c.name), ['Kevin Johnson']);
+
+  T.state.settings.system = 'osr';
+  T.refreshCharUI();
+  assert.equal(T.activeChar().name, 'Garrick');
+});
+
+test('createCharacter: "New blank" (body=null) while System is ua3e creates a ua3e-classified character, not osr', () => {
+  T.state.settings.system = 'ua3e';
+  T.createCharacter(null);
+  const ch = T.activeChar();
+  assert.equal(T.charSystemKey(ch), 'ua3e');
+  assert.equal(ch.system, 'Unknown Armies');
+  // it's immediately visible/selected, not filtered out by its own creation
+  assert.deepEqual(T.charactersForSystem().map(c => c.id), [ch.id]);
+});
+
+test('refreshCharUI: with no characters in the active system, activeChar() is null even though the other system has characters', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.state.settings.system = 'ua3e';
+  T.refreshCharUI();
+  assert.equal(T.activeChar(), null);
+  assert.equal(T.state.characters.length, 1, 'the osr character still exists in state');
+  assert.equal(document.querySelector('#char-empty').hidden, false);
+  assert.equal(document.querySelector('#char-view').hidden, true);
+});
+
+/* ================================================================== */
+/* Unknown Armies 3rd Edition — ```ua statblock                        */
+/* ================================================================== */
+
+const UA_BODY = '# Kevin Johnson [Unknown Armies]\n\n```ua\n' +
+  'Identities\n' +
+  'Civil War Re-Enactor 65%* — Provides Initiative, Substitutes for Dodge, Substitutes for Fitness\n\n' +
+  'Wound Threshold: 50\n\n' +
+  'Shock\n' +
+  'Helplessness: 1 hardened / 1 failed\n' +
+  'Isolation: 3 hardened / 2 failed\n' +
+  'Self: 2 hardened / 0 failed\n' +
+  'Unnatural: 1 hardened / 2 failed\n' +
+  'Violence: 2 hardened / 3 failed\n' +
+  '```\n';
+
+test('renderUABlocks: a ```ua fence becomes a rendered panel with computed abilities, not a code block', () => {
+  const html = T.renderUABlocks(UA_BODY);
+  assert.doesNotMatch(html, /```/);
+  assert.match(html, /class="ua-block"/);
+  // Isolation: nothing Substitutes for Status/Pursuit -> plain computed values.
+  assert.match(html, /Status 50%/); // Isolation hardened=3 -> 65-15=50
+  assert.match(html, /Pursuit 30%/);
+  assert.match(html, /Civil War Re-Enactor/);
+  assert.match(html, /65%/);
+});
+
+test('uaStatblockHtml: a live "Substitutes for" link overrides the Abilities table cell and color-links the identity name', () => {
+  // Civil War Re-Enactor 65% Substitutes for both Dodge and Fitness (Helplessness
+  // hardened=1 -> plain computed Fitness 60%/Dodge 20%) — the table should show
+  // the identity's own 65% for both instead, and share the .ua-sub class.
+  const html = T.renderUABlocks(UA_BODY);
+  assert.doesNotMatch(html, /Fitness 60%/);
+  assert.doesNotMatch(html, /Dodge 20%/);
+  assert.match(html, /class="ua-sub"[^>]*>Fitness<\/span> 65%/);
+  assert.match(html, /class="ua-sub"[^>]*>Dodge<\/span> 65%/);
+  assert.match(html, /<b class="ua-sub">Civil War Re-Enactor<\/b>/);
+});
+
+test('uaStatblockHtml: identity feature keywords are highlighted ("Substitutes for", "Provides", "Coerces", "Evaluates")', () => {
+  const html = T.renderUABlocks(
+    '```ua\nIdentities\nFather 35% — Coerces Connect, Evaluates Helplessness, Substitutes for Secrecy\n\nShock\n```\n'
+  );
+  assert.match(html, /class="ua-feature-kw ua-feature-coerces">Coerces<\/span>/);
+  assert.match(html, /class="ua-feature-kw ua-feature-evaluates">Evaluates<\/span>/);
+  assert.match(html, /class="ua-feature-kw ua-feature-substitutes">Substitutes for<\/span> <span class="ua-sub">Secrecy<\/span>/);
+});
+
+test('uaStatblockHtml: hovering a Shock Meter name shows its Defend/Coerce ability (p.19)', () => {
+  const html = T.renderUABlocks('```ua\nShock\nSelf: 2 hardened / 0 failed\n```\n');
+  assert.match(html, /class="ua-meter-name" title="Defend with Notice\. Coerce with Knowledge\."/);
+});
+
+test('uaStatblockHtml: Identities/Passions/Shock each render a section header', () => {
+  const html = T.renderUABlocks(UA_BODY);
+  assert.match(html, /<h4>Identities<\/h4>/);
+  assert.match(html, /<h4>Shock<\/h4>/);
+  const withExtras = T.renderUABlocks('```ua\nPassions\nNoble: Do good.\n\nShock\n```\n');
+  assert.match(withExtras, /<h4>Passions<\/h4>/);
+});
+
+test('uaStatblockHtml: each meter row shows its linked Relationship (p.41), not a separate Relationships list', () => {
+  const body = '```ua\nRelationships\nResponsibility: Rachel 45%\n\nShock\n```\n';
+  const html = T.renderUABlocks(body);
+  assert.doesNotMatch(html, /<h4>Relationships<\/h4>/, 'the standalone list is gone — folded into each meter row');
+  // Self is linked to Responsibility (p.41) and Rachel 45% was filled in.
+  assert.match(html, /ua-rel-role">Responsibility<\/span><span class="ua-rel-val">Rachel 45%/);
+  // Helplessness is linked to Protégé, which was never filled in.
+  assert.match(html, /ua-rel-role">Prot[ée]g[ée]<\/span><span class="ua-rel-val"><i>unfilled<\/i>/);
+});
+
+test('uaStatblockHtml: an explicit "__%" placeholder line shows as unfilled, not literally "__%" (bug)', () => {
+  const body = '```ua\nRelationships\nFavorite: __%\n\nShock\n```\n';
+  const html = T.renderUABlocks(body);
+  assert.match(html, /ua-rel-role">Favorite<\/span><span class="ua-rel-val"><i>unfilled<\/i>/);
+  assert.doesNotMatch(html, /__%/);
+});
+
+test('uaStatblockHtml: Hardened/Failed dot tracks — filled count, max (9/5), and clickable buttons', () => {
+  const html = T.renderUABlocks(UA_BODY); // Helplessness: 1 hardened / 1 failed
+  const host = document.createElement('div');
+  host.innerHTML = html;
+  const hWrap = host.querySelector('.ua-dots[data-meter="Helplessness"][data-field="hardened"]');
+  assert.ok(hWrap, 'a Hardened dot track exists for Helplessness');
+  assert.equal(hWrap.dataset.value, '1');
+  const hDots = hWrap.querySelectorAll('.ua-dot');
+  assert.equal(hDots.length, 9, 'Hardened has 9 dots (the max)');
+  assert.equal(hWrap.querySelectorAll('.ua-dot.is-filled').length, 1);
+
+  const fWrap = host.querySelector('.ua-dots[data-meter="Helplessness"][data-field="failed"]');
+  assert.equal(fWrap.querySelectorAll('.ua-dot').length, 5, 'Failed has 5 dots (the max)');
+  assert.equal(fWrap.querySelectorAll('.ua-dot.is-filled').length, 1);
+});
+
+test('uaStatblockHtml: 5 failures in one meter flags Insanity Syndrome; 25+ hardened total flags Burnout', () => {
+  const synd = T.renderUABlocks('```ua\nShock\nSelf: 0 hardened / 5 failed\n```\n');
+  assert.match(synd, /ua-badge-syndrome[^>]*>Insanity syndrome/);
+  const noSynd = T.renderUABlocks('```ua\nShock\nSelf: 0 hardened / 4 failed\n```\n');
+  assert.doesNotMatch(noSynd, /ua-badge-syndrome/);
+
+  const burned = T.renderUABlocks(
+    '```ua\nShock\nHelplessness: 9 hardened / 0 failed\nIsolation: 9 hardened / 0 failed\nSelf: 7 hardened / 0 failed\n```\n'
+  );
+  assert.match(burned, /ua-burnout[^>]*>.*Burned out \(25 hardened total\)/);
+  assert.doesNotMatch(T.renderUABlocks(UA_BODY), /ua-burnout/); // UA_BODY totals well under 25
+});
+
+test('renderUABlocks: leaves a body with no ```ua fence untouched', () => {
+  assert.equal(T.renderUABlocks('# Plain\nNo fence here.'), '# Plain\nNo fence here.');
+});
+
+test('syncWoundTracker: a Wound Threshold in a ```ua fence seeds/updates the "Wounds (Name)" tracker', () => {
+  T.createCharacter(UA_BODY, { name: 'Kevin Johnson' });
+  // Look the character up directly rather than via activeChar() — creating a
+  // ua3e character while System is 'osr' (the default here) doesn't select
+  // it in the Character dropdown (see charSystemKey/charactersForSystem).
+  const ch = T.state.characters.find(c => c.name === 'Kevin Johnson');
+  T.syncWoundTracker(ch);
+  const tracker = T.state.consumables.find(c => c.name === 'Wounds (Kevin Johnson)');
+  assert.ok(tracker, 'tracker created');
+  assert.equal(tracker.max, 50);
+  assert.equal(tracker.value, 0);
+});
+
+test('syncWoundTracker: a plain OSR character never gets a Wounds tracker', () => {
+  T.createCharacter('# Solo\nHP 4/4');
+  const ch = T.activeChar();
+  T.syncWoundTracker(ch);
+  assert.equal(T.state.consumables.some(c => c.name === 'Wounds (Solo)'), false);
+});
+
 test('deleteChar: removes the character and its HP tracker', () => {
   T.createCharacter('# Solo\nHP 4/4');
   const id = T.state.activeId;
   T.deleteChar();                       // window.confirm stubbed true
   assert.equal(T.state.characters.some(c => c.id === id), false);
   assert.equal(T.state.consumables.some(c => c.name === 'HP (Solo)'), false);
+});
+
+/* ================================================================== */
+/* Seeding — first-run example characters                             */
+/* ================================================================== */
+
+test('seed(): a fresh install creates the OSR examples plus the two Unknown Armies examples', async () => {
+  // Its own isolated jsdom instance — freshSeed:true lets init() run the real
+  // first-run seeding instead of the shared T's blank-save short-circuit.
+  const { T: T2 } = await boot({ freshSeed: true });
+  const names = T2.state.characters.map(c => c.name).sort();
+  assert.deepEqual(names, ['Garrick', 'Gulzund Blize', 'Kevin Johnson', 'Lucinda Adams']);
+
+  const kevin = T2.state.characters.find(c => c.name === 'Kevin Johnson');
+  assert.equal(kevin.system, 'Unknown Armies');
+  assert.match(kevin.body, /```ua/);
+
+  const lucinda = T2.state.characters.find(c => c.name === 'Lucinda Adams');
+  assert.equal(lucinda.system, 'Unknown Armies');
+  assert.match(lucinda.body, /```ua/);
+
+  // Wound Threshold: 50 in both fences seeds a "Wounds (Name)" tracker (same
+  // mechanism as the existing "HP (Name)" tracker for OSR characters) — and
+  // NOT an HP tracker (bug: every character used to get one regardless).
+  assert.ok(T2.state.consumables.some(c => c.name === 'Wounds (Kevin Johnson)' && c.max === 50));
+  assert.ok(T2.state.consumables.some(c => c.name === 'Wounds (Lucinda Adams)' && c.max === 50));
+  assert.equal(T2.state.consumables.some(c => c.name === 'HP (Kevin Johnson)'), false);
+  assert.equal(T2.state.consumables.some(c => c.name === 'HP (Lucinda Adams)'), false);
+  assert.ok(T2.state.consumables.some(c => c.name === 'HP (Garrick)'));
+  assert.ok(T2.state.consumables.some(c => c.name === 'HP (Gulzund Blize)'));
+  assert.equal(T2.state.consumables.some(c => c.name === 'Wounds (Garrick)'), false);
 });
 
 /* ================================================================== */

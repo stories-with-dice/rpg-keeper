@@ -64,6 +64,7 @@
     const def = OSR.collectMonsterForm($('#mm-fields-host'));
     if (!def.name || def.name === 'Unnamed') { $('#mm-msg').textContent = 'Name is required.'; return; }
     def.id = uid();
+    def.system = OSR.currentSystem();
     OSR.state.monsters.push(def);
     OSR.save();
     if (alsoCombat) OSR.addMonsterEntry(def);
@@ -90,7 +91,7 @@
   }
 
   function libMatches() {
-    return filterMonsters(OSR.state.monsters, {
+    return filterMonsters(OSR.monstersForSystem(), {
       q: $('#mm-search').value,
       hdMin: parseFloat($('#mm-hd-min').value),
       hdMax: parseFloat($('#mm-hd-max').value)
@@ -102,7 +103,7 @@
     libFiltered = libMatches();
     const list = $('#mm-lib-list');
     $('#mm-roll').disabled = libFiltered.length < 1;
-    $('#mm-count').textContent = libFiltered.length + ' / ' + OSR.state.monsters.length;
+    $('#mm-count').textContent = libFiltered.length + ' / ' + OSR.monstersForSystem().length;
     if (!libFiltered.length) {
       list.innerHTML = '<li class="mm-empty hint">No monsters match. Paste a stat block on the right to add one.</li>';
       return;
@@ -231,6 +232,7 @@
       parsed.raw = text.trim();
     }
     parsed.id = editMonsterId;
+    parsed.system = OSR.state.monsters[idx].system || 'osr'; // editing never reclassifies a monster's system
     OSR.state.monsters[idx] = parsed;
     OSR.save();
     hideLibPreview();
@@ -245,7 +247,7 @@
       return;
     }
     const added = [];
-    defs.forEach(d => { d.id = uid(); OSR.state.monsters.push(d); added.push(d); });
+    defs.forEach(d => { d.id = uid(); d.system = OSR.currentSystem(); OSR.state.monsters.push(d); added.push(d); });
     OSR.save();
     if (alsoCombat) added.forEach(OSR.addMonsterEntry);
     renderLibrary();

@@ -49,7 +49,10 @@ js/monster-modals.js    the "Add monster" modal (shared by Combat and the Bestia
                        monster edit modal — each has a "Paste text" / "Fill in fields" toggle
 js/monster-browser.js   the Bestiary tab (filterable library list, mirrors js/compendium.js) and the
                        Party-Level random monster generator (Shadowdark core rules)
-js/compendium.js        Compendium entry CRUD, category/source filters, the default seed, compResolve
+js/ua-statblock.js      pure parser for a Unknown Armies 3rd Edition character's ```ua fenced
+                       statblock (identities/passions/relationships/shock meters) + the p.30
+                       computed-ability formula — no DOM, UMD-ish like js/monsters.js
+js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
 js/settings.js          the Settings tab
 js/io.js                the "paste sheet as text" modal, and whole-state export/import
@@ -109,8 +112,10 @@ live in jsdom's realm — compare them with the non-strict `assert`, not `assert
 
 The **Compendium** spans three files — entry CRUD/filters in `js/compendium.js`, hover popups and
 autocomplete in `js/compendium-popups.js`, and the sheet-selection "Add/link to Compendium" menu in
-`js/characters.js`. `state.compendium`: `{id,name,category,source,body}`, category ∈
-`COMPENDIUM_CATEGORIES`, source is free text defaulting to `Unknown`. It's a reference list edited via
+`js/characters.js`. `state.compendium`: `{id,name,category,source,system,body}`, category ∈
+`COMPENDIUM_CATEGORIES`, source is free text defaulting to `Unknown`, system ∈ `SYSTEMS` (see
+"Game system" below — everything is `'osr'` unless created while System is set to something else).
+It's a reference list edited via
 an EasyMDE modal, filterable by category and by source — click a checkbox to toggle it, right-click
 one to isolate it (unticks every other checkbox in that row, `#comp-cats` or `#comp-sources`). The
 entry editor's `Enter` saves (same as clicking Save) and `Shift+Enter` inserts a newline in the body,
@@ -131,6 +136,163 @@ or ref; `pop.pinned` (📌) exempts one from auto-close and makes its `.cpop-hea
 its unpinned descendants; Esc / `closeAllCompPops()`. Match navigation is the header `‹ ›` buttons
 and ↑/↓ on `compPopActive` (no wheel hijack — the popup scrolls natively). `refreshCompPop()`
 re-resolves every open popup after an edit.
+
+**Game system** (Settings → System, `OSR.SYSTEMS` = `['osr','ua3e']` in `js/core.js`) is a single
+global switch, `state.settings.system`, that partitions the **Compendium only** — `compByExactName`,
+`compFuzzy` (and therefore `compResolve`, hover popups, `[` autocomplete, the sheet-selection "Add to
+Compendium" menu) and `renderCompendium`'s list/count all filter to `entry.system === currentSystem()`
+(`js/compendium.js`), as does `acSearch()`'s `[` autocomplete pool (`js/compendium-popups.js`) and
+Settings → **Delete all**, which only clears the active system's entries (the other system's are left
+alone — everything above must stay scoped to `compendiumForSystem()`, never a bare `state.compendium`,
+or an entry from one system silently leaks into the other's view/search/wipe). New entries are tagged
+with whatever system is active when they're saved; editing an existing entry never changes its system.
+
+The **Bestiary**/`state.monsters` is partitioned the same way — every def carries a `system` field,
+backfilled to `'osr'` for anything that predates this. `monstersForSystem()` (`js/monster-browser.js`,
+exported on `OSR`) filters to `(m.system || 'osr') === currentSystem()`; the Bestiary tab's own list
+(`browserMatches`/`renderMonsterBrowser`) and the shared "Add monster" modal's library list
+(`libMatches`/`renderLibrary`, `js/monster-modals.js`) both go through it, never a bare
+`state.monsters`. A monster added via any path (paste, "Fill in fields", the PL generator's
+save-from-prefill, all of which funnel through `addFromFields`/`parseAndAdd`) is tagged with
+`currentSystem()`; `saveMonsterEdit` preserves the *original* monster's `system` on top of whatever it
+re-parses, so editing one never silently reclassifies it. `seedMonsters()` (`js/seed.js`) tags its
+output `'osr'` (the bundled library is Shadowdark/OSE only) and — since it's also Settings → **Reload
+defaults** — only ever *replaces* the `'osr'`-tagged slice of `state.monsters` (filter out `'osr'`,
+concat the fresh defs), preserving any other system's monsters exactly like the Compendium's
+Delete-all staying scoped to the active system. There's no ua3e-specific monster *schema* yet (Unknown
+Armies GMCs use the same shock-meter sheet as PCs, not HD/AC/attacks) — this is visibility-only: an
+empty Bestiary under System=ua3e until someone pastes/fills in something there, still using the
+Shadowdark/OSE field shapes since that's what the form supports today.
+
+Settings' `#set-system` change handler is the one place that must re-render everything this setting
+gates — `OSR.refreshCharUI()` (which itself also calls `OSR.renderConsumables()` — see below),
+`OSR.renderMonsterBrowser()`, `OSR.renderCompendium()`, and `OSR.renderCombat()` (for Combat's own
+`#cb-add-char`/`#cb-add-monster…` pickers, which also read `charactersForSystem()`/go through the same
+monster modal) — since switching tabs alone doesn't re-render the Character/Bestiary tabs on its own
+(see `js/main.js`'s tab-click handler).
+
+The per-character **"HP (Name)"/"Wounds (Name)" trackers** (`js/core.js`) are likewise gated:
+`ensureHpTracker(ch)` now bails unless `charSystemKey(ch) === 'osr'` (it used to fire unconditionally
+for every character — a real bug, since Unknown Armies characters have no use for HP) — Unknown Armies
+characters get a `"Wounds (Name)"` tracker instead, from `ensureWoundTracker`/`syncWoundTracker`
+(`js/characters.js`), which only ever fires off an actual Wound Threshold in a ` ```ua ` fence. Beyond
+creation, `consumablesForSystem()` (`js/consumables.js`) also **filters which trackers `renderConsumables`
+shows**: for each consumable, it looks up whether the consumable's name matches some character's
+`hpTrackerLabel`/`woundTrackerLabel` — if it does, the tracker only shows while that character's own
+`charSystemKey` matches the active System (filtered from view, never deleted, same as everywhere else
+this pattern appears); a tracker that isn't any character's HP/Wounds label (Rations, Torches, a
+manually-renamed one, …) always shows. This filter is also what makes any *pre-existing* stray tracker
+from before the `ensureHpTracker` fix harmless — e.g. a UA character's leftover `"HP (Name)"` tracker
+from an older save simply never displays in either System view, without needing a destructive migration
+to remove it.
+
+`test/ui.test.js`'s **"System switch: Compendium, Bestiary, Character dropdown, Combat pickers, and
+Consumables all partition together…"** is the consolidated regression test for this whole feature area —
+one OSR + one Unknown Armies character/compendium-entry/monster/tracker, switched back and forth twice
+through the real `#set-system` control, asserting every one of the panels above shows only the active
+system's data each time and that `state.characters`/`compendium`/`monsters`/`consumables` never shrink.
+Any new UI surface that lists characters, monsters, or compendium entries should be added to both this
+test and its own narrower one (the individual tests above target one bug/feature each and pin down
+*why*; this one exists to catch a regression in how they compose).
+
+The **Character** dropdown (`#char-select`/`#char-select-b`) is partitioned too, but by a different
+signal than `entry.system`: `charSystemKey(ch)` (`js/characters.js`) classifies a character as `'ua3e'`
+purely by whether its `body` has a ` ```ua ` fence — not by its free-text `ch.system` display label
+(`"Shadowdark"`, `"Unknown Armies"`, …), which is unvalidated and can't be trusted for filtering.
+`charactersForSystem()` filters to `charSystemKey(c) === currentSystem()`; `fillCharOptions` (both
+selects) and `refreshCharUI`'s active-character bookkeeping all go through it — `refreshCharUI` falls
+back to the first in-system character (or `null`) whenever `activeId`/`activeIdB` point outside the
+current bucket, same mechanism that already handled a dangling id, now also firing on a System switch
+or right after creating a character whose fence-status doesn't match the system it was created under.
+Settings' `#set-system` change handler calls `OSR.refreshCharUI()` for exactly that reason — switching
+System from the Settings tab must update the Character tab's dropdown/active character immediately, not
+just lazily next time something else re-renders it. `createCharacter`'s two "blank" templates
+(`DEFAULT_BLANK_OSR`/`DEFAULT_BLANK_UA`) exist so **New blank** creates a character that actually
+belongs to the system it was created under — the UA template carries a near-empty ` ```ua ` fence
+(all-zero Shock) for exactly this reason; without it a blank character made while System is `ua3e`
+would vanish from its own dropdown the instant it's created.
+
+**Unknown Armies 3rd Edition** character sheets embed their mechanical statblock as a fenced
+` ```ua ` code block (anywhere in `ch.body`, alongside ordinary prose/Markdown). `js/ua-statblock.js`
+is a pure, DOM-free parser (`UAStatblock.parseUAStatblock(text) -> def`, mirroring `js/monsters.js`'s
+shape) for the block's `Identities` / `Passions` / `Relationships` / `Wound Threshold` / `Shock`
+sections; `UAStatblock.computeAllAbilities(shock)` derives all ten Abilities from the five Shock
+meters' hardened-notch counts per the rulebook's p.30 formula (upbeat = `65 − 5×hardened`, downbeat =
+`15 + 5×hardened`) — ability percentages are **never** hand-entered, only computed, so they can't drift
+out of sync with the Shock numbers. `js/characters.js`'s `renderUABlocks(body)` replaces every ` ```ua `
+fence with its rendered `<div class="ua-block">` panel (`uaStatblockHtml(def)`), wrapped in blank lines
+so `marked.parse()` (no `sanitize` option — see `js/main.js`) passes the raw HTML block through
+untouched; `renderCharMarkdown(body)` (`marked.parse(renderUABlocks(body))`) replaces every bare
+`marked.parse(ch.body)` call site for a character body (View mode, the two-character split, Combat's
+combatant detail) so the fence renders consistently everywhere, in View mode only — Edit mode is just
+the plain textarea echoing `ch.body`, so it always shows the raw fenced text. A malformed/absent fence
+falls through to marked's normal `<pre><code>` rendering. `syncWoundTracker(ch)` re-parses every ` ```ua `
+fence on save/create and syncs the campaign-global `"Wounds (Name)"` consumable's `max` (via
+`OSR.ensureWoundTracker`, `js/core.js`) to the last Wound Threshold found — same mechanism as the
+existing per-character `"HP (Name)"` tracker (`ensureHpTracker`), but only ever created once a Wound
+Threshold actually exists; plain OSR characters never get one. Current wounds taken (`value`) is left
+alone, same as HP's `value` is untouched by anything sheet-driven.
+
+`uaStatblockHtml(def, opts)` (`js/characters.js`) renders several things beyond the raw parsed fields:
+- An `<h4>` section header before Identities/Passions/Shock (only when that section has content).
+- Each identity's `features` string, split and classified by `UAStatblock.parseFeatures()` into feature
+  clauses (`{raw,kind,verb,target}` — `kind` ∈ `substitutes`/`coerces`/`evaluates`/`protects`/`resists`/
+  `provides`/`casts-rituals`/`gutter-magick`/`medical`/`therapeutic`/`unique`/`other`, matched against
+  p.44-45's feature-verb list plus the sheets' `Protects` shorthand for Resists-Shocks-to-a-Meter); each
+  clause's verb is wrapped in `<span class="ua-feature-kw ua-feature-{kind}">`.
+- A live "Substitutes for `<Ability>`" link: `UAStatblock.computeSubstitutions(identities)` resolves
+  every identity that Substitutes for one of the 10 real ability names into `{AbilityName: {pct,
+  identityName, obsession}}` (last identity wins on a same-ability collision). That ability's label
+  shows the *identity's* percentage instead of the computed one (with a title tooltip giving the
+  computed value too), and that label, the feature-clause target, and the identity's own name (wherever
+  it's the source of a substitution) all share the `.ua-sub` class/color — the visual thread from "this
+  identity" to "the ability it overrides." **This override is presentation-only** — it's recomputed
+  fresh from `def.identities` on every render, never written back into the Shock-dot click flow below,
+  so it always tracks whatever the identity's own `Substitutes for` feature currently says.
+- **The Shock section is one `.ua-meter-row` per meter** (`.ua-meters`), not a table — laid out
+  left-to-right like the physical sample sheets (relationship | meter name | Hardened dots + ability |
+  Failed dots + ability), each piece pulled from a different part of `def`:
+  - `.ua-meter-rel`: the one Relationship linked to this meter per p.41's fixed table
+    (`UAStatblock.METER_RELATIONSHIP`), looked up in `def.relationships` via `UAStatblock.normalizeRole`
+    (case/diacritic-insensitive, so "Protege"/"Protégé" both match). Shows `<i>unfilled</i>` when
+    there's no relationship for that role *or* when there is one but it's a blank placeholder line
+    (`rel.name === ''` — check `.name`, not `.text`: `.text` is still the truthy literal `"__%"` for an
+    unfilled line, only `.name` is empty for it — this was a real bug, now covered by a test).
+  - The meter's own name (`.ua-meter-name`) carries a title tooltip with
+    `UAStatblock.METER_DEFEND_ATTACK[meter]`'s `defend`/`coerce` ability pair (p.19's "Defend Against
+    Challenges To… With…" table, cross-checked against every sample sheet's identical per-meter "Defend
+    with X / Attack with Y" block — a fixed, universal mapping); a `.ua-badge-syndrome` badge appears
+    when `failed >= 5` (p.27's Insanity Syndrome).
+  - **Hardened/Failed dot tracks** (`uaDotsHtml`): 9 and 5 `<button class="ua-dot">`s respectively (the
+    meters' actual maximums), `.is-filled` up to the current count, each carrying `data-n` (its own
+    1-based position). The wrapping `<span class="ua-dots" data-meter data-field data-fence
+    data-value>` records everything the click handler needs. A `.ua-burnout` banner appears at the top
+    of the block when the sum of all 5 meters' hardened notches reaches 25 (p.30's Burnout).
+  - **Click-to-edit**: `#mode-view`'s click handler (`js/characters.js`'s `wireCharacters`) checks
+    `.ua-dot` before `.roll`. Clicking dot N sets that track to N; clicking the *currently topmost
+    filled* dot again (`n === wrap.dataset.value`) drops it to N-1 — the same "fill up to here"
+    interaction as the physical sheet. `setUAShockValue(ch, fenceIndex, meter, field, value)` calls
+    `patchUAFence(ch.body, fenceIndex, inner => UAStatblock.setShockValue(inner, meter, field, value))` —
+    `setShockValue` is a **pure text rewrite**: it finds that meter's line inside the fence's inner text
+    and replaces just the target number (hardened is the 1st digit run on the line, failed the 2nd),
+    preserving everything else about the line's formatting; if the meter has no line yet it appends one
+    (creating a `Shock` section too, if even that is missing) rather than silently no-op'ing.
+    `patchUAFence` splices that back into the *Nth* fence in `ch.body` (`data-fence`, 0-indexed —
+    matters only if a sheet somehow has more than one ` ```ua ` fence). There is **no separate
+    structured state for Shock** — the fence text is the only source of truth, exactly like Wound
+    Threshold; Abilities (computed *and* Substituted-for-overridden) simply reflect whatever the next
+    `parseUAStatblock` sees, same as every other click-driven number in this app (no virtual DOM — see
+    "Rendering & DOM conventions").
+
+Separately (not `ua`-fence-specific), `annotate.js`'s `PCT_RE` turns any bare `NN%` (0-100) anywhere in
+the Character Viewer into a clickable roll, same as dice/`$var` spans — `data-formula="%NN"` (plus any
+trailing `[+-]N` flat modifiers, e.g. from the roll-with-modifiers popup or a substituted `$var`) is a
+sentinel `doRoll()` (`js/dice.js`) detects and routes to `rollPercent()` instead of `evalFormula()`:
+rolls `1d100`, succeeds on a result ≤ the (modifier-adjusted, 0-100-clamped) target, and always logs
+the actual roll plus a verdict — `Success`/`Failure`, `Fumble` (100), `Crit` (1), or `Matched
+Success`/`Matched Failure` (any other doubled roll, 11/22/…/99). Because the routing lives inside
+`doRoll()` itself, every existing `.roll`-click call site (View mode, Combat's combatant detail, the
+right-click modifier popup, Compendium hover popups) gets percentile rolls for free.
 
 Typing `[` + ≥2 chars in the sheet editor, `#notes-area`, or the entry's EasyMDE editor opens
 `#comp-ac`, a name-substring autocomplete (`acFromTextarea` / `acFromCM`); ↑/↓/Enter/Tab/click →
@@ -375,7 +537,11 @@ app's own code can't be split into ES modules (see "Layout"), just plain `<scrip
   (skipped on `file://`); either way its entries are folded into `COMPENDIUM_SEED` before
   `seedCompendium()` (`js/compendium.js`) reads it.
 - Characters: `seed()` (`js/seed.js`) tries `fetch('data/*.txt')` (skipped on `file://`), then inline
-  `SEED_WWN` / `SEED_SD` constants.
+  `SEED_WWN` / `SEED_SD` / `SEED_KJ` / `SEED_LA` constants — the last two (Kevin Johnson, Lucinda
+  Adams, both from the UA3e "Karmic Ties and Fifth Wheels" starter kit) are the Unknown Armies
+  examples, each with a ```ua fence (see "Unknown Armies 3rd Edition" above); their inline constants
+  **must** stay byte-for-byte identical to `data/kevin-johnson-ua3e.txt` / `data/lucinda-adams-ua3e.txt`
+  (no test asserts this — same informal contract as the other seed files below).
 - `window.MONSTER_LIBRARY` is a shared constant — `seedMonsters()` **deep-clones** it before putting
   it in `state`. Any code that copies a seed/def into mutable state must clone.
 

@@ -454,7 +454,7 @@
     $('#cb-turn-name').textContent = act ? act.name : '—';
     const sel = $('#cb-add-char');
     sel.innerHTML = '<option value="">+ Add character…</option>' +
-      OSR.state.characters.map(c => '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>').join('');
+      OSR.charactersForSystem().map(c => '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>').join('');
     sel.value = '';
   }
   function statusTagsHtml(e) {
@@ -566,7 +566,7 @@
         (ch && ch.system ? ' · ' + escapeHtml(ch.system) : '') + '</span></div>';
       h += '<div class="cd-stats">' +
         chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—') + '  (linked to sheet)') + '</div>';
-      if (ch) h += '<div class="cd-sheet markdown-body">' + marked.parse(ch.body || '') + '</div>';
+      if (ch) h += '<div class="cd-sheet markdown-body">' + OSR.renderCharMarkdown(ch.body) + '</div>';
       else h += '<p class="hint">Character not found — it may have been deleted.</p>';
     }
     if (Array.isArray(ent.statuses) && ent.statuses.length) {

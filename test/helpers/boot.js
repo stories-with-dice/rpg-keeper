@@ -22,6 +22,7 @@ const SCRIPTS = [
   'js/marked.min.js',
   'js/fuse.min.js',
   'js/monsters.js',
+  'js/ua-statblock.js',
   'js/monsters-data.js',
   'js/spells-data.js',
   'js/compendium-seed.js',

@@ -21,25 +21,228 @@
     return { name, system };
   }
 
+  const DEFAULT_BLANK_OSR = '# New Character\n\n*System — Level 1*\n\n> **AC** 10 · **HP** 6/6\n\n## Abilities\n\n- STR +0\n- DEX +0\n';
+  // Has a (near-empty) ```ua fence so a blank character created while System
+  // is Unknown Armies is itself classified 'ua3e' by charSystemKey() below —
+  // otherwise it would vanish from the Character dropdown the instant it's
+  // created (filtered out as an 'osr' character in a ua3e-filtered list).
+  const DEFAULT_BLANK_UA = '# New Character [Unknown Armies]\n\n```ua\nIdentities\n\nWound Threshold: 50\n\n' +
+    'Shock\nHelplessness: 0 hardened / 0 failed\nIsolation: 0 hardened / 0 failed\nSelf: 0 hardened / 0 failed\n' +
+    'Unnatural: 0 hardened / 0 failed\nViolence: 0 hardened / 0 failed\n```\n';
+
   function createCharacter(body, opts) {
     opts = opts || {};
     const state = OSR.state;
-    const det = detectNameSystem(body || '');
+    const usedBody = body != null ? body :
+      (OSR.currentSystem && OSR.currentSystem() === 'ua3e' ? DEFAULT_BLANK_UA : DEFAULT_BLANK_OSR);
+    const det = detectNameSystem(usedBody);
     const ch = {
       id: uid(),
       name: opts.name || det.name,
       system: opts.system || det.system,
       nameLocked: !!opts.name,
-      body: body != null ? body : '# New Character\n\n*System — Level 1*\n\n> **AC** 10 · **HP** 6/6\n\n## Abilities\n\n- STR +0\n- DEX +0\n',
+      body: usedBody,
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
     state.characters.push(ch);
     OSR.ensureHpTracker(ch);
+    syncWoundTracker(ch);
     state.activeId = ch.id;
     OSR.mode = 'view';
     OSR.save();
     refreshCharUI();
+  }
+
+  /* ---- Unknown Armies 3rd Edition: ```ua statblock fence ---- */
+  // A ```ua fenced block (see js/ua-statblock.js) is parsed and rendered as a
+  // formatted panel in View mode; Edit mode always shows the raw fenced text
+  // (it's just the plain textarea echoing ch.body). A malformed/absent fence
+  // simply falls through to marked's normal <pre><code> rendering.
+  const UA_FENCE_RE = /```ua[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
+
+  // Which System bucket a character belongs to for the Character dropdown —
+  // unlike the free-text `ch.system` display label (e.g. "Shadowdark",
+  // "Unknown Armies"), this is derived from whether the sheet actually has a
+  // ```ua fence, so it can't drift out of sync with what's actually rendered.
+  function charSystemKey(ch) {
+    UA_FENCE_RE.lastIndex = 0;
+    return UA_FENCE_RE.test((ch && ch.body) || '') ? 'ua3e' : 'osr';
+  }
+  function charactersForSystem() {
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    return OSR.state.characters.filter(c => charSystemKey(c) === sys);
+  }
+
+  // A single feature clause ("Substitutes for Dodge") -> HTML with its verb
+  // highlighted; the target ability name additionally gets `.ua-sub` (shared
+  // with that ability's cell in the Abilities table, and with this
+  // identity's own name below) when the clause is a live Substitutes-for
+  // link — i.e. the target is a real ability name (`subAbilities` is the
+  // Set of ability names computeSubstitutions() actually resolved).
+  function uaFeatureClauseHtml(f, subAbilities) {
+    if (f.kind === 'other') return escapeHtml(f.raw);
+    const isSubLink = f.kind === 'substitutes' && subAbilities.has(f.target);
+    const verbHtml = '<span class="ua-feature-kw ua-feature-' + f.kind + '">' + escapeHtml(f.verb) + '</span>';
+    const targetHtml = isSubLink ? '<span class="ua-sub">' + escapeHtml(f.target) + '</span>' : escapeHtml(f.target);
+    return verbHtml + (f.target ? ' ' + targetHtml : '');
+  }
+
+  // One row of clickable Hardened/Failed dots (9 or 5 of them). `data-value`
+  // records the current count directly (rather than making the click
+  // handler re-derive it by counting .is-filled buttons); `data-fence`
+  // identifies which ```ua fence in the body this belongs to (see
+  // renderUABlocks/patchUAFence — normally 0, only matters if a sheet
+  // somehow has more than one fence).
+  function uaDotsHtml(meter, field, value, max, fenceIndex) {
+    let html = '<span class="ua-dots' + (field === 'failed' ? ' ua-dots-failed' : '') + '"' +
+      ' data-meter="' + escapeHtml(meter) + '" data-field="' + field + '"' +
+      ' data-fence="' + fenceIndex + '" data-value="' + value + '">';
+    for (let n = 1; n <= max; n++) {
+      html += '<button type="button" class="ua-dot' + (n <= value ? ' is-filled' : '') + '" data-n="' + n + '"' +
+        ' title="Set ' + (field === 'hardened' ? 'Hardened' : 'Failed') + ' to ' + n + '"></button>';
+    }
+    return html + '</span>';
+  }
+
+  function uaStatblockHtml(def, opts) {
+    opts = opts || {};
+    const fenceIndex = opts.fenceIndex != null ? opts.fenceIndex : 0;
+    const UAS = window.UAStatblock;
+    const subs = UAS.computeSubstitutions(def.identities); // { AbilityName: {pct, identityName, obsession} }
+    const subAbilities = new Set(Object.keys(subs));
+    // Identities whose name should get the shared `.ua-sub` treatment too —
+    // any identity that's the source of at least one live substitution link.
+    const subIdentityNames = new Set(Object.values(subs).map(s => s.identityName));
+
+    // Every relationship, keyed by its normalized role, so each meter row
+    // can pull out the one relationship linked to it (p.41).
+    const relByRole = new Map(def.relationships.map(r => [UAS.normalizeRole(r.role), r]));
+    const totalHardened = UAS.METER_ORDER.reduce((sum, m) => sum + (def.abilities[m].hardened || 0), 0);
+
+    const abilityHtml = (name, computedPct) => {
+      const sub = subs[name];
+      if (!sub) return escapeHtml(name) + ' ' + computedPct + '%';
+      const title = escapeHtml(name) + ': ' + computedPct + '% computed, substituted by ' +
+        escapeHtml(sub.identityName) + ' ' + sub.pct + '%';
+      return '<span class="ua-sub" title="' + title + '">' + escapeHtml(name) + '</span> ' + sub.pct + '%';
+    };
+
+    // One row per meter — relationship, meter name (w/ Defend/Coerce
+    // tooltip), Hardened/Failed dot tracks each paired with the ability it
+    // drives — laid out left-to-right like the physical character sheet
+    // (p.6-10 of the sample sheets: Protégé | Fitness/Dodge dots | Helplessness | Failures, …).
+    const meterRows = UAS.METER_ORDER.map(meter => {
+      const a = def.abilities[meter];
+      const da = UAS.METER_DEFEND_ATTACK[meter];
+      const relRole = UAS.METER_RELATIONSHIP[meter];
+      const rel = relByRole.get(UAS.normalizeRole(relRole));
+      // rel.name is '' for an unfilled placeholder line ("Favorite: __%") —
+      // rel.text itself is still truthy ("__%"), so check .name, not .text.
+      const relHtml = '<div class="ua-meter-rel"><span class="ua-rel-role">' + escapeHtml(relRole) + '</span>' +
+        '<span class="ua-rel-val">' + (rel && rel.name ? escapeHtml(rel.text) : '<i>unfilled</i>') + '</span></div>';
+      const syndrome = a.failed >= 5
+        ? '<span class="ua-badge-syndrome" title="5 failures in one meter — note an Insanity Syndrome (p.27)">Insanity syndrome</span>' : '';
+
+      return '<div class="ua-meter-row">' + relHtml +
+        '<div class="ua-meter-main">' +
+          '<div class="ua-meter-head"><span class="ua-meter-name" title="Defend with ' + da.defend +
+            '. Coerce with ' + da.coerce + '.">' + escapeHtml(meter) + '</span>' + syndrome + '</div>' +
+          '<div class="ua-track-row"><span class="ua-track-label">Hardened</span>' +
+            uaDotsHtml(meter, 'hardened', a.hardened, 9, fenceIndex) +
+            '<span class="ua-track-count">' + a.hardened + '/9</span>' +
+            '<span class="ua-ability-label">' + abilityHtml(a.upbeatName, a.upbeatPct) + '</span></div>' +
+          '<div class="ua-track-row"><span class="ua-track-label">Failed</span>' +
+            uaDotsHtml(meter, 'failed', a.failed, 5, fenceIndex) +
+            '<span class="ua-track-count">' + a.failed + '/5</span>' +
+            '<span class="ua-ability-label">' + abilityHtml(a.downbeatName, a.downbeatPct) + '</span></div>' +
+        '</div></div>';
+    }).join('');
+
+    const identities = def.identities.length ? '<h4>Identities</h4><ul class="ua-identities">' + def.identities.map(id => {
+      const nameHtml = subIdentityNames.has(id.name)
+        ? '<b class="ua-sub">' + escapeHtml(id.name) + '</b>' : '<b>' + escapeHtml(id.name) + '</b>';
+      const featuresHtml = UAS.parseFeatures(id.features).map(f => uaFeatureClauseHtml(f, subAbilities)).join(', ');
+      return '<li>' + nameHtml + ' ' + id.pct + '%' +
+        (id.obsession ? ' <span class="badge">Obsession</span>' : '') +
+        (featuresHtml ? ': ' + featuresHtml : '') + '</li>';
+    }).join('') + '</ul>' : '';
+
+    const passionRow = (label, p) => p ? '<div class="ua-passion"><b>' + escapeHtml(label) + '</b>' +
+      (p.meter ? ' (' + escapeHtml(p.meter) + ')' : '') + ': ' + escapeHtml(p.text) + '</div>' : '';
+    const passions = (def.passions.fear || def.passions.noble || def.passions.rage)
+      ? '<h4>Passions</h4><div class="ua-passions">' + passionRow('Fear', def.passions.fear) +
+        passionRow('Noble', def.passions.noble) + passionRow('Rage', def.passions.rage) + '</div>' : '';
+
+    const wt = def.woundThreshold != null
+      ? '<div class="ua-wound"><b>Wound Threshold</b>: ' + def.woundThreshold + '</div>' : '';
+    const burnout = totalHardened >= 25
+      ? '<div class="ua-burnout" title="25 or more hardened notches total — mark Burnout (p.30)">' +
+        '⚠ Burned out (' + totalHardened + ' hardened total)</div>' : '';
+
+    return '<div class="ua-block">' + identities + passions + wt + burnout +
+      '<h4>Shock</h4><div class="ua-meters">' + meterRows + '</div></div>';
+  }
+
+  // Splices `transform(innerText)`'s result back into the Nth ```ua fence
+  // found in `body` (0-indexed) — used by the Shock-dot click handler below
+  // to rewrite exactly the fence a click came from (uaStatblockHtml threads
+  // opts.fenceIndex into each .ua-dots span's data-fence for this purpose).
+  function patchUAFence(body, fenceIndex, transform) {
+    let idx = -1;
+    UA_FENCE_RE.lastIndex = 0;
+    return String(body || '').replace(UA_FENCE_RE, (whole, inner) => {
+      idx++;
+      return idx === fenceIndex ? whole.replace(inner, transform(inner)) : whole;
+    });
+  }
+
+  // Click-to-edit: adjusts one Shock meter's Hardened/Failed count directly
+  // from View mode by rewriting the relevant ```ua fence line in ch.body —
+  // there's no separate structured state for this, the fence text IS the
+  // source of truth (same idea as Wound Threshold via syncWoundTracker).
+  // Abilities (including any identity's Substitutes-for override) recompute
+  // automatically on the next render since they're always derived from the
+  // fence text, never stored separately.
+  function setUAShockValue(ch, fenceIndex, meter, field, value) {
+    if (!ch || !window.UAStatblock) return;
+    ch.body = patchUAFence(ch.body, fenceIndex, inner => window.UAStatblock.setShockValue(inner, meter, field, value));
+    ch.updatedAt = Date.now();
+    syncWoundTracker(ch);
+    OSR.save();
+    refreshCharUI();
+  }
+
+  // Replaces every ```ua fence in a character's raw body with its rendered
+  // HTML panel, wrapped in blank lines so marked (no `sanitize` option — see
+  // js/main.js) treats it as a raw HTML block and passes it through
+  // untouched. Used instead of a bare marked.parse(ch.body) everywhere a
+  // character body is rendered, so the statblock renders consistently in the
+  // sheet view, the two-character split, and Combat's combatant detail.
+  function renderUABlocks(body) {
+    if (!window.UAStatblock) return String(body || '');
+    let fenceIndex = -1;
+    return String(body || '').replace(UA_FENCE_RE, (whole, inner) => {
+      fenceIndex++;
+      return '\n\n' + uaStatblockHtml(window.UAStatblock.parseUAStatblock(inner), { fenceIndex: fenceIndex }) + '\n\n';
+    });
+  }
+  function renderCharMarkdown(body) { return marked.parse(renderUABlocks(body)); }
+
+  // Every ```ua fence's Wound Threshold (last one wins) syncs the
+  // campaign-global "Wounds (Name)" tracker's max, mirroring how name/system
+  // resync from sheet text on save (see saveEdit). Current wounds taken
+  // (the tracker's value) is left alone, same as HP's value is untouched.
+  function syncWoundTracker(ch) {
+    if (!window.UAStatblock || !ch) return;
+    let threshold = null;
+    let m;
+    UA_FENCE_RE.lastIndex = 0;
+    while ((m = UA_FENCE_RE.exec(ch.body || ''))) {
+      const wt = window.UAStatblock.parseUAStatblock(m[1]).woundThreshold;
+      if (wt != null) threshold = wt;
+    }
+    if (threshold != null) OSR.ensureWoundTracker(ch, threshold);
   }
 
   // Second column character, if one is selected and it isn't the same as A.
@@ -58,7 +261,7 @@
       if (!selectedId) o.selected = true;
       sel.appendChild(o);
     }
-    OSR.state.characters.forEach(c => {
+    charactersForSystem().forEach(c => {
       if (opts.exclude && c.id === opts.exclude) return;
       const o = document.createElement('option');
       o.value = c.id;
@@ -70,19 +273,27 @@
 
   function refreshCharUI() {
     const state = OSR.state;
-    if (state.characters.length && !OSR.activeChar()) state.activeId = state.characters[0].id;
+    // The Character dropdowns only ever list the active System's characters
+    // (see charSystemKey) — if activeId/activeIdB point outside that bucket
+    // (a dangling id, or the System setting just changed), fall back to the
+    // first character in the current bucket, same as the existing
+    // dangling-id recovery this replaces.
+    const inSystem = charactersForSystem();
+    if (!inSystem.some(c => c.id === state.activeId)) {
+      state.activeId = inSystem.length ? inSystem[0].id : null;
+    }
     if (state.activeIdB && (state.activeIdB === state.activeId ||
-        !state.characters.some(c => c.id === state.activeIdB))) {
+        !inSystem.some(c => c.id === state.activeIdB))) {
       state.activeIdB = null;
     }
 
     fillCharOptions($('#char-select'), state.activeId, {});
     fillCharOptions($('#char-select-b'), state.activeIdB, { noneLabel: '— none —', exclude: state.activeId });
-    $('#char-select-b').disabled = state.characters.length < 2;
+    $('#char-select-b').disabled = inSystem.length < 2;
 
     const ch = OSR.activeChar();
     const b = charB();
-    const has = state.characters.length > 0;
+    const has = inSystem.length > 0;
     $('#char-empty').hidden = has;
     $('#char-view').hidden = !ch;
     $('#btn-rename').disabled = !ch;
@@ -119,7 +330,7 @@
   function charColHtml(md, head) {
     return '<div class="char-col">' +
       (head || '') +
-      '<div class="char-col-body markdown-body">' + marked.parse(md || '') + '</div>' +
+      '<div class="char-col-body markdown-body">' + renderCharMarkdown(md) + '</div>' +
       '</div>';
   }
 
@@ -149,7 +360,7 @@
       const vars = OSR.charVars(a);
       if (parts[1] == null) {
         host.classList.remove('has-cols');
-        host.innerHTML = marked.parse(a.body || '');
+        host.innerHTML = renderCharMarkdown(a.body);
         OSR.annotate(host, { vars: vars });
       } else {
         host.classList.add('has-cols');
@@ -202,6 +413,15 @@
     OSR.ensureHpTracker(ch);
   }
 
+  // Same idea for the Unknown Armies "Wounds (Name)" tracker — but only rename
+  // an existing one; it's created lazily by syncWoundTracker() once a ```ua
+  // fence with a Wound Threshold is actually present.
+  function renameWoundTracker(oldLabel, ch) {
+    if (OSR.woundTrackerLabel(ch) === oldLabel) return;
+    const c = OSR.state.consumables.find(x => x.name === oldLabel);
+    if (c) c.name = OSR.woundTrackerLabel(ch);
+  }
+
   function saveEdit() {
     const areas = $$('#edit-host .edit-col-area');
     if (!areas.length) return;
@@ -209,12 +429,15 @@
       const ch = OSR.state.characters.find(c => c.id === area.dataset.id);
       if (!ch) return;
       const oldLabel = OSR.hpTrackerLabel(ch);
+      const oldWoundLabel = OSR.woundTrackerLabel(ch);
       ch.body = area.value;
       ch.updatedAt = Date.now();
       const det = detectNameSystem(ch.body);
       if (!ch.nameLocked) ch.name = det.name;
       if (det.system) ch.system = det.system;
       renameHpTracker(oldLabel, ch);
+      renameWoundTracker(oldWoundLabel, ch);
+      syncWoundTracker(ch);
     });
     OSR.save();
     setMode('view');
@@ -227,9 +450,11 @@
     const n = prompt('Character name:', ch.name);
     if (n == null) return;
     const oldLabel = OSR.hpTrackerLabel(ch);
+    const oldWoundLabel = OSR.woundTrackerLabel(ch);
     ch.name = n.trim() || ch.name;
     ch.nameLocked = true;
     renameHpTracker(oldLabel, ch);
+    renameWoundTracker(oldWoundLabel, ch);
     OSR.save();
     refreshCharUI();
   }
@@ -240,8 +465,9 @@
     if (!confirm('Delete "' + ch.name + '"? This cannot be undone.')) return;
     const state = OSR.state;
     const label = OSR.hpTrackerLabel(ch);
+    const woundLabel = OSR.woundTrackerLabel(ch);
     state.characters = state.characters.filter(c => c.id !== ch.id);
-    state.consumables = state.consumables.filter(c => c.name !== label);
+    state.consumables = state.consumables.filter(c => c.name !== label && c.name !== woundLabel);
     if (state.activeIdB === ch.id) state.activeIdB = null;
     state.activeId = state.characters.length ? state.characters[0].id : null;
     OSR.save();
@@ -411,6 +637,20 @@
     // in the right column is logged under (and rolls $variables from)
     // character B.
     $('#mode-view').addEventListener('click', e => {
+      // A Unknown Armies Shock meter's Hardened/Failed dot: click dot N to set
+      // the count to N, or click the currently-topmost filled dot again to
+      // drop it back to N-1 — same "fill up to here" interaction as the
+      // physical sheet's circles/boxes.
+      const dot = e.target.closest('.ua-dot');
+      if (dot) {
+        const wrap = dot.closest('.ua-dots');
+        const tgt = charViewTarget(e.target);
+        if (!wrap || !tgt || !tgt.ch) return;
+        const n = parseInt(dot.dataset.n, 10);
+        const cur = parseInt(wrap.dataset.value, 10) || 0;
+        setUAShockValue(tgt.ch, parseInt(wrap.dataset.fence, 10) || 0, wrap.dataset.meter, wrap.dataset.field, n === cur ? n - 1 : n);
+        return;
+      }
       const el = e.target.closest('.roll');
       if (!el) return;
       const tgt = charViewTarget(e.target);
@@ -455,11 +695,13 @@
   }
 
   Object.assign(OSR, {
-    detectNameSystem, createCharacter, charB, fillCharOptions, refreshCharUI,
+    detectNameSystem, createCharacter, charSystemKey, charactersForSystem, charB, fillCharOptions, refreshCharUI,
     splitBodyColumns, charColHtml, charColHead, renderCharView, renderCharEdit,
-    setMode, renameHpTracker, saveEdit, renameChar, deleteChar,
+    setMode, renameHpTracker, renameWoundTracker, saveEdit, renameChar, deleteChar,
     charViewTarget, linkifyInText, applyPendingCompLink,
     openSelMenu, closeSelMenu, linkSelToExisting, wireCharacters,
+    uaStatblockHtml, renderUABlocks, renderCharMarkdown, syncWoundTracker,
+    patchUAFence, setUAShockValue,
     get selMenuData() { return selMenuData; }
   });
 })(window.OSR = window.OSR || {});

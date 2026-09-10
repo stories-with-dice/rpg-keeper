@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OSR Character &amp; Combat Manager</title>
+  <title>Character Keeper</title>
   <link rel="icon" type="image/x-icon" href="images/ico.ico">
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="vendor/easymde/easymde.min.css" />
@@ -11,7 +11,7 @@
 </head>
 <body>
   <header class="app-header">
-    <h1>OSR Manager</h1>
+    <h1>Character Keeper</h1>
     <nav class="tabs" id="tabs">
       <button class="tab-btn is-active" data-tab="character">Character</button>
       <button class="tab-btn" data-tab="combat">Combat</button>
@@ -154,6 +154,14 @@
       <!-- ===== Settings tab ===== -->
       <section class="tab-panel" id="tab-settings">
         <h2>Settings</h2>
+
+        <div class="setting-row setting-row-action">
+          <span class="setting-text">
+            <b>System</b>
+            <span class="hint">Which game system you're running. Partitions the Compendium — each entry belongs to one system, and only that system's entries are listed/searched/linked. Everything created before this setting existed is <b>OSR</b>.</span>
+          </span>
+          <select id="set-system" class="btn"></select>
+        </div>
 
         <div class="setting-row setting-row-action">
           <span class="setting-text">
@@ -369,6 +377,7 @@
   <script src="js/fuse.min.js"></script>
   <script src="vendor/easymde/easymde.min.js"></script>
   <script src="js/monsters.js"></script>
+  <script src="js/ua-statblock.js"></script>
   <script src="js/monsters-data.js"></script>
   <script src="js/spells-data.js"></script>
   <script src="js/compendium-seed.js"></script>

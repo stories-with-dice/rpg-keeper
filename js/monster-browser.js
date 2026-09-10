@@ -11,8 +11,18 @@
   'use strict';
   const { $, escapeHtml } = OSR;
 
+  // The monster library is partitioned by System (Settings → System), same
+  // mechanism as the Compendium (compendiumForSystem in js/compendium.js) —
+  // every def carries a `system` field, backfilled to 'osr' for anything
+  // that predates this (see ensureStateShape). Filtered from view, never
+  // deleted — switching System back brings them right back.
+  function monstersForSystem() {
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    return OSR.state.monsters.filter(d => (d.system || 'osr') === sys);
+  }
+
   function browserMatches() {
-    return OSR.filterMonsters(OSR.state.monsters, {
+    return OSR.filterMonsters(monstersForSystem(), {
       q: $('#mb-search').value,
       hdMin: parseFloat($('#mb-hd-min').value),
       hdMax: parseFloat($('#mb-hd-max').value)
@@ -23,8 +33,9 @@
     const list = $('#mb-list');
     if (!list) return; // defensive: called from renderLibrary() before this tab exists
     const filtered = browserMatches();
-    $('#mb-count').textContent = filtered.length + ' / ' + OSR.state.monsters.length;
-    $('#mb-empty').hidden = OSR.state.monsters.length > 0;
+    const total = monstersForSystem().length;
+    $('#mb-count').textContent = filtered.length + ' / ' + total;
+    $('#mb-empty').hidden = total > 0;
     list.innerHTML = filtered.map(d => {
       const meta = ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
       return '<li class="comp-row mb-row" data-id="' + d.id + '">' +
@@ -148,5 +159,5 @@
     });
   }
 
-  Object.assign(OSR, { browserMatches, renderMonsterBrowser, generateMonster, wireMonsterBrowser });
+  Object.assign(OSR, { monstersForSystem, browserMatches, renderMonsterBrowser, generateMonster, wireMonsterBrowser });
 })(window.OSR = window.OSR || {});
