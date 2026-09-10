@@ -1134,6 +1134,35 @@ test('syncWoundTracker: a plain OSR character never gets a Wounds tracker', () =
   assert.equal(T.state.consumables.some(c => c.name === 'Wounds (Solo)'), false);
 });
 
+test('setUAShockValue: logs the meter/field/before/after under the character\'s name', () => {
+  // Look the character up directly — creating a ua3e character while System
+  // is 'osr' (the default here) doesn't select it in the dropdown (see
+  // charSystemKey/charactersForSystem), so activeChar() would be null.
+  T.createCharacter('# Kevin [Unknown Armies]\n\n```ua\nShock\nSelf: 2 hardened / 0 failed\n```\n');
+  const ch = T.state.characters.find(c => c.name === 'Kevin');
+  const before = T.state.log.length;
+
+  T.setUAShockValue(ch, 0, 'Self', 'hardened', 5);
+  assert.equal(T.state.log.length, before + 1);
+  let entry = T.state.log[T.state.log.length - 1];
+  assert.equal(entry.source, 'Kevin');
+  assert.equal(entry.formula, 'Self Hardened 2 → 5');
+  assert.equal(entry.total, ''); // a note, not a roll — no "= total" column
+
+  T.setUAShockValue(ch, 0, 'Self', 'failed', 3);
+  entry = T.state.log[T.state.log.length - 1];
+  assert.equal(entry.formula, 'Self Failed 0 → 3');
+  assert.equal(T.state.log.length, before + 2);
+});
+
+test('setUAShockValue: does not log when the value doesn\'t actually change', () => {
+  T.createCharacter('# Kevin [Unknown Armies]\n\n```ua\nShock\nSelf: 2 hardened / 0 failed\n```\n');
+  const ch = T.state.characters.find(c => c.name === 'Kevin');
+  const before = T.state.log.length;
+  T.setUAShockValue(ch, 0, 'Self', 'hardened', 2); // already 2 — no-op
+  assert.equal(T.state.log.length, before);
+});
+
 test('deleteChar: removes the character and its HP tracker', () => {
   T.createCharacter('# Solo\nHP 4/4');
   const id = T.state.activeId;

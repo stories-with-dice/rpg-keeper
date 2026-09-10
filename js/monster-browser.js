@@ -32,6 +32,11 @@
   function renderMonsterBrowser() {
     const list = $('#mb-list');
     if (!list) return; // defensive: called from renderLibrary() before this tab exists
+    // The generator follows the Shadowdark core rulebook's tables — it has no
+    // Unknown Armies equivalent (no monster stat blocks, GMCs use the same
+    // sheet as PCs), so hide it rather than let it add nonsense 'ua3e' monsters.
+    const gen = $('#mb-gen');
+    if (gen) gen.hidden = (OSR.currentSystem ? OSR.currentSystem() : 'osr') !== 'osr';
     const filtered = browserMatches();
     const total = monstersForSystem().length;
     $('#mb-count').textContent = filtered.length + ' / ' + total;

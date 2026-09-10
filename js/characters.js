@@ -206,10 +206,22 @@
   // fence text, never stored separately.
   function setUAShockValue(ch, fenceIndex, meter, field, value) {
     if (!ch || !window.UAStatblock) return;
+    // Read the current value first, purely for the log line below.
+    let before = 0, idx = -1, m;
+    UA_FENCE_RE.lastIndex = 0;
+    while ((m = UA_FENCE_RE.exec(ch.body || ''))) {
+      if (++idx !== fenceIndex) continue;
+      before = window.UAStatblock.parseUAStatblock(m[1]).abilities[meter][field];
+      break;
+    }
     ch.body = patchUAFence(ch.body, fenceIndex, inner => window.UAStatblock.setShockValue(inner, meter, field, value));
     ch.updatedAt = Date.now();
     syncWoundTracker(ch);
     OSR.save();
+    if (before !== value) {
+      const label = field === 'hardened' ? 'Hardened' : 'Failed';
+      OSR.pushNote(ch.name, meter + ' ' + label + ' ' + before + ' → ' + value);
+    }
     refreshCharUI();
   }
 

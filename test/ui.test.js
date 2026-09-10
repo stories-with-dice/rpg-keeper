@@ -244,16 +244,23 @@ test('View mode: clicking a Shock dot sets Hardened/Failed and recomputes the Ab
   assert.equal($$('#mode-view .ua-dots[data-meter="Helplessness"][data-field="hardened"] .ua-dot.is-filled').length, 5);
   assert.match($('#mode-view .ua-block').textContent, /Fitness 40%/); // hardened=5 -> 65-25=40
   assert.doesNotMatch($('#mode-view .ua-block').textContent, /Fitness 60%/);
+  assert.equal(logCount(), 1);
+  assert.match(logText(), /Kevin Johnson/);
+  assert.match(logText(), /Helplessness Hardened 1 → 5/);
 
   // clicking the currently-topmost filled dot again drops it back by one
   click(dots()[4]);
   assert.match(T.activeChar().body, /Helplessness: 4 hardened \/ 1 failed/);
+  assert.equal(logCount(), 2);
+  assert.match(logText(), /Helplessness Hardened 5 → 4/);
 
   // Failed dots are independent, clamp at 5, and flag Insanity Syndrome at 5
   const fDots = () => $$('#mode-view .ua-dots[data-meter="Helplessness"][data-field="failed"] .ua-dot');
   click(fDots()[4]);
   assert.match(T.activeChar().body, /Helplessness: 4 hardened \/ 5 failed/);
   assert.match($('#mode-view .ua-block').textContent, /Insanity syndrome/);
+  assert.equal(logCount(), 3);
+  assert.match(logText(), /Helplessness Failed 1 → 5/);
 });
 
 test('View mode: [bracketed] names render as .comp-ref, short system tags do not', () => {
@@ -540,6 +547,19 @@ test('Bestiary tab: only shows the active system\'s monsters (bug: OSR monsters 
 
   // still neither deleted
   assert.equal(T.state.monsters.length, 2);
+});
+
+test('Bestiary: the random monster generator (Shadowdark-only rules) is hidden while System is Unknown Armies', () => {
+  tab('bestiary');
+  T.renderAll();
+  assert.equal($('#mb-gen').hidden, false);
+
+  tab('settings');
+  setValue($('#set-system'), 'ua3e');
+  assert.equal($('#mb-gen').hidden, true);
+
+  setValue($('#set-system'), 'osr');
+  assert.equal($('#mb-gen').hidden, false);
 });
 
 test('Bestiary "+ New monster" and Combat\'s "+ Add monster…" open the same shared modal', () => {

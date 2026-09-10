@@ -162,7 +162,12 @@ concat the fresh defs), preserving any other system's monsters exactly like the 
 Delete-all staying scoped to the active system. There's no ua3e-specific monster *schema* yet (Unknown
 Armies GMCs use the same shock-meter sheet as PCs, not HD/AC/attacks) — this is visibility-only: an
 empty Bestiary under System=ua3e until someone pastes/fills in something there, still using the
-Shadowdark/OSE field shapes since that's what the form supports today.
+Shadowdark/OSE field shapes since that's what the form supports today. The **PL random monster
+generator** (`#mb-gen`, top of the Bestiary tab) is pure Shadowdark-core-rulebook tables though, with no
+Unknown Armies equivalent at all — `renderMonsterBrowser()` hides it outright (`el.hidden`, not a
+filter) whenever `currentSystem() !== 'osr'`, rather than let it roll nonsense `'ua3e'`-tagged HD/AC
+monsters. Same `[hidden]`-not-`display` rule as everywhere else (see "Rendering & DOM conventions") —
+`.mb-gen` has no competing `display` CSS, so no `[hidden]` guard rule was needed for it.
 
 Settings' `#set-system` change handler is the one place that must re-render everything this setting
 gates — `OSR.refreshCharUI()` (which itself also calls `OSR.renderConsumables()` — see below),
@@ -282,7 +287,10 @@ alone, same as HP's `value` is untouched by anything sheet-driven.
     structured state for Shock** — the fence text is the only source of truth, exactly like Wound
     Threshold; Abilities (computed *and* Substituted-for-overridden) simply reflect whatever the next
     `parseUAStatblock` sees, same as every other click-driven number in this app (no virtual DOM — see
-    "Rendering & DOM conventions").
+    "Rendering & DOM conventions"). `setUAShockValue` also reads the *pre*-patch value (a throwaway
+    `parseUAStatblock` of that fence's current inner text) purely to log it: `OSR.pushNote(ch.name,
+    '<Meter> Hardened|Failed <before> → <after>')`, skipped when `before === after` (can't happen from a
+    dot click itself, but can from a direct `setUAShockValue` call) so no-op edits don't clutter the log.
 
 Separately (not `ua`-fence-specific), `annotate.js`'s `PCT_RE` turns any bare `NN%` (0-100) anywhere in
 the Character Viewer into a clickable roll, same as dice/`$var` spans — `data-formula="%NN"` (plus any
