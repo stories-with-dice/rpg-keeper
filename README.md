@@ -249,6 +249,20 @@ wraps the selection in `[ ]` instead of replacing it.
 
 ---
 
+## Tables tab
+
+A library of **random encounter tables** (one per terrain/district — Arctic, Cave, Market, Tavern,
+Tomb, and so on), each rollable with its own dice formula (usually **d100**).
+
+- **Tags** filter which tables are listed — tick/untick, or **right-click** a tag to show only that
+  one. **Search** filters by table name. The count shows *matches / total*.
+- Click a table's name to **expand** it and see every row.
+- **Roll** rolls the table's formula, highlights the matching row, and logs the result (table name,
+  formula, total, and the row's text) to the **Session Log** at the bottom — same as any other roll
+  in the app.
+
+---
+
 ## Settings tab
 
 - **Style theme** (default **Default**). Recolours and re-fonts the whole app; dark mode only.

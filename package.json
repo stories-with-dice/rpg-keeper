@@ -7,6 +7,7 @@
     "test": "node --test",
     "convert-bestiary": "node scripts/convert-bestiary.js",
     "convert-spells": "node scripts/convert-spells-from-shadowdark-resources.js",
+    "convert-tables": "node scripts/convert-tables.js",
     "bundle-standalone": "node scripts/bundle-standalone.js"
   },
   "devDependencies": {

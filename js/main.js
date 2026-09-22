@@ -17,6 +17,7 @@
       if (b.dataset.tab === 'combat') OSR.renderCombat();
       if (b.dataset.tab === 'bestiary') OSR.renderMonsterBrowser();
       if (b.dataset.tab === 'compendium') OSR.renderCompendium();
+      if (b.dataset.tab === 'tables') OSR.renderTables();
       if (b.dataset.tab === 'character' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
     });
 
@@ -40,6 +41,7 @@
     OSR.wireMonsterBrowser();
     OSR.wireCompendiumEntries();
     OSR.wireCompendiumPopups();
+    OSR.wireTables();
     OSR.wireSettings();
     OSR.wireRollPopup();
   }
@@ -59,6 +61,7 @@
     OSR.renderCombat();
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
+    OSR.renderTables();
     OSR.renderSettings();
     wire();
     if (!had && !OSR.state.characters.length) await OSR.seed();
@@ -88,7 +91,7 @@
 
     OSR.renderAll = function () {
       OSR.refreshCharUI(); OSR.renderCombat(); OSR.renderMonsterBrowser(); OSR.renderCompendium();
-      OSR.renderSettings(); OSR.renderLog(); OSR.renderConsumables();
+      OSR.renderTables(); OSR.renderSettings(); OSR.renderLog(); OSR.renderConsumables();
     };
 
     // Wipe to an already-migrated empty state (no async seeding) and clear the
@@ -103,6 +106,7 @@
       OSR.lastRoll = null;
       OSR.mode = 'view';
       OSR.resetCompendiumFilters();
+      OSR.resetTableFilters();
       OSR.closeCompEntry();
       OSR.closeSelMenu();
       OSR.closeCtxMenu();
@@ -110,7 +114,7 @@
       OSR.closeRollPopup();
       ['#comp-search', '#comp-fulltext', '#comp-fuzzy', '#custom-formula',
         '#notes-area', '#paste-area', '#mm-search', '#mm-hd-min', '#mm-hd-max',
-        '#mb-search', '#mb-hd-min', '#mb-hd-max']
+        '#mb-search', '#mb-hd-min', '#mb-hd-max', '#tbl-search']
         .forEach(sel => {
           const el = $(sel);
           if (!el) return;

@@ -764,6 +764,68 @@ test('Compendium editor: Enter (incl. in the body) saves; Shift+Enter in the bod
 });
 
 /* ================================================================== */
+/* Tables tab                                                         */
+/* ================================================================== */
+
+test('Tables tab: lists every seeded table, with a tag filter (≤10 tags) and a name search', () => {
+  tab('tables');
+  const total = window.TABLES_LIBRARY.length;
+  assert.ok(total >= 20, 'expected the bundled table library to be loaded');
+  assert.equal($$('#tbl-list .tbl-row').length, total);
+  assert.match($('#tbl-count').textContent, new RegExp(total + ' / ' + total));
+
+  const tagBoxes = $$('#tbl-tags input[data-tag]');
+  assert.ok(tagBoxes.length > 0 && tagBoxes.length <= 10, 'expected 1-10 tags, got ' + tagBoxes.length);
+  assert.ok(tagBoxes.every(cb => cb.checked), 'every tag starts enabled');
+
+  setValue($('#tbl-search'), 'arctic');
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arctic']);
+  setValue($('#tbl-search'), '');
+  assert.equal($$('#tbl-list .tbl-row').length, total);
+});
+
+test('Tables tab: unticking a tag hides its tables; right-clicking a tag isolates it', () => {
+  tab('tables');
+  const wildernessCb = $('#tbl-tags input[data-tag="Wilderness"]');
+  assert.ok(wildernessCb, 'expected a Wilderness tag checkbox');
+  const wildernessCount = window.TABLES_LIBRARY.filter(t => t.tag === 'Wilderness').length;
+
+  wildernessCb.checked = false;
+  wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.equal($$('#tbl-list .tbl-row[data-id="arctic"]').length, 0);
+  assert.equal($$('#tbl-list .tbl-row').length, window.TABLES_LIBRARY.length - wildernessCount);
+
+  wildernessCb.checked = true;
+  wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
+
+  const tavernLabel = $('#tbl-tags input[data-tag="Tavern"]').closest('label');
+  tavernLabel.dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Tavern']);
+});
+
+test('Tables tab: expanding a table and clicking Roll rolls its formula, highlights the matching row, and logs it', () => {
+  tab('tables');
+  const row = $('#tbl-list .tbl-row[data-id="arctic"]');
+  assert.ok(row, 'expected the Arctic table to be listed');
+  click(row.querySelector('summary'));            // native <details> toggle
+  assert.equal(row.querySelector('details').open, true);
+
+  rig(face(42, 100));
+  click(row.querySelector('.tbl-roll'));
+  assert.equal(logCount(), 1);
+  const last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.source, 'Arctic');
+  assert.equal(last.total, 42);
+  assert.equal(last.detail, 'A starving human is trapped in an icy, natural pit');
+
+  const hitRow = $('#tbl-list .tbl-row[data-id="arctic"]');
+  const hit = hitRow.querySelector('.tbl-entry.is-hit');
+  assert.ok(hit, 'the rolled row is highlighted');
+  assert.equal(hit.querySelector('.tbl-range').textContent, '42-43');
+  assert.equal(hitRow.querySelector('details').open, true, 'stays expanded across the re-render');
+});
+
+/* ================================================================== */
 /* Settings tab                                                       */
 /* ================================================================== */
 

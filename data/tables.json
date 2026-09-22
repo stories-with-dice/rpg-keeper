@@ -1,0 +1,6778 @@
+[
+  {
+    "id": "arctic",
+    "name": "Arctic",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "An albino kraken twitches inside a glassy mountain of ice"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "2d20 cannibalistic bandits led by a frost troll make camp"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "A group of orcs and a snow ape battle over deer meat"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A murderous fur trader on the run tries to sell stolen pelts"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "3d6 ice-rimed skeletons burst from the snow"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "1d6 will-o'-wisps made of ice float around a frozen pond"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "An unnatural glow emanates from a deep crevasse"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A blind, dying mammoth charges toward sounds"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A wyvern circles the skies looking for seals or deer"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A blizzard kicks up, 1d4 damage/round if unsheltered"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A group of 2d6 hobgoblins hunt with 1d4 winter wolves"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "White-scaled harpies lurk amid snowy rock shelves"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "The Ice Rat Tribe (3d6 goblins) sets traps, is willing to trade"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "The skull of a sapphire-eyed lich glares from a pillar of ice"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Fire-hating treants pose as a grove of silent pine trees"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "1d4 smilodons stalk a lone, injured mammoth"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "Six hobgoblin sorcerers perform a ritual in a snowy henge"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "Two remorhaz duel; the strangest pose held longest wins"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "The temperature drops, 1d6 damage/round if unsheltered"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "2d8 winter wolves trail at a distance, waiting for night"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "The Waste Walker appears (LV 10 wight, icy greatsword)"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A starving human is trapped in an icy, natural pit"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "Thin ice weakened by hot springs shifts and cracks"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A polar bear attacks anyone who approaches her 1d4 cubs"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "Behind an icy waterfall, a frost dragon sleeps in a cave"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "A broken-winged roc fights off 2d6 human trappers"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "1d6 rusty bear traps lurk beneath undisturbed snow"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A frost giant drives a sled pulled by three polar bears"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "2d6 frostbitten zombies in armor stagger across the snow"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "2d4 elven trackers camp atop a shelf overlooking ice fields"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "The Lumberjack (N ogre, giant greataxe) drags a log sled"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d8 sun-dazzled duergar flee the Dwarf Lord's trackers"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A slowly sliding ziggurat of ice drifts along the horizon"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "1d6 snow apes drag a slain moose toward their den"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "1d6 giant spiders string frosty webs across a narrow ravine"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A remorhaz chases 1d6 halflings toward its nest of young"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers emerges from a snowy cave"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A field of glittering, white mushrooms hums resonantly"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "Hermit Leedrin (reaver) chooses the PCs as his next prey"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "1d6 ghouls hide inside the shattered hull of a sea galleon"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "2d4 dwarves with two alpine mastiffs follow a trail"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A wide tunnel in the ice leads into a purple worm's mouth"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A field of 2d20 dwarf corpses are zombies that rise at night"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d6 Red Tooth goblins use a baby owlbear as ambush bait"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A camp of 2d20 yak herders offers food and shelter"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "Prismatic sun falling on the ice is a portal to the Fey realm"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A banished cubi devil trudges angrily through the snow"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant rides on a caribou pulling a sled"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "Steam rises from an oasis of sulfuric, regenerative springs"
+      }
+    ]
+  },
+  {
+    "id": "artisan_district",
+    "name": "Artisan District",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "An execution is about to happen; it's a PC's family member"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "An angry efreeti rises out of a tarnished, brass lamp"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "An assassin drops from above, mistaking a PC as a mark"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A glassblower accuses a PC of breaking a priceless vase"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A group of 2d6 thugs rush the stocks to free their leader"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A fight breaks out between two groups of rival nobles"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "An herbalist accidentally creates a toxic cloud of smoke"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "Thieves' Guild goons pick pockets while posing as beggars"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "1d6 bandits hold a vendor at knifepoint and demand coin"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Horses being shod break free and stampede in the street"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A cloaked figure defaces a shrine to Madeera and bolts"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "An arrogant warrior on a warhorse tries to kick a PC aside"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "Brightly dressed acrobats tumble by; a pick-pocket follows"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "1d6 guards mistake a PC for Pliny the Swift, a criminal"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Gaunt, robed clergy offer \"cleansing\" (forcible conversion)"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "1d6 breathless guards chase a pack of 2d4 mangy mastiffs"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A merchant hands a PC a gold goblet and screams, \"thief!\""
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A disoriented manticore crash-lands in a busy square"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A deep sinkhole falls open; a swift river rushes by far below"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "1d6 thugs posing as guards demand the PCs pay a toll"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A woman falls down, writhing, and rises as a wererat"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "An anvil being lifted by ropes plunges toward a bystander"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A blacksmith's red-hot hammer slips and flies toward a PC"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "Three halflings in a long jacket sell \"tonic\" (sewer water)"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "An angry customer smashes around inside a pottery shop"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d6 Bywater Barons (thugs) jump a jeweler locking up"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Dissidents tip a tall statue of the Overlord toward a crowd"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A passing man falls dead to a poison dart meant for a PC"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "An old, drunk noble challenges a PC to a duel to the death"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "An open square hosts a contest of insult-slinging bards"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A bald, spectacled man watches the PCs and takes notes"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A jumpy woman palms a PC a note: \"They're watching!\""
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A shiny object (crocodile eye) glints inside a sewer grate"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "Sneering onlookers throw tomatoes at a harried bard"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A woman in a cowled cloak pulls down wanted posters"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "2d4 kobolds pop out of the sewers and raid a bakery"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "Bounty Festival celebrants whip passers with bound reeds"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A bronze statue of Ord winks and points toward a tavern"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A street mime follows a PC, imitating their actions"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A beggar holds up a bowl; inside is a freshly severed finger"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A cobbler jigs out into the street in a pair of cursed boots"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A turkey roaster offers a free leg to the strongest wrestler"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A lone City Watch member tries to swipe a necklace"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A group of women chase a halfling carrying a pie"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A hushed voice calls to a PC from inside a dark well"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A ray of sun outlines a hidden door back in an empty alley"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "Rival crawlers challenge the group to a drinking contest"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant appears with a potion for sale"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "An appraisal reveals a PC's weapon is actually magical"
+      }
+    ]
+  },
+  {
+    "id": "castle_district",
+    "name": "Castle District",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "2d20 guards surround the group, accusing a PC of murder"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "Piercing horns sound an alarm inside the royal palace"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "Prisoners on a chain revolt in unison against their escort"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A drunk noble swings an axe, yelling, \"Off with 'er head!\""
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "Screaming, robed bathers stampede out of the bathhouse"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A visiting noble's honor guard chases a gray street cat"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A mounted group of knights charges down the busy street"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A condemned prisoner's noose breaks; he scampers away"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A fledgling gladiator takes offense at the garb a PC wears"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Overhead, a crumbling gargoyle breaks loose and falls"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A lion tears free from handlers leading it to the coliseum"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A wild-eyed playwright calls a PC an \"unread cretin\""
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "Armed tax collectors stop each person to levy a war tax"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A venerable knight mistakes a PC for Targ the Betrayer"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Two holy orders of rival crusaders square off in the street"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "A hooded man slips into a sewer grate near the theater"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "An elephant dragging chains bursts from the coliseum"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "Mercenaries push people aside ahead of a visiting prince"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "The street crumbles, revealing a dry cistern full of tunnels"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "The water from a fountain rises into a humanoid shape"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A gleaming knight parades a sickly captive to the garrison"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "Robal Goodwin darts by hauling bags of stolen royal gold"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A 30' tall catapult in a military parade ignites in fast flames"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A PC spots a new wanted poster with their own face on it"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "A golden horseshoe peeks from the gutter filth"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "Two rival gladiators start a fist fight in a rollicking tavern"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A spooked horse crashes into fragile building construction"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A dripping sewer beast bursts from the bathhouse doors"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "Drunk Sir Galvin gets thrown out of the Blue Mare again"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "An explosion rocks the nearest City Watch garrison"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A foreign dignitary mistakes a PC for a horse groom"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "Bleary-eyed dwarf miners tunnel up through the street"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "Dungeon prisoners grab at ankles from the barred gutters"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "Four figures throw their hoods off, revealing devil masks"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "The lead actor on an open street stage falls dead mid-word"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "Two rival bounty hunters fight to capture the same man"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "The PCs spot a group of crawlers dressed exactly like them"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A sewer grate thumps and clangs loudly, then goes still"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A cowled figure subtly hands a scroll to a passing woman"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A crossbow bolt flies at the PCs from the rooftops"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "The famed singer Branzolini insists he knows a character"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A strong gust blows a key out of a window flower box"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A brash guard falls to his knee before the disguised Duke"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "Two nervous men rush by with an object tied in a sheet"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "Smoke begins pouring from the theater's upper windows"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A magic sword appears in the hand of a gladiator statue"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "The Overlord rides by with a heavily armed honor guard"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant scalps premium coliseum seats"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A visiting Duchess invites the PCs to attend a royal ball"
+      }
+    ]
+  },
+  {
+    "id": "cave",
+    "name": "Cave",
+    "tag": "Underground",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "An enraged pair of manticores protect their 1d4 cubs"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "1d6 possessed mushroomfolk charge in a murderous rage"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "2d4 deep gnomes are irritated at the unwanted intrusion"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A band of 2d6 gnolls demands a toll of blood or gold"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A hungry, giant frog leaps out to swallow a PC"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "1d6 ghouls stalk the living from the edge of the light"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "Dripping water from above is actually searing acid"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A basilisk guards its nest of 1d4 stone eggs"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "2d6 cannibalistic beastmen hunt for their next meal"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Cracked stalagmites vent superheated gouts of steam"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "2d4 bugbears search for weaker creatures to rob"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "2d6 orcs scavenge for food for their rotund hill giant queen"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "2d4 dwarf knights bring news of calamity to the surface"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A scouting party of 2d4 drow creep through the caves"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "An old chimera makes its nest among a pile of bones"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "1d4 cave creepers cling to the walls of a new, deep rift"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "3d4 kobolds carry mushrooms back to their troll overlord"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "1d6 far-ranging duergar emerge from a small tunnel"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "Toxic spores puff up from thousands of delicate fungi"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "1d4 sleeping cloakers hang from the walls"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "1d6 giant spiders lurk on the ceiling, waiting to ambush"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A kobold caught by the tail in a bear trap begs for help"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "1d6 darkmantles bob and spin around stalactites"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A wounded, outcast drider skitters along the ceiling"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "A trapped water elemental whirls inside a shallow puddle"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "1d6 ettercaps affix thin lines of webbing across a passage"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Sharp stalactites fall with even the slightest vibration"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "2d6 drow pursue a weary group of 2d4 bugbear escapees"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A Blue Tusk clan goblin shaman and 2d8 goblins rampage"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "2d12 unguarded grick eggs are glued to the walls"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "An elf warrior tracks a wounded otyugh that fled inside"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d6 violet fungi slowly tromp past in search of water"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "Luminous cave paintings of running elk emit soft light"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A troll drags the dead body of a rival crawler by the leg"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A giant snake rests inside a series of tunnels in the walls"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "1d6 kobolds clash with 1d6 goblins over a prize mushroom"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers flees a chittering swarm of spiders"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A stone carving of a dwarf magically speaks to passersby"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A wraith hovers over its own recently deceased body"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A snorting wyvern trundles up the hall dragging a deer"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Binkin and Bobbin, twin halflings, tumble into the room"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "1d6 buzzing stingbats gust from a narrow cave chimney"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "An ochre jelly rears up from a thin crack in the floor"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "1d8 lizardfolk lure 1d6 giant centipedes from their nest"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A patrol of 2d4 dwarves roasts mutton around a campfire"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A swarm of startled bats whirls past toward the surface"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "The floor shakes as a tunneling bulette roves through"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant spelunks by on a truffle hunt"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "An orc mystic (L) offers 2 random beneficial potions"
+      }
+    ]
+  },
+  {
+    "id": "deep_tunnels",
+    "name": "Deep Tunnels",
+    "tag": "Underground",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "The Ten-Eyed Oracle drifts into sight, chattering of doom"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "1d4 brain eaters walk surrounded by 3d6 duergar captives"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "An albino hydra stampedes in, lashed on by 2d4 drow"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A duergar calls for help; 2d4 more prepare to ambush"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "2d6 drow led by a drow priestess hunt for new prisoners"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "2d6 pale, giant spiders skitter out of the darkness"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "Dripping ooze douses flames and sticks creatures in place"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "2d6 beastmen thralls haul a troll to their aboleth overlord"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "2d4 giant leeches slither along the walls like snakes"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Shimmering spores kick up underfoot; they cause lethargy"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "2d8 mushroomfolk track 2d4 thieving deep gnomes"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "1d6 cave creepers glue dead drow to the walls as egg hosts"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "1d8 battered dwarf knights retreat toward the upper caves"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "1d4 ropers spring to life amid a nest of stalagmites"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A moaning, mushroom-infested mummy staggers along"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "The earth shakes; a purple worm arrives here in 1d4 rounds"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "2d12 grim duergar (N) run a traveling mercantile caravan"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A strangler stalks the PCs and ambushes from the rear"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "An earthquake causes a tunnel to collapse"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "An ogre zombie mindlessly wanders toward sounds"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "1d4 hell hounds leap out of a sudden magma rupture"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "An injured human warrior lies unconscious on the ground"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A drow-made trap of poison darts and web snares triggers"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A blind, pale halfling tends a flock of 2d6 cockatrice"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "2d6 giant bats dive from the ceiling toward warm prey"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "Two tribes of beastmen battle over a cold, obsidian altar"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "The floor gives way into a sinkhole 2d6 x 10 feet deep"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "Two minotaurs stalk each other and anyone in the way"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A nest of 2d12 darkmantles swarms any loud noises"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "2d20 quiet mushroomfolk build a colony of fungi homes"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A deep gnome druid tends to a patch of neon mushrooms"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "1d4 brain eaters try to escape a pursuing purple worm"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "Puffs of sour-smelling gas cause auditory hallucinations"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "2d6 void spiders step through starry portals that snap shut"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "2d4 cloakers feast greedily on a dead purple worm"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A cave brute grapples with 1d4 ravenous cave creepers"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers out of torches stumbles into sight"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "Gravity suddenly reverses for 1d4 rounds"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A crazed drow priest leads a pack of 3d6 drow ghouls"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "2d4 gibbering mouthers slurp up a tunnel, wailing loudly"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A human priest who has been lost 15 years offers healing"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "Ancient, moldy skeletons fuse into a hissing bone naga"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A shadow rises out of a PC's shadow and attacks"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d6 drow dart around the attacks of 3d6 albino lizardfolk"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "2d6 coal-streaked dwarven miners tunnel through the wall"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "2d20 zigzagging motes of light heal 1 HP each if caught"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A night hag rides by on the back of a clear giant scorpion"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant squeezes out of a narrow fissure"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "An ancient treasure chest holds a random magic item"
+      }
+    ]
+  },
+  {
+    "id": "desert",
+    "name": "Desert",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A purple worm bursts from the sand and towers overhead"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "3d6 raiding bandits from the Hidden City ride into view"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "2d4 salamanders creep up on a sunning giant snake"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "An arrogant sphinx demands the answer to a riddle"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "2d4 ankhegs tunnel out of the sand in an ambush"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A tribe of 2d20 berserkers ride camels through the dunes"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "The wind kicks up a blinding sandstorm for 1d4 hours"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A swarm of scarabs erupts from a low dune"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "3d6 kobolds and a kobold sorcerer scavenge for beetles"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A vast field of poisonous cacti sprouts in the sands"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "2d6 camouflaged lizardfolk hide under a thin layer of sand"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A pack of 2d6 mangy, wild mastiffs pursues at a distance"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "1d6 parched gladiators linked by chains stumble along"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A tarnished, brass lamp has 10% chance of an efreeti inside"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "2d4 desert elves on horseback fend off 2d8 ankhegs"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "A collapsing keep of sandstone bricks houses 2d4 lions"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "2d4 skittering rust monsters pick at a field of metal scraps"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A half-buried cairn houses 1d4 sarcophagi with mummies"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "1d4 bone-barbed nets snap up from the beneath the sand"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "1d6 shadows hide in the shade of jagged rock pillars"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "2d4 salamanders drag two ankheg carcasses on litters"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A giant scorpion sneaks up behind a meditating goblin"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "The false mirage of an oasis shimmers in the distance"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A bone naga slithers over the sand, leaving a curving trail"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "1d4 manticores circle above a ring of dead lizardfolk"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "An iron golem plunges resolutely through the sand drifts"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A towering sand dune shifts and collapses toward the PCs"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "War horns sound in the distance; 3d20 bandits approach"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A fire elemental burns like a bonfire atop a tall dune"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "2d6 peasants and merchants rest at a palm-ringed oasis"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A herd of 2d6 desert centaurs cautiously draw closer"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d6 vultures pinwheel above the PCs, drawing attention"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A dry riverbed is embedded with massive nautiloid fossils"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "1d4 cobras hide under an upturned woven basket"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A funnel of sand collapses in, revealing a giant spider den"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A tawny wolf limps into sight; 2d6 others creep up behind"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "3d6 kobolds hurl rocks from small caves in a rocky ridge"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A sweeping rain begins, threatening floods in the lowlands"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A fire dragon passes overhead; it spots PCs in the open"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A djinni and efreeti trade blows in a thunderous duel"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Algariz the desert dragon (L) relaxes on a smoldering rock"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "1d8 Steelsworn clan hobgoblins on hippogriffs fly on patrol"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "An irritated mage digs around the top of a buried pyramid"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d6 red-robed cultists battle with 2d4 bandits on camels"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A burning, reborn phoenix rises into the sky: +1 luck token"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "The bleached skeleton of a ship covers a freshwater well"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A pair of bulettes burrow in a circle around a black pillar"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant rides a heavily laden camel"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "The legendary Alabaster Library of Gehemna materializes"
+      }
+    ]
+  },
+  {
+    "id": "forest",
+    "name": "Forest",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "3d6 giant spiders fill this part of the forest with thick webs"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A scavenging owlbear snorts around in the overgrowth"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "1d6 boars flee a hunting party of 2d4 territorial centaurs"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "2d6 elves stealthily trail the PCs and prepare to ambush"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A panther drops down on the rearmost character"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "2d6 giant wasps drone about in a heavy treetop nest"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "An ancient, rotted tree snaps and falls toward the PCs"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A hungry otyugh hides in a pile of rotting vegetation"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "2d4 smelly, hooting apes throw rocks from behind trees"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A snow of glowing pixie-dust causes intense drowsiness"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A giant snake coils in the mud of a dried-out riverbed"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "1d4 snarling badgers burst out of their hidden den"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "1d4 treants offer pleasantries and slowly amble through"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "1d6 Wolf Fang goblins riding worgs tear through the trees"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A blood vine tries to strangle a wounded berserker"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "2d4 elves guard a treetop outpost; the PCs are trespassing"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A weald hag is foraging with her 2 truffle-hunting boars"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "1d6 faeries try to hog-tie the PCs with thread and needle"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "2d20 bobbing violet fungi crawl across the forest floor"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "2d6 rangy wolves snap at the PCs and retreat out of reach"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "1d6 giant spiders scuttle along the tree boughs"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "2d6 muddy kobolds leap out and demand a passing toll"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A mage in a dangling web cocoon thrashes and screams"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "1d4 rusty bear traps spring out from beneath the leaf litter"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "2d4 Blood of Ramlaat tribe orcs chop angrily at trees"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d6 goblins and 2d6 kobolds spill out of a cave, fighting"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A catgut wire triggers a wide, falling net hidden above"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "Two brown bears charge the PCs from opposite sides"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A centipede swarm writhes out of the muddy ground"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A dryad stares into a well surrounded by old stone walls"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A smug leprechaun taunts the PCs from a high branch"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A shambling mound crashes up the side of a small ravine"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A massive, half-buried stone head peeks from the earth"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "2d6 orcs make camp and roast a yelping peasant on a spit"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A rabid, frothing dire wolf staggers into sight and growls"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "1d4 giant frogs try to grab 1d6 stingbats with their tongues"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "Hrugin the troll drags 1d4 injured, tied-up rival crawlers"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "Crimson roses sprout around a weathered statue of Gede"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "An ogre tries to uproot a sapling to use as a new club"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "2d6 goblins dance around a mighty oak hung with charms"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "2d4 ranging green knights (L) emerge from the trees"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "2d4 kobolds carry their bugbear king in a beer barrel litter"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "1d4 cave creepers charge out of a cave reeking of sulfur"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "An irritable forest dragon stumps lazily through the woods"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A camp of 2d20 berserkers is willing to trade for goods"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "An abandoned, overgrown stone chapel offers safe shelter"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "An orc chieftain gives a fiery speech to 2d12 cheering orcs"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant pops out of a rotten tree stump"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A shimmering unicorn steps out into a beam of sunlight"
+      }
+    ]
+  },
+  {
+    "id": "grassland",
+    "name": "Grassland",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A roc passes overhead and then divebombs the PCs"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A hunting smilodon prowls through the tall grass"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "A baby mammoth flees a pack of 2d6 wolves"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A pale wizard in black robes stands silently on a tall rock"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "1d4 giant dung beetles roll manure toward a towering pile"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A whirling dust devil is actually an angry air elemental"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "Dark, tall clouds roll in; a violent thunderstorm is imminent"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "1d4 fierce griffons savagely tear apart a horse carcass"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "3d6 kobolds pop out of prairie dog holes and fling rocks"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Smoke drifts on the wind; a growing wildfire rages nearby"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "An earth elemental slurps around in a muddy geyser field"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "1d4 wyverns sun themselves atop striated badlands hills"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "2d6 rust-red velociraptors prowl the plains for slow prey"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "Two hill giants trudge along with a horse under each arm"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A pack of 3d6 gnolls trails a rhino peppered with arrows"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "An empty tower shell is covered in finger-painted runes"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "The grass bends in an S shape; it's a roving giant snake"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A stampede of 2d6 mammoths thunders toward the PCs"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A lone orc sits inside a weathered henge of stones"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "Rune-etched boulders seal off ancient burial cairns"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "3d6 horse-riding berserkers crest over the horizon"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A wyvern swoops at a human backed up to a cliff edge"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "Wedges on strings hold precarious boulders in place"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "Two gnolls fight inside a ring of 2d4 chanting gnolls"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "1d4 wild boars drink at a thin, winding stream"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d6 bandits on horses drive a herd of bison toward a cliff"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Cursed wind flutes on poles hypnotize with their sound"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A bandit chieftain (x2 LV and damage) demands a duel"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "2d4 lions watch intently from the banks of a river"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "2d20 nervous peasants stare from their circle of yurts"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A druid in a wolf cloak paints red symbols on dead bison"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d4 pegasi wheel overhead, teaching 2 clumsy foals to fly"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A grass-woven effigy of a horse stands in an empty field"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "An ochre basilisk basks on a rock and puffs its neck pouch"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "An albino chimera sails out of a white, fluffy cloud"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "1d4 ankhegs hiss and spit at a rampaging bulette"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A rival crawling party rides in a howdah on an elephant"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A fossilized tree teeters on top of an eroding mud pillar"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A T-Rex gallops along after a herd of panicked antelope"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "2d6 gnolls creep below the tall grass line, spears ready"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A mammoth gently pats heads with its trunk: +1 luck token"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A mated pair of smilodons leaps down from grassy ridges"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A stone golem made of glittering gypsum guards a field"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A shadow ripples over the grass like a dark stain"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "2d12 berserker hunters welcome guests to their camp"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A bull-headed shrine to a lost god repels roving beasts"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A sun-blind cave brute wildly lurches toward sounds"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant flees from a furious rhino"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A principi angel strides from a storm cloud to gift a boon"
+      }
+    ]
+  },
+  {
+    "id": "high_district",
+    "name": "High District",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "The Overlord levies a 500 gp \"filth tax\" on the PCs"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "The Duke's son challenges a PC to a duel to the death"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "The Overlord's Assassins leap out and demand explanation"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Crawlers with the Mercenaries' Guild confront the PCs"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A burglar disguised as a butler leads the PCs to an ambush"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "Baron Clard's wife winks at a PC; he notices and is furious"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "Three casks of fine wine break loose and careen at the PCs"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A noble's pet panther spooks and tears free of its leash"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A giant scorpion (a rare delicacy) escapes a fine restaurant"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "An angrily thrown chamber pot flies down toward the PCs"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A drug-addled bard in a loincloth flails wildly at the PCs"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A bribed fortune-teller declares the PCs \"future criminals\""
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "A skeptical City Watch patrol follows the group around"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "An immaculately clean child tries to trip a PC as they go by"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Three finely dressed thugs extort a banker for \"protection\""
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "Six thugs race from the Royal Jeweler with a fat bag in tow"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A bailiff and four guards assess the PCs for any owed taxes"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A gruff noble shoves past a PC, muttering \"lowborn scum\""
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A malfunctioning magical ward casts web on the PCs"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "An unconvincing cry for help comes from behind a tavern"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A vendor of fine silks accuses a PC of tearing a costly scarf"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "Duchess Gorvalt swoons near the edge of a high balcony"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "Masked revelers crowd the streets; a dagger flies at a PC"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "Lord Larvin chokes on his wine; it's been poisoned"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "The City Watch rousts gutter-sleepers; one is a known NPC"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "A City Watch patrol searches the PCs for suspicious items"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A teenaged heckler insults the characters' clothing"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A cowled woman beckons the PCs into the rose garden"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A child with magical power accidentally summons an imp"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "One of Miss Fralk's etiquette students slips off into an alley"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A noble asks a PC to punch him and gets upset either way"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "The PCs find a note: \"Bring the poison to the Sapphire Sky\""
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "Through a dark window, the PCs spot 6 swaying ghouls"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A drunk socialite casually admits to killing her husband"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "Rival crawlers brandish their new sheriff pins and writs"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "1d6 City Watch are outclassed trying to catch an acrobat"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A PC recognizes a fraud posing as Sir Wyndos the Bold"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A brass monkey statue turns 1 cp into 1 gp 1% of the time"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A weeping bard playing tragic ballads follows the PCs"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "The PCs commit a social gaffe against a visiting prince"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Jaunty old Sir Faust pulls a pearl out of a PC's ear as a gift"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A night hag posing as a baker hands out drugged tarts"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "The PCs notice 1d4 well-preserved zombies blending in"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A political dissenter takes cover among the PCs and rants"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A Reverend Sister (acolyte) offers healing/blessing to a PC"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A formerly taxidermied basilisk charges out of a curio shop"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A real vampire stalks unnoticed among masqueraders"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant is selling loaded dice (5 gp)"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "The Overlord is dining and invites the PCs to the meal"
+      }
+    ]
+  },
+  {
+    "id": "jungle",
+    "name": "Jungle",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "Mossy, lifelike statues crop up; a medusa resides nearby"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A T-Rex thunders over the ground, looking for fresh meat"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "3d6 hissing viperians encircle 2d4 red-scaled lizardfolk"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A kobold sorcerer riding a leashed crocodile demands gold"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A yowling panther falls onto a PC from a high tree branch"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A snorting gorilla prowls in the dense ground vegetation"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A patch of muddy ground is actually a pool of quicksand"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "2d4 drow in basilisk hide armor creep through the mist"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "1d4 giant scorpions scuttle down thick tree trunks"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A carpet of minuscule, biting ants pours across the ground"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "2d4 stingbats flutter and dart through the dense canopy"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "1d4 giant frogs peek their eyes out of a mossy, still pond"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "2d6 Bloodspear tribe lizardfolk check net traps for game"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "2d4 yellow-striped velociraptors circle around the PCs"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A howling gorilla punches and bites a thrashing crocodile"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "2d6 drow in chitin armor flit among colossal, mossy pillars"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A forest dragon slumbers outside a vine-choked cave"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A slimy troll swings between tree branches like an ape"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "Carnivorous, pink flowers unfurl and fling poisonous darts"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "2d4 zombies (former crawlers) stagger through the jungle"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A towering brachiosaurus slowly plods through, grazing"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A flailing human arm juts out of a dark pool of quicksand"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "Heady, perfumed flowers lull creatures into a deep sleep"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A giant zombie (x3 LV and damage) claws out of the earth"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "1d6 pterodactyls roost in the trees around a deep sinkhole"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d4 drow covered in white war paint charge out of a cave"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Flimsy reeds and grass cover a swarm of snakes in a 10' pit"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A drider clings to a tree, scanning the area with sharp eyes"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A viperian wizard and 1d4 zombie thralls inspect a boulder"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "1d6 playful faeries cavort around a sun-dappled clearing"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "Doctor Bartom Halsy leads an expedition of 2d12 peasants"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A giant snake coils on a low branch, forked tongue flicking"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "1d4 spiders hang on threads at head-height"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "2d4 giant centipedes wriggle out of a hollow, rotting log"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "1d4 crocodiles mock charge out of a river with bared fangs"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "Two adolescent forest dragons clash over a territory claim"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A frantic rival crawling party offers a gold idol to the PCs"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "2d4 berserkers carry a baby basilisk in a wicker basket"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "Javelins shoot from the mouth of a hulking stone statue"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "1d4 berserkers and a druid hunt with their trained basilisk"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A wandering mushroomfolk mystic offers healing salves"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A naga guards a towering, stone ruin housing a black altar"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A viperian ophid leads 2d4 viperians on a patrol"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d6 drow dart with silk thread around a bellowing cyclops"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "2d20 Amber-Eye tribe lizardfolk bustle around mud huts"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A beam of sun touches the top of a three-stepped ziggurat"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A sphinx draped in jade and gold lounges on a stone dais"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant flees a group of 2d4 beastmen"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A radiant couatl snakes through the air; it offers a blessing"
+      }
+    ]
+  },
+  {
+    "id": "low_district",
+    "name": "Low District",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "3d6 zombies lurch out of a smoke-belching charnel house"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A reaver and 4 bandits look for weaklings to shake down"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "2d6 pirates and 2d4 merchants (guards) fight on the docks"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A grizzled sailor spits at the PCs and sneers, \"landlubbers\""
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A half-orc is thrown through a tavern window into a PC"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "1d6 shifty ruffians linger outside a butcher's shop"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A dyehouse dumps a boiling, toxic slurry into the street"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "Children throw mud pies at sputtering men in the stocks"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A cloaked person sneaks between graveyard headstones"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A backed-up sewer grate geysers waste at passersby"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A man carts a thumping coffin toward the charnel house"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A woman whispers, \"play along\" and chats as guards pass"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "Drunk sailors hang off the PCs and clumsily pick pockets"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "Masons unseal an old well, releasing 2d6 giant centipedes"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Rival gangs of 2d4 dirt-streaked children bite and scratch"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "Four thugs loom over a woman who unlocks a warehouse"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A wheezing beggar offers portents in exchange for coin"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "Thieves' Guild footpads tail the PCs from 20 paces back"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "The shell of a burned warehouse collapses into a tenement"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "2d4 kobolds rain stones down from a warehouse's eaves"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "Workers cart a yowling, caged tiger away from the docks"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A young gravedigger slips and falls into a deep grave"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "Hidden thieves pull ropes up in a side alley to trip marks"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A shop owner whispers about \"exotic goods\" for sale"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "1d6 Thieves' Guild toughs spoiling for a fight approach"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "A brawl of 2d6 drunk commoners spills out of a tavern"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Clay shingles fall off the crumbling roof of a warehouse"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A smith flings still-hot horseshoes onto a pile near the PCs"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A blind old woman presents her \"cat\" (a vicious giant rat)"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A troupe of jugglers swig ale and wildly flip daggers"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A mercenary on a horse drags a lank man to debtor's court"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "Two beggars slap and scratch over a burned rat-on-a-stick"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A pure spring bubbles up between cracked cobblestones"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A feeble beggar turns out to be 3 kobolds in a burlap sack"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A bailiff and four guards haul a struggling man along"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "Two rival dog fighters lose control of their mastiffs"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "Rival crawlers accuse the PCs of looting in \"their territory\""
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A kingdom of cats gathers beneath the docks or porches"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A wheedling torchbearer follows and begs for work"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A shrill scream erupts from a row of moldy storage sheds"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Lady Unwin asks the PCs directions to the seedy Red Rat"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "Three thugs in hoods drag a large bag from a tenement"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A red-eyed being watches from a shadowed window"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d6 Bywater Barons (thugs) mob a City Watch patrol"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A refinery discards a barrel of rancid blubber (10 oil vials)"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "Old Esmerelda hands out cups of mulled wine (heals 1d4)"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A pox-marked beggar is actually the Duke in disguise"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant sells the deed to an old shop"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A dropped magic item glitters inside a filthy gutter"
+      }
+    ]
+  },
+  {
+    "id": "market",
+    "name": "Market",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "Six chaos cultists throw burlap bags over the PCs' heads"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A drunk, wobbly knife-thrower hurls a blade toward a PC"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "A runaway cart of lettuce heads crashes down the street"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A passing noble stumbles and blames it on a character"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "Three scrawny children pluck at the PCs' gear and pockets"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A hooded hawk lashes out at a PC who passes too close"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "An overladen dung pile collapses toward the group"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A glimpse into an alley reveals a few shadowy vendors"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "The City Watch asks the PCs to \"distract\" a vendor's guards"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A firebreather gouts flames, 25% chance of misfire"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A woman stealthily sprinkles powder into a spice barrel"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A herd of goats clogs traffic; the goats chew on loose gear"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "A red-faced fruit vendor accuses a woman of theft"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A vendor cuts open a fruit that smells like decaying flesh"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Two sorcerers having a psychic contest start to cause fires"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "Smashing pottery and yells echo from a covered wagon"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A famous sword master (gladiator) drinks alone in a tent"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "2d4 bored caravan guards try to provoke trouble"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A spooked horse rears up, threatening to throw its rider"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "A dart with a note lands at a PC's feet: \"meet at Liona's\""
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "Two shouting merchants brandish daggers at each other"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A tattoo artist offers a character a tattoo at half price (5 gp)"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A merchant under duress serves as bait for a cultist's trap"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A sword-swallower tries to use a PC's weapon for his show"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "A visiting noble swaggers through with 6 pushy guards"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "A small monkey in a vest and red cap steals people's gear"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A team of jugglers secretly picks onlookers' pockets"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A hulking berserker flips a table and starts a fist fight"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A man with a red-stained mouth offers addictive bloodroot"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A goblin runs by hauling four flapping chickens by the legs"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "Four robed monks insist the PCs submit to an exorcism"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "Rival crawlers toast around a still-bleeding troll head"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A chained brown bear tears loose and goes on a rampage"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A beggar offers to exchange a stolen signet ring for gold"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A crone in a smoky tent offers to curse enemies for a fee"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A street urchin steals a loaf of bread from a baker's stall"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "The City Watch tries to arrest an outraged snake charmer"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A shining, red apple appears in a statue of Gede's hand"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "1d6 \"commoners\" (guards) trail a lordling at a distance"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A hunched old woman whispers a portent while passing"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "2d4 kobolds pop out of barrels and snatch at merchandise"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "Religious mendicants place beads around the PCs' necks"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A burglar tries to plant a stolen ivory statuette on a PC"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A mossy centaur clops along, eliciting gasps; he seeks a PC"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "Three angry camels begin spitting at anyone nearby"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "An apothecary offers the PCs a sample of teas or tinctures"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "An antique mirror shatters, releasing the wraith inside it"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant has a random scroll for sale"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "The disguised Overlord pushes a diamond into a PC's hand"
+      }
+    ]
+  },
+  {
+    "id": "mountain",
+    "name": "Mountain",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A howling blizzard or thunderstorm bars travel for 1d4 days"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "2d20 goblins led by a goat giant swarm over the cliffs"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "An airborne manticore and wyvern ferociously clash"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Braaqul, hobgoblin spy, gathers intelligence on the PCs"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "2d6 goblins fling rocks and flaming excrement at the PCs"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A group of 2d4 dwarf bandits hustle travelers for a toll"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A boulder breaks loose, causing an avalanche of rocks"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "Skaldor the troll crunches on dwarf bones in his dank cave"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "1d6 salamanders slither out of a misty, hot spring pool"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "An earthquake shakes the peaks and unleashes landslides"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A screaming swarm of bats careens out of a narrow ravine"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "3d6 hobgoblins march along a pass in tight formation"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "1d4 pyromancers (mages) meditate beside a lava pool"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "1d4 fire giants forge enormous weapons in a smoky cave"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "1d6 goblins sneak along a ridge line toward 2d4 peasants"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "3d6 orcs make camp in an empty, crumbling stone keep"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A frost giant trudges along a snowy ridge, singing loudly"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "2d4 harpies cling to the sharp edges of steep cliff faces"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A volcanic eruption rains down ash, hot gas, and lava flow"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "A tawny mountain lion leaps from hiding at the rear PC"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A reaver and 2d6 bandits try to capture the characters"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A peasant lies with a leg trapped beneath a fallen boulder"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A luring will-o'-wisp floats over a hidden, old mine shaft"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "2d6 berserkers in mountain lion cloaks hunt for game"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "An ettercap spins a funnel of webs over a narrow ravine"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d4 beastmen close in a circle around 1d4 dwarf soldiers"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A stack of logs breaks free and tumbles down the slopes"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A nightmare soars out of the caldera of a nearby volcano"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "2d4 apes hoot and roll rocks at creatures passing below"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A fire dragon sleeps on a hill of coins encircled by lava"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "2d6 dwarf soldiers guard the vaulted doors to their halls"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A cyclops rips a tree from the ground to use as a club"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A massive profile of a dwarven king is carved into the cliffs"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "2d6 salamanders bask on flat, sun-warmed rocks"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A bristling roc warily guards its nest of 1d4 gigantic eggs"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "2d4 goblins pluck a live cockatrice to prepare it for cooking"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers stares in puzzlement at a map"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A rusty, dwarven axe is stuck in a bleached minotaur skull"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "1d4 hobgoblins on griffons throw javelins at the PCs"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "1d6 snarling hell hounds lunge out of a glowing cave"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Hiraldo the Swordsman trains in a secluded box canyon"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A snorting minotaur emerges through a carved stone arch"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A hunting wyvern swoops down the face of the mountain"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d6 hobgoblins form a shield wall against a fat hill giant"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A praying knight sits in the cold crash of a narrow waterfall"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A shrine to Madeera grants +1 luck token for an offering"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A two-headed ogre argues with itself while cooking stew"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant looks for rare newts under rocks"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "Rathgamnon the Sphinx flies in to bestow a magic item"
+      }
+    ]
+  },
+  {
+    "id": "ocean",
+    "name": "Ocean",
+    "tag": "Aquatic",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A massive whirlpool opens up, threatening all ships within"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "An angry storm giant asks why the PCs are in her realm"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "A hydra and a kraken churn the seas in their epic struggle"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Lyrellos, a merfolk prince, is displeased with the PCs' garb"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A rogue wave pelts toward PCs; it's a water elemental"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A giant octopus grabs at the PCs from below the water"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A whipping storm batters the group and threatens vessels"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "2d6 sahuagin try to take the characters captive"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "3d6 pirates on the Crimson Sky try to intercept the PCs"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Thick, brown algae turns the water surface into mud"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A swarm of giant rats swims away from a shipwreck"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A massive plesiosaurus rises from the dark depths"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "A press gang of pirates appears on a fast, black galley"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "2d4 sirens sing from a rocky atoll jutting from the sea"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A giant octopus and plesiosaurus fight to the death"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "A ghost and 3d20 skeletons crew a listing, abandoned ship"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "1d6 sharks circle the PCs and try to upend any vessels"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A bone naga slithers along the surface like a sea snake"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "Treacherous coral reefs hinder the passage of ships"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "A rolling fog on the water hides 2d4 glowing will-o'-wisps"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "2d8 merfolk outlaws demand a toll for safe passage"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A dehydrated, sun-scorched pirate floats by in a rum barrel"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "High waves toss droves of violet jellyfish through the air"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A ravenous hydra explodes out of the water"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "2d6 wights approach on a skull-festooned longboat"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "Beneath a sea volcano, a water and fire elemental battle"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A whirling water spout tears across the surface of the sea"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A colossal rogue wave lasting 1d4 rounds threatens vessels"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A sea hag posing as an injured mermaid begs for help"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A floating, white tower houses a distracted archmage (N)"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A storm giant pulled by two giant manta rays stops to chat"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A school of 2d20 jellyfish descends upon the PCs"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "2d100 migrating birds rest on any objects above the water"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A green bottle with a parchment inside bobs on the waves"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "1d4 brain eaters approach in a conch-shaped submarine"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "2d6 sahuagin quietly dart toward 3d10 merfolk peasants"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers inspect a map aboard the Merlass"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A ship on the horizon appears to be floating above the sea"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A passing storm cloud rains a piranha swarm onto the PCs"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "2d6 giant crabs bask on a coral reef dotted with wrecks"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Sillenion the sea dragon (L) is curious about \"land-folk\""
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A barnacle-encrusted giant manta ray drifts into sight"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "An alabaster stone golem trudges along the sea floor"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A storm giant fights a losing battle against a megalodon"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A merchant vessel, The Jade Lion, welcomes folk aboard"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A rare bloom of scintillating algae can end one curse"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "3d10 harpies flit around the mouth of a steaming volcano"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant rows by in a bobbing dinghy"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A seagull flying overhead drops a random magic item"
+      }
+    ]
+  },
+  {
+    "id": "river_and_coast",
+    "name": "River & Coast",
+    "tag": "Aquatic",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A tsunami overflows the shore, raising it 10' for 2d4 rounds"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A clutch of 1d4 basilisks sun themselves on flat rocks"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "3d6 peasants fearfully inspect a dying giant snake"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Mirell, a pearl and gold prospector, yells at \"spot poachers\""
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "3d8 kobolds skim under the surface with reed snorkels"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A troll lurks in a damp cave along the water's edge"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A 1d4 x 10' wide pit of quicksand or mud opens underfoot"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A jumping piranha swarm leaps from the shallows"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A sea hag gathers greasy weeds along the water's edge"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A poisonous bloom of red algae chokes the shoreline"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "1d4 holes full of black water turn out to be black puddings"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "3d8 orcs led by an orc chieftain camp near the water"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "3d6 river bandits lunge out of hiding on rickety rowboats"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A pack of 2d8 hunting lions prowl the shoreline"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A hippogriff desperately wrestles a locked-on crocodile"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "2d6 goblin gem divers operate out of a ramshackle hut"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "2d4 apes sift through the water for darting minnows"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "2d4 territorial centaurs spearfish in the shallows"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A tidal surge grabs at the PCs, threatening to pull them in"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "1d4 hippopotami travel with an equal number of calves"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A giant crab covered in weeds rears out of the water"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "Falsted the halfling clings to a sinking, overturned dinghy"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "Woven reeds or seaweed mask a 20' deep, spear-lined pit"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "An elephant swims with only its trunk above the surface"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "1d4 faeries trapped in corked glass bottles float by"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d6 lizardfolk circle in around a flailing giant crab"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A weighted and barbed net launches out of the silt or sand"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A gladiator with a helm stuck on backwards gropes along"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A pride of 2d4 griffons roosts on high rocks or in trees"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "3d6 peasants live in colorful tents on lashed-together rafts"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "Yggral the treant stands on the shore, staring at the sky"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A circle of 2d4 crooked statues turn out to be gargoyles"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "1d4 old rowboats are tied to a battered, rotting dock"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "2d6 giant leeches try to bite warm-blooded swimmers"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "Thin tunnels in the mud or sand house a snake swarm"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "3d6 frenzied mastiffs won't let an exhausted elf ashore"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers portage an overladen canoe"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "An unlit lighthouse stands on a narrow, sandy island"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "2d4 stingbats buzz along the surface of the water"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "Silver Sea, a massive galleon, has run deeply aground"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Marga the Wise forages for curative crystals and plants"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A herd of 3d6 wild horses thunders up the shoreline"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "The kobold sorcerer Mortimus preaches from atop a log"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "2d4 cultists fight 2d6 lizardfolk around a carved obelisk"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "Quargot the fisherman welcomes peaceful folk to his hut"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "2d8 opaline shellfish cluster in tide pools; they have pearls"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "3d8 giant frogs croak one-word insults in Common"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant walks in the shallows on stilts"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A half-buried treasure chest contains a magic item"
+      }
+    ]
+  },
+  {
+    "id": "ruins",
+    "name": "Ruins",
+    "tag": "Underground",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A mutated cave brute explodes through a crumbling wall"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A silent gelatinous cube sweeps up a corridor"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "A roving owlbear scavenges for dead bodies to eat"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Rival crawlers confront the PCs; they were \"here first\""
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "1d6 rust monsters swarm a crack bubbling with mercury"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A legless suit of animated armor pulls itself along the floor"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A groaning wall collapses at the slightest touch"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A chalk note on the wall: \"Karov, we'll be at the Loyal Hog\""
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "Mort the goblin is digging in cracks for grubs and beetles"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "The floor collapses into a pit 1d6 x 10 feet deep"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A raiding team of 2d4 hobgoblins moves in tight formation"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "2d4 web-covered skeletons form from scattered bones"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "1d4 giant dung beetles roll huge balls of dried excrement"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "An ochre jelly hides inside a pond or sinkhole"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A single, perfect rose grows up between the flagstones"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "2d4 bandits shutter lanterns and set up a hasty ambush"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "Three goblins toughen each other's skulls with frying pans"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "2d6 beastmen pummel a giant centipede with rocks"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A gas leak causes all light sources to explode and go out"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "A gelatinous cube full of handy items is stuck inside a pit"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A swarm of clattering, gold scarab beetles flies into sight"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A wounded NPC staggers up to the PCs and begs for help"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A rusty portcullis slams down, separating the PCs"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A strangler hides above a backpack stuffed with rocks"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "A weeping ghost floats by, distracted by its own ranting"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d4 kobolds sneak up behind the PCs for a surprise attack"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Ancient clay pots vibrate with hypnotizing resonance"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "1d6 gricks shred dead giant rats and use the fur for nesting"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "Rival crawlers escort a frail noble tourist on an \"adventure\""
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "3d4 goblin scavengers barter and trade for odd trinkets"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "2d4 dwarven miners (soldiers) shore up a collapsing wall"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d4 giant wasps build a huge, papery nest on the ceiling"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A dense cloud of sulfuric mist rises from a floor crack"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A swarm of spiders surges out of a gauzy egg sack"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "An ogre named Lud scratches rude words into the wall"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "1d6 goblins brawl with 2d4 kobolds over a grick carcass"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "2d4 giant bats roost on the ceiling; light disturbs them"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "An ettercap spins web cocoons around its still-living prey"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "1d6 cultists hunt for humanoid bones for a nefarious ritual"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A dryad searches for her tree that bugbears chopped up"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A deep gnome plays haunting music on humming fungi"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "2d6 kobolds work in a makeshift, volatile alchemy lab"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A stone golem endlessly stacks the same rocks into piles"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "Two darkmantles circle each other in a duel of intimidation"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "2d6 goblins carry their bugbear king on a rickety litter"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "2d4 cave creepers swarm up the hallway"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A recent campfire still burns with glowing cinders"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "A minotaur guides the Wandering Merchant on a path"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "The body of a dead crawler holds a random magic item"
+      }
+    ]
+  },
+  {
+    "id": "slums",
+    "name": "Slums",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "3d8 Bywater Barons (thugs) pour out of a dark tenement"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A press gang of 2d4 bandits tries to kidnap the PCs"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "2d6 thugs surround two greenhorn City Watch guards"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A pox-ridden man clutches at the PCs, begging for food"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "1d6 giant centipedes writhe out of a midden heap"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A pack of 2d4 rabid mastiffs begins stalking the group"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A burning shop groans and collapses into the street"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "2d4 commoners clamor to get the butcher's offal scraps"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A dark shape (a hunting ghoul) slips along a rooftop"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "1d4 cloaked chaos cultists slip into an abandoned temple"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "1d4 giant dung beetles skitter up the side of a tavern"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "2d4 thugs demand a toll; they let the PCs pass if paid"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "3d6 nervous City Watch march toward the Bilge Pot tavern"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A dying man in a gutter begs to impart a dire secret"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "2d4 street goons fight with bottle shards and clubs"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "A dead body falls from a roof with a note: \"Bywater scum\""
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "Residents cluster outside a tenement; screams echo inside"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A frantic, manacled man wriggles out of a cellar window"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A mob of begging children grows the more the PCs give"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "Woeful Friar Hector rushes to the summons for last rites"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A towering thug bars the PCs' way: \"Find another route\""
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A rangy crone sells \"love potions\" (polymorph to newt)"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A snapped clothesline falls, entangling a character"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A body in an alley bears a note: \"Pay in coin, or blood. -B.B.\""
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "1d4 people chase a pig barreling through all obstacles"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "3d4 Bywater Barons (thugs) tell the PCs to leave, \"or else\""
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "1d4 children lure a giant dung beetle into a large cage"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A dour mage and 1d4 apprentices lead a tense commoner"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A halfling at the well glances around and uncorks a vial"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "Chanting emanates from an old, crumbling temple"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A young noble in spotless \"lowborn rags\" fails to blend in"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "1d4 rabid, screeching rats spring from a midden pile"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A back-alley statue of Shune holds out stained hands"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A gaunt man sidles up and whispers, \"Bloodroot, 3 silver\""
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "Workers lifting heavy crates slip; one gets trapped beneath"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A cheerful street peddler sells crispy rat-on-a-stick for 2 cp"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A rival crawling group warily prods at a bricked-up door"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "Distant sobbing (a ghost) rises from a boarded-up building"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "Crazy Davord challenges a PC to a game of \"drop the boot\""
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A grim team of 2d4 bounty hunters (soldiers) eye the PCs"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A goblin mage lurking on a roof offers a spell for a favor"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "1d6 silent workers are actually zombies serving a sorcerer"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "\"Harmless\" Uncle Istvold stalks the PCs while cackling"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A raging berserker stumbles out of a drug house"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A bent, old woman offers safe shelter inside from ruffians"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A loose flagstone conceals a box with 80 gp and a potion"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "1d6 thugs throw bricks through a shop's windows"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant pays 5 gp per giant dung beetle"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A soiled parchment flutters to the ground; it's a spell scroll"
+      }
+    ]
+  },
+  {
+    "id": "swamp",
+    "name": "Swamp",
+    "tag": "Wilderness",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A 3x mutated otyugh (see pg. 191) rises out of the muck"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "Thorash the swamp dragon (C) lurks in shallow water"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "2d4 giant frogs leap and snap at a cloud of 3d6 stingbats"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Grizella Mosspeat, a night hag, poles along on a rotting raft"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "An undead T-Rex stomps around, shaking the swamp"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "2d8 well-preserved zombies stand up out of a peat bog"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "Dense mud gives way into a slushy field of quicksand"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "2d6 mottled lizardfolk approach the PCs in an ambush"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A gnoll tied to the trunk of a wide tree begs for release"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A cloud of mosquitoes whines, bites, and obscures vision"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "2d4 gnolls patrol through the swamp around their territory"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "2d6 filthy, long-haired apes hurl rocks from the mangroves"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "2d6 peasants with torches and pitchforks chase a werewolf"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "1d4 gargoyles watch from the tops of pitted, leaning pillars"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "2d6 lizardfolk leap from the mud to attack 2d4 elves"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "A headless scarecrow stands on a rock holding a lit lantern"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A basilisk hisses from inside a pitch-dark, damp cave"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "1d8 giant leeches fall onto the PCs from wet tree branches"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "Dense patches of stinging nettles and toxic thorns grow"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "A fast-moving swarm of snakes slithers along the ground"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "2d6 giant rats leer from inside rotting logs and tree trunks"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "Sir Augrim, a knight, is stuck up to his neck in quicksand"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A yellow haze of poisonous swamp gas drifts over the bog"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "3d6 mushroomfolk tend to trees bursting with dewy fungi"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "The naga Coagulus Mortus sits atop a heap of rotten bones"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "1d4 ogres lumber by, arguing about what elves taste like"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "3d6 patches of burning oil float and drift on the water"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "1d6 giant spiders creep through the dense treetops"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "2d4 cockatrices sit on their eggs inside a vine-draped cave"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A shattered, leaning keep houses a muttering ghost"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "Blugbort, goblin wizard (N), hunts for slugs and toadstools"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "1d4 ghasts lead a group of 2d6 zombies and 2d8 skeletons"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A cloud of crows darts around a crumbling, ancient well"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "3d10 goblins drag a rotund hill giant on a makeshift sled"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "3d6 elves watch the PCs from hiding, deciding if to attack"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A grick drags a riderless, kicking horse into a black pond"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A group of rival crawlers prods at a half-sunken menhir"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A giant snake plunges out of a muddy hole in the ground"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A fire-eyed wight rides by on a nightmare trailing flames"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "What appears to be a filmy puddle is actually a gray ooze"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "Ol' Greenguts the giant frog helps with the PCs' next task"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "An orc chieftain leads 3d12 Snake Fang orcs on a rampage"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "Gorgoth, a priest of Shune (C), whispers to a black obelisk"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "1d4 muddy hippos thrash and gore 1d6 hissing crocodiles"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "The Yellow Snail kobolds (2d20) live peacefully in tree huts"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "Bubbling swamp tar has healing and anti-toxin properties"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "1d4 shambling mounds trudge through the slimy muck"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant rides on an albino crocodile"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "The Swamp Shambler (gorilla) offers a random magic item"
+      }
+    ]
+  },
+  {
+    "id": "tavern",
+    "name": "Tavern",
+    "tag": "Tavern",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A cloaked man (vampire) at the door asks to be invited in"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "2d6 Overlord's Assassins sweep in and scan the crowd"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "3d6 patrons watching a tense dice game erupt in a brawl"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "2d6 boorish sailors swarm in and hog the entire bar area"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A sour-faced patron buys a drink for everyone but the PCs"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A PC is mistakenly announced as the next pit fighter"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A drunk halfling swings on an ancient, creaking chandelier"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "A woman stalks up and throws a drink in a PC's face"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A patron's raw cobra order rears up from the plate, hissing"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "A slippery puddle of foamy ale spreads over the floor"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A half-orc roars and lifts a full-sized table over his head"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A long, terrified scream comes from the kitchen"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "A group of rival crawlers tell the PCs this is their tavern"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "A slender man whispers, \"Need poison? Best you can buy!\""
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A smirking elf challenges a PC to dice; the dice are loaded"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "A dour mage studies a book and glares at noisemakers"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A half-orc and halfling arm wrestle; the halfling is winning"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "Two rival bards start an uproarious singing contest"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A sailor throws another onto the PCs' table, spilling drinks"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "Five merry dwarves sing a shanty and headbutt each other"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "1d6 patrons (chaos cultists) skulk into the back room"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "An enraged, sprinting crocodile bursts out of the kitchen"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A hooded patron smashes a flask of flaming oil and runs"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A dwarf in clogs challenges a PC to a dancing contest"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "Atticus Gnarl, a halfling wizard, stares unblinking at a PC"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "Rival crawlers challenge the PCs to a drinking contest"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A halfling tries to stealthily tie the PCs' bootlaces together"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "A man grabs a PC and shouts, \"You know what you did!\""
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "Drunk dart throwers can hardly tell which way is up"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A woman flawlessly lifts a coin purse from a patron's belt"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "Rival crawlers whisper over a book and point to passages"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d6 City Watch guards tromp wearily through the door"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A landscape painting subtly changes when not observed"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A half-orc gulps a whole flagon and punches the server"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "A woman in dark-blue leathers sips tea and observes"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A cloaked figure jumps the bar and goes for the coin box"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "Rival crawlers try to pawn off a map nobody can decipher"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "Everyone avoids the chained trapdoor of stone in the floor"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "Four whispering commoners stop and glare at passersby"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A woman picks up a chair and smashes it on a man's head"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A sympathetic City Watch guard shares an inside rumor"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "Violet Dorn, a widely renowned bard, walks into the tavern"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "A weeping priest wobbles over and collapses on a PC"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "At the sound of a nearby Watch whistle, 1d6 patrons bolt"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A well-heeled patron invites the PCs into a private booth"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "The brass wolf's nose imparts good luck (5% for luck token)"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "A patron slips a note to a PC: \"You're surrounded by spies\""
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant has a Van Dinkle flask (pg. 137)"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A die sits in a dusty corner; it's Brak's Cube of Perfection"
+      }
+    ]
+  },
+  {
+    "id": "temple_district",
+    "name": "Temple District",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "2d6 chaos cultists begin a live sacrifice; it's a beloved NPC"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "A routine exorcism expels a very non-routine erinyes"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "An old man dumps a stream of gems into an alms box"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A stampede of religious pilgrims rushes down the street"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A crowd clamors to touch a holy relic carried on a platform"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A priest screams, \"It's all a lie!\" and turns into a bone naga"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "A roof cistern collapses; water and stone crash down"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "Three acolytes accuse the PCs of treading on a holy tomb"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "Lashing tentacles erupt from the sleeves of a chaos cultist"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "Frenzied Bloodletting celebrants crack whips at passersby"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "Penitents in chains carry a litter bearing a high priest"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A cowled person leaves a basket at a chapel; it's an infant"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "2d4 blindfolded pilgrims sit in a circle and block the street"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "Two beggars conceal wavy daggers up their sleeves"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A man falls down in rapture and turns into a fire elemental"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "Movement darts inside the boarded-up ruins of a church"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A priestess storms from a temple, flinging her holy symbol"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "Whispering chaos cultists gather at a back-alley shrine"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A trapdoor in an alley falls open to the cellar of a temple"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "1d6 skulking acolytes hunt for a lone beggar to kidnap"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A red-mouthed man says a new church has free bloodroot"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "1d4 knights hold a public inquisition for an accused witch"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "The Holy Bull Run commences with screams and gorings"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "Four masked thugs disrupt an opulent funeral procession"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "A man leaps up and shouts, \"I object!\" during a wedding"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "A poxed beggar wanders around in a feverish delirium"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "Mystics burn hallucinogenic incense in the street"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "2d4 bandits pose as monks collecting alms for the poor"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A cultist in the shadows throws a poisoned dart at a PC"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A firebrand orator preaches to a growingly frenzied crowd"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A commoner's eyes turn white and she utters an augury"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "Debauched cultists of Gede hand out endless cups of wine"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A priest with a forced smile offers 5 gp to new converts"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "2d6 acolytes clash over a difference in text interpretation"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "The Parade of the Nine draws onlookers and pickpockets"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A monk lights himself on fire and walks into a temple"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A rival group of crawlers exit a church, freshly baptized"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "The City Watch drags flailing Baron Hallin out of a temple"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "Mystics hold up cobras to be kissed; 10% of cobras lash out"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "A priest flings holy water from a brush; it burns the chaotic"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A templar disguised as a commoner tends to a fallen leper"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A woman screams, \"All will dissolve!\" and throws acid"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "1d6 City Watch try to subdue a man in a violent rapture"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A domini angel appears in a burst of light; it points to a PC"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A temple of St. Terragnis offers sanctuary to the unarmed"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "The Font of Madeera has a 5% chance of ending a curse"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "The Overlord enters a temple surrounded by 3d6 knights"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant sells lookalike priest's vestments"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A high priest selects a PC to receive a rare blessing"
+      }
+    ]
+  },
+  {
+    "id": "tomb",
+    "name": "Tomb",
+    "tag": "Underground",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A distracted, muttering lich teleports into the room"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "2d4 wraiths emerge from walls, floors, and ceilings"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "2d6 ghasts claw and thrash around inside a swarm of bats"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "Muggins Greenbottle, halfling tomb robber, was here first"
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "2d4 wererats in human form paw through piles of rubble"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A scarab swarm boils out of cracks in the floors and walls"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "Necrotic energy turns a near-sized area dangerously cold"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "1d6 malodorous rot flowers burst through weakened stone"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "1d4 spiders descend onto the backs of necks"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "The Sphere of Annihilation glides along, moving randomly"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A wight leads a shambling patrol of 3d12 skeletons"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A pile of thin, long bones assembles into a bone naga"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "3d6 confused peasants have awoken from a magical stasis"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "1d4 mummies lope around, moaning in ancient Common"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "A gelatinous cube contains 2d6 skeletons trying to escape"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "An angry ghost must stay within near of its own remains"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "2d4 shadows try to sneak up on the PCs from behind"
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "A group of 2d4 superstitious, jumpy orcs hunts for loot"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "A screaming wind of spirits robs all unused luck tokens"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "An oni demands to know where its stolen sword is hidden"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "1d6 corroded animated armors pursue 1d4 rust monsters"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "The soul of Hirael the elf is trapped inside a musty painting"
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A 20' patch of shadowy darkness extinguishes all light"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "A wraith and 1d4 shadows hover around a dark floor crack"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "2d6 thieves leap out and demand the PCs' plunder"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "3d8 zombies fight each other to eat a surrounded bandit"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A jackal carving drains 1d6 HP/round to all within near"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "2d4 ghouls tear through the walls where they were buried"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "A cave creeper devours a freshly destroyed zombie"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "2d6 zombies endlessly pile the same bricks into new cairns"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A vampire offers safe passage in exchange for sips of blood"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "2d4 demon-faced gargoyles flap up the halls, howling"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "A skull rolls around, stopping to give critique or comment"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A black ooze drips down from thin cracks in the ceiling"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "2d6 cultists steal along looking for unholy relics to claim"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "1d4 wraiths chase the terrified ghost of a human peasant"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "1d6 rival crawlers flee from their own hostile shadows"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "A cloud of blood boils through; it whispers quiet secrets"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A slavering ghoul is pinned to the wall by four iron spikes"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "3d6 swaying zombies lurch along in a mindless horde"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "A seraph lays a blessing on the remains of a holy knight"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "2d4 chanting acolytes (C) lead a blood-anointed reaver"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "An urn that says \"Bimbles\" holds a blue zombie cockatrice"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "A centipede swarm overruns a thrashing cave creeper"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A radiant wight (L) animated by holy energy approaches"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A soft bell chimes; all who listen for 2 rounds heal 2d6 HP"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "The human archmage Rantarim (N) hunts for an old tome"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant pops, gasping, out of a coffin"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "A secret cache holds 1d4 items from the 7-9 treasure table"
+      }
+    ]
+  },
+  {
+    "id": "university_district",
+    "name": "University District",
+    "tag": "City",
+    "formula": "d100",
+    "entries": [
+      {
+        "range": "01",
+        "lo": 1,
+        "hi": 1,
+        "text": "A drunk apprentice wizard summons a furious marilith"
+      },
+      {
+        "range": "02-03",
+        "lo": 2,
+        "hi": 3,
+        "text": "Grabbing tentacles erupt through a sewer grate"
+      },
+      {
+        "range": "04-05",
+        "lo": 4,
+        "hi": 5,
+        "text": "Two professors' long feud boils over into spell-slinging"
+      },
+      {
+        "range": "06-07",
+        "lo": 6,
+        "hi": 7,
+        "text": "A woman furtively offers to pay for \"recently dead bodies\""
+      },
+      {
+        "range": "08-09",
+        "lo": 8,
+        "hi": 9,
+        "text": "A hit man jumps on stage where a philosopher speaks"
+      },
+      {
+        "range": "10-11",
+        "lo": 10,
+        "hi": 11,
+        "text": "A teenager carrying a grimoire flees from a bookstore"
+      },
+      {
+        "range": "12-13",
+        "lo": 12,
+        "hi": 13,
+        "text": "The sky rains yellow acid; a spell has gone very wrong"
+      },
+      {
+        "range": "14-15",
+        "lo": 14,
+        "hi": 15,
+        "text": "An old tinker sells one-use confetti bombs and sparklers"
+      },
+      {
+        "range": "16-17",
+        "lo": 16,
+        "hi": 17,
+        "text": "A cloud of 2d4 purple stingbats gout from a chimney"
+      },
+      {
+        "range": "18-19",
+        "lo": 18,
+        "hi": 19,
+        "text": "City guards frantically cordon off a wide circle of blue fire"
+      },
+      {
+        "range": "20-21",
+        "lo": 20,
+        "hi": 21,
+        "text": "A shifty man sells \"cheap potions\" (all are 2 mixed potions)"
+      },
+      {
+        "range": "22-23",
+        "lo": 22,
+        "hi": 23,
+        "text": "A nearsighted professor insists a PC has an overdue paper"
+      },
+      {
+        "range": "24-25",
+        "lo": 24,
+        "hi": 25,
+        "text": "Four bratty students flick copper pieces at people's heads"
+      },
+      {
+        "range": "26-27",
+        "lo": 26,
+        "hi": 27,
+        "text": "Tavern-goers flee from a red light inside the Flying Snail"
+      },
+      {
+        "range": "28-29",
+        "lo": 28,
+        "hi": 29,
+        "text": "Inhuman howling rises from one of the nearby apartments"
+      },
+      {
+        "range": "30-31",
+        "lo": 30,
+        "hi": 31,
+        "text": "The school's wyvern statue, Old Rolf, animates in a frenzy"
+      },
+      {
+        "range": "32-33",
+        "lo": 32,
+        "hi": 33,
+        "text": "A red-faced young noble tells a PC to \"show proper regard\""
+      },
+      {
+        "range": "34-35",
+        "lo": 34,
+        "hi": 35,
+        "text": "The school's Wizards & Thieves champion challenges a PC"
+      },
+      {
+        "range": "36-37",
+        "lo": 36,
+        "hi": 37,
+        "text": "Burning ash rains down from a blown-out tower window"
+      },
+      {
+        "range": "38-39",
+        "lo": 38,
+        "hi": 39,
+        "text": "A spectacled mage begins measuring and prodding a PC"
+      },
+      {
+        "range": "40-41",
+        "lo": 40,
+        "hi": 41,
+        "text": "A magic cauldron appears, disgorging 1d6 giant rats"
+      },
+      {
+        "range": "42-43",
+        "lo": 42,
+        "hi": 43,
+        "text": "A pale man locks eyes with a PC and mouths: \"Help me!\""
+      },
+      {
+        "range": "44-45",
+        "lo": 44,
+        "hi": 45,
+        "text": "A PC steps on a prank rune that glues their shoes down"
+      },
+      {
+        "range": "46-47",
+        "lo": 46,
+        "hi": 47,
+        "text": "Two animated armor suits duel destructively in the street"
+      },
+      {
+        "range": "48-49",
+        "lo": 48,
+        "hi": 49,
+        "text": "A meek student being grilled by a guard points to the PCs"
+      },
+      {
+        "range": "50-53",
+        "lo": 50,
+        "hi": 53,
+        "text": "2d6 kobolds swarm from the sewers to steal bags"
+      },
+      {
+        "range": "54-55",
+        "lo": 54,
+        "hi": 55,
+        "text": "A practicing wizard targets a PC with a charm person spell"
+      },
+      {
+        "range": "56-57",
+        "lo": 56,
+        "hi": 57,
+        "text": "1d4 gargoyles swoop down from a facade to grab a PC"
+      },
+      {
+        "range": "58-59",
+        "lo": 58,
+        "hi": 59,
+        "text": "Four thugs stalk the alleys, looking for an easy mark to rob"
+      },
+      {
+        "range": "60-61",
+        "lo": 60,
+        "hi": 61,
+        "text": "A witch is telling fortunes from a makeshift stall for 1 gp"
+      },
+      {
+        "range": "62-63",
+        "lo": 62,
+        "hi": 63,
+        "text": "A student asks to apprentice with one of the PCs"
+      },
+      {
+        "range": "64-65",
+        "lo": 64,
+        "hi": 65,
+        "text": "A sorcerer (oni in disguise) drinks and watches the group"
+      },
+      {
+        "range": "66-67",
+        "lo": 66,
+        "hi": 67,
+        "text": "An animated owl statue surreptitiously follows the PCs"
+      },
+      {
+        "range": "68-69",
+        "lo": 68,
+        "hi": 69,
+        "text": "A mage tries to pull a PC into an alley to siphon off blood"
+      },
+      {
+        "range": "70-71",
+        "lo": 70,
+        "hi": 71,
+        "text": "Crashing and bellowing erupts inside a library"
+      },
+      {
+        "range": "72-73",
+        "lo": 72,
+        "hi": 73,
+        "text": "A spellbook flaps out of a window and tries to escape"
+      },
+      {
+        "range": "74-75",
+        "lo": 74,
+        "hi": 75,
+        "text": "A professor summons a vrock but loses control of it"
+      },
+      {
+        "range": "76-77",
+        "lo": 76,
+        "hi": 77,
+        "text": "Three loan collectors (thugs) surround a hapless student"
+      },
+      {
+        "range": "78-79",
+        "lo": 78,
+        "hi": 79,
+        "text": "A wizard's pet cockatrice gets free inside a packed tavern"
+      },
+      {
+        "range": "80-81",
+        "lo": 80,
+        "hi": 81,
+        "text": "Three overconfident apprentices pick a fight with the PCs"
+      },
+      {
+        "range": "82-83",
+        "lo": 82,
+        "hi": 83,
+        "text": "An artist stops a PC and pleads to draw a charcoal portrait"
+      },
+      {
+        "range": "84-85",
+        "lo": 84,
+        "hi": 85,
+        "text": "A nervous librarian hands a PC a strange book and flees"
+      },
+      {
+        "range": "86-87",
+        "lo": 86,
+        "hi": 87,
+        "text": "Professor Krall snaps, leading 2d6 zombies into the streets"
+      },
+      {
+        "range": "88-89",
+        "lo": 88,
+        "hi": 89,
+        "text": "Students from a rival university vandalize a revered statue"
+      },
+      {
+        "range": "90-91",
+        "lo": 90,
+        "hi": 91,
+        "text": "A scholar offers a ruby as a prize for answering a riddle"
+      },
+      {
+        "range": "92-93",
+        "lo": 92,
+        "hi": 93,
+        "text": "A clumsy wizard breaks a glass bottle housing a naga"
+      },
+      {
+        "range": "94-95",
+        "lo": 94,
+        "hi": 95,
+        "text": "The PCs stumble into an occult ritual with 5 apprentices"
+      },
+      {
+        "range": "96-97",
+        "lo": 96,
+        "hi": 97,
+        "text": "The Wandering Merchant sells caustic alchemical reagents"
+      },
+      {
+        "range": "98-99",
+        "lo": 98,
+        "hi": 99,
+        "text": "Roll two encounters and combine the results (reroll 98-99)"
+      },
+      {
+        "range": "00",
+        "lo": 100,
+        "hi": 100,
+        "text": "An archmage entrusts a random magic item to the PCs"
+      }
+    ]
+  }
+]

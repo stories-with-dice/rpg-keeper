@@ -54,6 +54,8 @@ js/ua-statblock.js      pure parser for a Unknown Armies 3rd Edition character's
                        computed-ability formula — no DOM, UMD-ish like js/monsters.js
 js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
+js/tables.js            the Tables tab: tag filter + name search over window.TABLES_LIBRARY, expand a
+                       table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
 js/io.js                the "paste sheet as text" modal, and whole-state export/import
 js/dice-ui.js           the Dice Roller panel (preset grid + custom formula) and the right-click
@@ -64,6 +66,7 @@ js/main.js              composition root: wire() calls every subsystem's wireX()
 js/monsters.js          pure stat-block parser (no DOM, no storage); UMD-ish
 js/monsters-data.js     GENERATED: window.MONSTER_LIBRARY = [...245 monsters...]
 js/spells-data.js       GENERATED: window.SPELLS_LIBRARY = [...85 spells...] (for file:// — fetch is blocked there)
+js/tables-data.js       GENERATED: window.TABLES_LIBRARY = [...22 random tables...]
 js/compendium-seed.js   hand-maintained gear + window.COMPENDIUM_SEED / _VERSION; folds in SPELLS_LIBRARY
 js/marked.min.js        vendored Markdown parser
 js/fuse.min.js          vendored Fuse.js 7 (UMD → window.Fuse) — fuzzy search for the Compendium
@@ -72,13 +75,19 @@ data/monsters.json     GENERATED: same content as monsters-data.js (for http fet
 data/bestiary_data.json  source data for the converter (Shadowdark core bestiary)
 data/spell_data.json   source data for the spell converter (Shadowdark core spells)
 data/spells.json       GENERATED: same content as spells-data.js (for http fetch / inspection)
+data/tables/*.csv      source data for the random tables (one file per table, "range,Details" rows)
+data/tables.json       GENERATED: same content as tables-data.js (for http fetch / inspection)
 data/*.txt             example character sheets (seeded on first run)
 scripts/convert-bestiary.js   CLI: bestiary_data.json -> monsters.json + monsters-data.js
 scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> data/spells.json +
                        js/spells-data.js, { name, category:"Spells", body } entries compendium-seed.js reads
+scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json + js/tables-data.js (see
+                       "Tables tab" below for the table shape and the per-file tag mapping)
 scripts/bundle-standalone.js  CLI: index.html + every js/css/vendor/image asset it references ->
                        one self-contained HTML file (dist/index.html) — see "What this is" above
 test/monsters.test.js  node:test suite for the parser + converter
+test/tables.test.js    node:test suite for scripts/convert-tables.js (CSV parsing, range parsing,
+                       every table's d100 coverage) + the data/tables.json <-> tables-data.js sync check
 test/logic.test.js     node:test unit tests for the app's internals (dice engine, Scarlet Heroes,
                        state migration, annotate, compendium resolve, combat, …)
 test/ui.test.js        node:test integration tests that drive the real DOM (index.html + the app's
@@ -332,11 +341,15 @@ npm run convert-bestiary   # writes BOTH data/monsters.json and js/monsters-data
 
 # rebuild the spell seed after editing data/spell_data.json or the converter
 npm run convert-spells     # writes BOTH data/spells.json and js/spells-data.js
+
+# rebuild the table library after adding/editing a data/tables/*.csv
+npm run convert-tables     # writes BOTH data/tables.json and js/tables-data.js
 ```
 
 `data/monsters.json` and `js/monsters-data.js` **must stay in sync** — a test asserts it. Always
 run the converter and commit both, never hand-edit either. Same relationship between
-`data/spells.json` and `js/spells-data.js` (no test asserts it yet, but treat it the same way).
+`data/spells.json` and `js/spells-data.js` (no test asserts it yet, but treat it the same way), and
+between `data/tables.json` and `js/tables-data.js` (a test asserts this one too, in `test/tables.test.js`).
 
 ## State model
 
@@ -531,6 +544,42 @@ entry, parses it, then attaches the entry's `actions` as `abilities` and Title-c
 `main()` only under `require.main === module`; also exports `{convert, titleCase, slug, statLine,
 buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shadowdark entries),
 `--out`, `--js-out`.
+
+## The Tables tab (`js/tables.js`)
+
+Read-only, filterable browser over a static random-table library — no `state` field, no CRUD, unlike
+the Bestiary/Compendium above. `window.TABLES_LIBRARY` (`js/tables-data.js`, GENERATED from
+`data/tables/*.csv` by `scripts/convert-tables.js` — see "The converter" pattern above) is read
+directly by `library()` in `js/tables.js`; there's nothing to seed into `state` and nothing to
+export/import. Each table def is `{id, name, tag, formula, entries:[{range, lo, hi, text}]}` — `id`
+is the CSV's filename slug (e.g. `"river_and_coast"`), `formula` is a dice-engine formula string taken
+verbatim from the CSV's header cell (`"d100,Details"` → `"d100"` — not hardcoded to d100, so a future
+table CSV can use any formula `OSR.evalFormula` understands, e.g. `"2d6"`), and each entry's `lo`/`hi`
+are the inclusive roll range that row covers (a bare `"01"` → `lo:hi:1`; `"00"`, seen after `"98-99"`,
+is percentile-dice shorthand for the *top* of a d100 range and parses to `100`, never `0` — see
+`parseRange` in `scripts/convert-tables.js`).
+
+**Tags** (`renderTableTags`) are derived at render time — `Array.from(new Set(library().map(t =>
+t.tag))).sort()` — not hand-maintained as a separate constant, so the tag-checkbox filter row
+(`#tbl-tags`, same checkbox/right-click-to-isolate pattern as the Compendium's `#comp-cats` — see
+"The Compendium" above) always exactly matches what the data actually uses. Keep it at **10 tags
+or fewer** (an explicit design constraint, not enforced elsewhere) — this repo's own table set uses
+5 (`Wilderness`, `Aquatic`, `Underground`, `City`, `Tavern`); the per-CSV mapping to a tag lives in
+`TAG_MAP` inside `scripts/convert-tables.js`, so adding a table CSV means adding it there too (the
+converter throws if a filename has no `TAG_MAP` entry).
+
+**Rolling** (`rollTable`): `OSR.evalFormula(t.formula)` (the same engine as the Dice Roller/sheet
+rolls) gives the total; the matching entry is whichever `lo <= total <= hi`; the result is logged via
+`OSR.pushLog(t.name, t.formula, total, entry.text)` — same Session Log every other roll in the app
+uses. Each `<details>` row (`.tbl-row`) is native HTML, not a JS accordion — expand/collapse is the
+browser's own summary-click behavior. `tblOpenIds` (a `Set`, module-scoped like the Compendium's
+filter state — cleared by the test seam's `reset()` via `resetTableFilters()`) tracks which rows are
+expanded via a **capture-phase** `'toggle'` listener on `#tbl-list` (`<details>`'s `toggle` event
+doesn't bubble, but capture-phase delegation doesn't need bubbling — it walks down to the target
+regardless), so a re-render from typing in the search box or rolling a different table never
+collapses a row the user left open. The Roll button only exists inside the expanded body (after
+`<summary>`), which sidesteps the alternative problem of a click on an in-summary button also
+toggling the `<details>` — no `stopPropagation()` needed.
 
 ## Seeding & the `file://` constraint
 

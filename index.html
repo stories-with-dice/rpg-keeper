@@ -17,6 +17,7 @@
       <button class="tab-btn" data-tab="combat">Combat</button>
       <button class="tab-btn" data-tab="bestiary">Bestiary</button>
       <button class="tab-btn" data-tab="compendium">Compendium</button>
+      <button class="tab-btn" data-tab="tables">Tables</button>
       <button class="tab-btn" data-tab="settings">Settings</button>
     </nav>
     <div class="header-actions">
@@ -149,6 +150,17 @@
         <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="comp-sources"></div></div>
         <p id="comp-empty" class="hint">No entries yet. Use <strong>+ New entry</strong>, or hover a <code>[bracketed]</code> item on a character sheet and create one.</p>
         <ul class="comp-list" id="comp-list"></ul>
+      </section>
+
+      <!-- ===== Tables tab ===== -->
+      <section class="tab-panel" id="tab-tables">
+        <div class="comp-toolbar">
+          <input id="tbl-search" type="text" placeholder="Search table name&hellip;" autocomplete="off" />
+          <span class="comp-count" id="tbl-count"></span>
+        </div>
+        <div class="comp-filter-row"><span class="comp-filter-label">Tags</span><div class="comp-cats" id="tbl-tags"></div></div>
+        <p id="tbl-empty" class="hint" hidden>No tables yet.</p>
+        <ul class="comp-list tbl-list" id="tbl-list"></ul>
       </section>
 
       <!-- ===== Settings tab ===== -->
@@ -380,6 +392,7 @@
   <script src="js/ua-statblock.js"></script>
   <script src="js/monsters-data.js"></script>
   <script src="js/spells-data.js"></script>
+  <script src="js/tables-data.js"></script>
   <script src="js/compendium-seed.js"></script>
   <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
        all attach to window.OSR, so load order only requires core.js first. -->
@@ -396,6 +409,7 @@
   <script src="js/monster-browser.js"></script>
   <script src="js/compendium.js"></script>
   <script src="js/compendium-popups.js"></script>
+  <script src="js/tables.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/io.js"></script>
   <script src="js/dice-ui.js"></script>
