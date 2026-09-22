@@ -944,6 +944,78 @@ test('generateMonster: LV floors at 0 (min 1 HP); the Nth mutation rolls the Nth
 });
 
 /* ================================================================== */
+/* Combat: "Populate by HD" (js/combat-populate.js)                    */
+/* ================================================================== */
+
+// A tiny fixture library: Rat (HD 0 -> 1 unit), Goblin + Orc (HD 1 -> 2
+// units, two species sharing the same HD), Ogre (HD 4 -> 8 units).
+function hdLibrary() {
+  return [
+    { name: 'Rat', hd: '0', hdNum: 0 },
+    { name: 'Goblin', hd: '1', hdNum: 1 },
+    { name: 'Orc', hd: '1', hdNum: 1 },
+    { name: 'Ogre', hd: '4', hdNum: 4 },
+  ];
+}
+
+test('effectiveHdUnits: a monster with HD "0" still costs 0.5 HD (1 unit), not 0', () => {
+  assert.equal(T.effectiveHdUnits({ hd: '0', hdNum: 0 }), 1);
+  assert.equal(T.effectiveHdUnits({ hd: '1', hdNum: 1 }), 2);
+  assert.equal(T.effectiveHdUnits({ hd: '4.5', hdNum: 4.5 }), 9);
+});
+
+test('buildHdPopulatePlan: rejects a non-positive or missing total HD', () => {
+  assert.equal(T.buildHdPopulatePlan(hdLibrary(), 0, '').ok, false);
+  assert.equal(T.buildHdPopulatePlan(hdLibrary(), '', '').ok, false);
+  assert.equal(T.buildHdPopulatePlan(hdLibrary(), -3, '').ok, false);
+});
+
+test('buildHdPopulatePlan: rejects a non-positive monster count', () => {
+  const r = T.buildHdPopulatePlan(hdLibrary(), 5, 0);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /at least 1/);
+});
+
+test('buildHdPopulatePlan: reports when there is no HD data to plan against', () => {
+  const r = T.buildHdPopulatePlan([], 5, '');
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /No monsters with HD/);
+});
+
+test('buildHdPopulatePlan: with an exact monster count, spends the whole budget exactly', () => {
+  rig([0]); // always take the first feasible choice at every step
+  const plan = T.buildHdPopulatePlan(hdLibrary(), 5, 2); // 5 HD across exactly 2 monsters
+  assert.equal(plan.ok, true);
+  assert.equal(plan.totalHd, 5);
+  assert.equal(plan.count, 2);
+  assert.deepEqual(plan.picks.map(d => d.name), ['Goblin', 'Ogre']); // 1 HD + 4 HD = 5 HD
+});
+
+test('buildHdPopulatePlan: rejects a count the library\'s HD values can\'t reach exactly', () => {
+  // 4.5 HD across exactly 3 monsters: no combination of {0.5, 1, 4} HD
+  // (repeats allowed) sums to exactly 4.5 using exactly 3 of them.
+  const r = T.buildHdPopulatePlan(hdLibrary(), 4.5, 3);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /exactly 4\.5 HD across exactly 3/);
+});
+
+test('buildHdPopulatePlan: with no count given, the algorithm decides how many monsters and still spends the budget exactly', () => {
+  rig([0]);
+  const plan = T.buildHdPopulatePlan(hdLibrary(), 1.5, ''); // 3 half-HD units
+  assert.equal(plan.ok, true);
+  assert.equal(plan.totalHd, 1.5);
+  assert.equal(plan.count, 3);
+  assert.deepEqual(plan.picks.map(d => d.name), ['Rat', 'Rat', 'Rat']); // 0.5+0.5+0.5 = 1.5
+});
+
+test('buildHdPopulatePlan: a 0 HD monster can fully cover a 0.5 HD budget', () => {
+  const plan = T.buildHdPopulatePlan([{ name: 'Rat', hd: '0', hdNum: 0 }], 0.5, 1);
+  assert.equal(plan.ok, true);
+  assert.equal(plan.totalHd, 0.5);
+  assert.deepEqual(plan.picks.map(d => d.name), ['Rat']);
+});
+
+/* ================================================================== */
 /* Character CRUD                                                     */
 /* ================================================================== */
 

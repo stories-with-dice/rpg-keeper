@@ -27,6 +27,7 @@
       if (e.key === 'Escape') {
         OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
+        OSR.closePopulateHdModal();
         OSR.closeCompEntry(); OSR.closeAllCompPops();
       }
     });
@@ -38,6 +39,7 @@
     OSR.wireConsumables();
     OSR.wireNotes();
     OSR.wireCombat();
+    OSR.wirePopulateHd();
     OSR.wireMonsterBrowser();
     OSR.wireCompendiumEntries();
     OSR.wireCompendiumPopups();
@@ -112,9 +114,11 @@
       OSR.closeCtxMenu();
       OSR.closeAC();
       OSR.closeRollPopup();
+      OSR.closePopulateHdModal();
       ['#comp-search', '#comp-fulltext', '#comp-fuzzy', '#custom-formula',
         '#notes-area', '#paste-area', '#mm-search', '#mm-hd-min', '#mm-hd-max',
-        '#mb-search', '#mb-hd-min', '#mb-hd-max', '#tbl-search']
+        '#mb-search', '#mb-hd-min', '#mb-hd-max', '#tbl-search',
+        '#php-total-hd', '#php-count']
         .forEach(sel => {
           const el = $(sel);
           if (!el) return;

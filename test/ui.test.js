@@ -12,7 +12,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, click, setValue, key } = require('./helpers/boot.js');
+const { boot, rigRandom, face, fire, click, setValue, key } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -638,6 +638,143 @@ test('Bestiary: Edit switches an existing (pasted) monster to "Fill in fields", 
   const updated = T.state.monsters.find(m => m.id === 'm1');
   assert.equal(updated.hp, 25);
   assert.equal(updated.name, 'Ogre');
+});
+
+/* ================================================================== */
+/* Combat: "+ Populate by HD…"                                        */
+/* ================================================================== */
+
+test('Combat "+ Populate by HD…": generate shows a proposal to confirm, then adds the exact monsters to combat', () => {
+  T.state.monsters = [
+    { id: 'm-rat', name: 'Rat', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '0', hdNum: 0, hp: 1, move: 'near', align: 'N', xp: null, moraleML: null, atkBonus: 0,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+    { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+    { id: 'm-ogre', name: 'Ogre', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '4', hdNum: 4, hp: 20, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 4,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+  ];
+  T.state.combat.entries = [];
+  T.renderAll();
+  tab('combat');
+
+  click($('#cb-populate-hd'));
+  assert.equal($('#populate-hd-modal').hidden, false);
+  assert.equal($('#php-setup').hidden, false);
+  assert.equal($('#php-confirm').hidden, true);
+
+  setValue($('#php-total-hd'), '5');
+  setValue($('#php-count'), '2');
+  rig([0]); // deterministic: always the first feasible pick -> Goblin (1 HD) + Ogre (4 HD)
+  click($('#php-generate'));
+
+  assert.equal($('#php-setup').hidden, true);
+  assert.equal($('#php-confirm').hidden, false, 'switches to the confirmation step instead of adding immediately');
+  assert.equal(T.state.combat.entries.length, 0, 'nothing added to combat yet — still waiting on confirmation');
+  assert.equal($('#php-total-out').textContent, '5');
+  assert.equal($('#php-count-out').textContent, '2');
+  const proposed = $$('#php-list .comp-name').map(el => el.textContent);
+  assert.deepEqual(proposed, ['Goblin', 'Ogre']);
+
+  click($('#php-confirm-add'));
+  assert.equal($('#populate-hd-modal').hidden, true);
+  assert.equal(T.state.combat.entries.length, 2);
+  const names = T.state.combat.entries.map(e => e.name).sort();
+  assert.deepEqual(names, ['Goblin', 'Ogre']);
+  assert.ok(T.state.combat.entries.every(e => e.kind === 'monster'));
+});
+
+test('Combat "+ Populate by HD…": the Total HD field starts empty — nothing is prefilled', () => {
+  tab('combat');
+  click($('#cb-populate-hd'));
+  assert.equal($('#php-total-hd').value, '');
+});
+
+test('Combat "+ Populate by HD…": hovering a proposed monster shows its stat-block preview card', () => {
+  T.state.monsters = [
+    { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: 'A sneaky raider.', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
+      attacksText: '1 shortsword +1 (1d6)', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+  ];
+  T.state.combat.entries = [];
+  T.renderAll();
+  tab('combat');
+  click($('#cb-populate-hd'));
+  setValue($('#php-total-hd'), '1');
+  setValue($('#php-count'), '1');
+  click($('#php-generate'));
+  const row = $('#php-list .php-row');
+  assert.ok(row, 'a proposal row was rendered');
+  fire(row, 'mouseover');
+  assert.equal($('#mm-preview').hidden, false);
+  assert.match($('#mm-preview').innerHTML, /Goblin/);
+});
+
+test('Combat "+ Populate by HD…": the dice icon rerolls just that monster for another of the same HD, budget unchanged', () => {
+  T.state.monsters = [
+    { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+    { id: 'm-orc', name: 'Orc', source: 'shadowdark', desc: '', raw: '', ac: { asc: 13, desc: null, thac0: null },
+      hd: '1', hdNum: 1, hp: 6, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+  ];
+  T.state.combat.entries = [];
+  T.renderAll();
+  tab('combat');
+  click($('#cb-populate-hd'));
+  setValue($('#php-total-hd'), '1');
+  setValue($('#php-count'), '1');
+  rig([0]); // picks the first candidate at every step -> Goblin
+  click($('#php-generate'));
+  assert.equal($('#php-list .comp-name').textContent, 'Goblin');
+
+  const btn = $('#php-list .php-row-reroll');
+  assert.equal(btn.disabled, false, 'Orc shares the same HD, so a reroll is available');
+  click(btn);
+  assert.equal($('#php-list .comp-name').textContent, 'Orc', 'the only other same-HD monster');
+  assert.equal($('#php-total-out').textContent, '1', 'budget unchanged after a same-HD reroll');
+  assert.equal($('#php-count-out').textContent, '1');
+
+  click($('#php-confirm-add'));
+  assert.equal(T.state.combat.entries.length, 1);
+  assert.equal(T.state.combat.entries[0].name, 'Orc');
+});
+
+test('Combat "+ Populate by HD…": the dice icon is disabled when no other monster shares that HD', () => {
+  T.state.monsters = [
+    { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+  ];
+  T.state.combat.entries = [];
+  T.renderAll();
+  tab('combat');
+  click($('#cb-populate-hd'));
+  setValue($('#php-total-hd'), '1');
+  setValue($('#php-count'), '1');
+  click($('#php-generate'));
+  assert.equal($('#php-list .php-row-reroll').disabled, true);
+});
+
+test('Combat "+ Populate by HD…": an infeasible exact count shows an error and adds nothing', () => {
+  T.state.monsters = [
+    { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
+      hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+  ];
+  T.state.combat.entries = [];
+  T.renderAll();
+  tab('combat');
+  click($('#cb-populate-hd'));
+  setValue($('#php-total-hd'), '1'); // only 1 HD monster available; 1 HD across 3 monsters can't work
+  setValue($('#php-count'), '3');
+  click($('#php-generate'));
+  assert.equal($('#php-confirm').hidden, true, 'stays on the setup step');
+  assert.match($('#php-setup-msg').textContent, /Can't spend exactly/);
+  assert.equal(T.state.combat.entries.length, 0);
 });
 
 /* ================================================================== */

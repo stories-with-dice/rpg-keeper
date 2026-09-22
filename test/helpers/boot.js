@@ -38,6 +38,7 @@ const SCRIPTS = [
   'js/monster-form.js',
   'js/monster-modals.js',
   'js/monster-browser.js',
+  'js/combat-populate.js',
   'js/compendium.js',
   'js/compendium-popups.js',
   'js/tables.js',

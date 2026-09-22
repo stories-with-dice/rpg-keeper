@@ -49,6 +49,9 @@ js/monster-modals.js    the "Add monster" modal (shared by Combat and the Bestia
                        monster edit modal — each has a "Paste text" / "Fill in fields" toggle
 js/monster-browser.js   the Bestiary tab (filterable library list, mirrors js/compendium.js) and the
                        Party-Level random monster generator (Shadowdark core rules)
+js/combat-populate.js   Combat's "+ Populate by HD…" modal: spends a total HD budget (with an
+                       optional exact monster count) on monsters from the current Bestiary,
+                       always exactly, then confirms before adding to combat
 js/ua-statblock.js      pure parser for a Unknown Armies 3rd Edition character's ```ua fenced
                        statblock (identities/passions/relationships/shock meters) + the p.30
                        computed-ability formula — no DOM, UMD-ish like js/monsters.js
@@ -536,6 +539,38 @@ order, per the rulebook's "Mutation 1/2/3" headers). Quality becomes part of `de
 Weakness, and any mutations become `abilities` entries so they render like any other special ability.
 Generating never adds to the library directly — it calls `OSR.openMonsterModal({ prefill: generateMonster(pl, n) })`,
 landing the roll in the fields form (with an editable placeholder name) for review before Save.
+
+## Combat's "+ Populate by HD…" (`js/combat-populate.js`)
+
+Combat's `#cb-populate-hd` button opens `#populate-hd-modal`, which spends a total Hit Dice budget on
+monsters drawn from `OSR.monstersForSystem()` (the same library the Bestiary tab and the "Add
+monster…" modal read), with an optional exact monster count; if the count is left blank, the
+algorithm decides how many monsters to use. The budget is always spent **exactly** — never rounded or
+left over — or the modal reports why it can't (e.g. asking for an exact count the library's HD values
+can't reach) rather than silently fudging the numbers.
+
+Everything is tracked in half-HD **integer units** (`effectiveHdUnits(d) = round(hdNum * 2)`, floored
+at 1) instead of floats, so the planner is exact-integer coin-change, not floating-point accumulation.
+This is also where "a 0 HD monster counts as 0.5 HD" lives: `Math.max(1, …)` means a monster whose own
+HD is literally `"0"` (Shadowdark/OSE's weakest tier) still costs 1 unit. `monstersByUnit()` groups the
+current library by that cost; `pickUnitPlan()` backtracks a random combination of units off a
+feasibility table (`feasibleSums`/`feasibleSumsWithCount` — classic unbounded coin-change DP, with a
+count dimension added only when an exact monster count was requested) until it lands on the budget
+exactly, then a random monster sharing each picked unit's HD is chosen (so same-HD monsters mix
+species rather than always repeating one). `buildHdPopulatePlan()` is the pure entry point (`monsters,
+totalHd, count -> {ok:true, picks, totalHd, count} | {ok:false, reason}`) — the modal calls it and
+renders one proposal row per pick (`#php-confirm`/`renderPlanList()`, not grouped, so each monster gets
+its own controls). `#php-total-hd` has no default value — the budget is never silently prefilled.
+
+Each proposal row hovers into the same library preview card the "Add monster" modal's list uses
+(`li.dataset.id` + `OSR.showLibPreview()`/`hideLibPreview()`, `js/monster-modals.js` — shared, not
+duplicated) and carries its own reroll button (`.php-row-reroll`, a dice-d20 icon) that calls
+`rerollPick(idx)`: swaps just that one pick for a different monster sharing the same effective HD
+(`effectiveHdUnits` match, excluding the current monster itself), re-rendering only the list — the
+overall budget/count never change since the replacement costs the same HD. The button is disabled when
+no other monster shares that HD. `OSR.addMonsterEntry()` is only called per pick once the user confirms
+(`#php-confirm-add`) — the top-level Reroll/Back regenerate the whole plan or return to the inputs
+without touching combat.
 
 ## The converter (`scripts/convert-bestiary.js`)
 
