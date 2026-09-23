@@ -42,16 +42,17 @@
         '<label class="field mf-schema"><span>Format</span><select class="mf-f-schema">' +
           '<option value="shadowdark">Shadowdark</option>' +
           '<option value="ose">Old-School Essentials</option>' +
+          '<option value="brp">Basic Roleplaying (BRP)</option>' +
         '</select></label>' +
       '</div>' +
       '<label class="field mf-desc"><span>Description</span><textarea class="mf-f-desc" rows="2"></textarea></label>' +
       '<div class="mf-row">' +
-        '<label class="field"><span>HD / LV</span><input type="text" class="mf-f-hd" placeholder="e.g. 3, 9*, &frac12;" /></label>' +
+        '<span class="mf-nonbrp"><label class="field"><span>HD / LV</span><input type="text" class="mf-f-hd" placeholder="e.g. 3, 9*, &frac12;" /></label></span>' +
         '<label class="field"><span>HP</span><input type="number" class="mf-f-hp" step="1" /></label>' +
         '<label class="field"><span>Move</span><input type="text" class="mf-f-move" placeholder="near (climb)" /></label>' +
-        '<label class="field"><span>Alignment</span><input type="text" class="mf-f-align" /></label>' +
-        '<label class="field"><span>XP</span><input type="number" class="mf-f-xp" step="1" /></label>' +
-        '<label class="field"><span>Attack bonus</span><input type="number" class="mf-f-atkbonus" step="1" /></label>' +
+        '<span class="mf-nonbrp"><label class="field"><span>Alignment</span><input type="text" class="mf-f-align" /></label></span>' +
+        '<span class="mf-nonbrp"><label class="field"><span>XP</span><input type="number" class="mf-f-xp" step="1" /></label></span>' +
+        '<span class="mf-nonbrp"><label class="field"><span>Attack bonus</span><input type="number" class="mf-f-atkbonus" step="1" /></label></span>' +
       '</div>' +
       '<div class="mf-schema-block" data-schema="shadowdark">' +
         '<div class="mf-row">' +
@@ -78,12 +79,30 @@
           '<label class="field mf-sv"><span>Sv S</span><input type="number" class="mf-f-sv-S" step="1" /></label>' +
         '</div>' +
       '</div>' +
-      '<div class="mf-sec">' +
+      '<div class="mf-schema-block" data-schema="brp">' +
+        '<div class="mf-row">' +
+          '<label class="field mf-stat"><span>STR</span><input type="number" class="mf-f-brp-STR" step="1" /></label>' +
+          '<label class="field mf-stat"><span>CON</span><input type="number" class="mf-f-brp-CON" step="1" /></label>' +
+          '<label class="field mf-stat"><span>SIZ</span><input type="number" class="mf-f-brp-SIZ" step="1" /></label>' +
+          '<label class="field mf-stat"><span>INT</span><input type="number" class="mf-f-brp-INT" step="1" /></label>' +
+          '<label class="field mf-stat"><span>POW</span><input type="number" class="mf-f-brp-POW" step="1" /></label>' +
+          '<label class="field mf-stat"><span>DEX</span><input type="number" class="mf-f-brp-DEX" step="1" /></label>' +
+          '<label class="field mf-stat"><span>CHA</span><input type="number" class="mf-f-brp-CHA" step="1" /></label>' +
+        '</div>' +
+        '<div class="mf-row">' +
+          '<label class="field"><span>Armor</span><input type="number" class="mf-f-brp-armor" step="1" /></label>' +
+          '<label class="field"><span>Armor note</span><input type="text" class="mf-f-brp-armor-note" placeholder="hide, may wear armor" /></label>' +
+          '<label class="field"><span>Damage Bonus</span><input type="text" class="mf-f-brp-db" placeholder="+1D4, None" /></label>' +
+        '</div>' +
+        '<label class="field mf-desc"><span>Attacks</span><textarea class="mf-f-brp-attacks" rows="2" placeholder="Bite 45%, 1D6+dm; Claw 45%, 1D4+dm"></textarea></label>' +
+        '<label class="field mf-desc"><span>Skills</span><textarea class="mf-f-brp-skills" rows="2" placeholder="Dodge 35%, Listen 60%, Spot 60%"></textarea></label>' +
+      '</div>' +
+      '<div class="mf-sec mf-nonbrp-sec">' +
         '<div class="mf-sec-head"><span>Attacks</span><button type="button" class="btn mf-atk-add">+ Add attack</button></div>' +
         '<div class="mf-atks"></div>' +
       '</div>' +
       '<div class="mf-sec">' +
-        '<div class="mf-sec-head"><span>Abilities</span><button type="button" class="btn mf-abil-add">+ Add ability</button></div>' +
+        '<div class="mf-sec-head"><span class="mf-abils-label">Abilities</span><button type="button" class="btn mf-abil-add">+ Add ability</button></div>' +
         '<div class="mf-abils"></div>' +
       '</div>' +
     '</div>';
@@ -91,6 +110,12 @@
 
   function showSchemaBlock(root, schema) {
     root.querySelectorAll('.mf-schema-block').forEach(el => { el.hidden = el.dataset.schema !== schema; });
+    const isBrp = schema === 'brp';
+    root.querySelectorAll('.mf-nonbrp').forEach(el => { el.hidden = isBrp; });
+    const atkSec = root.querySelector('.mf-nonbrp-sec');
+    if (atkSec) atkSec.hidden = isBrp;
+    const abilsLabel = root.querySelector('.mf-abils-label');
+    if (abilsLabel) abilsLabel.textContent = isBrp ? 'Powers / Special Abilities' : 'Abilities';
   }
 
   // Fills the form from a `def` (see js/monsters.js), or blank defaults for
@@ -100,7 +125,7 @@
     def = def || {};
     const q = sel => root.querySelector(sel);
     q('.mf-f-name').value = def.name || '';
-    const schema = def.source === 'ose' ? 'ose' : 'shadowdark';
+    const schema = def.source === 'ose' ? 'ose' : def.source === 'brp' ? 'brp' : 'shadowdark';
     q('.mf-f-schema').value = schema;
     q('.mf-f-desc').value = def.desc || '';
     q('.mf-f-hd').value = def.hd || '';
@@ -118,6 +143,13 @@
     q('.mf-f-ml').value = def.moraleML != null ? def.moraleML : '';
     const sv = def.saveTargets || {};
     ['D', 'W', 'P', 'B', 'S'].forEach(k => { q('.mf-f-sv-' + k).value = sv[k] != null ? sv[k] : ''; });
+    const brpChar = def.characteristics || {};
+    ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA'].forEach(k => { q('.mf-f-brp-' + k).value = brpChar[k] != null ? brpChar[k] : ''; });
+    q('.mf-f-brp-armor').value = def.armor != null ? def.armor : '';
+    q('.mf-f-brp-armor-note').value = def.armorNote || '';
+    q('.mf-f-brp-db').value = def.damageBonus || '';
+    q('.mf-f-brp-attacks').value = def.attacksText && schema === 'brp' ? def.attacksText : '';
+    q('.mf-f-brp-skills').value = def.skillsText || '';
     showSchemaBlock(root, schema);
     q('.mf-atks').innerHTML = (def.attacks && def.attacks.length ? def.attacks : [null]).map(attackRowHtml).join('');
     q('.mf-abils').innerHTML = (def.abilities || []).map(abilityRowHtml).join('');
@@ -145,6 +177,19 @@
       if (def.xp != null) line += ' XP ' + def.xp;
       lines.push(line);
       (def.abilities || []).forEach(a => lines.push('▶ ' + (a.name ? a.name + ': ' : '') + a.text));
+    } else if (def.source === 'brp') {
+      const c = def.characteristics || {};
+      const charLine = ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA']
+        .filter(k => c[k] != null).map(k => k + ' ' + c[k]).join(', ');
+      if (charLine) lines.push(charLine);
+      let line = 'HP ' + (def.hp || 0);
+      if (def.move) line += ', Move ' + def.move;
+      if (def.damageBonus) line += ', Damage Bonus ' + def.damageBonus;
+      if (def.armor != null) line += ', Armor ' + def.armor + (def.armorNote ? ' (' + def.armorNote + ')' : '');
+      lines.push(line);
+      if (def.attacksText) lines.push('Attacks: ' + def.attacksText);
+      if (def.skillsText) lines.push('Skills: ' + def.skillsText);
+      (def.abilities || []).forEach(a => lines.push((a.name ? a.name + '. ' : '') + a.text));
     } else {
       let line = 'AC ' + (def.ac && def.ac.asc != null ? def.ac.asc : '?') + ', HP ' + (def.hp || 0);
       if (def.attacksText) line += ', ATK ' + def.attacksText;
@@ -165,7 +210,8 @@
   function collectMonsterForm(root) {
     const q = sel => root.querySelector(sel);
     const num = sel => { const v = q(sel).value; return v === '' ? null : parseFloat(v); };
-    const schema = q('.mf-f-schema').value === 'ose' ? 'ose' : 'shadowdark';
+    const schemaSel = q('.mf-f-schema').value;
+    const schema = schemaSel === 'ose' ? 'ose' : schemaSel === 'brp' ? 'brp' : 'shadowdark';
 
     const attacks = Array.from(root.querySelectorAll('.mf-atk-row')).map(row => {
       const label = row.querySelector('.mf-atk-label').value.trim();
@@ -185,11 +231,14 @@
       text: row.querySelector('.mf-abil-text').value.trim()
     })).filter(a => a.name || a.text);
 
-    const attacksText = attacks.map(a =>
+    const attacksTextStructured = attacks.map(a =>
       (a.count > 1 ? a.count + ' ' : '') + a.label +
       (a.toHit != null ? ' ' + fmtMod(a.toHit) : '') +
       (a.damage ? ' (' + a.damage + (a.note ? ' ' + a.note : '') + ')' : '')
     ).join(' + ');
+    // BRP attacks/skills are free text (skill % + damage, not a to-hit bonus),
+    // so they use their own textareas instead of the structured attack rows.
+    const attacksText = schema === 'brp' ? q('.mf-f-brp-attacks').value.trim() : attacksTextStructured;
 
     const def = {
       name: q('.mf-f-name').value.trim() || 'Unnamed',
@@ -197,14 +246,14 @@
       desc: q('.mf-f-desc').value.trim(),
       raw: '',
       ac: { asc: null, desc: null, thac0: null },
-      hd: q('.mf-f-hd').value.trim(),
+      hd: schema === 'brp' ? '' : q('.mf-f-hd').value.trim(),
       hp: parseInt(q('.mf-f-hp').value, 10) || 0,
       move: q('.mf-f-move').value.trim(),
-      align: q('.mf-f-align').value.trim(),
-      xp: num('.mf-f-xp'),
+      align: schema === 'brp' ? '' : q('.mf-f-align').value.trim(),
+      xp: schema === 'brp' ? null : num('.mf-f-xp'),
       moraleML: null,
-      atkBonus: num('.mf-f-atkbonus'),
-      attacksText, attacks,
+      atkBonus: schema === 'brp' ? null : num('.mf-f-atkbonus'),
+      attacksText, attacks: schema === 'brp' ? [] : attacks,
       stats: null, saveTargets: null, savesText: '',
       abilities
     };
@@ -222,6 +271,17 @@
         def.stats = stats;
         def.savesText = ['S', 'D', 'C', 'I', 'W', 'Ch'].map(k => k + ' ' + fmtMod(stats[k])).join('  ');
       }
+    } else if (schema === 'brp') {
+      const characteristics = {};
+      ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA'].forEach(k => {
+        const v = num('.mf-f-brp-' + k);
+        if (v != null) characteristics[k] = v;
+      });
+      def.characteristics = characteristics;
+      def.armor = num('.mf-f-brp-armor');
+      def.armorNote = q('.mf-f-brp-armor-note').value.trim();
+      def.damageBonus = q('.mf-f-brp-db').value.trim() || 'None';
+      def.skillsText = q('.mf-f-brp-skills').value.trim();
     } else {
       def.ac.desc = num('.mf-f-ac-desc');
       if (def.ac.desc != null) def.ac.asc = 19 - def.ac.desc;
@@ -238,7 +298,7 @@
         def.savesText = ['D', 'W', 'P', 'B', 'S'].filter(k => sv[k] != null).map(k => k + sv[k]).join(' ');
       }
     }
-    def.hdNum = window.MonsterParse ? MonsterParse.hdNum(def.hd) : 0;
+    def.hdNum = schema === 'brp' ? 0 : (window.MonsterParse ? MonsterParse.hdNum(def.hd) : 0);
     def.raw = buildRawFromDef(def);
     return def;
   }

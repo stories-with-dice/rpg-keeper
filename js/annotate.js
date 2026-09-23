@@ -4,10 +4,13 @@
 (function (OSR) {
   'use strict';
 
-  // Dice chains may end in either a signed integer or a signed $VarName
-  // reference (see VARREF_RE / scanVariables below) — "1d6+$CON+2" is one
-  // clickable formula, resolved at roll time via substituteVars().
-  const DICE_RE = /\b\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?(?:\s*[+-]\s*(?:\d+|\$[A-Za-z][A-Za-z0-9]*))*\b/gi;
+  // Dice chains may continue with another dice term, a signed integer, or a
+  // signed $VarName reference (see VARREF_RE / scanVariables below) —
+  // "1d6+$CON+2" and "1d3+1d6+1d4" (BRP's damage-bonus dice chained onto a
+  // weapon's own damage, see combat.js's brpResolveDb) are each one
+  // clickable formula; evalFormula (js/dice.js) already sums any number of
+  // dice/flat terms, this just has to recognize the whole chain as one span.
+  const DICE_RE = /\b\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?(?:\s*[+-]\s*(?:\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?|\d+|\$[A-Za-z][A-Za-z0-9]*))*\b/gi;
   const MOD_RE  = /(?<![\w.])[+-]\d+(?![\w.\d])/g;
   // A bare (optionally signed) $VarName reference not already consumed as
   // part of a dice chain above — e.g. "Melee bonus: $STR" rolls 1d20+STR

@@ -511,6 +511,63 @@ test('Combat: ✕ removes a row; Clear empties the tracker', () => {
   assert.equal($('#tracker-empty').hidden, false);
 });
 
+test('Combat: a BRP monster shows Armor/DB/characteristics instead of the OSR AC/HD/Saves/Morale', () => {
+  T.addMonsterEntry({
+    name: 'Dwarf', source: 'brp', system: 'brp', desc: 'Stout and grudge-bearing.', raw: '',
+    ac: { asc: null, desc: null, thac0: null }, hd: '', hdNum: 0, hp: 12, move: '6', align: '', xp: null, moraleML: null,
+    atkBonus: null, attacksText: 'Hammer 35%, 1D6+dm; Battleaxe 50%, 1D8+2+dm', attacks: [],
+    stats: null, saveTargets: null, savesText: '',
+    abilities: [{ name: 'Powers', text: 'Natural Super Sense (Dark Vision) at half POW.' }],
+    characteristics: { STR: 14, CON: 15, SIZ: 6, INT: 13, POW: 10, DEX: 10, CHA: 10 },
+    armor: 8, armorNote: 'chain and a light helm', damageBonus: 'None', skillsText: 'Appraise 50%, Dodge 40%'
+  });
+  tab('combat');
+  const row = $('#tracker-list .cbt-row');
+  assert.match(row.textContent, /Armor 8/);
+  assert.match(row.textContent, /DB None/);
+  assert.doesNotMatch(row.textContent, /\bAC\b/);
+  assert.equal(row.querySelector('.cbt-hd'), null, 'no HD stepper for a system with no Hit Dice');
+
+  click(row.querySelector('.cbt-name'));
+  const detail = $('#combatant-detail').textContent;
+  assert.match(detail, /Major Wound/);
+  assert.match(detail, /STR/);
+  assert.match(detail, /14/);
+  assert.match(detail, /chain and a light helm/);
+  assert.match(detail, /Battleaxe/);
+  assert.match(detail, /Appraise/);
+  assert.match(detail, /Dark Vision/);
+  assert.doesNotMatch(detail, /THAC0/);
+  assert.doesNotMatch(detail, /Morale/);
+  // A "None" damage bonus contributes "+0", not literal "dm" text.
+  assert.match(detail, /1D6\+0/);
+  assert.doesNotMatch(detail, /dm\b/i);
+  // The bare "50%"/"1D6+0" text is still auto-linked into clickable rolls.
+  assert.ok($('#combatant-detail .roll'), 'attacks/skills text is annotated for clickable dice/percentage rolls');
+});
+
+test('Combat: a BRP monster’s "+dm" attack text rolls as a single formula including its actual Damage Bonus (example: the Knight’s Long Sword)', () => {
+  T.addMonsterEntry({
+    name: 'Knight', source: 'brp', system: 'brp', desc: '', raw: '',
+    ac: { asc: null, desc: null, thac0: null }, hd: '', hdNum: 0, hp: 15, move: '10', align: '', xp: null, moraleML: null,
+    atkBonus: null, attacksText: 'Long Sword 75%, 1D8+dm', attacks: [],
+    stats: null, saveTargets: null, savesText: '', abilities: [],
+    characteristics: { STR: 15, CON: 15, SIZ: 15, INT: 11, POW: 12, DEX: 15, CHA: 14 },
+    armor: 10, armorNote: 'plate and heavy helm', damageBonus: '+1D4', skillsText: ''
+  });
+  tab('combat');
+  click($('#tracker-list .cbt-row .cbt-name'));
+  const detail = $('#combatant-detail');
+  assert.match(detail.textContent, /1D8\+1d4/i, 'the "+dm" placeholder is resolved to the Knight’s actual +1D4 damage bonus');
+  const dmgRoll = $$('#combatant-detail .roll').find(el => /^1d8\+1d4$/i.test(el.dataset.formula));
+  assert.ok(dmgRoll, 'the combined "1d8+1d4" is one clickable roll, not split into two');
+  rig(0.999999); // both dice roll their max face (fraction just under 1, scales to max regardless of sides)
+  click(dmgRoll);
+  const last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.source, 'Knight');
+  assert.equal(last.total, 12, '1d8 (max 8) + 1d4 (max 4) = 12');
+});
+
 /* ================================================================== */
 /* Bestiary tab                                                       */
 /* ================================================================== */
@@ -638,6 +695,69 @@ test('Bestiary: Edit switches an existing (pasted) monster to "Fill in fields", 
   const updated = T.state.monsters.find(m => m.id === 'm1');
   assert.equal(updated.hp, 25);
   assert.equal(updated.name, 'Ogre');
+});
+
+test('Bestiary: "Fill in fields" with Format = BRP builds a monster with characteristics, armor, and free-text attacks/skills', () => {
+  T.state.monsters = [];
+  T.state.settings.system = 'brp';
+  tab('bestiary');
+  T.renderAll();
+  click($('#mb-new'));
+  assert.equal($('#mm-mode .mm-mode-fields').hidden, false, 'BRP has no paste parser — opens straight into fields');
+  const host = $('#mm-fields-host');
+  assert.equal(host.querySelector('.mf-f-schema').value, 'brp', 'Format preselected for the active system');
+  assert.equal(host.querySelector('.mf-nonbrp').hidden, true, 'HD/LV and friends are hidden for BRP');
+  setValue(host.querySelector('.mf-f-name'), 'Field Ooze');
+  setValue(host.querySelector('.mf-f-hp'), '18');
+  setValue(host.querySelector('.mf-f-move'), '6');
+  setValue(host.querySelector('.mf-f-brp-STR'), '20');
+  setValue(host.querySelector('.mf-f-brp-CON'), '15');
+  setValue(host.querySelector('.mf-f-brp-armor'), '2');
+  setValue(host.querySelector('.mf-f-brp-armor-note'), 'gelatinous hide');
+  setValue(host.querySelector('.mf-f-brp-db'), '+1D4');
+  setValue(host.querySelector('.mf-f-brp-attacks'), 'Engulf 50%, 1D6+dm');
+  setValue(host.querySelector('.mf-f-brp-skills'), 'Hide 25%, Sense 25%');
+  click($('#mm-fields-lib'));
+  const added = T.state.monsters.find(m => m.name === 'Field Ooze');
+  assert.ok(added, 'the monster was added to the library');
+  assert.equal(added.source, 'brp');
+  assert.equal(added.system, 'brp');
+  assert.equal(added.hp, 18);
+  assert.equal(added.move, '6');
+  assert.equal(added.characteristics.STR, 20);
+  assert.equal(added.characteristics.CON, 15);
+  assert.equal(added.armor, 2);
+  assert.equal(added.armorNote, 'gelatinous hide');
+  assert.equal(added.damageBonus, '+1D4');
+  assert.equal(added.attacksText, 'Engulf 50%, 1D6+dm');
+  assert.equal(added.skillsText, 'Hide 25%, Sense 25%');
+  assert.equal(added.hd, '', 'HD is not a BRP concept');
+});
+
+test('Bestiary: editing a BRP monster opens straight into "Fill in fields" (no paste parser) and round-trips its stats', () => {
+  T.state.settings.system = 'brp';
+  T.state.monsters = [{
+    id: 'b1', name: 'Cave Troll', source: 'brp', system: 'brp', desc: 'Big and mean.', raw: '',
+    ac: { asc: null, desc: null, thac0: null }, hd: '', hdNum: 0, hp: 20, move: '6', align: '', xp: null, moraleML: null,
+    atkBonus: null, attacksText: 'Club 45%, 1D10+2+dm', attacks: [], stats: null, saveTargets: null, savesText: '',
+    abilities: [{ name: 'Powers', text: 'Regenerates 1D3 HP/round.' }],
+    characteristics: { STR: 23, CON: 13, SIZ: 26, INT: 7, POW: 7, DEX: 10, CHA: 4 },
+    armor: 3, armorNote: 'skin', damageBonus: '+2D6', skillsText: 'Dodge 35%'
+  }];
+  tab('bestiary');
+  T.renderAll();
+  click($('.mb-row[data-id="b1"] .mb-edit'));
+  assert.equal($('#monster-edit-modal').hidden, false);
+  assert.equal($('#me-mode .mm-mode-fields').hidden, false, 'defaults to fields, not the empty paste textarea');
+  const host = $('#me-fields-host');
+  assert.equal(host.querySelector('.mf-f-brp-STR').value, '23');
+  assert.equal(host.querySelector('.mf-f-brp-db').value, '+2D6');
+  setValue(host.querySelector('.mf-f-brp-armor'), '5');
+  click($('#me-save'));
+  const updated = T.state.monsters.find(m => m.id === 'b1');
+  assert.equal(updated.armor, 5);
+  assert.equal(updated.characteristics.STR, 23, 'other characteristics survive the round-trip');
+  assert.equal(updated.system, 'brp', 'editing never reclassifies a monster\'s system');
 });
 
 /* ================================================================== */
@@ -834,7 +954,7 @@ test('Compendium: unticking a Category checkbox hides entries in that category',
   assert.deepEqual(shown, ['Bless']);
 });
 
-test('Compendium: right-clicking a Category (or Source) filter isolates it', () => {
+test('Compendium: right-clicking a Category (or Source) filter isolates it', async () => {
   T.state.compendium = [
     { id: '1', name: 'Longsword', category: 'Items', source: 'Core', body: '', createdAt: 1 },
     { id: '2', name: 'Bless', category: 'Spells', source: 'Core', body: '', createdAt: 2 },
@@ -844,21 +964,65 @@ test('Compendium: right-clicking a Category (or Source) filter isolates it', () 
   T.renderAll();
   assert.equal($$('#comp-list .comp-row').length, 3);
 
-  const rightClick = (el) => el.dispatchEvent(new window.Event('contextmenu', { bubbles: true, cancelable: true }));
+  // The isolate handler applies on a deferred setTimeout(…, 0) — see
+  // js/compendium.js's wireCompendiumEntries() — so every assertion below
+  // needs to let that macrotask run first.
+  const tick = () => new Promise(r => setTimeout(r, 10));
+  const rightClick = async (el) => { el.dispatchEvent(new window.Event('contextmenu', { bubbles: true, cancelable: true })); await tick(); };
   const checkedCats = () => $$('#comp-cats input[data-cat]').filter(cb => cb.checked).map(cb => cb.dataset.cat);
   const checkedSrcs = () => $$('#comp-sources input[data-src]').filter(cb => cb.checked).map(cb => cb.dataset.src);
   const names = () => $$('#comp-list .comp-row .comp-name').map(n => n.textContent);
 
-  rightClick($$('#comp-cats .comp-cat').find(l => l.textContent.trim() === 'Spells'));
+  await rightClick($$('#comp-cats .comp-cat').find(l => l.textContent.trim() === 'Spells'));
   assert.deepEqual(checkedCats(), ['Spells'], 'only the right-clicked category stays ticked');
   assert.deepEqual(names(), ['Bless']);
 
-  rightClick($$('#comp-cats .comp-cat').find(l => l.textContent.trim() === 'Items'));
+  await rightClick($$('#comp-cats .comp-cat').find(l => l.textContent.trim() === 'Items'));
   assert.deepEqual(checkedCats(), ['Items'], 'right-clicking another category re-isolates to just that one');
 
-  rightClick($$('#comp-sources .comp-cat').find(l => l.textContent.trim() === 'Homebrew'));
+  await rightClick($$('#comp-sources .comp-cat').find(l => l.textContent.trim() === 'Homebrew'));
   assert.deepEqual(checkedSrcs(), ['Homebrew'], 'only the right-clicked source stays ticked');
   assert.deepEqual(names(), ['Potion'], 'list narrows to Items + Homebrew');
+});
+
+test('Compendium/Tables filter checkboxes: a spurious "change" fired alongside a right-click gesture never beats the (deferred) isolate handler', async () => {
+  T.state.compendium = [
+    { id: '1', name: 'Longsword', category: 'Items', source: 'Core', body: '', createdAt: 1 },
+    { id: '2', name: 'Bless', category: 'Spells', source: 'Core', body: '', createdAt: 2 },
+  ];
+  tab('compendium');
+  T.renderAll();
+  const tick = () => new Promise(r => setTimeout(r, 10));
+  const change = el => el.dispatchEvent(new window.Event('change', { bubbles: true, cancelable: true }));
+  const contextmenu = el => el.dispatchEvent(new window.Event('contextmenu', { bubbles: true, cancelable: true }));
+  const checkedCats = () => $$('#comp-cats input[data-cat]').filter(cb => cb.checked).map(cb => cb.dataset.cat);
+
+  // Isolate down to a single checked category first (matches the reported bug's starting state).
+  const items = () => $$('#comp-cats input[data-cat]').find(cb => cb.dataset.cat === 'Items');
+  contextmenu(items());
+  await tick();
+  assert.deepEqual(checkedCats(), ['Items']);
+
+  // Simulate a trackpad's two-finger-tap right-click: some input methods
+  // report this to the browser as an ordinary primary-button (button 0)
+  // click that also fires 'contextmenu' — not a real button-2 press — so it
+  // natively toggles the checkbox and fires 'change' too (here landing
+  // *before* 'contextmenu', the harder ordering). The deferred isolate must
+  // still win as the final word. (A real 'contextmenu' event's target is
+  // whatever's actually at that screen position when it's dispatched — so,
+  // like a real browser, re-query the checkbox after the phantom change's
+  // own re-render, rather than reusing a now-stale element reference.)
+  items().checked = false; // the phantom native toggle (button 0, indistinguishable from a real click)
+  change(items());
+  contextmenu(items());
+  await tick();
+  assert.deepEqual(checkedCats(), ['Items'], 'still isolated — the isolate handler is the last word regardless of the spurious change');
+
+  // A genuine left-click change (no accompanying contextmenu) still works normally afterward.
+  const spells = () => $$('#comp-cats input[data-cat]').find(cb => cb.dataset.cat === 'Spells');
+  spells().checked = true;
+  change(spells());
+  assert.deepEqual(checkedCats().sort(), ['Items', 'Spells'], 'a normal left-click toggle still applies');
 });
 
 test('Compendium: clicking a row opens the editor populated; ✕ deletes the entry', () => {
@@ -921,7 +1085,7 @@ test('Tables tab: lists every seeded table, with a tag filter (≤10 tags) and a
   assert.equal($$('#tbl-list .tbl-row').length, total);
 });
 
-test('Tables tab: unticking a tag hides its tables; right-clicking a tag isolates it', () => {
+test('Tables tab: unticking a tag hides its tables; right-clicking a tag isolates it', async () => {
   tab('tables');
   const wildernessCb = $('#tbl-tags input[data-tag="Wilderness"]');
   assert.ok(wildernessCb, 'expected a Wilderness tag checkbox');
@@ -935,8 +1099,11 @@ test('Tables tab: unticking a tag hides its tables; right-clicking a tag isolate
   wildernessCb.checked = true;
   wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
 
+  // The isolate handler applies on a deferred setTimeout(…, 0) — see
+  // js/tables.js's wireTables().
   const tavernLabel = $('#tbl-tags input[data-tag="Tavern"]').closest('label');
   tavernLabel.dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  await new Promise(r => setTimeout(r, 10));
   assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Tavern']);
 });
 

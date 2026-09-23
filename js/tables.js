@@ -109,14 +109,21 @@
       if (cb.checked) on.add(cb.dataset.tag); else on.delete(cb.dataset.tag);
       renderTables();
     });
-    // Right-click a tag to isolate it: only that one stays ticked.
+    // Right-click a tag to isolate it: only that one stays ticked. See the
+    // matching comment in js/compendium.js's wireCompendiumEntries() — some
+    // input methods (e.g. a trackpad's two-finger-tap right-click) also fire
+    // this checkbox's own native toggle + 'change', racing this isolate
+    // logic. Deferring the actual isolate via `setTimeout(…, 0)` makes it the
+    // final word regardless: every event from a single physical gesture
+    // (however it's reported) dispatches synchronously in the same task,
+    // before this callback's task runs.
     $('#tbl-tags').addEventListener('contextmenu', e => {
       const lbl = e.target.closest('label.comp-cat');
       const cb = lbl && lbl.querySelector('input[data-tag]');
       if (!cb) return;
       e.preventDefault();
-      tblTagFilter = new Set([cb.dataset.tag]);
-      renderTables();
+      const target = cb.dataset.tag;
+      setTimeout(() => { tblTagFilter = new Set([target]); renderTables(); }, 0);
     });
     $('#tbl-list').addEventListener('click', e => {
       const btn = e.target.closest('.tbl-roll');

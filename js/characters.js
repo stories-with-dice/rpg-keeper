@@ -29,12 +29,21 @@
   const DEFAULT_BLANK_UA = '# New Character [Unknown Armies]\n\n```ua\nIdentities\n\nWound Threshold: 50\n\n' +
     'Shock\nHelplessness: 0 hardened / 0 failed\nIsolation: 0 hardened / 0 failed\nSelf: 0 hardened / 0 failed\n' +
     'Unnatural: 0 hardened / 0 failed\nViolence: 0 hardened / 0 failed\n```\n';
+  // Has a ```brp fence (characteristics, quick-reference only — not rolled
+  // directly in BRP, so it's left as plain fenced text rather than clickable)
+  // so a blank character created while System is BRP is itself classified
+  // 'brp' by charSystemKey() below — same reasoning as DEFAULT_BLANK_UA above.
+  // Skills go below the fence as plain "Name NN%" text so they stay clickable
+  // percentile rolls (see annotate.js's PCT_RE).
+  const DEFAULT_BLANK_BRP = '# New Character [BRP]\n\n```brp\nSTR: 11\nCON: 11\nSIZ: 11\nINT: 11\nPOW: 11\nDEX: 11\nCHA: 11\n```\n\n' +
+    'Hit Points: 11/11 | Move: 10 | Damage Modifier: None\n\n## Skills\n\nDodge 22%, Brawl 25%\n';
 
   function createCharacter(body, opts) {
     opts = opts || {};
     const state = OSR.state;
+    const sys = OSR.currentSystem && OSR.currentSystem();
     const usedBody = body != null ? body :
-      (OSR.currentSystem && OSR.currentSystem() === 'ua3e' ? DEFAULT_BLANK_UA : DEFAULT_BLANK_OSR);
+      (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : DEFAULT_BLANK_OSR);
     const det = detectNameSystem(usedBody);
     const ch = {
       id: uid(),
@@ -60,14 +69,20 @@
   // (it's just the plain textarea echoing ch.body). A malformed/absent fence
   // simply falls through to marked's normal <pre><code> rendering.
   const UA_FENCE_RE = /```ua[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
+  const BRP_FENCE_RE = /```brp[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
 
   // Which System bucket a character belongs to for the Character dropdown —
   // unlike the free-text `ch.system` display label (e.g. "Shadowdark",
   // "Unknown Armies"), this is derived from whether the sheet actually has a
-  // ```ua fence, so it can't drift out of sync with what's actually rendered.
+  // ```ua or ```brp fence, so it can't drift out of sync with what's actually
+  // rendered (a plain OSR sheet has neither, and defaults to 'osr').
   function charSystemKey(ch) {
+    const body = (ch && ch.body) || '';
     UA_FENCE_RE.lastIndex = 0;
-    return UA_FENCE_RE.test((ch && ch.body) || '') ? 'ua3e' : 'osr';
+    if (UA_FENCE_RE.test(body)) return 'ua3e';
+    BRP_FENCE_RE.lastIndex = 0;
+    if (BRP_FENCE_RE.test(body)) return 'brp';
+    return 'osr';
   }
   function charactersForSystem() {
     const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';

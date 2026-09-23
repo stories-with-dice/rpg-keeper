@@ -51,8 +51,11 @@
       setMonsterMode($('#mm-mode'), 'fields');
     } else {
       $('#mm-paste-area').value = '';
-      OSR.populateMonsterForm($('#mm-fields-host'), {});
-      setMonsterMode($('#mm-mode'), 'paste');
+      const isBrp = OSR.currentSystem() === 'brp';
+      OSR.populateMonsterForm($('#mm-fields-host'), isBrp ? { source: 'brp' } : {});
+      // BRP has no "paste text" parser (see js/monsters.js) — start in fields
+      // mode, with Format already set to BRP, when that's the active system.
+      setMonsterMode($('#mm-mode'), isBrp ? 'fields' : 'paste');
       $('#mm-search').focus();
     }
   }
@@ -109,7 +112,9 @@
       return;
     }
     list.innerHTML = libFiltered.map(d => {
-      const meta = ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
+      const meta = d.source === 'brp'
+        ? ['HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'), 'DB ' + (d.damageBonus || 'None'), 'brp'].join(' · ')
+        : ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
       return '<li data-id="' + d.id + '"' + (d.id === libRolledId ? ' class="is-rolled"' : '') + '>' +
         '<div class="mm-li-main"><b>' + escapeHtml(d.name) + '</b>' +
         '<span class="mm-li-meta">' + escapeHtml(meta) + '</span></div>' +
@@ -154,17 +159,28 @@
 
   /* ---- library hover preview ---- */
   function monsterCardHtml(d) {
-    const bits = [
+    const isBrp = d.source === 'brp';
+    const bits = isBrp ? [
+      'HP ' + (d.hp || '?'),
+      'Armor ' + (d.armor != null ? d.armor : '?'),
+      'DB ' + (d.damageBonus || 'None')
+    ] : [
       'AC ' + (d.ac ? OSR.acDisplay(d) : '?'),
       'HD ' + (d.hd || '?'),
       'HP ' + (d.hp || '?')
     ];
     if (d.move) bits.push('MV ' + d.move);
-    if (d.align) bits.push('AL ' + d.align);
-    if (d.moraleML != null) bits.push('ML ' + d.moraleML);
+    if (!isBrp && d.align) bits.push('AL ' + d.align);
+    if (!isBrp && d.moraleML != null) bits.push('ML ' + d.moraleML);
     let h = '<div class="mmp-head"><b>' + escapeHtml(d.name) + '</b> <span>' + escapeHtml(d.source || '') + '</span></div>' +
       '<div class="mmp-line">' + escapeHtml(bits.join('  ·  ')) + '</div>';
-    if (d.attacksText) h += '<div class="mmp-line"><span>ATK</span> ' + escapeHtml(d.attacksText) + '</div>';
+    if (isBrp && d.characteristics) {
+      const cline = ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA']
+        .filter(k => d.characteristics[k] != null).map(k => k + ' ' + d.characteristics[k]).join('  ');
+      if (cline) h += '<div class="mmp-line">' + escapeHtml(cline) + '</div>';
+    }
+    if (d.attacksText) h += '<div class="mmp-line"><span>ATK</span> ' + escapeHtml(isBrp ? OSR.brpResolveDb(d.attacksText, d.damageBonus) : d.attacksText) + '</div>';
+    if (isBrp && d.skillsText) h += '<div class="mmp-line"><span>SKILL</span> ' + escapeHtml(d.skillsText) + '</div>';
     if (d.savesText) h += '<div class="mmp-line"><span>SV</span> ' + escapeHtml(d.savesText) + '</div>';
     if (Array.isArray(d.abilities) && d.abilities.length) {
       h += '<div class="mmp-abils">' + d.abilities.map(a =>
@@ -206,7 +222,9 @@
     $('#me-msg').textContent = '';
     ensureMonsterFormBuilt($('#me-fields-host'));
     OSR.populateMonsterForm($('#me-fields-host'), d);
-    setMonsterMode($('#me-mode'), 'paste');
+    // BRP has no "paste text" parser (see js/monsters.js) — default straight
+    // to the fields form so editing one doesn't land on an empty textarea.
+    setMonsterMode($('#me-mode'), d.source === 'brp' ? 'fields' : 'paste');
     $('#monster-edit-modal').hidden = false;
     $('#me-area').focus();
   }

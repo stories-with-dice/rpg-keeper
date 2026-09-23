@@ -1,8 +1,12 @@
 # Character Keeper
 
 A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
-Worlds Without Number, OSE, …) and **Unknown Armies 3rd Edition** — and running **basic combat**.
-Settings → **System** switches which ruleset's characters and Compendium you're looking at. Plain
+Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, and **Basic Roleplaying (BRP)** —
+and running **basic combat**.
+Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
+at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
+sample NPCs from the *Basic Roleplaying: Universal Game Engine* core book), and Combat shows its
+characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Plain
 HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser.
 
 - **Live:** deployed to GitHub Pages from `main` (see the repo's Pages settings for the URL).

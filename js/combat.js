@@ -29,8 +29,10 @@
       return;
     }
     btn.disabled = false;
-    const unit = (sh && ent.kind === 'monster') ? 'HD' : 'HP';
-    btn.textContent = 'Apply ' + (sh ? 'SH ' : '') + 'damage to ' + ent.name + ' (' + unit + ')';
+    const isBrpMonster = ent.kind === 'monster' && ent.monster && ent.monster.source === 'brp';
+    const shActive = sh && !isBrpMonster;
+    const unit = (shActive && ent.kind === 'monster') ? 'HD' : 'HP';
+    btn.textContent = 'Apply ' + (shActive ? 'SH ' : '') + 'damage to ' + ent.name + ' (' + unit + ')';
   }
 
   // Set a monster's HD, keeping any "*"/"+" suffix and half-HD steps.
@@ -59,7 +61,11 @@
     if (!ent || !OSR.lastRoll) return;
     const lastRoll = OSR.lastRoll;
     const round = OSR.state.combat.round || 1;
-    const sh = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
+    // Scarlet Heroes translates damage into Hit Dice loss — meaningless for a
+    // BRP monster (no HD at all, see js/brp-monsters-data.js), so it always
+    // applies plain HP damage instead, even with the setting on.
+    const isBrpMonster = ent.kind === 'monster' && ent.monster && ent.monster.source === 'brp';
+    const sh = !isBrpMonster && !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
 
     if (!sh) {
       const dmg = Math.max(0, lastRoll.total);
@@ -168,6 +174,49 @@
   }
   function atkDmgLabel(a) {
     return 'dmg ' + a.damage + (a.note ? ' (' + a.note + ')' : '');
+  }
+
+  /* ---- BRP: "+dm"/"+½dm" -> the creature's actual Damage Bonus dice ---- */
+  // A BRP def's damageBonus is the book's own shorthand text, e.g. "+1D4",
+  // "None", or (for a few creatures with form-dependent bonuses, e.g. the
+  // Centaur/Werewolf/Giant) "+1D4 (human); +2D6 (horse)" — pull out just the
+  // first dice term (with its sign) as the one used for "+dm" substitution;
+  // "−" is the Unicode minus sign the sourcebook text uses for negative
+  // bonuses (e.g. "−1D6"), normalized to an ASCII "-".
+  function brpDbDiceTerm(damageBonus) {
+    const m = String(damageBonus || '').match(/([+−-])\s*(\d*d\d+)/i);
+    if (!m) return null; // "None", or no dice term found
+    return (m[1] === '−' ? '-' : m[1]) + m[2].toLowerCase();
+  }
+  // Approximates BRP's "half damage bonus" weapons (thrown/missile, etc.) by
+  // halving the die count (min 1) — the rulebook's actual rule is to roll the
+  // full bonus and halve the *result*, which the dice engine has no division
+  // operator to express as a single clickable formula.
+  function brpHalveDiceTerm(term) {
+    const m = String(term || '').match(/^([+-])(\d*)d(\d+)$/);
+    if (!m) return term;
+    const count = Math.max(1, Math.floor((parseInt(m[2] || '1', 10)) / 2));
+    return m[1] + count + 'd' + m[3];
+  }
+  // Replaces every "+dm"/"+½dm" placeholder in a BRP creature's attacksText/
+  // skillsText with its actual Damage Bonus dice — e.g. "1D8+dm" becomes
+  // "1D8+1D4" for a Knight (damageBonus "+1D4") — so the combined roll (one
+  // clickable span, see annotate.js's DICE_RE) rolls the real damage
+  // including the bonus, instead of leaving "dm" as inert unclickable text.
+  // "None" (no dice term) contributes "+0". Never mutates the stored def —
+  // called fresh at render time in combat.js/monster-modals.js.
+  function brpResolveDb(text, damageBonus) {
+    if (!text) return text;
+    const dbTerm = brpDbDiceTerm(damageBonus);
+    return String(text).replace(/([+−-])(½)?dm\b/gi, (whole, sign, half) => {
+      const normSign = sign === '−' ? '-' : sign;
+      if (!dbTerm) return normSign === '-' ? '-0' : '+0';
+      let term = half ? brpHalveDiceTerm(dbTerm) : dbTerm;
+      // Combine the placeholder's own sign with the damage bonus's sign —
+      // "-dm" (rare) flips it; "+dm" (the overwhelming majority) keeps it.
+      if (normSign === '-') term = (term[0] === '-' ? '+' : '-') + term.slice(1);
+      return term;
+    });
   }
   function selectedEntry() {
     return OSR.state.combat.entries.find(e => e.id === OSR.state.combat.selectedId) || null;
@@ -477,9 +526,10 @@
     if (entryDown(e)) cls.push('is-down');
     const m = e.kind === 'monster' ? e.monster : null;
     const ch = e.kind === 'character' ? combatCharFor(e) : null;
+    const isBrp = !!(m && m.source === 'brp');
     const ac = m ? acDisplay(m) : (ch ? (charQuickAC(ch) || '—') : '—');
     const sv = m ? (m.savesText || '') : '';
-    const atk = m ? (m.attacksText || '') : '';
+    const atk = m ? (isBrp ? brpResolveDb(m.attacksText, m.damageBonus) : m.attacksText) || '' : '';
     const maxHp = entryMaxHp(e);
     return '<li class="' + cls.join(' ') + '" data-id="' + e.id + '" draggable="true">' +
       '<div class="cbt-line1">' +
@@ -491,7 +541,7 @@
         '<button class="cbt-remove" title="Remove from combat">✕</button>' +
       '</div>' +
       '<div class="cbt-line2">' +
-        (e.kind === 'monster'
+        (e.kind === 'monster' && !isBrp
           ? '<span class="chip cbt-step"><span class="chip-l">HD</span>' +
               '<button class="cbt-stepbtn cbt-hd-dec" type="button" aria-label="HD −1">&minus;</button>' +
               '<input class="cbt-hd" type="text" inputmode="decimal" value="' + escapeHtml(String(e.hd || '')) + '" />' +
@@ -502,8 +552,11 @@
           '<input class="cbt-hp" type="number" step="1" value="' + entryHp(e) + '" />' +
           '<span class="cbt-max">/ ' + (maxHp || '—') + '</span>' +
           '<button class="cbt-stepbtn cbt-hp-inc" type="button" aria-label="HP +1">+</button></span>' +
-        '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
-        (sv ? '<span class="chip chip-dim">Sv ' + escapeHtml(sv) + '</span>' : '') +
+        (isBrp
+          ? '<span class="chip">Armor ' + escapeHtml(String(m.armor != null ? m.armor : '—')) + '</span>' +
+            (m.damageBonus ? '<span class="chip chip-dim">DB ' + escapeHtml(m.damageBonus) + '</span>' : '')
+          : '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
+            (sv ? '<span class="chip chip-dim">Sv ' + escapeHtml(sv) + '</span>' : '')) +
         (atk ? '<span class="chip chip-dim">' + escapeHtml(atk) + '</span>' : '') +
         statusTagsHtml(e) +
       '</div>' +
@@ -523,7 +576,28 @@
     const ent = selectedEntry();
     if (!ent) { host.innerHTML = '<p class="hint">Select a combatant for details, attacks &amp; saves.</p>'; return; }
     let h = '';
-    if (ent.kind === 'monster') {
+    if (ent.kind === 'monster' && ent.monster.source === 'brp') {
+      const m = ent.monster;
+      const c = m.characteristics || {};
+      h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">brp</span></div>';
+      const majorWound = entryMaxHp(ent) ? Math.ceil(entryMaxHp(ent) / 2) : null;
+      h += '<div class="cd-stats">' +
+        chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
+        (majorWound != null ? chip('Major Wound', majorWound) : '') +
+        chip('Armor', m.armor != null ? m.armor : '—') +
+        chip('DB', m.damageBonus || 'None') +
+        (m.move ? chip('Move', m.move) : '') +
+        ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA'].filter(k => c[k] != null).map(k => chip(k, c[k])).join('') +
+      '</div>';
+      if (m.armorNote) h += '<p class="cd-desc"><i>Armor:</i> ' + escapeHtml(m.armorNote) + '</p>';
+      if (m.attacksText) h += '<div class="cd-sec"><span class="cd-lbl">Attacks</span><p>' + escapeHtml(brpResolveDb(m.attacksText, m.damageBonus)) + '</p></div>';
+      if (m.skillsText) h += '<div class="cd-sec"><span class="cd-lbl">Skills</span><p>' + escapeHtml(m.skillsText) + '</p></div>';
+      if (m.abilities && m.abilities.length) {
+        h += '<div class="cd-abils">' + m.abilities.map(a =>
+          '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
+      }
+      if (m.desc) h += '<p class="cd-desc">' + escapeHtml(m.desc) + '</p>';
+    } else if (ent.kind === 'monster') {
       const m = ent.monster;
       h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">' + escapeHtml(m.source || 'monster') + '</span></div>';
       h += '<div class="cd-stats">' +
@@ -559,7 +633,7 @@
           '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
       }
       if (m.desc) h += '<p class="cd-desc">' + escapeHtml(m.desc) + '</p>';
-      h += '<details class="cd-raw"><summary>Raw stat block</summary><pre>' + escapeHtml(m.raw || '') + '</pre></details>';
+      if (m.raw) h += '<details class="cd-raw"><summary>Raw stat block</summary><pre>' + escapeHtml(m.raw) + '</pre></details>';
     } else {
       const ch = combatCharFor(ent);
       h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">character' +
@@ -765,7 +839,8 @@
   Object.assign(OSR, {
     shDie, updateApplyButton, setEntryHd, applyEntryDamage, applyDamageToSelected,
     combatCharFor, hpConsumable, entryHp, entryMaxHp, setEntryHp, entryDown,
-    charQuickAC, charDetectHp, acDisplay, atkHitLabel, atkDmgLabel, selectedEntry,
+    charQuickAC, charDetectHp, acDisplay, atkHitLabel, atkDmgLabel,
+    brpDbDiceTerm, brpHalveDiceTerm, brpResolveDb, selectedEntry,
     uniqueName, addCharEntry, addMonsterEntry, removeEntry, cycleSide, toggleSide, setSelected,
     statusIconOf, statusDescOf, toggleStatus, removeStatus, defineCondition,
     closeCtxMenu, openCtxMenu, onCtxMenuClick,

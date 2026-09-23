@@ -55,6 +55,14 @@ js/combat-populate.js   Combat's "+ Populate by HD…" modal: spends a total HD 
 js/ua-statblock.js      pure parser for a Unknown Armies 3rd Edition character's ```ua fenced
                        statblock (identities/passions/relationships/shock meters) + the p.30
                        computed-ability formula — no DOM, UMD-ish like js/monsters.js
+js/brp-monsters-data.js hand-authored window.BRP_MONSTER_LIBRARY = [...73 BRP creatures/NPCs...] —
+                       Basic Roleplaying: Universal Game Engine, Chapter 11: Creatures
+js/brp-compendium-seed.js hand-authored window.BRP_COMPENDIUM_SEED — the Powers (Magic/Mutation/
+                       Psychic Ability/Sorcery/Superpower summaries) and Equipment (weapons/armor/
+                       shields/gear tables) from Chapters 4 and 8
+js/brp-seed.js          seedBrpMonsters()/seedBrpCompendium() — like js/seed.js's seedMonsters() and
+                       js/compendium.js's seedCompendium(), but for the BRP system (see "Basic
+                       Roleplaying (BRP)" below); called from js/main.js's init()
 js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
 js/tables.js            the Tables tab: tag filter + name search over window.TABLES_LIBRARY, expand a
@@ -149,7 +157,7 @@ its unpinned descendants; Esc / `closeAllCompPops()`. Match navigation is the he
 and ↑/↓ on `compPopActive` (no wheel hijack — the popup scrolls natively). `refreshCompPop()`
 re-resolves every open popup after an edit.
 
-**Game system** (Settings → System, `OSR.SYSTEMS` = `['osr','ua3e']` in `js/core.js`) is a single
+**Game system** (Settings → System, `OSR.SYSTEMS` = `['osr','ua3e','brp']` in `js/core.js`) is a single
 global switch, `state.settings.system`, that partitions the **Compendium only** — `compByExactName`,
 `compFuzzy` (and therefore `compResolve`, hover popups, `[` autocomplete, the sheet-selection "Add to
 Compendium" menu) and `renderCompendium`'s list/count all filter to `entry.system === currentSystem()`
@@ -171,10 +179,12 @@ re-parses, so editing one never silently reclassifies it. `seedMonsters()` (`js/
 output `'osr'` (the bundled library is Shadowdark/OSE only) and — since it's also Settings → **Reload
 defaults** — only ever *replaces* the `'osr'`-tagged slice of `state.monsters` (filter out `'osr'`,
 concat the fresh defs), preserving any other system's monsters exactly like the Compendium's
-Delete-all staying scoped to the active system. There's no ua3e-specific monster *schema* yet (Unknown
+Delete-all staying scoped to the active system. There's no ua3e-specific monster *schema* (Unknown
 Armies GMCs use the same shock-meter sheet as PCs, not HD/AC/attacks) — this is visibility-only: an
 empty Bestiary under System=ua3e until someone pastes/fills in something there, still using the
-Shadowdark/OSE field shapes since that's what the form supports today. The **PL random monster
+Shadowdark/OSE field shapes since that's what the form supports today. **BRP is different** — it has
+its own real monster schema and its own bundled bestiary; see "Basic Roleplaying (BRP)" below.
+The **PL random monster
 generator** (`#mb-gen`, top of the Bestiary tab) is pure Shadowdark-core-rulebook tables though, with no
 Unknown Armies equivalent at all — `renderMonsterBrowser()` hides it outright (`el.hidden`, not a
 filter) whenever `currentSystem() !== 'osr'`, rather than let it roll nonsense `'ua3e'`-tagged HD/AC
@@ -189,8 +199,9 @@ monster modal) — since switching tabs alone doesn't re-render the Character/Be
 (see `js/main.js`'s tab-click handler).
 
 The per-character **"HP (Name)"/"Wounds (Name)" trackers** (`js/core.js`) are likewise gated:
-`ensureHpTracker(ch)` now bails unless `charSystemKey(ch) === 'osr'` (it used to fire unconditionally
-for every character — a real bug, since Unknown Armies characters have no use for HP) — Unknown Armies
+`ensureHpTracker(ch)` now bails only when `charSystemKey(ch) === 'ua3e'` (it used to fire
+unconditionally for every character — a real bug, since Unknown Armies characters have no use for HP;
+BRP characters use ordinary Hit Points too, so they keep the same tracker as OSR) — Unknown Armies
 characters get a `"Wounds (Name)"` tracker instead, from `ensureWoundTracker`/`syncWoundTracker`
 (`js/characters.js`), which only ever fires off an actual Wound Threshold in a ` ```ua ` fence. Beyond
 creation, `consumablesForSystem()` (`js/consumables.js`) also **filters which trackers `renderConsumables`
@@ -214,8 +225,13 @@ test and its own narrower one (the individual tests above target one bug/feature
 
 The **Character** dropdown (`#char-select`/`#char-select-b`) is partitioned too, but by a different
 signal than `entry.system`: `charSystemKey(ch)` (`js/characters.js`) classifies a character as `'ua3e'`
-purely by whether its `body` has a ` ```ua ` fence — not by its free-text `ch.system` display label
-(`"Shadowdark"`, `"Unknown Armies"`, …), which is unvalidated and can't be trusted for filtering.
+or `'brp'` purely by whether its `body` has a ` ```ua ` or ` ```brp ` fence (falling back to `'osr'`
+when neither is present) — not by its free-text `ch.system` display label (`"Shadowdark"`,
+`"Unknown Armies"`, …), which is unvalidated and can't be trusted for filtering. A BRP character's
+` ```brp ` fence is just a plain-text characteristics block (STR/CON/SIZ/INT/POW/DEX/CHA) for quick
+reference — unlike the UA3E fence, nothing parses or renders it specially, so it's left inside a
+`<pre><code>` block by `marked.parse()` same as any other fenced code (and thus not annotate()'d — see
+"Basic Roleplaying (BRP)" below for why that's fine).
 `charactersForSystem()` filters to `charSystemKey(c) === currentSystem()`; `fillCharOptions` (both
 selects) and `refreshCharUI`'s active-character bookkeeping all go through it — `refreshCharUI` falls
 back to the first in-system character (or `null`) whenever `activeId`/`activeIdB` point outside the
@@ -223,11 +239,12 @@ current bucket, same mechanism that already handled a dangling id, now also firi
 or right after creating a character whose fence-status doesn't match the system it was created under.
 Settings' `#set-system` change handler calls `OSR.refreshCharUI()` for exactly that reason — switching
 System from the Settings tab must update the Character tab's dropdown/active character immediately, not
-just lazily next time something else re-renders it. `createCharacter`'s two "blank" templates
-(`DEFAULT_BLANK_OSR`/`DEFAULT_BLANK_UA`) exist so **New blank** creates a character that actually
-belongs to the system it was created under — the UA template carries a near-empty ` ```ua ` fence
-(all-zero Shock) for exactly this reason; without it a blank character made while System is `ua3e`
-would vanish from its own dropdown the instant it's created.
+just lazily next time something else re-renders it. `createCharacter`'s three "blank" templates
+(`DEFAULT_BLANK_OSR`/`DEFAULT_BLANK_UA`/`DEFAULT_BLANK_BRP`) exist so **New blank** creates a character
+that actually belongs to the system it was created under — the UA template carries a near-empty
+` ```ua ` fence (all-zero Shock) and the BRP template a ` ```brp ` characteristics fence, for exactly
+this reason; without it a blank character made while System is `ua3e`/`brp` would vanish from its own
+dropdown the instant it's created.
 
 **Unknown Armies 3rd Edition** character sheets embed their mechanical statblock as a fenced
 ` ```ua ` code block (anywhere in `ch.body`, alongside ordinary prose/Markdown). `js/ua-statblock.js`
@@ -313,6 +330,108 @@ the actual roll plus a verdict — `Success`/`Failure`, `Fumble` (100), `Crit` (
 Success`/`Matched Failure` (any other doubled roll, 11/22/…/99). Because the routing lives inside
 `doRoll()` itself, every existing `.roll`-click call site (View mode, Combat's combatant detail, the
 right-click modifier popup, Compendium hover popups) gets percentile rolls for free.
+
+**Basic Roleplaying (BRP)** (`system: 'brp'`) is *Basic Roleplaying: Universal Game Engine* (Chaosium,
+2023) — percentile skills, seven characteristics (STR/CON/SIZ/INT/POW/DEX/CHA), and Hit Points instead
+of levels/AC/HD. Unlike Unknown Armies, it ships with a real, populated Bestiary and Compendium, and
+its own monster schema and Combat display (see below) — not visibility-only.
+
+- **Player characters** get no dedicated statblock renderer — a BRP sheet is just prose plus a
+  ` ```brp ` fence (`DEFAULT_BLANK_BRP` in `js/characters.js`) holding a plain-text characteristics
+  block, used *only* to classify the character (`charSystemKey`, see above); nothing parses or
+  displays it specially, and being inside a fence it's correctly left out of `annotate()` (characteristics
+  aren't rolled directly in BRP — see "Characteristic Roll" below). Skills, by contrast, are written
+  as ordinary prose outside the fence (`Dodge 22%`, `Brawl 25%`) so `annotate.js`'s `PCT_RE` (see the
+  paragraph above) auto-links every bare `NN%` into a clickable `1d100` roll, and any `1d6`-style
+  damage next to it is auto-linked by `DICE_RE` — for BRP this is the *entire* rolling mechanism, no
+  bespoke code needed. A **Characteristic Roll** (e.g. INT×5%) is just written as a plain `NN%` too.
+- **Derived stats**, per the rulebook (Chapter 2), computed by hand when authoring a sheet or a
+  monster def (nothing in the app computes these live — they're baked into the data, same as an OSR
+  monster's HP is a fixed number, not `HD` re-rolled on the fly):
+  - Hit Points = ⌈(CON + SIZ) / 2⌉; Major Wound = ⌈HP / 2⌉ (shown as a chip in Combat, see below).
+  - Damage Modifier/Bonus (`dm`/`db` in the book's own shorthand, kept verbatim in `attacksText`):
+    keyed off STR+SIZ on a banded table (2–12 → −1D6 … 153–168 → +9D6, +1D6 per extra +16) — see
+    p.20 of the rulebook if a new monster/NPC needs one computed from scratch.
+  - Power Points = POW; Move (MOV) = 10 for an average human.
+- **The monster/NPC schema** (`js/brp-monsters-data.js`'s `window.BRP_MONSTER_LIBRARY`, 73 entries —
+  Natural Animals, Fantasy Creatures, Summoned Creatures, Science Fiction Creatures, and the Nonplayer
+  Character Digest, all from Chapter 11) extends the OSR `def` shape from `js/monsters.js` with BRP-only
+  fields rather than replacing it, so generic code that reads `def.hp`/`def.move`/`def.abilities`
+  keeps working untouched: `source: 'brp'`, `characteristics: {STR,CON,SIZ,INT,POW,DEX,CHA}` (any the
+  book omits — e.g. INT/CHA for a plain animal — are left out, not zeroed), `armor` (a flat number) +
+  `armorNote` (free text, e.g. `"chain and a light helm"`), `damageBonus` (the book's own string, e.g.
+  `"+1D4"`/`"None"`), `attacksText`/`skillsText` (free text, e.g. `"Bite 45%, 1D6+dm"` — deliberately
+  *not* the structured `{label,count,toHit,damage,note}` shape OSR attacks use, since a BRP attack's
+  "to-hit" is a skill percentage rolled on `1d100`, not a d20 bonus). `def.hd`/`ac`/`stats`/`saveTargets`
+  are simply left blank/null on a BRP def — every generic call site already guards on them
+  (`m.ac && …`, `if (m.attacks && m.attacks.length)`, etc.), so nothing needs an `if (system !== 'brp')`
+  everywhere *except* the few places that render a monster's stats directly (below).
+- **Seeding** (`js/brp-seed.js`) mirrors `js/seed.js`/`js/compendium.js` but is a separate, always-on
+  mechanism rather than reusing `seedMonsters()`/`seedCompendium()` — those two hardcode
+  `source:'Shadowdark Core'`/`system:'osr'`, so they can't seed BRP's own per-entry `source`
+  (`js/brp-compendium-seed.js`'s `window.BRP_COMPENDIUM_SEED` uses `source` to mean *power type*
+  (`Magic`/`Mutation`/`Psychic Ability`/`Sorcery`/`Superpower`) or *equipment type*
+  (`Weapon (Primitive|Historic|Modern|Advanced)`/`Armor`/`Shield`/`Medical Gear`/`Other Gear`) — it
+  doubles as the Compendium's per-system Source filter, same mechanism the OSR seed's `source` powers,
+  just genuinely populated per entry instead of one constant) or `system:'brp'`. `seedBrpMonsters()`
+  replaces only the `'brp'`-tagged slice of `state.monsters` on every call (same
+  preserve-other-systems rule as `seedMonsters()`); `seedBrpCompendium()` adds missing-by-name entries
+  once, gated by `state.brpCompendiumSeeded` (mirrors `compendiumSeedVersion`, but there's only ever
+  one version of this hand-maintained seed, so a bool suffices). Both are called unconditionally from
+  `js/main.js`'s `init()` (no user action needed, unlike OSR's Settings → Reload/Reseed buttons) so a
+  fresh install — or an old save missing the flag — gets the BRP content for free. Powers use a new
+  Compendium category, `'Powers'` (`OSR.COMPENDIUM_CATEGORIES`), alongside the existing `'Spells'` —
+  they're conceptually the same (a rollable ability with a body of rules text) but distinct enough
+  in BRP's own terms (and shared across none of the OSR content) to warrant their own filter checkbox.
+- **The shared monster modal** (`js/monster-form.js`) gained a third `.mf-schema-block[data-schema="brp"]`
+  alongside `shadowdark`/`ose` — seven characteristic inputs, Armor/Armor note/Damage Bonus, and two
+  free-text `<textarea>`s for Attacks/Skills (deliberately *not* the shared `.mf-atk-row` structured rows,
+  which assume a to-hit bonus) — plus a new `.mf-nonbrp` class on the shared HD/LV, Alignment, XP, and
+  Attack bonus fields so `showSchemaBlock()` can hide the OSR-only fields entirely for BRP (the shared
+  Abilities section stays visible under both a relabeled heading, "Powers / Special Abilities", since
+  BRP's Powers are free-text name+description pairs — the same shape). `collectMonsterForm`/
+  `populateMonsterForm` branch on the schema the same way they already did for `shadowdark` vs `ose`.
+  BRP has no "Paste text" parser (`js/monsters.js`'s `parseOne` requires an `AC …` line no BRP block
+  has), so: `openMonsterModal()` opens straight into "Fill in fields" (Format preselected to BRP) when
+  `currentSystem() === 'brp'`, and `openMonsterEdit()` does the same whenever the monster being edited
+  is itself `source === 'brp'` — landing a user on an empty paste textarea would otherwise be a dead end.
+- **Combat's tracker row and combatant detail** (`js/combat.js`) branch on `m.source === 'brp'`: the
+  row drops the HD stepper (BRP has no Hit Dice) and shows `Armor`/`DB` chips instead of `AC`/`Sv`; the
+  detail panel shows HP + computed Major Wound, Armor (+ its note), Damage Bonus, Move, and every
+  characteristic the def has, then Attacks/Skills/Powers as plain paragraphs — no OSR-style
+  attack/save/morale buttons, since `attacksText`/`skillsText` render as plain annotated text and the
+  bare `NN%`/`1d6` inside them are *already* clickable rolls via the same `OSR.annotate(host, {…})`
+  call every other branch uses (see the `PCT_RE` paragraph above) — no bespoke BRP roll handler needed.
+  Scarlet Heroes damage translation (`applyDamageToSelected`/`updateApplyButton`) is explicitly bypassed
+  for a BRP monster entry (falls through to plain HP damage even with the setting on) since it
+  translates damage into Hit Dice loss, which BRP monsters don't have (`ent.monster.source === 'brp'` →
+  `MonsterParse.hdNum(ent.hd)` is always `0`, which would otherwise read as "no HD left" and zero the
+  monster's HP on any hit, regardless of damage rolled).
+- **`brpResolveDb(text, damageBonus)`** (`js/combat.js`, exported on `OSR`) resolves the book's own
+  `"+dm"`/`"+½dm"` damage-bonus shorthand in a BRP creature's `attacksText` into its actual Damage Bonus
+  dice before display — e.g. a Knight's `"Long Sword 75%, 1D8+dm"` (its `damageBonus` is `"+1D4"`)
+  renders and rolls as `"1D8+1d4"`, not `"1D8"` plus inert unclickable `"dm"` text. Applied wherever a
+  BRP def's `attacksText` is shown: the Combat tracker row's attack chip, `renderCombatantDetail()`'s
+  Attacks section (both `js/combat.js`), and the "Add monster" library hover preview
+  (`monsterCardHtml()`, `js/monster-modals.js`) — **not** the Compendium's own generic weapon entries
+  (`js/brp-compendium-seed.js`), which keep `"+dm"` literal since a weapon's damage bonus depends on
+  whoever wields it, not a fixed creature. `brpDbDiceTerm()` pulls the *first* signed dice term out of
+  `damageBonus` (handling the sourcebook's Unicode minus sign, `−`, alongside ASCII `-`) — for the
+  handful of creatures with a form-dependent compound value (Centaur, Werewolf, Giant — e.g.
+  `"+1D4 (human); +2D6 (horse)"`), every attack uses that first-listed value, which isn't always the
+  textually-correct one for every individual attack (a known, documented approximation rather than
+  hand-curating a per-attack override for a handful of entries). `brpHalveDiceTerm()` approximates
+  BRP's "half damage bonus" weapons (page 21's `+½dm`) by halving the *die count* (minimum 1) rather
+  than the rulebook's actual "roll the full bonus, halve the result" — the dice engine has no division
+  operator to express that as a single clickable formula. Making the combined result (e.g. `"1d8+1d4"`)
+  click as **one** roll (instead of `annotate.js` finding "1d8" and a separate stray "1d4") required
+  extending `annotate.js`'s `DICE_RE` itself: its continuation group already allowed a trailing signed
+  integer or `$Var` after the leading dice term (for `"1d6+$CON+2"`) and now also allows another full
+  dice term, so any chain of dice/flat/`$var` terms — however many — is one span; `evalFormula`
+  (`js/dice.js`) already summed multiple `NdM` terms correctly, this only taught the *text-matching*
+  regex to recognize the same chains as one clickable unit. This is a general improvement (any sheet
+  text with two dice terms glued by `+`/`-` benefits), not BRP-specific, even though BRP's own data —
+  several creatures already had a literal `"1D3+1D6+dm"` in the book — is what surfaced the gap.
 
 Typing `[` + ≥2 chars in the sheet editor, `#notes-area`, or the entry's EasyMDE editor opens
 `#comp-ac`, a name-substring autocomplete (`acFromTextarea` / `acFromCM`); ↑/↓/Enter/Tab/click →

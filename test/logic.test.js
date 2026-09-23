@@ -603,6 +603,41 @@ test('acDisplay: asc+desc, asc only, desc only, none', () => {
   assert.equal(T.acDisplay({ ac: null }), '—');
 });
 
+test('brpDbDiceTerm: pulls the first signed dice term out of a BRP damage-bonus string', () => {
+  assert.equal(T.brpDbDiceTerm('+1D4'), '+1d4');
+  assert.equal(T.brpDbDiceTerm('+2D6'), '+2d6');
+  assert.equal(T.brpDbDiceTerm('−1D6'), '-1d6', 'the sourcebook’s Unicode minus sign is normalized to ASCII');
+  assert.equal(T.brpDbDiceTerm('+1D4 (human); +2D6 (horse)'), '+1d4', 'compound values use the first-listed one');
+  assert.equal(T.brpDbDiceTerm('None'), null);
+  assert.equal(T.brpDbDiceTerm(''), null);
+});
+
+test('brpHalveDiceTerm: halves the die count (min 1), approximating "half damage bonus" weapons', () => {
+  assert.equal(T.brpHalveDiceTerm('+2d6'), '+1d6');
+  assert.equal(T.brpHalveDiceTerm('+6d6'), '+3d6');
+  assert.equal(T.brpHalveDiceTerm('+1d4'), '+1d4', 'a single die can’t be halved further');
+  assert.equal(T.brpHalveDiceTerm('-1d6'), '-1d6');
+});
+
+test('brpResolveDb: "+dm"/"+½dm" in a BRP creature’s attacks text become its actual Damage Bonus dice (example: the Knight’s Long Sword)', () => {
+  assert.equal(T.brpResolveDb('Long Sword 75%, 1D8+dm', '+1D4'), 'Long Sword 75%, 1D8+1d4');
+  assert.equal(T.brpResolveDb('Bite 45%, 1D6+½dm', '+2D6'), 'Bite 45%, 1D6+1d6', 'half-damage-bonus weapons halve the die count');
+  assert.equal(T.brpResolveDb('Bite 30%, 1D6+½dm', '−1D4'), 'Bite 30%, 1D6-1d4', 'a negative damage bonus keeps its sign');
+  assert.equal(T.brpResolveDb('Longbow 55%, 1D8+1+½dm', 'None'), 'Longbow 55%, 1D8+1+0', '"None" contributes +0, not literal "dm"');
+  assert.equal(T.brpResolveDb('Brawl 55%, 1D3+1D6+dm', '+1D4'), 'Brawl 55%, 1D3+1D6+1d4', 'multiple dice terms already in the text are preserved');
+  assert.equal(T.brpResolveDb('', '+1D4'), '');
+});
+
+test('findMatches: a chained multi-dice formula (e.g. BRP’s "1d8+1d4" after brpResolveDb) is one clickable roll span, not two', () => {
+  const spans = T.findMatches('Damage: 1d8+1d4 today.');
+  const rollSpans = spans.filter(s => s.kind === 'roll');
+  assert.equal(rollSpans.length, 1);
+  assert.equal(rollSpans[0].formula, '1d8+1d4');
+  const three = T.findMatches('1d3+1d6+1d4').filter(s => s.kind === 'roll');
+  assert.equal(three.length, 1);
+  assert.equal(three[0].formula, '1d3+1d6+1d4');
+});
+
 test('charDetectHp / charQuickAC: read numbers off a sheet body', () => {
   assert.deepEqual(T.charDetectHp({ body: '> **AC** 15 · **HP** 9/12' }), { value: 9, max: 12 });
   assert.deepEqual(T.charDetectHp({ body: 'HP 7' }), { value: 7, max: 7 });
@@ -703,6 +738,61 @@ test('seedCompendium: leaves an existing same-name entry untouched', () => {
   const mine = T.state.compendium.find(e => e.id === 'mine');
   assert.equal(mine.category, 'Rules');
   assert.equal(mine.body, 'mine');
+});
+
+/* ================================================================== */
+/* BRP: seedBrpMonsters / seedBrpCompendium                            */
+/* ================================================================== */
+
+test('seedBrpMonsters: populates state.monsters, tagged system:brp, with the BRP schema', () => {
+  T.state.monsters = [];
+  T.seedBrpMonsters();
+  assert.ok(T.state.monsters.length > 0);
+  assert.ok(T.state.monsters.every(m => m.system === 'brp' && m.source === 'brp'));
+  const dwarf = T.state.monsters.find(m => m.name === 'Dwarf');
+  assert.ok(dwarf, 'the fantasy creature roster made it into the library');
+  assert.equal(dwarf.characteristics.STR, 14);
+  assert.equal(dwarf.hp, 12);
+  assert.match(dwarf.attacksText, /Battleaxe/);
+});
+
+test('seedBrpMonsters: reseeding only ever replaces the brp-tagged slice (other systems preserved)', () => {
+  T.state.monsters = [{ id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' }];
+  T.seedBrpMonsters();
+  T.seedBrpMonsters();
+  const brpCount = T.state.monsters.filter(m => m.system === 'brp').length;
+  assert.ok(brpCount > 0);
+  assert.equal(T.state.monsters.filter(m => m.system === 'osr').length, 1, 'the OSR monster survives reseeding');
+  // No duplicate brp entries from the second run.
+  assert.equal(T.state.monsters.filter(m => m.system === 'brp').length, brpCount);
+});
+
+test('seedBrpCompendium: adds Powers + Equipment tagged system:brp, using each entry\'s own category/source', () => {
+  T.state.compendium = [];
+  const added = T.seedBrpCompendium();
+  assert.ok(added > 0);
+  assert.equal(T.state.compendium.length, added);
+  assert.ok(T.state.compendium.every(e => e.system === 'brp'));
+  const blast = T.state.compendium.find(e => e.name === 'Blast');
+  assert.equal(blast.category, 'Powers');
+  assert.equal(blast.source, 'Magic');
+  const sword = T.state.compendium.find(e => e.name === 'Sword, Long Sword');
+  assert.equal(sword.category, 'Items');
+  assert.equal(sword.source, 'Weapon (Historic)');
+  assert.equal(T.seedBrpCompendium(), 0, 'second run adds nothing');
+});
+
+test('BRP entries are invisible under other systems, and vice versa (Compendium + Bestiary partition)', () => {
+  T.state.monsters = [];
+  T.state.compendium = [];
+  T.seedBrpMonsters();
+  T.seedBrpCompendium();
+  assert.equal(T.currentSystem(), 'osr');
+  assert.equal(T.monstersForSystem().length, 0);
+  assert.equal(T.compendiumForSystem().length, 0);
+  T.state.settings.system = 'brp';
+  assert.ok(T.monstersForSystem().length > 0);
+  assert.ok(T.compendiumForSystem().length > 0);
 });
 
 /* ================================================================== */
@@ -1036,6 +1126,22 @@ test('charSystemKey: classified by the presence of a ```ua fence, not the free-t
   assert.equal(T.charSystemKey({ body: '# Plain\nHP 4/4' }), 'osr');
   assert.equal(T.charSystemKey({ body: UA_BODY }), 'ua3e');
   assert.equal(T.charSystemKey({}), 'osr');
+});
+
+test('charSystemKey: also classified by a ```brp fence', () => {
+  assert.equal(T.charSystemKey({ body: '# Plain\n```brp\nSTR: 11\n```\n' }), 'brp');
+  assert.equal(T.charSystemKey({ body: '# Plain\nSTR: 11 (no fence)' }), 'osr');
+});
+
+test('createCharacter: "New blank" (body=null) while System is brp creates a brp-classified character with an HP tracker', () => {
+  T.state.settings.system = 'brp';
+  T.createCharacter(null);
+  const ch = T.activeChar();
+  assert.equal(T.charSystemKey(ch), 'brp');
+  // it's immediately visible/selected, not filtered out by its own creation
+  assert.deepEqual(T.charactersForSystem().map(c => c.id), [ch.id]);
+  // unlike Unknown Armies, BRP characters use ordinary Hit Points.
+  assert.ok(T.state.consumables.some(c => c.name === 'HP (' + ch.name + ')'));
 });
 
 test('refreshCharUI: the Character dropdown only lists the active system\'s characters; a UA character is never selected while System is osr', () => {

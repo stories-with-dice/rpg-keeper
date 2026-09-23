@@ -42,7 +42,9 @@
     $('#mb-count').textContent = filtered.length + ' / ' + total;
     $('#mb-empty').hidden = total > 0;
     list.innerHTML = filtered.map(d => {
-      const meta = ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
+      const meta = d.source === 'brp'
+        ? ['HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'), 'DB ' + (d.damageBonus || 'None'), 'brp'].join(' · ')
+        : ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
       return '<li class="comp-row mb-row" data-id="' + d.id + '">' +
         '<div class="comp-row-head">' +
           '<span class="comp-name">' + escapeHtml(d.name) + '</span>' +

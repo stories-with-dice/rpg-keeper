@@ -239,14 +239,28 @@
       renderCompendium();
     });
     // Right-click a Category/Source filter to isolate it: only that one stays
-    // ticked, so the list shows just its entries.
+    // ticked, so the list shows just its entries. Some input methods (e.g. a
+    // laptop trackpad's two-finger-tap right-click gesture) report a right-
+    // click to the OS/browser as an ordinary primary-button click that also
+    // triggers 'contextmenu', rather than a real button-2 press — so it also
+    // fires this checkbox's own native toggle + 'change' (handled above),
+    // racing this isolate logic (bug: right-clicking the one remaining
+    // checked filter could leave every filter checked again instead of
+    // staying isolated, depending on which of the two race first). Since
+    // 'contextmenu' is the one signal every such input method reliably fires,
+    // read the target name synchronously (before anything else can run) but
+    // defer applying it: mousedown/click/'change'/contextmenu for a single
+    // physical gesture all dispatch synchronously in the same task, so a
+    // `setTimeout(…, 0)` callback always runs after all of them have already
+    // fired — making this isolate the final, unconditional word regardless of
+    // which spurious event(s) came with it or in what order.
     $('#comp-cats').addEventListener('contextmenu', e => {
       const lbl = e.target.closest('label.comp-cat');
       const cb = lbl && lbl.querySelector('input[data-cat]');
       if (!cb) return;
       e.preventDefault();
-      compCatFilter = new Set([cb.dataset.cat]);
-      renderCompendium();
+      const target = cb.dataset.cat;
+      setTimeout(() => { compCatFilter = new Set([target]); renderCompendium(); }, 0);
     });
     $('#comp-sources').addEventListener('contextmenu', e => {
       const lbl = e.target.closest('label.comp-cat');
@@ -254,9 +268,11 @@
       if (!cb) return;
       e.preventDefault();
       const target = cb.dataset.src;
-      compSrcOff.clear();
-      compSources().forEach(s => { if (s !== target) compSrcOff.add(s); });
-      renderCompendium();
+      setTimeout(() => {
+        compSrcOff.clear();
+        compSources().forEach(s => { if (s !== target) compSrcOff.add(s); });
+        renderCompendium();
+      }, 0);
     });
     $('#comp-list').addEventListener('click', e => {
       const row = e.target.closest('.comp-row');

@@ -26,14 +26,15 @@
   /* ------------------------------------------------------------------ */
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
-    monsters: [], monstersSeeded: false, conditions: [],
-    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0,
+    monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
+    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false,
     settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
   // Compendium entry categories. "Other" is the default for new entries.
-  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Abilities', 'Rules', 'Other'];
+  // "Powers" covers BRP's magic/mutations/psychic abilities/sorcery/superpowers.
+  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Powers', 'Abilities', 'Rules', 'Other'];
   const COMPENDIUM_DEFAULT_SOURCE = 'Unknown';
 
   // Style themes (dark only) — see the theme blocks in css/app.css.
@@ -43,8 +44,8 @@
   // Game system — set via Settings → System, partitions the Compendium
   // (state.compendium entries each carry a `system` field). Everything that
   // predates this feature is 'osr'. See AGENTS.md-style notes in js/settings.js.
-  const SYSTEMS = ['osr', 'ua3e'];
-  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed' };
+  const SYSTEMS = ['osr', 'ua3e', 'brp'];
+  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)' };
 
   function applyTheme() {
     const t = (OSR.state.settings && OSR.state.settings.theme) || 'default';
@@ -163,7 +164,9 @@
 
   function ensureHpTracker(ch) {
     if (!ch) return;
-    if (OSR.charSystemKey && OSR.charSystemKey(ch) !== 'osr') return;
+    // BRP characters use Hit Points too (from CON+SIZ) — only Unknown Armies
+    // (charSystemKey 'ua3e', tracked via ensureWoundTracker instead) opts out.
+    if (OSR.charSystemKey && OSR.charSystemKey(ch) === 'ua3e') return;
     const state = OSR.state;
     const label = hpTrackerLabel(ch);
     if (!state.consumables.some(c => c.name === label)) {
