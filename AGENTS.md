@@ -809,12 +809,26 @@ app's own code can't be split into ES modules (see "Layout"), just plain `<scrip
   `js/spells-data.js`, a `<script>` tag — works on `file://`), then `fetch('data/spells.json')`
   (skipped on `file://`); either way its entries are folded into `COMPENDIUM_SEED` before
   `seedCompendium()` (`js/compendium.js`) reads it.
-- Characters: `seed()` (`js/seed.js`) tries `fetch('data/*.txt')` (skipped on `file://`), then inline
-  `SEED_WWN` / `SEED_SD` / `SEED_KJ` / `SEED_LA` constants — the last two (Kevin Johnson, Lucinda
-  Adams, both from the UA3e "Karmic Ties and Fifth Wheels" starter kit) are the Unknown Armies
-  examples, each with a ```ua fence (see "Unknown Armies 3rd Edition" above); their inline constants
-  **must** stay byte-for-byte identical to `data/kevin-johnson-ua3e.txt` / `data/lucinda-adams-ua3e.txt`
-  (no test asserts this — same informal contract as the other seed files below).
+- Characters: `seed()` (`js/seed.js`) tries `fetch(SEED_FILES[i])` (skipped on `file://`), then the
+  inline `SEED_FALLBACK[i]` (same order). `SEED_WWN` / `SEED_SD` are the OSR examples; `SEED_KJ` /
+  `SEED_LA` (Kevin Johnson, Lucinda Adams, both from the UA3e "Karmic Ties and Fifth Wheels" starter
+  kit) are the Unknown Armies examples, each with a ```ua fence (see "Unknown Armies 3rd Edition"
+  above); `SEED_SL_DEE` / `SEED_SL_MIRIAM` / `SEED_SL_VIVIAN` / `SEED_SL_RAY` are the Silent Legions
+  pregens, one per class (Investigator, Scholar, Socialite, Tough), built by the book's level-1 rules
+  and linked into one Boston party by their Connections. Each has a ```sl fence, so it shows only
+  under System = sl, and Miriam's Affluent wealth starts her Madness tracker at 10. The UA and SL
+  inline constants **must** stay byte-for-byte identical to their `data/*-ua3e.txt` / `data/*-sl.txt`
+  files — a logic test ("seed fallbacks: …") asserts it, so edit the file, then regenerate the
+  constant (escape `` ` ``, `\`, and `${`). The two OSR constants have drifted from their files
+  (Garrick's inline copy is an older sheet; Gulzund's lacks the trailing newline) and aren't covered.
+  `seed()` only runs on a fresh install (no characters yet). For existing saves, Settings → **Add
+  missing pregens** (`#set-add-pregens`) calls `addMissingPregens()`: it adds every example whose
+  name (`detectNameSystem`, case-insensitive) no character has yet, across all systems, and restores
+  `activeId`/`activeIdB` afterwards so the user's selection doesn't jump to a new pregen. A renamed
+  pregen counts as missing and is added again. `missingPregens()` (names read from `SEED_FALLBACK`,
+  so it needs no fetch) drives the Settings hint and disables the button when nothing is missing;
+  both `seed()` and `addMissingPregens()` read the sheets through `loadSeedSheets()`. The Settings
+  tab re-renders when opened (`js/main.js`'s tab handler), so its counts stay current.
 - `window.MONSTER_LIBRARY` is a shared constant — `seedMonsters()` **deep-clones** it before putting
   it in `state`. Any code that copies a seed/def into mutable state must clone.
 

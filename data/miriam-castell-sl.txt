@@ -1,0 +1,59 @@
+# Miriam Castell [Silent Legions]
+
+*Scholar — Level 1 · Professor background · Affluent wealth*
+
+```sl
+STR  8 (+0)  INT 16 (+1)  WIS 14 (+1)
+DEX 10 (+0)  CON  9 (+0)  CHA 13 (+0)
+Madness: 10
+```
+
+> **AC** 9 · **HP** 3/3 · **Attack** +0 · **Expertise** 2/2
+
+Affluent wealth: she starts with 10 Madness, as her sheltered life left her unready for the truth.
+
+## Saving throws
+
+Physical Effect 16+ · Mental Effect 14+ · Evasion 15+ · Magic 12+ · Luck 13+
+
+## Skills
+
+A check is `2d6` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- History-1 (Int) 2d6+2
+- Research-1 (Int) 2d6+2
+- Language-0 (Int) 2d6+1
+- Occult-0 (Int) 2d6+1
+- Religion-0 (Int) 2d6+1
+- Culture/Boston-0 (Cha) 2d6+0
+
+## Attacks
+
+A hit is `1d20` + bonus + the target's AC; 20 or more hits. She has no Combat skill (−2 to hit).
+
+- **Walking stick** (a [Club]) — hit 1d20-2 · damage 1d4 · no Slaughter die
+
+## Class abilities
+
+- **Deep Gnosis** (1 Expertise, once per day) — Automatically succeed at a check with a knowledge skill she has, such as History or Research. It doesn't work for Occult or other alien or magical lore.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with a Scholar skill: Art, Computer, Culture, Engineering, History, Language, Law, Medicine, Occult, Profession, Research, or Science. Once per roll.
+
+## Gear
+
+- **Readied:** walking stick, reading glasses
+- **Stowed:** laptop computer, photocopies from a 17th-century trial record
+- **Also:** a house in Cambridge, a Volvo, a library card for every archive in the state
+
+## Languages
+
+English, Latin
+
+## Sorcery
+
+The trial record describes [Whispers of the Scribe] in enough detail to learn it. She hasn't tried yet — see [Casting Spells] for what it would cost.
+
+## Background
+
+Miriam is a tenured professor of medieval history at a small college outside Boston. Her field is heresy trials, and one set of records described a rite in close detail. Last spring she watched three strangers perform it in a parking garage. She has stopped telling colleagues about her research.
+
+**Connection:** Vivian Sato — someone who helped her out of a crisis. Vivian once sold her a forged letter; when the buyer of the real one turned up dead, Vivian got her out of town for a week.

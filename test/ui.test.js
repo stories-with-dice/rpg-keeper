@@ -1470,6 +1470,27 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   assert.equal(T.state.characters.length, 2, 'nothing deleted by switching');
 });
 
+test('Settings → "Add missing pregens": counts the example characters, adds the missing ones, then disables itself', async () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.renderAll();
+  tab('settings');
+  assert.match($('#set-pregen-count').textContent, /^1 of 8 example characters/);
+  assert.match($('#set-pregen-count').textContent, /missing: Gulzund Blize, Kevin Johnson, .*Ray Kowalczyk\./);
+  assert.equal($('#set-add-pregens').disabled, false);
+  click($('#set-add-pregens'));
+  await new Promise(r => setTimeout(r, 0)); // the handler awaits loadSeedSheets()
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(T.state.characters.length, 8);
+  assert.match($('#set-pregen-count').textContent, /^8 of 8 example characters .* are in this campaign\.$/);
+  assert.equal($('#set-add-pregens').disabled, true, 'nothing left to add');
+  assert.match(logText(), /Example characters — 7 added/);
+  tab('character');
+  assert.equal($('#view-name').textContent, 'Garrick', 'the active character stays selected');
+  setValue($('#set-system'), 'sl');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent),
+    ['Dee Okafor (Silent Legions)', 'Miriam Castell (Silent Legions)', 'Vivian Sato (Silent Legions)', 'Ray Kowalczyk (Silent Legions)']);
+});
+
 /* ================================================================== */
 /* Persistence & export                                               */
 /* ================================================================== */

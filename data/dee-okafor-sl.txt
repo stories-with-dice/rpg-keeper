@@ -1,0 +1,54 @@
+# Dee Okafor [Silent Legions]
+
+*Investigator — Level 1 · Private Eye background · Average wealth*
+
+```sl
+STR  9 (+0)  INT 12 (+0)  WIS 16 (+1)
+DEX 13 (+0)  CON 11 (+0)  CHA 14 (+1)
+Madness: 0
+```
+
+> **AC** 9 · **HP** 5/5 · **Attack** +1 · **Expertise** 2/2
+
+## Saving throws
+
+Physical Effect 15+ · Mental Effect 14+ · Evasion 12+ · Magic 16+ · Luck 13+
+
+## Skills
+
+A check is `2d6` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- Perception-1 (Wis) 2d6+2
+- Culture/Boston-0 (Cha) 2d6+1
+- Law-0 (Int) 2d6+0
+- Research-0 (Int) 2d6+0
+- Security-0 (Dex) 2d6+0
+- Stealth-0 (Dex) 2d6+0
+- Combat/Projectile-0 — in the attack below
+
+## Attacks
+
+A hit is `1d20` + bonus + the target's AC; 20 or more hits.
+
+- **[Revolver]** — hit 1d20+1 · damage 1d8 · Slaughter 1d6 · 30/100 m · 6 shots
+
+## Class abilities
+
+- **Leading Whispers** (1 Expertise) — Never wholly stuck on a case: gain a hunch or a contact that leads further on a chosen topic or person. Neither is guaranteed to be clear or easy to reach.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with an Investigator skill: Computer, Culture, Language, Law, Navigation, Perception, Persuade, Profession, Research, Security, Stealth, or Vehicle. Once per roll.
+
+## Gear
+
+- **Readied:** flashlight, lockpick set, camera with a long lens
+- **Stowed:** revolver in a concealed ankle holster, 20 rounds, emergency first aid kit
+- **Also:** a tired Crown Victoria, a smartphone full of case photos
+
+## Languages
+
+English
+
+## Background
+
+Dee spent eight years with the Boston PD. A missing-person case ended in a basement covered in chalk sigils, with a witness who would not stop smiling, and the department closed the file the next morning. She now runs a one-woman agency in Dorchester and takes the cases other PIs turn down.
+
+**Connection:** Miriam Castell — her former teacher. Dee took Miriam's night course on New England folklore while she was still on the force.

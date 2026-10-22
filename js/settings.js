@@ -1,5 +1,5 @@
-/* js/settings.js — the Settings tab: style theme, Scarlet Heroes toggle,
- * monster-library reload, Compendium reseed/clear.
+/* js/settings.js — the Settings tab: system, style theme, Scarlet Heroes toggle,
+ * monster-library reload, Compendium reseed/clear, add missing example characters.
  */
 (function (OSR) {
   'use strict';
@@ -32,6 +32,12 @@
     $('#set-comp-count').textContent = cn + ' entr' + (cn === 1 ? 'y' : 'ies') +
       ' in the ' + (OSR.SYSTEM_LABELS[OSR.currentSystem()] || OSR.currentSystem()) + ' Compendium' +
       (OSR.currentSystem() === 'osr' ? ' (' + OSR.COMPENDIUM_SEED.length + ' in the default seed)' : '') + '.';
+    const total = OSR.SEED_FALLBACK.length;
+    const missing = OSR.missingPregens();
+    $('#set-pregen-count').textContent = (total - missing.length) + ' of ' + total +
+      ' example characters (OSR, Unknown Armies, Silent Legions) are in this campaign' +
+      (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
+    $('#set-add-pregens').disabled = !missing.length;
   }
   function wireSettings() {
     $('#set-system').addEventListener('change', e => {
@@ -76,6 +82,16 @@
       alert(added
         ? 'Added ' + added + ' default ' + (added === 1 ? 'entry' : 'entries') + '.'
         : 'Every default entry is already in the Compendium.');
+    });
+    $('#set-add-pregens').addEventListener('click', async () => {
+      const added = await OSR.addMissingPregens();
+      renderSettings();
+      OSR.renderCombat(); // Combat's "+ Add character…" picker lists characters too
+      OSR.pushNote('Settings', 'Example characters — ' + added + ' added');
+      alert(added
+        ? 'Added ' + added + ' example character' + (added === 1 ? '' : 's') +
+          '. Each one shows under its own System (Settings → System).'
+        : 'Every example character is already in the campaign.');
     });
     $('#set-clear-compendium').addEventListener('click', () => {
       const sysLabel = OSR.SYSTEM_LABELS[OSR.currentSystem()] || OSR.currentSystem();

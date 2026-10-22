@@ -281,6 +281,10 @@ customizing a creature template.
 
 Set Settings → **System** to **Silent Legions**.
 
+- **Pregens**: a fresh install includes four ready-to-play level-1 characters, one per class, who
+  already know each other: Dee Okafor (Investigator), Miriam Castell (Scholar), Vivian Sato
+  (Socialite), and Ray Kowalczyk (Tough). On an existing campaign, use Settings → **Add missing
+  pregens**.
 - **Characters**: **New blank** makes a sheet with a ` ```sl ` block (attributes and a starting
   `Madness: N` line). That block is what marks a character as Silent Legions, the same way ` ```ua `
   and ` ```brp ` do. Write skill checks as `Perception 2d6+1` and the attack bonus as `+1` so they
@@ -317,6 +321,10 @@ Set Settings → **System** to **Silent Legions**.
   isn't already present, matched by name; your own entries and edits are left alone.
 - **Compendium → Delete all** — clears every Compendium entry after a confirmation. They don't come
   back on reload; use **Reseed defaults** to restore the bundled gear.
+- **Example characters → Add missing pregens** — the example characters (OSR, Unknown Armies, and
+  the four Silent Legions pregens) are only created on a fresh install. This adds any of them your
+  campaign doesn't have, matched by name; your own characters and edits are left alone. Each one
+  shows under its own **System**. The button is disabled when nothing is missing.
 
 ---
 

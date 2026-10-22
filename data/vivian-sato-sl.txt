@@ -1,0 +1,56 @@
+# Vivian Sato [Silent Legions]
+
+*Socialite — Level 1 · Con Man background · Struggling wealth*
+
+```sl
+STR 10 (+0)  INT 12 (+0)  WIS  9 (+0)
+DEX 15 (+1)  CON  7 (-1)  CHA 14 (+1)
+Madness: 0
+```
+
+> **AC** 8 · **HP** 3/3 · **Attack** +1 · **Expertise** 2/2
+
+Struggling wealth: one extra skill pick (Perception).
+
+## Saving throws
+
+Physical Effect 15+ · Mental Effect 12+ · Evasion 16+ · Magic 14+ · Luck 13+
+
+## Skills
+
+A check is `2d6` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- Persuade-1 (Cha) 2d6+2
+- Culture/Boston-1 (Cha) 2d6+2
+- Culture/Criminal-0 (Cha) 2d6+1
+- Stealth-0 (Dex) 2d6+1
+- Gambling-0 (Int) 2d6+0
+- Language-0 (Int) 2d6+0
+- Perception-0 (Wis) 2d6+0
+
+## Attacks
+
+A hit is `1d20` + bonus + the target's AC; 20 or more hits. She has no Combat skill (−2 to hit).
+
+- **[Knife]** — hit 1d20+0 · damage 1d4+1 · Slaughter 1d6 · thrown 6/9 m
+
+## Class abilities
+
+- **Folie a Deux** (1 Expertise) — Make a human react to her as a friend, or be cowed by her, if either is remotely plausible. A human tainted by the supernatural can resist for an hour with a Mental Effect save, and may play along to hide it.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with a Socialite skill: Art, Business, Culture, Gambling, Language, Law, Leadership, Perception, Persuade, Profession, or Vehicle. Once per roll.
+
+## Gear
+
+- **Readied:** knife, a deck of marked cards
+- **Stowed:** two poor-quality fake IDs, a secondhand smartphone
+- **Also:** a room in a weekly-rent motel in Revere
+
+## Languages
+
+English, Japanese
+
+## Background
+
+Vivian ran short cons on rich marks until one of them introduced her to his family charity. The donors at its gala all had the same smile, and some of them had the faces of people she knew were dead. She got out with her life and a ledger in a script she can't read.
+
+**Connection:** Ray Kowalczyk — a childhood companion. They grew up on the same block in South Boston.

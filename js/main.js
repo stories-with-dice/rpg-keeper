@@ -18,6 +18,7 @@
       if (b.dataset.tab === 'bestiary') OSR.renderMonsterBrowser();
       if (b.dataset.tab === 'compendium') OSR.renderCompendium();
       if (b.dataset.tab === 'tables') OSR.renderTables();
+      if (b.dataset.tab === 'settings') OSR.renderSettings(); // counts change elsewhere (seeding, new characters)
       if (b.dataset.tab === 'character' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
     });
 

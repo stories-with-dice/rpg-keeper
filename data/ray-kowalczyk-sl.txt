@@ -1,0 +1,55 @@
+# Ray Kowalczyk [Silent Legions]
+
+*Tough — Level 1 · Soldier background · Average wealth*
+
+```sl
+STR 14 (+1)  INT  9 (+0)  WIS 12 (+0)
+DEX 13 (+0)  CON 16 (+1)  CHA  6 (-1)
+Madness: 0
+```
+
+> **AC** 9 · **HP** 7/7 · **Attack** +1 · **Expertise** 2/2
+
+## Saving throws
+
+Physical Effect 12+ · Mental Effect 16+ · Evasion 14+ · Magic 15+ · Luck 13+
+
+## Skills
+
+A check is `2d6` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- Athletics-1 (Str) 2d6+2
+- Medicine-0 (Int) 2d6+0
+- Tactics-0 (Int) 2d6+0
+- Vehicle/Land-0 (Dex) 2d6+0
+- Leadership-0 (Cha) 2d6-1
+- Combat/Projectile-1 — in the attacks below
+
+## Attacks
+
+A hit is `1d20` + bonus + the target's AC; 20 or more hits.
+
+- **[Semi-auto Pistol]** — hit 1d20+2 · damage 1d6+1 · Slaughter 1d6 · 30/100 m · 12 rounds
+- **[Shotgun, Pump]** — hit 1d20+2 · damage 3d4 · Slaughter 1d10 · 10/30 m · 6 shells (kept in the truck)
+- **Fists** — hit 1d20+0 (no Combat/Unarmed: −2) · damage 1d2+1 · no Slaughter die
+
+## Class abilities
+
+- **Ravenous for Life** — At 0 HP he stabilizes on his own, and survives a wound that would otherwise kill him.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with a Tough skill (Athletics, Combat, Gambling, Leadership, Profession, Stealth, Survival, Tactics, or Vehicle), or a failed attack roll. Once per roll.
+
+## Gear
+
+- **Readied:** semi-auto pistol in a custom holster, flashlight
+- **Stowed:** two spare magazines, emergency first aid kit, nylon rope (20 m)
+- **Also:** a pickup truck with the pump shotgun behind the seat, a toolbox
+
+## Languages
+
+English
+
+## Background
+
+Ray did two tours with the Army infantry and came home to work night security at the Port of Boston. One night a container came off a ship with no manifest, nothing inside but wet sand, and a sound like breathing. His partner went in to look. Ray didn't, and he hasn't slept well since.
+
+**Connection:** Dee Okafor — someone who saved his life. Dee was at the port that night on a case, and she dragged him out of the harbor.

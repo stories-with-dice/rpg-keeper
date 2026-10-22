@@ -1583,7 +1583,7 @@ test('seed(): a fresh install creates the OSR examples plus the two Unknown Armi
   // Its own isolated jsdom instance — freshSeed:true lets init() run the real
   // first-run seeding instead of the shared T's blank-save short-circuit.
   const { T: T2 } = await boot({ freshSeed: true });
-  const names = T2.state.characters.map(c => c.name).sort();
+  const names = T2.state.characters.filter(c => T2.charSystemKey(c) !== 'sl').map(c => c.name).sort();
   assert.deepEqual(names, ['Garrick', 'Gulzund Blize', 'Kevin Johnson', 'Lucinda Adams']);
 
   const kevin = T2.state.characters.find(c => c.name === 'Kevin Johnson');
@@ -1604,6 +1604,77 @@ test('seed(): a fresh install creates the OSR examples plus the two Unknown Armi
   assert.ok(T2.state.consumables.some(c => c.name === 'HP (Garrick)'));
   assert.ok(T2.state.consumables.some(c => c.name === 'HP (Gulzund Blize)'));
   assert.equal(T2.state.consumables.some(c => c.name === 'Wounds (Garrick)'), false);
+});
+
+test('seed(): a fresh install also creates one Silent Legions pregen per class, each with HP and Madness trackers', async () => {
+  const { T: T2 } = await boot({ freshSeed: true });
+  const sl = T2.state.characters.filter(c => T2.charSystemKey(c) === 'sl');
+  assert.deepEqual(sl.map(c => c.name), ['Dee Okafor', 'Miriam Castell', 'Vivian Sato', 'Ray Kowalczyk']);
+  assert.ok(sl.every(c => c.system === 'Silent Legions'));
+  assert.deepEqual(sl.map(c => (c.body.match(/^\*(\w+) — Level 1/m) || [])[1]),
+    ['Investigator', 'Scholar', 'Socialite', 'Tough'], 'one of each class');
+  sl.forEach(c => {
+    assert.ok(T2.state.consumables.some(x => x.name === 'HP (' + c.name + ')'), c.name + ': HP tracker');
+    const mad = T2.state.consumables.find(x => x.name === 'Madness (' + c.name + ')');
+    assert.ok(mad && mad.max === 100, c.name + ': Madness tracker');
+  });
+  assert.equal(T2.state.consumables.find(x => x.name === 'Madness (Miriam Castell)').value, 10,
+    'Affluent wealth starts at 10 Madness, read from her ```sl fence');
+  assert.equal(T2.state.consumables.find(x => x.name === 'Madness (Dee Okafor)').value, 0);
+  // They live only under System = sl; the OSR view (the default) never shows them.
+  assert.ok(!T2.charactersForSystem().some(c => T2.charSystemKey(c) === 'sl'));
+  assert.notEqual(T2.charSystemKey(T2.activeChar()), 'sl', 'an OSR example stays the active character');
+});
+
+test('addMissingPregens: adds only the example characters the campaign lacks, keeps the active one, then adds nothing', async () => {
+  T.createCharacter('# Garrick [WWN]\nMy own edited Garrick.');
+  T.createCharacter('# Mara\nA homebrew character.');
+  const mara = T.activeChar();
+  assert.equal(T.missingPregens().length, 7, 'Garrick is matched by name');
+  assert.equal(await T.addMissingPregens(), 7);
+  assert.equal(T.state.characters.length, 9);
+  assert.equal(T.state.characters.filter(c => c.name === 'Garrick').length, 1, 'no duplicate Garrick');
+  assert.match(T.state.characters.find(c => c.name === 'Garrick').body, /My own edited Garrick/, 'the existing sheet is untouched');
+  assert.equal(T.activeChar().id, mara.id, 'the active character stays selected');
+  assert.ok(T.state.consumables.some(c => c.name === 'Madness (Miriam Castell)' && c.value === 10));
+  assert.deepEqual(T.missingPregens(), []);
+  assert.equal(await T.addMissingPregens(), 0, 'second run adds nothing');
+  assert.equal(T.state.characters.length, 9);
+});
+
+test('seed fallbacks: the inline Unknown Armies and Silent Legions sheets match data/*.txt byte for byte', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const checked = T.SEED_FILES.filter(f => /-(ua3e|sl)\.txt$/.test(f));
+  assert.equal(checked.length, 6);
+  checked.forEach(f => {
+    const i = T.SEED_FILES.indexOf(f);
+    assert.equal(T.SEED_FALLBACK[i], fs.readFileSync(path.join(__dirname, '..', f), 'utf8'), f + ' differs from its inline copy in js/seed.js');
+  });
+});
+
+test('Silent Legions pregens: every [ref] resolves in the SL Compendium, and the sheet numbers parse', () => {
+  T.state.compendium = [];
+  T.seedSlCompendium();
+  T.state.settings.system = 'sl';
+  T.SEED_FILES.forEach((f, i) => {
+    if (!/-sl\.txt$/.test(f)) return;
+    const body = T.SEED_FALLBACK[i];
+    const refs = (body.match(/\[([^\]]+)\]/g) || []).map(r => r.slice(1, -1)).filter(r => r !== 'Silent Legions');
+    assert.ok(refs.length > 0, f + ': links to the Compendium');
+    refs.forEach(r => assert.equal(T.compByExactName(r).length, 1, f + ': [' + r + '] has no Silent Legions Compendium entry'));
+    assert.ok(T.charDetectHp({ body: body }), f + ': HP x/y is detected for Combat');
+    assert.match(T.charQuickAC({ body: body }), /^\d$/, f + ': AC is detected for Combat');
+    // Rendered like View mode: every roll link is a real roll from the sheet,
+    // never the bare "2d6"/"1d20" in the explanation lines (those sit in
+    // `code` spans, which annotate() skips).
+    const host = document.createElement('div');
+    host.innerHTML = T.renderCharMarkdown(body);
+    T.annotate(host, { vars: [] });
+    const formulas = Array.from(host.querySelectorAll('.roll')).map(r => r.dataset.formula);
+    assert.ok(formulas.length >= 8, f + ': skills and attacks are clickable');
+    assert.ok(!formulas.includes('2d6') && !formulas.includes('1d20'), f + ': no bare explanation dice: ' + formulas.join(', '));
+  });
 });
 
 /* ================================================================== */

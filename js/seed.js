@@ -10,7 +10,9 @@
 
   const SEED_FILES = [
     'data/garrick-wwn.txt', 'data/gulzund-blize-shadowdark.txt',
-    'data/kevin-johnson-ua3e.txt', 'data/lucinda-adams-ua3e.txt'
+    'data/kevin-johnson-ua3e.txt', 'data/lucinda-adams-ua3e.txt',
+    'data/dee-okafor-sl.txt', 'data/miriam-castell-sl.txt',
+    'data/vivian-sato-sl.txt', 'data/ray-kowalczyk-sl.txt'
   ];
 
   // Used only when data/*.txt can't be fetched (e.g. page opened via file://).
@@ -187,9 +189,249 @@ Violence: 1 hardened / 0 failed
 \`\`\`
 `;
 
-  async function seed() {
-    const fallback = [SEED_WWN, SEED_SD, SEED_KJ, SEED_LA];
+  // Silent Legions pregens, one per class (Investigator, Scholar, Socialite,
+  // Tough) — each has a ```sl fence, so they show only under System = sl.
+  const SEED_SL_DEE = `# Dee Okafor [Silent Legions]
+
+*Investigator — Level 1 · Private Eye background · Average wealth*
+
+\`\`\`sl
+STR  9 (+0)  INT 12 (+0)  WIS 16 (+1)
+DEX 13 (+0)  CON 11 (+0)  CHA 14 (+1)
+Madness: 0
+\`\`\`
+
+> **AC** 9 · **HP** 5/5 · **Attack** +1 · **Expertise** 2/2
+
+## Saving throws
+
+Physical Effect 15+ · Mental Effect 14+ · Evasion 12+ · Magic 16+ · Luck 13+
+
+## Skills
+
+A check is \`2d6\` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- Perception-1 (Wis) 2d6+2
+- Culture/Boston-0 (Cha) 2d6+1
+- Law-0 (Int) 2d6+0
+- Research-0 (Int) 2d6+0
+- Security-0 (Dex) 2d6+0
+- Stealth-0 (Dex) 2d6+0
+- Combat/Projectile-0 — in the attack below
+
+## Attacks
+
+A hit is \`1d20\` + bonus + the target's AC; 20 or more hits.
+
+- **[Revolver]** — hit 1d20+1 · damage 1d8 · Slaughter 1d6 · 30/100 m · 6 shots
+
+## Class abilities
+
+- **Leading Whispers** (1 Expertise) — Never wholly stuck on a case: gain a hunch or a contact that leads further on a chosen topic or person. Neither is guaranteed to be clear or easy to reach.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with an Investigator skill: Computer, Culture, Language, Law, Navigation, Perception, Persuade, Profession, Research, Security, Stealth, or Vehicle. Once per roll.
+
+## Gear
+
+- **Readied:** flashlight, lockpick set, camera with a long lens
+- **Stowed:** revolver in a concealed ankle holster, 20 rounds, emergency first aid kit
+- **Also:** a tired Crown Victoria, a smartphone full of case photos
+
+## Languages
+
+English
+
+## Background
+
+Dee spent eight years with the Boston PD. A missing-person case ended in a basement covered in chalk sigils, with a witness who would not stop smiling, and the department closed the file the next morning. She now runs a one-woman agency in Dorchester and takes the cases other PIs turn down.
+
+**Connection:** Miriam Castell — her former teacher. Dee took Miriam's night course on New England folklore while she was still on the force.
+`;
+
+  const SEED_SL_MIRIAM = `# Miriam Castell [Silent Legions]
+
+*Scholar — Level 1 · Professor background · Affluent wealth*
+
+\`\`\`sl
+STR  8 (+0)  INT 16 (+1)  WIS 14 (+1)
+DEX 10 (+0)  CON  9 (+0)  CHA 13 (+0)
+Madness: 10
+\`\`\`
+
+> **AC** 9 · **HP** 3/3 · **Attack** +0 · **Expertise** 2/2
+
+Affluent wealth: she starts with 10 Madness, as her sheltered life left her unready for the truth.
+
+## Saving throws
+
+Physical Effect 16+ · Mental Effect 14+ · Evasion 15+ · Magic 12+ · Luck 13+
+
+## Skills
+
+A check is \`2d6\` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- History-1 (Int) 2d6+2
+- Research-1 (Int) 2d6+2
+- Language-0 (Int) 2d6+1
+- Occult-0 (Int) 2d6+1
+- Religion-0 (Int) 2d6+1
+- Culture/Boston-0 (Cha) 2d6+0
+
+## Attacks
+
+A hit is \`1d20\` + bonus + the target's AC; 20 or more hits. She has no Combat skill (−2 to hit).
+
+- **Walking stick** (a [Club]) — hit 1d20-2 · damage 1d4 · no Slaughter die
+
+## Class abilities
+
+- **Deep Gnosis** (1 Expertise, once per day) — Automatically succeed at a check with a knowledge skill she has, such as History or Research. It doesn't work for Occult or other alien or magical lore.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with a Scholar skill: Art, Computer, Culture, Engineering, History, Language, Law, Medicine, Occult, Profession, Research, or Science. Once per roll.
+
+## Gear
+
+- **Readied:** walking stick, reading glasses
+- **Stowed:** laptop computer, photocopies from a 17th-century trial record
+- **Also:** a house in Cambridge, a Volvo, a library card for every archive in the state
+
+## Languages
+
+English, Latin
+
+## Sorcery
+
+The trial record describes [Whispers of the Scribe] in enough detail to learn it. She hasn't tried yet — see [Casting Spells] for what it would cost.
+
+## Background
+
+Miriam is a tenured professor of medieval history at a small college outside Boston. Her field is heresy trials, and one set of records described a rite in close detail. Last spring she watched three strangers perform it in a parking garage. She has stopped telling colleagues about her research.
+
+**Connection:** Vivian Sato — someone who helped her out of a crisis. Vivian once sold her a forged letter; when the buyer of the real one turned up dead, Vivian got her out of town for a week.
+`;
+
+  const SEED_SL_VIVIAN = `# Vivian Sato [Silent Legions]
+
+*Socialite — Level 1 · Con Man background · Struggling wealth*
+
+\`\`\`sl
+STR 10 (+0)  INT 12 (+0)  WIS  9 (+0)
+DEX 15 (+1)  CON  7 (-1)  CHA 14 (+1)
+Madness: 0
+\`\`\`
+
+> **AC** 8 · **HP** 3/3 · **Attack** +1 · **Expertise** 2/2
+
+Struggling wealth: one extra skill pick (Perception).
+
+## Saving throws
+
+Physical Effect 15+ · Mental Effect 12+ · Evasion 16+ · Magic 14+ · Luck 13+
+
+## Skills
+
+A check is \`2d6\` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- Persuade-1 (Cha) 2d6+2
+- Culture/Boston-1 (Cha) 2d6+2
+- Culture/Criminal-0 (Cha) 2d6+1
+- Stealth-0 (Dex) 2d6+1
+- Gambling-0 (Int) 2d6+0
+- Language-0 (Int) 2d6+0
+- Perception-0 (Wis) 2d6+0
+
+## Attacks
+
+A hit is \`1d20\` + bonus + the target's AC; 20 or more hits. She has no Combat skill (−2 to hit).
+
+- **[Knife]** — hit 1d20+0 · damage 1d4+1 · Slaughter 1d6 · thrown 6/9 m
+
+## Class abilities
+
+- **Folie a Deux** (1 Expertise) — Make a human react to her as a friend, or be cowed by her, if either is remotely plausible. A human tainted by the supernatural can resist for an hour with a Mental Effect save, and may play along to hide it.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with a Socialite skill: Art, Business, Culture, Gambling, Language, Law, Leadership, Perception, Persuade, Profession, or Vehicle. Once per roll.
+
+## Gear
+
+- **Readied:** knife, a deck of marked cards
+- **Stowed:** two poor-quality fake IDs, a secondhand smartphone
+- **Also:** a room in a weekly-rent motel in Revere
+
+## Languages
+
+English, Japanese
+
+## Background
+
+Vivian ran short cons on rich marks until one of them introduced her to his family charity. The donors at its gala all had the same smile, and some of them had the faces of people she knew were dead. She got out with her life and a ledger in a script she can't read.
+
+**Connection:** Ray Kowalczyk — a childhood companion. They grew up on the same block in South Boston.
+`;
+
+  const SEED_SL_RAY = `# Ray Kowalczyk [Silent Legions]
+
+*Tough — Level 1 · Soldier background · Average wealth*
+
+\`\`\`sl
+STR 14 (+1)  INT  9 (+0)  WIS 12 (+0)
+DEX 13 (+0)  CON 16 (+1)  CHA  6 (-1)
+Madness: 0
+\`\`\`
+
+> **AC** 9 · **HP** 7/7 · **Attack** +1 · **Expertise** 2/2
+
+## Saving throws
+
+Physical Effect 12+ · Mental Effect 16+ · Evasion 14+ · Magic 15+ · Luck 13+
+
+## Skills
+
+A check is \`2d6\` + attribute modifier + skill level, against a difficulty the GM sets.
+
+- Athletics-1 (Str) 2d6+2
+- Medicine-0 (Int) 2d6+0
+- Tactics-0 (Int) 2d6+0
+- Vehicle/Land-0 (Dex) 2d6+0
+- Leadership-0 (Cha) 2d6-1
+- Combat/Projectile-1 — in the attacks below
+
+## Attacks
+
+A hit is \`1d20\` + bonus + the target's AC; 20 or more hits.
+
+- **[Semi-auto Pistol]** — hit 1d20+2 · damage 1d6+1 · Slaughter 1d6 · 30/100 m · 12 rounds
+- **[Shotgun, Pump]** — hit 1d20+2 · damage 3d4 · Slaughter 1d10 · 10/30 m · 6 shells (kept in the truck)
+- **Fists** — hit 1d20+0 (no Combat/Unarmed: −2) · damage 1d2+1 · no Slaughter die
+
+## Class abilities
+
+- **Ravenous for Life** — At 0 HP he stabilizes on his own, and survives a wound that would otherwise kill him.
+- **Reliable Skill** (1 Expertise) — Reroll a failed check with a Tough skill (Athletics, Combat, Gambling, Leadership, Profession, Stealth, Survival, Tactics, or Vehicle), or a failed attack roll. Once per roll.
+
+## Gear
+
+- **Readied:** semi-auto pistol in a custom holster, flashlight
+- **Stowed:** two spare magazines, emergency first aid kit, nylon rope (20 m)
+- **Also:** a pickup truck with the pump shotgun behind the seat, a toolbox
+
+## Languages
+
+English
+
+## Background
+
+Ray did two tours with the Army infantry and came home to work night security at the Port of Boston. One night a container came off a ship with no manifest, nothing inside but wet sand, and a sound like breathing. His partner went in to look. Ray didn't, and he hasn't slept well since.
+
+**Connection:** Dee Okafor — someone who saved his life. Dee was at the port that night on a case, and she dragged him out of the harbor.
+`;
+
+  // Same order as SEED_FILES. A test (test/logic.test.js) checks each one
+  // matches its data/*.txt file byte for byte.
+  const SEED_FALLBACK = [SEED_WWN, SEED_SD, SEED_KJ, SEED_LA, SEED_SL_DEE, SEED_SL_MIRIAM, SEED_SL_VIVIAN, SEED_SL_RAY];
+
+  // Every example sheet's text, in SEED_FILES order: data/*.txt when fetch()
+  // works, else the inline SEED_FALLBACK copy.
+  async function loadSeedSheets() {
     const isFile = location.protocol === 'file:';
+    const texts = [];
     for (let i = 0; i < SEED_FILES.length; i++) {
       let text = null;
       // fetch() is blocked on file:// and the browser logs the failed
@@ -200,13 +442,50 @@ Violence: 1 hardened / 0 failed
           if (res.ok) text = await res.text();
         } catch (e) { /* offline — use fallback */ }
       }
-      OSR.createCharacter(text && text.trim() ? text : fallback[i]);
+      texts.push(text && text.trim() ? text : SEED_FALLBACK[i]);
     }
+    return texts;
+  }
+
+  async function seed() {
+    (await loadSeedSheets()).forEach(text => OSR.createCharacter(text));
     if (OSR.state.characters.length) {
       OSR.state.activeId = OSR.state.characters[0].id;
       OSR.save();
       OSR.refreshCharUI();
     }
+  }
+
+  // The example characters' names (from the inline copies, so Settings can
+  // count them without a fetch) and which of them the campaign lacks —
+  // matched by name, case-insensitive.
+  function missingPregens() {
+    const have = new Set(OSR.state.characters.map(c => String(c.name || '').toLowerCase()));
+    return SEED_FALLBACK.map(t => OSR.detectNameSystem(t).name).filter(n => !have.has(n.toLowerCase()));
+  }
+
+  // Settings → "Add missing pregens": seed() only runs on a fresh install, so
+  // this adds every example character the campaign lacks (one made before a
+  // pregen existed, or after one was deleted), across all systems. The active
+  // character(s) stay selected. Returns the count added.
+  async function addMissingPregens() {
+    const missing = new Set(missingPregens().map(n => n.toLowerCase()));
+    const keepA = OSR.state.activeId, keepB = OSR.state.activeIdB;
+    let added = 0;
+    (await loadSeedSheets()).forEach(text => {
+      const key = OSR.detectNameSystem(text).name.toLowerCase();
+      if (!missing.has(key)) return;
+      missing.delete(key);
+      OSR.createCharacter(text);
+      added++;
+    });
+    if (added) {
+      OSR.state.activeId = keepA;
+      OSR.state.activeIdB = keepB;
+      OSR.save();
+      OSR.refreshCharUI();
+    }
+    return added;
   }
 
   const MONSTER_SEED_TEXT = [
@@ -278,5 +557,5 @@ Violence: 1 hardened / 0 failed
     OSR.renderSettings();
   }
 
-  Object.assign(OSR, { seed, seedMonsters });
+  Object.assign(OSR, { SEED_FILES, SEED_FALLBACK, loadSeedSheets, seed, missingPregens, addMissingPregens, seedMonsters });
 })(window.OSR = window.OSR || {});
