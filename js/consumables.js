@@ -5,11 +5,12 @@
   'use strict';
   const { $, escapeHtml, uid } = OSR;
 
-  // A per-character "HP (Name)"/"Wounds (Name)" tracker only makes sense
-  // while that character's own system (charSystemKey — a ```ua fence in the
-  // body, not the globally-selected one) matches the active System; HP
-  // belongs to OSR characters, Wounds to Unknown Armies ones (see
-  // ensureHpTracker/ensureWoundTracker in js/core.js). Filtered from view
+  // A per-character "HP (Name)"/"Wounds (Name)"/"Madness (Name)" tracker only
+  // makes sense while that character's own system (charSystemKey — a ```ua,
+  // ```brp, or ```sl fence in the body, not the globally-selected one)
+  // matches the active System; Wounds belong to Unknown Armies characters,
+  // Madness to Silent Legions ones (see ensureHpTracker/ensureWoundTracker/
+  // ensureMadnessTracker in js/core.js). Filtered from view
   // only, never deleted — switching System back shows it again exactly as it
   // was, same as the Compendium/Bestiary/Character partitioning. Trackers
   // that don't belong to any character (Rations, Torches, …) always show.
@@ -19,6 +20,7 @@
     state.characters.forEach(ch => {
       owners.set(OSR.hpTrackerLabel(ch), ch);
       owners.set(OSR.woundTrackerLabel(ch), ch);
+      owners.set(OSR.madnessTrackerLabel(ch), ch);
     });
     const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
     return state.consumables.filter(c => {

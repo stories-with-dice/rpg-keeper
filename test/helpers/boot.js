@@ -29,6 +29,8 @@ const SCRIPTS = [
   'js/compendium-seed.js',
   'js/brp-monsters-data.js',
   'js/brp-compendium-seed.js',
+  'js/sl-monsters-data.js',
+  'js/sl-compendium-seed.js',
   'js/core.js',
   'js/dice.js',
   'js/annotate.js',
@@ -49,6 +51,7 @@ const SCRIPTS = [
   'js/dice-ui.js',
   'js/seed.js',
   'js/brp-seed.js',
+  'js/sl-seed.js',
   'js/main.js',
 ];
 
@@ -61,8 +64,8 @@ function blankSave() {
   return JSON.stringify({
     version: 1, activeId: null, activeIdB: null,
     characters: [], consumables: [], notes: '', log: [],
-    monsters: [], monstersSeeded: true, brpMonstersSeeded: true, conditions: [],
-    compendium: [], compendiumSeeded: true, compendiumSeedVersion: 9999, brpCompendiumSeeded: true,
+    monsters: [], monstersSeeded: true, brpMonstersSeeded: true, slMonstersSeeded: true, conditions: [],
+    compendium: [], compendiumSeeded: true, compendiumSeedVersion: 9999, brpCompendiumSeeded: true, slCompendiumSeeded: true,
     settings: { scarletHeroes: false, theme: 'default' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] },
   });

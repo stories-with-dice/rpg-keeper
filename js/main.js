@@ -69,11 +69,13 @@
     if (!had && !OSR.state.characters.length) await OSR.seed();
     if (!OSR.state.monsters.length && !OSR.state.monstersSeeded) await OSR.seedMonsters();
     if (!OSR.state.brpMonstersSeeded) OSR.seedBrpMonsters();
+    if (!OSR.state.slMonstersSeeded) OSR.seedSlMonsters();
     if ((OSR.state.compendiumSeedVersion || 0) < OSR.COMPENDIUM_SEED_VERSION) {
       await OSR.COMPENDIUM_SEED_READY; // let the optional data/spells.json fetch settle first
       OSR.seedCompendium();
     }
     if (!OSR.state.brpCompendiumSeeded) OSR.seedBrpCompendium();
+    if (!OSR.state.slCompendiumSeeded) OSR.seedSlCompendium();
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderCombat();
@@ -107,9 +109,11 @@
       OSR.state = JSON.parse(JSON.stringify(OSR.STATE_DEFAULTS));
       OSR.state.monstersSeeded = true;
       OSR.state.brpMonstersSeeded = true;
+      OSR.state.slMonstersSeeded = true;
       OSR.state.compendiumSeeded = true;
       OSR.state.compendiumSeedVersion = OSR.COMPENDIUM_SEED_VERSION;
       OSR.state.brpCompendiumSeeded = true;
+      OSR.state.slCompendiumSeeded = true;
       OSR.ensureStateShape();
       OSR.lastRoll = null;
       OSR.mode = 'view';

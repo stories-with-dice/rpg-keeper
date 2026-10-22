@@ -41,21 +41,26 @@ test('parseRange: single value, span, and the "00" percentile shorthand', () => 
 const TABLES_DIR = path.join(__dirname, '..', 'data', 'tables');
 const CSV_FILES = fs.readdirSync(TABLES_DIR).filter(f => f.endsWith('.csv'));
 
-test('every data/tables/*.csv converts to a complete, gapless, non-overlapping d100 table', () => {
+test('every data/tables/*.csv converts to a complete, gapless, non-overlapping table over its die', () => {
   assert.ok(CSV_FILES.length >= 20, 'expected the full set of table CSVs');
   for (const f of CSV_FILES) {
     const t = convertFile(path.join(TABLES_DIR, f));
     assert.ok(t.id && t.name && t.tag && t.formula, f + ': missing a field');
     assert.ok(t.entries.length > 0, f + ': no entries');
-    const covered = new Array(101).fill(false); // 1..100
+    // Every table so far rolls a single die (d100, or d20 for the Silent
+    // Legions monster qualities) — its rows must cover 1..sides exactly once.
+    const m = t.formula.match(/^d(\d+)$/);
+    assert.ok(m, f + ': formula ' + t.formula + ' is not a single die');
+    const sides = parseInt(m[1], 10);
+    const covered = new Array(sides + 1).fill(false); // 1..sides
     for (const en of t.entries) {
-      assert.ok(en.lo >= 1 && en.hi <= 100 && en.lo <= en.hi, f + ': bad range ' + en.range);
+      assert.ok(en.lo >= 1 && en.hi <= sides && en.lo <= en.hi, f + ': bad range ' + en.range);
       for (let n = en.lo; n <= en.hi; n++) {
         assert.ok(!covered[n], f + ': roll ' + n + ' covered by more than one row');
         covered[n] = true;
       }
     }
-    for (let n = 1; n <= 100; n++) assert.ok(covered[n], f + ': roll ' + n + ' has no matching row');
+    for (let n = 1; n <= sides; n++) assert.ok(covered[n], f + ': roll ' + n + ' has no matching row');
   }
 });
 

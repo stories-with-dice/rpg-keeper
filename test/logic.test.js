@@ -30,7 +30,11 @@ beforeEach(() => {
 });
 
 // Rig Math.random to a fixed fraction / sequence for the duration of a test.
+// A second rig() in the same test restores the real Math.random first —
+// otherwise the beforeEach restore would only bring back the first rig, and
+// it would leak into every later test (uid() collisions).
 function rig(fractions) {
+  if (T._restoreRandom) T._restoreRandom();
   T._restoreRandom = rigRandom(window, fractions);
 }
 
@@ -796,6 +800,169 @@ test('BRP entries are invisible under other systems, and vice versa (Compendium 
 });
 
 /* ================================================================== */
+/* Silent Legions: seeds, data integrity, combat rolls                */
+/* ================================================================== */
+
+test('seedSlMonsters: populates state.monsters, tagged system:sl, in the OSR def shape plus the SL fields', () => {
+  T.state.monsters = [];
+  T.seedSlMonsters();
+  assert.ok(T.state.monsters.every(m => m.system === 'sl' && m.source === 'sl'));
+  const zombie = T.state.monsters.find(m => m.name === 'Zombie');
+  assert.deepEqual(zombie.ac, { asc: null, desc: 7, thac0: null });
+  assert.equal(zombie.hd, '2');
+  assert.equal(zombie.hp, 9, 'the d8 average, floor(4.5 × HD)');
+  assert.deepEqual(zombie.saveTargets, { Save: 14 });
+  assert.equal(zombie.savesText, '14+');
+  assert.equal(zombie.moraleML, 12);
+  assert.equal(zombie.skill, 0);
+  assert.equal(zombie.madness, '1d6');
+  assert.equal(zombie.slaughterDie, '1d6');
+  assert.deepEqual(
+    { label: zombie.attacks[0].label, count: zombie.attacks[0].count, toHit: zombie.attacks[0].toHit, damage: zombie.attacks[0].damage },
+    { label: 'rend', count: 1, toHit: 1, damage: '1d6' });
+  const ordinary = T.state.monsters.find(m => m.name === 'Ordinary Human');
+  assert.equal(ordinary.hd, '½', '"1d4 hp" is stored as half a HD');
+  assert.equal(ordinary.hdNum, 0.5);
+  const strongEntity = T.state.monsters.find(m => m.name === 'Outer Entity (Strong)');
+  assert.ok(strongEntity, 'the creature templates are seeded too');
+  assert.deepEqual(strongEntity.saveTargets, { Save: 9 }, 'templates use the book\'s save formula, 15 − ½HD rounded up');
+  const vampire = T.state.monsters.find(m => m.name === 'Vampire');
+  assert.equal(vampire.mundaneImmune, true);
+  assert.equal(vampire.abilities[0].name, 'AC*', 'the book\'s AC asterisk is explained as an ability');
+});
+
+test('seedSlMonsters: reseeding only ever replaces the sl-tagged slice (other systems preserved)', () => {
+  T.state.monsters = [
+    { id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'b1', name: 'Troll', hd: '', hdNum: 0, hp: 20, attacks: [], abilities: [], source: 'brp', system: 'brp' }
+  ];
+  T.seedSlMonsters();
+  const slCount = T.state.monsters.filter(m => m.system === 'sl').length;
+  T.seedSlMonsters();
+  assert.equal(T.state.monsters.filter(m => m.system === 'sl').length, slCount, 'no duplicates from the second run');
+  assert.equal(T.state.monsters.filter(m => m.system !== 'sl').length, 2, 'the OSR and BRP monsters survive reseeding');
+});
+
+test('seedSlCompendium: adds Spells, Disciplines, Rules, and Equipment tagged system:sl, using each entry\'s own category/source', () => {
+  T.state.compendium = [{ id: 'k1', name: 'Knife', category: 'Items', source: 'Shadowdark Core', body: '', system: 'osr' }];
+  const added = T.seedSlCompendium();
+  assert.ok(added > 0);
+  const sl = T.state.compendium.filter(e => e.system === 'sl');
+  assert.equal(sl.length, added);
+  const knife = sl.find(e => e.name === 'Knife');
+  assert.ok(knife, 'an OSR entry with the same name doesn\'t block the SL one');
+  assert.equal(knife.source, 'Weapon (Melee)');
+  const lamp = sl.find(e => e.name === 'The Black Lamp');
+  assert.equal(lamp.category, 'Spells');
+  assert.equal(lamp.source, 'Spell Level 3');
+  const tele = sl.find(e => e.name === 'Telepathy');
+  assert.equal(tele.category, 'Powers');
+  assert.equal(tele.source, 'Discipline');
+  assert.equal(T.seedSlCompendium(), 0, 'second run adds nothing');
+});
+
+test('SL data: every [ref] in an SL Compendium body resolves to another SL entry', () => {
+  T.state.compendium = [];
+  T.seedSlCompendium();
+  const names = new Set(T.state.compendium.map(e => e.name));
+  const refs = [];
+  T.state.compendium.forEach(e => (e.body.match(/\[([^\]]+)\]/g) || []).forEach(r => refs.push([e.name, r.slice(1, -1)])));
+  assert.ok(refs.length > 0);
+  refs.forEach(([from, to]) => assert.ok(names.has(to), from + ' links to a missing entry: [' + to + ']'));
+});
+
+test('SL data: every monster def is complete enough for Combat and Populate by HD', () => {
+  const lib = window.SL_MONSTER_LIBRARY;
+  assert.equal(new Set(lib.map(d => d.name)).size, lib.length, 'names are unique');
+  lib.forEach(d => {
+    assert.ok(typeof d.ac.desc === 'number', d.name + ': AC');
+    assert.ok(isFinite(d.hdNum) && d.hdNum === window.MonsterParse.hdNum(d.hd), d.name + ': hdNum matches hd');
+    assert.ok(d.hp >= 1, d.name + ': hp');
+    assert.ok(d.attacks.length > 0, d.name + ': attacks');
+    assert.ok(typeof d.saveTargets.Save === 'number', d.name + ': save');
+    assert.ok(typeof d.madness === 'string' && typeof d.slaughterDie === 'string', d.name + ': madness/slaughter');
+  });
+});
+
+test('SL monsters are invisible under other systems, and vice versa (Compendium + Bestiary partition)', () => {
+  T.state.monsters = [];
+  T.state.compendium = [];
+  T.seedSlMonsters();
+  T.seedSlCompendium();
+  assert.equal(T.monstersForSystem().length, 0);
+  assert.equal(T.compendiumForSystem().length, 0);
+  T.state.settings.system = 'sl';
+  assert.equal(T.monstersForSystem().length, window.SL_MONSTER_LIBRARY.length);
+  assert.equal(T.compendiumForSystem().length, window.SL_COMPENDIUM_SEED.length);
+});
+
+test('acDisplay: Silent Legions shows its descending AC plus the "*" mark; other formats are unchanged', () => {
+  assert.equal(T.acDisplay({ source: 'sl', ac: { asc: null, desc: 6, thac0: null }, mundaneImmune: true }), '6*');
+  assert.equal(T.acDisplay({ source: 'sl', ac: { asc: null, desc: 8, thac0: null } }), '8');
+  assert.equal(T.acDisplay({ source: 'ose', ac: { asc: 12, desc: 7 } }), '12 [7]');
+});
+
+test('slHitNote: an SL to-hit total names the ACs it hits; natural 1 and 20 override', () => {
+  rig(face(12, 20));
+  assert.equal(T.slHitNote(T.evalFormula('1d20+3')), 'hits AC 5 or higher', '1d20 + 3 + AC ≥ 20 → AC ≥ 5');
+  rig(face(20, 20));
+  assert.equal(T.slHitNote(T.evalFormula('1d20-5')), 'natural 20 — hits');
+  rig(face(1, 20));
+  assert.equal(T.slHitNote(T.evalFormula('1d20+12')), 'natural 1 — misses');
+  rig(face(17, 20));
+  assert.equal(T.slHitNote(T.evalFormula('1d20+8')), 'hits any AC of 0 or higher', 'no negative AC in the text');
+  rig(face(2, 20));
+  assert.equal(T.slHitNote(T.evalFormula('1d20+5')), 'misses AC 9 or better (needs AC 13)');
+});
+
+function slEntry(over) {
+  const def = Object.assign({
+    name: 'Ghoul', source: 'sl', ac: { asc: null, desc: 7, thac0: null }, hd: '3', hdNum: 3, hp: 13,
+    attacks: [{ label: 'claw', count: 2, toHit: 3, damage: '1d4', note: '' }], atkBonus: 3, abilities: [],
+    moraleML: 8, skill: 1, madness: 'None / 1d6', slaughterDie: '1d6', saveTargets: { Save: 14 }, savesText: '14+'
+  }, over || {});
+  T.addMonsterEntry(def);
+  return T.state.combat.entries[T.state.combat.entries.length - 1];
+}
+
+test('rollEntryAttack: an SL monster\'s to-hit log line says which ACs it hits; an OSR one\'s doesn\'t', () => {
+  const ent = slEntry();
+  rig(face(10, 20));
+  T.rollEntryAttack(ent, ent.monster.attacks[0]);
+  assert.match(T.state.log[T.state.log.length - 1].detail, /hits AC 7 or higher/);
+  T.addMonsterEntry({ name: 'Orc', source: 'ose', ac: { asc: 13, desc: 6 }, hd: '1', attacks: [], abilities: [] });
+  const orc = T.state.combat.entries[T.state.combat.entries.length - 1];
+  T.rollEntryAttack(orc, { label: 'axe', toHit: 1 });
+  assert.doesNotMatch(T.state.log[T.state.log.length - 1].detail, /hits AC/);
+});
+
+test('rollEntrySlaughter / rollEntryMadness / rollEntrySkill: roll the SL dice and explain the result', () => {
+  const ent = slEntry();
+  rig(face(6, 6));
+  T.rollEntrySlaughter(ent);
+  let last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.formula, 'Slaughter 1d6');
+  assert.match(last.detail, /triple the damage/);
+  rig(face(5, 6));
+  T.rollEntrySlaughter(ent);
+  assert.match(T.state.log[T.state.log.length - 1].detail, /normal damage/);
+
+  T.rollEntryMadness(ent);
+  last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.formula, 'Madness 1d6', 'rolls the true-form value after the "/"');
+  assert.match(last.detail, /at most 6 in total/);
+
+  T.rollEntrySkill(ent);
+  assert.equal(T.state.log[T.state.log.length - 1].formula, 'Skill check 2d6+1');
+
+  const before = T.state.log.length;
+  const calm = slEntry({ name: 'Expert', madness: 'None', slaughterDie: 'None' });
+  T.rollEntryMadness(calm);
+  T.rollEntrySlaughter(calm);
+  assert.equal(T.state.log.length, before, 'nothing to roll for "None"');
+});
+
+/* ================================================================== */
 /* Combat: turn order + round counter                                 */
 /* ================================================================== */
 
@@ -1142,6 +1309,65 @@ test('createCharacter: "New blank" (body=null) while System is brp creates a brp
   assert.deepEqual(T.charactersForSystem().map(c => c.id), [ch.id]);
   // unlike Unknown Armies, BRP characters use ordinary Hit Points.
   assert.ok(T.state.consumables.some(c => c.name === 'HP (' + ch.name + ')'));
+});
+
+const SL_BODY = '# Mara Vance [Silent Legions]\n\n```sl\nSTR 9 (+0)  INT 14 (+1)\nMadness: 23\n```\n\n> **AC** 9 · **HP** 5/5\n';
+
+test('charSystemKey: also classified by a ```sl fence', () => {
+  assert.equal(T.charSystemKey({ body: SL_BODY }), 'sl');
+  assert.equal(T.slFenceMadness({ body: SL_BODY }), 23);
+  assert.equal(T.slFenceMadness({ body: '```sl\nSTR 10\n```' }), 0, 'no Madness line → 0');
+});
+
+test('createCharacter: "New blank" while System is sl creates an sl character with HP and a 0/100 Madness tracker', () => {
+  T.state.settings.system = 'sl';
+  T.createCharacter(null);
+  const ch = T.activeChar();
+  assert.equal(T.charSystemKey(ch), 'sl');
+  assert.deepEqual(T.charactersForSystem().map(c => c.id), [ch.id]);
+  assert.ok(T.state.consumables.some(c => c.name === 'HP (' + ch.name + ')'));
+  const mad = T.state.consumables.find(c => c.name === 'Madness (' + ch.name + ')');
+  assert.ok(mad);
+  assert.equal(mad.value, 0);
+  assert.equal(mad.max, 100);
+});
+
+test('Madness tracker: starts from the fence\'s Madness line, follows renames, and goes away with the character', () => {
+  T.state.settings.system = 'sl';
+  T.createCharacter(SL_BODY);
+  const ch = T.activeChar();
+  const mad = () => T.state.consumables.find(c => /^Madness \(/.test(c.name));
+  assert.equal(mad().name, 'Madness (Mara Vance)');
+  assert.equal(mad().value, 23);
+  mad().value = 40; // the tracker, not the fence, is the source of truth after creation
+  window.prompt = () => 'Mara';
+  T.renameChar();
+  assert.equal(mad().name, 'Madness (Mara)');
+  assert.equal(mad().value, 40);
+  T.deleteChar();
+  assert.equal(mad(), undefined);
+  assert.ok(!T.state.characters.some(c => c.id === ch.id));
+});
+
+test('Madness tracker: only Silent Legions characters get one, and it only shows under System = sl', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.createCharacter(SL_BODY);
+  assert.equal(T.state.consumables.filter(c => /^Madness \(/.test(c.name)).length, 1);
+  assert.ok(!T.consumablesForSystem().some(c => c.name === 'Madness (Mara Vance)'), 'hidden under osr');
+  T.state.settings.system = 'sl';
+  assert.ok(T.consumablesForSystem().some(c => c.name === 'Madness (Mara Vance)'));
+  assert.ok(!T.consumablesForSystem().some(c => c.name === 'HP (Garrick)'), 'the OSR character\'s HP is hidden under sl');
+});
+
+test('ensureStateShape: an sl character from an older save gets its Madness tracker on load', () => {
+  T.state.characters = [{ id: 'c1', name: 'Mara Vance', body: SL_BODY }];
+  T.state.consumables = [];
+  T.ensureStateShape();
+  const mad = T.state.consumables.find(c => c.name === 'Madness (Mara Vance)');
+  assert.ok(mad);
+  assert.equal(mad.value, 23);
+  T.ensureStateShape();
+  assert.equal(T.state.consumables.filter(c => c.name === 'Madness (Mara Vance)').length, 1, 'never duplicated');
 });
 
 test('refreshCharUI: the Character dropdown only lists the active system\'s characters; a UA character is never selected while System is osr', () => {

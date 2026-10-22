@@ -1,12 +1,14 @@
 # Character Keeper
 
 A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
-Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, and **Basic Roleplaying (BRP)** —
-and running **basic combat**.
+Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**, and
+**Silent Legions** — and running **basic combat**.
 Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
 at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
 sample NPCs from the *Basic Roleplaying: Universal Game Engine* core book), and Combat shows its
-characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Plain
+characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions ships with its Spells,
+Disciplines, and Equipment in the Compendium, and its creature templates and named horrors in the
+Bestiary; see [Silent Legions](#silent-legions) below. Plain
 HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser.
 
 - **Live:** deployed to GitHub Pages from `main` (see the repo's Pages settings for the URL).
@@ -99,6 +101,8 @@ Each character gets an **HP (Name)** line (starts `0 / 0`; auto-filled from that
 sheet `HP: x/y` when you add them to combat, and renamed if you rename the character).
 Add lines for rations, torches, arrows, rage uses… Delete a line with **✕**.
 Blank or `0` max means "no upper limit".
+Silent Legions characters also get a **Madness (Name)** line (`0 / 100`) — see
+[Silent Legions](#silent-legions).
 
 ---
 
@@ -185,9 +189,13 @@ above; **Search** and **HD** min/max filter the list the same way the modal's ow
 
 ### Fill in fields
 Instead of pasting a stat block, switch the add/edit modal to **Fill in fields** and pick a **Format**
-— **Shadowdark** (a single AC, and S/D/C/I/W/Ch stat modifiers) or **Old-School Essentials** (a
+— **Shadowdark** (a single AC, and S/D/C/I/W/Ch stat modifiers), **Old-School Essentials** (a
 descending AC — the matching ascending AC is derived automatically — THAC0, D/W/P/B/S save targets,
-and Morale). Add as many **Attacks** (label, count, to-hit, damage, note) and **Abilities**
+and Morale), **Basic Roleplaying (BRP)**, or **Silent Legions** (a descending AC, Morale, Skill, one
+Save target — leave it blank for the book's 15 − ½HD — Madness, Slaughter die, and an *AC\** box for
+creatures that ordinary harm doesn't work on). BRP and Silent Legions have no paste parser, so the
+modal opens straight into the form when one of them is the active System. Add as many **Attacks**
+(label, count, to-hit, damage, note) and **Abilities**
 (name + description) rows as the monster needs with **+ Add**; **✕** removes a row. Saving builds the
 monster's stat-block text from whatever you entered, so it displays (and can be switched back to
 **Paste text**) just like a pasted one.
@@ -256,7 +264,9 @@ wraps the selection in `[ ]` instead of replacing it.
 ## Tables tab
 
 A library of **random encounter tables** (one per terrain/district — Arctic, Cave, Market, Tavern,
-Tomb, and so on), each rollable with its own dice formula (usually **d100**).
+Tomb, and so on), each rollable with its own dice formula (usually **d100**). The **Silent Legions**
+tag holds the d20 *Monster Qualities* table (e.g. *Acidic: Damage up, Hit up, Morale down*) for
+customizing a creature template.
 
 - **Tags** filter which tables are listed — tick/untick, or **right-click** a tag to show only that
   one. **Search** filters by table name. The count shows *matches / total*.
@@ -264,6 +274,29 @@ Tomb, and so on), each rollable with its own dice formula (usually **d100**).
 - **Roll** rolls the table's formula, highlights the matching row, and logs the result (table name,
   formula, total, and the row's text) to the **Session Log** at the bottom — same as any other roll
   in the app.
+
+---
+
+## Silent Legions
+
+Set Settings → **System** to **Silent Legions**.
+
+- **Characters**: **New blank** makes a sheet with a ` ```sl ` block (attributes and a starting
+  `Madness: N` line). That block is what marks a character as Silent Legions, the same way ` ```ua `
+  and ` ```brp ` do. Write skill checks as `Perception 2d6+1` and the attack bonus as `+1` so they
+  stay clickable.
+- **Madness**: each Silent Legions character gets a **Madness (Name)** tracker, max 100, starting
+  from the block's `Madness:` line. After that the tracker is what you update.
+- **Bestiary**: the book's 11 creature templates at Weak / Average / Strong (e.g. *Amorphous Terror
+  (Average)*) and its named entities (cultists, undead, the Uncanny Abominations). Stats are the
+  book's; descriptions are short summaries. HP is the d8 average; reroll if you like.
+- **Combat**: AC shows as the book's descending number (`6*` = ordinary harm doesn't work). A
+  to-hit roll's log line says which ACs it hits (1d20 + bonus + AC ≥ 20). The detail panel adds
+  **Skill** (2d6 + skill), **Slaughter** (6+ triples the damage), and **Madness** buttons.
+- **Compendium**: the 38 Gray Path spells (by level), the 8 Occult Disciplines (per-level powers),
+  rules notes (*Casting Spells*, *Using Disciplines*, *Slaughter Die*, *Burst and Suppressive Fire*,
+  *Vehicles*), and the weapon, armor, gear, and vehicle tables. Bodies are short summaries, so
+  check the book for the full text.
 
 ---
 
@@ -319,6 +352,8 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
 
 - Monster data: the **Shadowdark RPG** core bestiary (© The Arcane Library) — see
   `data/bestiary_data.json`.
+- Silent Legions stats and rules summaries: **Silent Legions** by Kevin Crawford (© Sine Nomine
+  Publishing) — see `js/sl-monsters-data.js` and `js/sl-compendium-seed.js`.
 - Bundled libraries (no CDN, works offline): [marked](https://marked.js.org/) for Markdown,
   [Font Awesome Free 6.5.2](https://fontawesome.com/) for icons.
 

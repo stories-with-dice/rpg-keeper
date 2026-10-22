@@ -4928,6 +4928,134 @@
     ]
   },
   {
+    "id": "sl_monster_qualities",
+    "name": "Monster Qualities (Silent Legions)",
+    "tag": "Silent Legions",
+    "formula": "d20",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "Acidic: Damage up, Hit up, Morale down"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "Amorphous: HD up, Attacks up, Madness up, Move down"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "Disguised: Skill up, plus a special power"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Flaming: Damage up, AC better, HD down"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "Frozen: AC better, HD up, Move down"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "Hulking: HD up, Damage up, AC worse"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "Immaterial: AC better, Move up, Madness up, Damage down"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "Inanimate: AC better, HD up, Move down"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "Multilimbed: Attacks up, Move up, HD down"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "Parasitic: Skill up, plus a special power"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "Radioactive: Damage up, HD down, plus a special power"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "Ravenous: Attacks up, Hit up, AC worse"
+      },
+      {
+        "range": "13",
+        "lo": 13,
+        "hi": 13,
+        "text": "Resilient: AC better, HD up, plus a special power"
+      },
+      {
+        "range": "14",
+        "lo": 14,
+        "hi": 14,
+        "text": "Skeletal: AC better, HD down"
+      },
+      {
+        "range": "15",
+        "lo": 15,
+        "hi": 15,
+        "text": "Sonic: Skill up, Hit up, Damage down"
+      },
+      {
+        "range": "16",
+        "lo": 16,
+        "hi": 16,
+        "text": "Swarming: AC better, HD down, plus a special power"
+      },
+      {
+        "range": "17",
+        "lo": 17,
+        "hi": 17,
+        "text": "Tiny: AC better, Damage down, HD down, Move down"
+      },
+      {
+        "range": "18",
+        "lo": 18,
+        "hi": 18,
+        "text": "Toxic: Damage up, Skill up, plus a special power"
+      },
+      {
+        "range": "19",
+        "lo": 19,
+        "hi": 19,
+        "text": "Undead: Morale up, HD up, Madness up, plus a special power"
+      },
+      {
+        "range": "20",
+        "lo": 20,
+        "hi": 20,
+        "text": "Warded: AC better, Madness up, plus a special power"
+      }
+    ]
+  },
+  {
     "id": "slums",
     "name": "Slums",
     "tag": "City",

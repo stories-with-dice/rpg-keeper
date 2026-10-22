@@ -982,7 +982,9 @@ button, input, textarea, select {
 .mf input, .mf select, .mf textarea {
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 5px 8px; color: inherit; width: 100%; font: inherit;
+  min-width: 0; /* undo .field input's 220px floor, or inputs overflow into the next field */
 }
+.mf input[type="checkbox"] { width: auto; }
 .mf-stat, .mf-sv { flex: 0 0 52px; }
 .mf-schema-block[hidden] { display: none; }
 .mf-sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }

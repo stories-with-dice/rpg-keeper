@@ -164,6 +164,9 @@
   }
   function acDisplay(m) {
     if (!m || !m.ac) return '—';
+    // Silent Legions uses descending AC on its own (no ascending pair); the
+    // book's "*" marks a creature that ordinary harm doesn't work on.
+    if (m.source === 'sl') return m.ac.desc != null ? m.ac.desc + (m.mundaneImmune ? '*' : '') : '—';
     if (m.ac.asc != null && m.ac.desc != null) return m.ac.asc + ' [' + m.ac.desc + ']';
     if (m.ac.asc != null) return String(m.ac.asc);
     if (m.ac.desc != null) return '[' + m.ac.desc + ']';
@@ -218,6 +221,66 @@
       return term;
     });
   }
+  /* ---- Silent Legions: hit verdict, Skill / Slaughter / Madness rolls ---- */
+  function isSlMonster(e) { return e.kind === 'monster' && !!e.monster && e.monster.source === 'sl'; }
+  // An SL attack hits when 1d20 + bonus + the target's (descending) AC is 20
+  // or more, so the roll's total says which ACs it hits. A natural 1 always
+  // misses and a natural 20 always hits; AC runs from 9 (unarmored, the
+  // worst) down to about 0.
+  function slHitNote(r) {
+    const nat = r.dice && r.dice[0] ? r.dice[0].value : null;
+    if (nat === 20) return 'natural 20 — hits';
+    if (nat === 1) return 'natural 1 — misses';
+    const need = 20 - r.total;
+    if (need <= 0) return 'hits any AC of 0 or higher';
+    if (need > 9) return 'misses AC 9 or better (needs AC ' + need + ')';
+    return 'hits AC ' + need + ' or higher';
+  }
+  const DIE_RE = /^(\d*)d(\d+)$/i;
+  // The rollable part of a Madness entry: the true-form value after a "/"
+  // ("None / 1d6" -> "1d6"), or null when there's nothing to roll ("None", "1").
+  function slMadnessDice(m) {
+    const last = String((m && m.madness) || '').split('/').pop().trim();
+    return DIE_RE.test(last) ? last : null;
+  }
+  function slSlaughterDie(m) {
+    const d = String((m && m.slaughterDie) || '').trim();
+    return DIE_RE.test(d) ? d : null;
+  }
+  function slDetailHtml(m) {
+    const sd = slSlaughterDie(m);
+    const mad = slMadnessDice(m);
+    return '<div class="cd-sec"><span class="cd-lbl">Skill</span><button class="btn cbt-skill" title="Roll a skill check">2d6' +
+        fmtMod(m.skill || 0) + '</button></div>' +
+      '<div class="cd-sec"><span class="cd-lbl">Slaughter</span>' +
+        (sd ? '<button class="btn cbt-slaughter" title="6+ triples the damage">' + escapeHtml(sd) + '</button>'
+          : '<span class="chip">' + escapeHtml(m.slaughterDie || 'None') + '</span>') + '</div>' +
+      '<div class="cd-sec"><span class="cd-lbl">Madness</span>' +
+        (mad ? '<button class="btn cbt-madness" title="Roll the Madness its presence inflicts">' + escapeHtml(m.madness) + '</button>'
+          : '<span class="chip">' + escapeHtml(m.madness || 'None') + '</span>') + '</div>';
+  }
+  function rollEntrySkill(e) {
+    const s = (e.monster && e.monster.skill) || 0;
+    const r = OSR.evalFormula('2d6' + fmtMod(s));
+    OSR.pushLog(e.name, 'Skill check 2d6' + fmtMod(s), r.total, r.detail + ' — GM sets the difficulty');
+  }
+  function rollEntrySlaughter(e) {
+    const d = slSlaughterDie(e.monster);
+    if (!d) return;
+    const r = OSR.evalFormula(d);
+    OSR.pushLog(e.name, 'Slaughter ' + d, r.total, r.detail + (r.total >= 6 ? ' → Slaughter: triple the damage' : ' → normal damage'));
+  }
+  // A PC can never take more Madness from one kind of creature than the
+  // die's maximum, however often they meet it — noted in the log line.
+  function rollEntryMadness(e) {
+    const d = slMadnessDice(e.monster);
+    if (!d) return;
+    const m = d.match(DIE_RE);
+    const max = (parseInt(m[1] || '1', 10)) * parseInt(m[2], 10);
+    const r = OSR.evalFormula(d);
+    OSR.pushLog(e.name, 'Madness ' + d, r.total, r.detail + ' — at most ' + max + ' in total from this kind of creature');
+  }
+
   function selectedEntry() {
     return OSR.state.combat.entries.find(e => e.id === OSR.state.combat.selectedId) || null;
   }
@@ -466,14 +529,16 @@
   function rollEntryAttack(e, atk) {
     const bonus = atk.toHit != null ? atk.toHit : (e.monster && e.monster.atkBonus) || 0;
     const r = OSR.evalFormula('1d20' + fmtMod(bonus));
-    OSR.pushLog(e.name, (atk.label || 'attack') + ' to-hit ' + fmtMod(bonus), r.total, r.detail);
+    OSR.pushLog(e.name, (atk.label || 'attack') + ' to-hit ' + fmtMod(bonus), r.total,
+      isSlMonster(e) ? r.detail + ' → ' + slHitNote(r) : r.detail);
   }
   function rollEntrySave(e, key) {
     const m = e.monster;
     if (m && m.saveTargets && m.saveTargets[key] != null) {
       const tgt = m.saveTargets[key];
       const r = OSR.evalFormula('1d20');
-      OSR.pushLog(e.name, 'Save ' + key, r.total, 'vs ' + tgt + ' → ' + (r.total >= tgt ? 'SAVE' : 'FAIL'));
+      // Silent Legions' single save target is keyed plain "Save".
+      OSR.pushLog(e.name, key === 'Save' ? 'Save' : 'Save ' + key, r.total, 'vs ' + tgt + ' → ' + (r.total >= tgt ? 'SAVE' : 'FAIL'));
     } else if (m && m.stats && m.stats[key] != null) {
       const mod = m.stats[key];
       const r = OSR.evalFormula('1d20' + fmtMod(mod));
@@ -557,6 +622,8 @@
             (m.damageBonus ? '<span class="chip chip-dim">DB ' + escapeHtml(m.damageBonus) + '</span>' : '')
           : '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
             (sv ? '<span class="chip chip-dim">Sv ' + escapeHtml(sv) + '</span>' : '')) +
+        (m && m.source === 'sl' && m.madness && m.madness !== 'None'
+          ? '<span class="chip chip-dim">Mad ' + escapeHtml(m.madness) + '</span>' : '') +
         (atk ? '<span class="chip chip-dim">' + escapeHtml(atk) + '</span>' : '') +
         statusTagsHtml(e) +
       '</div>' +
@@ -628,6 +695,7 @@
       }
       h += '<div class="cd-sec"><span class="cd-lbl">Morale</span><button class="btn cbt-morale">2d6' +
         (m.moraleML != null ? ' vs ML ' + m.moraleML : '') + '</button></div>';
+      if (m.source === 'sl') h += slDetailHtml(m);
       if (m.abilities && m.abilities.length) {
         h += '<div class="cd-abils">' + m.abilities.map(a =>
           '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
@@ -770,10 +838,13 @@
     if (atkBtn && ent.monster) { const a = ent.monster.attacks[+atkBtn.dataset.i]; if (a) rollEntryAttack(ent, a); return; }
     if (e.target.closest('.cbt-save')) { rollEntrySave(ent, e.target.closest('.cbt-save').dataset.k); return; }
     if (e.target.closest('.cbt-morale')) { rollEntryMorale(ent); return; }
+    if (e.target.closest('.cbt-skill')) { rollEntrySkill(ent); return; }
+    if (e.target.closest('.cbt-slaughter')) { rollEntrySlaughter(ent); return; }
+    if (e.target.closest('.cbt-madness')) { rollEntryMadness(ent); return; }
     if (e.target.closest('.cbt-atkroll')) {
       const b = (ent.monster && ent.monster.atkBonus) || 0;
       const r = OSR.evalFormula('1d20' + fmtMod(b));
-      OSR.pushLog(ent.name, 'Attack ' + fmtMod(b), r.total, r.detail);
+      OSR.pushLog(ent.name, 'Attack ' + fmtMod(b), r.total, isSlMonster(ent) ? r.detail + ' → ' + slHitNote(r) : r.detail);
       return;
     }
     const roll = e.target.closest('.roll');
@@ -845,7 +916,8 @@
     statusIconOf, statusDescOf, toggleStatus, removeStatus, defineCondition,
     closeCtxMenu, openCtxMenu, onCtxMenuClick,
     turnIndex, nextTurn, prevTurn, setRound, moveSelection,
-    rollEntryAttack, rollEntrySave, rollEntryMorale,
+    rollEntryAttack, rollEntrySave, rollEntryMorale, rollEntrySkill, rollEntrySlaughter, rollEntryMadness,
+    slHitNote, slMadnessDice, slSlaughterDie,
     renderCombat, renderCombatBar, statusTagsHtml, rowHtml, renderTracker, chip, renderCombatantDetail,
     onTrackerClick, stepEntry, onTrackerContextMenu, onTrackerInput, onTrackerChange, onDetailClick, onCombatKey,
     wireCombat

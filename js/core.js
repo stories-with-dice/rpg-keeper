@@ -26,8 +26,8 @@
   /* ------------------------------------------------------------------ */
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
-    monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
-    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false,
+    monsters: [], monstersSeeded: false, brpMonstersSeeded: false, slMonstersSeeded: false, conditions: [],
+    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, slCompendiumSeeded: false,
     settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
@@ -44,8 +44,8 @@
   // Game system — set via Settings → System, partitions the Compendium
   // (state.compendium entries each carry a `system` field). Everything that
   // predates this feature is 'osr'. See AGENTS.md-style notes in js/settings.js.
-  const SYSTEMS = ['osr', 'ua3e', 'brp'];
-  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)' };
+  const SYSTEMS = ['osr', 'ua3e', 'brp', 'sl'];
+  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions' };
 
   function applyTheme() {
     const t = (OSR.state.settings && OSR.state.settings.theme) || 'default';
@@ -164,7 +164,7 @@
 
   function ensureHpTracker(ch) {
     if (!ch) return;
-    // BRP characters use Hit Points too (from CON+SIZ) — only Unknown Armies
+    // BRP (from CON+SIZ) and Silent Legions characters use Hit Points too — only Unknown Armies
     // (charSystemKey 'ua3e', tracked via ensureWoundTracker instead) opts out.
     if (OSR.charSystemKey && OSR.charSystemKey(ch) === 'ua3e') return;
     const state = OSR.state;
@@ -190,6 +190,23 @@
     c.max = Math.max(0, Math.round(threshold));
   }
 
+  // Silent Legions characters (charSystemKey 'sl' — a ```sl fence) also get a
+  // "Madness (Name)" tracker, 0–100 (at 100 the character is lost to
+  // insanity). Created once, starting from the fence's "Madness: N" line
+  // (OSR.slFenceMadness, js/characters.js); after that the tracker is the
+  // source of truth, the same as HP's current value.
+  const MADNESS_MAX = 100;
+  function madnessTrackerLabel(ch) { return 'Madness (' + (ch ? ch.name : '') + ')'; }
+
+  function ensureMadnessTracker(ch) {
+    if (!ch || !OSR.charSystemKey || OSR.charSystemKey(ch) !== 'sl') return;
+    const state = OSR.state;
+    const label = madnessTrackerLabel(ch);
+    if (state.consumables.some(c => c.name === label)) return;
+    const start = OSR.slFenceMadness ? OSR.slFenceMadness(ch) : 0;
+    state.consumables.push({ id: uid(), name: label, value: Math.min(MADNESS_MAX, Math.max(0, start)), max: MADNESS_MAX });
+  }
+
   function ensureConsumablesShape() {
     const state = OSR.state;
     if (!Array.isArray(state.consumables)) state.consumables = [];
@@ -209,6 +226,7 @@
       delete ch.consumables;
     });
     state.characters.forEach(ensureHpTracker);
+    state.characters.forEach(ensureMadnessTracker);
     state.consumables.forEach(c => {
       if (!c.id) c.id = uid();
       c.name = c.name == null ? '' : String(c.name);
@@ -241,7 +259,7 @@
     THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
     applyTheme, load, ensureStateShape, ensureCharShape,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
-    woundTrackerLabel, ensureWoundTracker,
+    woundTrackerLabel, ensureWoundTracker, MADNESS_MAX, madnessTrackerLabel, ensureMadnessTracker,
     save, activeChar
   });
 })(window.OSR = window.OSR || {});

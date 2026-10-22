@@ -37,13 +37,23 @@
   // percentile rolls (see annotate.js's PCT_RE).
   const DEFAULT_BLANK_BRP = '# New Character [BRP]\n\n```brp\nSTR: 11\nCON: 11\nSIZ: 11\nINT: 11\nPOW: 11\nDEX: 11\nCHA: 11\n```\n\n' +
     'Hit Points: 11/11 | Move: 10 | Damage Modifier: None\n\n## Skills\n\nDodge 22%, Brawl 25%\n';
+  // Has a ```sl fence (attributes + starting Madness, quick-reference only)
+  // so a blank character created while System is Silent Legions is itself
+  // classified 'sl' by charSystemKey() below — same reasoning as
+  // DEFAULT_BLANK_UA above. Skill checks go below the fence as plain "2d6+N"
+  // text so they stay clickable rolls.
+  const DEFAULT_BLANK_SL = '# New Character [Silent Legions]\n\n*Class — Level 1*\n\n' +
+    '```sl\nSTR 10 (+0)  INT 10 (+0)  WIS 10 (+0)\nDEX 10 (+0)  CON 10 (+0)  CHA 10 (+0)\nMadness: 0\n```\n\n' +
+    '> **AC** 9 · **HP** 4/4 · **Attack** +0 · **Expertise** 2/2\n\n' +
+    '## Saving throws\n\nPhysical Effect 15 · Mental Effect 15 · Evasion 15 · Magic 15 · Luck 15\n\n' +
+    '## Skills\n\nPerception 2d6+0, Research 2d6+0\n';
 
   function createCharacter(body, opts) {
     opts = opts || {};
     const state = OSR.state;
     const sys = OSR.currentSystem && OSR.currentSystem();
     const usedBody = body != null ? body :
-      (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : DEFAULT_BLANK_OSR);
+      (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : sys === 'sl' ? DEFAULT_BLANK_SL : DEFAULT_BLANK_OSR);
     const det = detectNameSystem(usedBody);
     const ch = {
       id: uid(),
@@ -57,6 +67,7 @@
     state.characters.push(ch);
     OSR.ensureHpTracker(ch);
     syncWoundTracker(ch);
+    OSR.ensureMadnessTracker(ch);
     state.activeId = ch.id;
     OSR.mode = 'view';
     OSR.save();
@@ -70,19 +81,31 @@
   // simply falls through to marked's normal <pre><code> rendering.
   const UA_FENCE_RE = /```ua[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
   const BRP_FENCE_RE = /```brp[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
+  const SL_FENCE_RE = /```sl[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
 
   // Which System bucket a character belongs to for the Character dropdown —
   // unlike the free-text `ch.system` display label (e.g. "Shadowdark",
   // "Unknown Armies"), this is derived from whether the sheet actually has a
-  // ```ua or ```brp fence, so it can't drift out of sync with what's actually
-  // rendered (a plain OSR sheet has neither, and defaults to 'osr').
+  // ```ua, ```brp, or ```sl fence, so it can't drift out of sync with what's
+  // actually rendered (a plain OSR sheet has none, and defaults to 'osr').
   function charSystemKey(ch) {
     const body = (ch && ch.body) || '';
     UA_FENCE_RE.lastIndex = 0;
     if (UA_FENCE_RE.test(body)) return 'ua3e';
     BRP_FENCE_RE.lastIndex = 0;
     if (BRP_FENCE_RE.test(body)) return 'brp';
+    SL_FENCE_RE.lastIndex = 0;
+    if (SL_FENCE_RE.test(body)) return 'sl';
     return 'osr';
+  }
+  // The starting Madness score from the first ```sl fence's "Madness: N" line
+  // (0 when absent) — read once, when the "Madness (Name)" tracker is created
+  // (OSR.ensureMadnessTracker, js/core.js).
+  function slFenceMadness(ch) {
+    SL_FENCE_RE.lastIndex = 0;
+    const m = SL_FENCE_RE.exec((ch && ch.body) || '');
+    const v = m && m[1].match(/^\s*Madness\s*:\s*(\d+)/im);
+    return v ? parseInt(v[1], 10) : 0;
   }
   function charactersForSystem() {
     const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
@@ -449,6 +472,16 @@
     if (c) c.name = OSR.woundTrackerLabel(ch);
   }
 
+  // Same idea for the Silent Legions "Madness (Name)" tracker: rename an
+  // existing one, then create it if the sheet has just gained a ```sl fence.
+  function renameMadnessTracker(oldLabel, ch) {
+    if (OSR.madnessTrackerLabel(ch) !== oldLabel) {
+      const c = OSR.state.consumables.find(x => x.name === oldLabel);
+      if (c) c.name = OSR.madnessTrackerLabel(ch);
+    }
+    OSR.ensureMadnessTracker(ch);
+  }
+
   function saveEdit() {
     const areas = $$('#edit-host .edit-col-area');
     if (!areas.length) return;
@@ -457,6 +490,7 @@
       if (!ch) return;
       const oldLabel = OSR.hpTrackerLabel(ch);
       const oldWoundLabel = OSR.woundTrackerLabel(ch);
+      const oldMadnessLabel = OSR.madnessTrackerLabel(ch);
       ch.body = area.value;
       ch.updatedAt = Date.now();
       const det = detectNameSystem(ch.body);
@@ -464,6 +498,7 @@
       if (det.system) ch.system = det.system;
       renameHpTracker(oldLabel, ch);
       renameWoundTracker(oldWoundLabel, ch);
+      renameMadnessTracker(oldMadnessLabel, ch);
       syncWoundTracker(ch);
     });
     OSR.save();
@@ -478,10 +513,12 @@
     if (n == null) return;
     const oldLabel = OSR.hpTrackerLabel(ch);
     const oldWoundLabel = OSR.woundTrackerLabel(ch);
+    const oldMadnessLabel = OSR.madnessTrackerLabel(ch);
     ch.name = n.trim() || ch.name;
     ch.nameLocked = true;
     renameHpTracker(oldLabel, ch);
     renameWoundTracker(oldWoundLabel, ch);
+    renameMadnessTracker(oldMadnessLabel, ch);
     OSR.save();
     refreshCharUI();
   }
@@ -493,8 +530,9 @@
     const state = OSR.state;
     const label = OSR.hpTrackerLabel(ch);
     const woundLabel = OSR.woundTrackerLabel(ch);
+    const madnessLabel = OSR.madnessTrackerLabel(ch);
     state.characters = state.characters.filter(c => c.id !== ch.id);
-    state.consumables = state.consumables.filter(c => c.name !== label && c.name !== woundLabel);
+    state.consumables = state.consumables.filter(c => c.name !== label && c.name !== woundLabel && c.name !== madnessLabel);
     if (state.activeIdB === ch.id) state.activeIdB = null;
     state.activeId = state.characters.length ? state.characters[0].id : null;
     OSR.save();
@@ -722,9 +760,9 @@
   }
 
   Object.assign(OSR, {
-    detectNameSystem, createCharacter, charSystemKey, charactersForSystem, charB, fillCharOptions, refreshCharUI,
+    detectNameSystem, createCharacter, charSystemKey, slFenceMadness, charactersForSystem, charB, fillCharOptions, refreshCharUI,
     splitBodyColumns, charColHtml, charColHead, renderCharView, renderCharEdit,
-    setMode, renameHpTracker, renameWoundTracker, saveEdit, renameChar, deleteChar,
+    setMode, renameHpTracker, renameWoundTracker, renameMadnessTracker, saveEdit, renameChar, deleteChar,
     charViewTarget, linkifyInText, applyPendingCompLink,
     openSelMenu, closeSelMenu, linkSelToExisting, wireCharacters,
     uaStatblockHtml, renderUABlocks, renderCharMarkdown, syncWoundTracker,

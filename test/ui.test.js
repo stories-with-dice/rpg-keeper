@@ -31,7 +31,8 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const logText = () => $$('#log-list li').map(li => li.textContent).join('\n');
 const logCount = () => $$('#log-list li:not(.log-empty)').length;
 const savedState = () => JSON.parse(window.localStorage.getItem('osr_manager_v1'));
-function rig(f) { T._restoreRandom = rigRandom(window, f); }
+// A second rig() in one test restores the real Math.random first (see test/logic.test.js).
+function rig(f) { if (T._restoreRandom) T._restoreRandom(); T._restoreRandom = rigRandom(window, f); }
 function tab(name) { click($$('#tabs .tab-btn').find(b => b.dataset.tab === name)); }
 function submit(form) {
   form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
@@ -760,6 +761,97 @@ test('Bestiary: editing a BRP monster opens straight into "Fill in fields" (no p
   assert.equal(updated.system, 'brp', 'editing never reclassifies a monster\'s system');
 });
 
+test('Bestiary: "Fill in fields" with Format = Silent Legions builds an OSR-shaped monster with Skill, Madness, Slaughter die, and one save', () => {
+  T.state.monsters = [];
+  T.state.settings.system = 'sl';
+  tab('bestiary');
+  T.renderAll();
+  click($('#mb-new'));
+  assert.equal($('#mm-mode .mm-mode-fields').hidden, false, 'Silent Legions has no paste parser — opens straight into fields');
+  const host = $('#mm-fields-host');
+  assert.equal(host.querySelector('.mf-f-schema').value, 'sl', 'Format preselected for the active system');
+  assert.equal(host.querySelector('.mf-f-hd').closest('.mf-nonbrp').hidden, false, 'SL keeps Hit Dice');
+  assert.equal(host.querySelector('.mf-f-align').closest('.mf-nonsl').hidden, true, 'but has no Alignment');
+  setValue(host.querySelector('.mf-f-name'), 'Pit Thing');
+  setValue(host.querySelector('.mf-f-hd'), '4');
+  setValue(host.querySelector('.mf-f-hp'), '18');
+  setValue(host.querySelector('.mf-f-move'), "30'");
+  setValue(host.querySelector('.mf-f-sl-ac'), '5');
+  setValue(host.querySelector('.mf-f-sl-ml'), '9');
+  setValue(host.querySelector('.mf-f-sl-skill'), '2');
+  setValue(host.querySelector('.mf-f-sl-madness'), '1d8');
+  setValue(host.querySelector('.mf-f-sl-slaughter'), '1d10');
+  host.querySelector('.mf-f-sl-immune').checked = true;
+  const atk = host.querySelector('.mf-atk-row');
+  setValue(atk.querySelector('.mf-atk-label'), 'claw');
+  setValue(atk.querySelector('.mf-atk-count'), '2');
+  setValue(atk.querySelector('.mf-atk-tohit'), '4');
+  setValue(atk.querySelector('.mf-atk-damage'), '1d6');
+  click($('#mm-fields-lib'));
+  const added = T.state.monsters.find(m => m.name === 'Pit Thing');
+  assert.ok(added, 'the monster was added to the library');
+  assert.equal(added.source, 'sl');
+  assert.equal(added.system, 'sl');
+  assert.deepEqual(added.ac, { asc: null, desc: 5, thac0: null });
+  assert.equal(added.mundaneImmune, true);
+  assert.equal(added.hdNum, 4);
+  assert.equal(added.moraleML, 9);
+  assert.equal(added.skill, 2);
+  assert.equal(added.madness, '1d8');
+  assert.equal(added.slaughterDie, '1d10');
+  assert.deepEqual(added.saveTargets, { Save: 13 }, 'a blank Save uses the book formula, 15 − ½HD rounded up');
+  assert.equal(added.attacksText, '2 claw +4 (1d6)');
+  assert.equal(added.align, '');
+  assert.match($('#mb-list').textContent, /AC 5\*/, 'the Bestiary row shows the descending AC and its mark');
+});
+
+test('Bestiary: editing a Silent Legions monster opens straight into "Fill in fields" and round-trips its SL fields', () => {
+  T.state.settings.system = 'sl';
+  T.state.monsters = [JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY.find(d => d.name === 'Ghoul')))];
+  T.state.monsters[0].system = 'sl';
+  const id = T.state.monsters[0].id;
+  tab('bestiary');
+  T.renderAll();
+  click($('.mb-row[data-id="' + id + '"] .mb-edit'));
+  assert.equal($('#me-mode .mm-mode-fields').hidden, false);
+  const host = $('#me-fields-host');
+  assert.equal(host.querySelector('.mf-f-schema').value, 'sl');
+  assert.equal(host.querySelector('.mf-f-sl-ac').value, '7');
+  assert.equal(host.querySelector('.mf-f-sl-madness').value, 'None / 1d6');
+  assert.equal(host.querySelector('.mf-f-sl-save').value, '14');
+  setValue(host.querySelector('.mf-f-sl-ml'), '10');
+  click($('#me-save'));
+  const updated = T.state.monsters.find(m => m.id === id);
+  assert.equal(updated.moraleML, 10);
+  assert.equal(updated.madness, 'None / 1d6', 'other SL fields survive the round-trip');
+  assert.deepEqual(updated.saveTargets, { Save: 14 });
+  assert.equal(updated.attacksText, '2 claw +3 (1d4)');
+  assert.equal(updated.system, 'sl', 'editing never reclassifies a monster\'s system');
+});
+
+test('Combat: a Silent Legions monster shows its descending AC, Madness chip, and Skill / Slaughter / Madness rolls', () => {
+  T.addMonsterEntry(JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY.find(d => d.name === 'Vampire'))));
+  tab('combat');
+  const row = $('#tracker-list .cbt-row');
+  assert.match(row.textContent, /AC 6\*/);
+  assert.match(row.textContent, /Mad None \/ 1d4/);
+  assert.ok(row.querySelector('.cbt-hd'), 'SL monsters keep the HD stepper');
+
+  click(row.querySelector('.cbt-name'));
+  const detail = $('#combatant-detail');
+  assert.match(detail.textContent, /Save 12/);
+  assert.equal(detail.querySelector('.cbt-skill').textContent, '2d6+3');
+  rig(face(6, 6));
+  click(detail.querySelector('.cbt-slaughter'));
+  assert.match(logText(), /Slaughter 1d6/);
+  assert.match(logText(), /triple the damage/);
+  click(detail.querySelector('.cbt-madness'));
+  assert.match(logText(), /Madness 1d4/);
+  rig(face(10, 20));
+  click(detail.querySelector('.cbt-atk'));
+  assert.match(logText(), /hits AC 2 or higher/, '1d20 (10) + 8 = 18 → needs AC ≥ 2');
+});
+
 /* ================================================================== */
 /* Combat: "+ Populate by HD…"                                        */
 /* ================================================================== */
@@ -1340,6 +1432,42 @@ test('System switch: Compendium, Bestiary, Character dropdown, Combat pickers, a
   assert.equal(T.state.compendium.length, 2);
   assert.equal(T.state.monsters.length, 2);
   assert.deepEqual(T.state.consumables.map(c => c.name).sort(), ['HP (Garrick)', 'Rations', 'Wounds (Kevin)']);
+});
+
+test('System switch: Silent Legions gets its own Character dropdown, Compendium, Bestiary, and HP + Madness trackers', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.createCharacter('# Mara [Silent Legions]\n\n```sl\nINT 14 (+1)\nMadness: 12\n```\n');
+  T.state.compendium.push(
+    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'cs1', name: 'The Black Lamp', category: 'Spells', source: 'Spell Level 3', body: '', system: 'sl' }
+  );
+  T.state.monsters.push(
+    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    Object.assign(JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY.find(d => d.name === 'Zombie'))), { system: 'sl' })
+  );
+  T.renderAll();
+
+  tab('settings');
+  setValue($('#set-system'), 'sl');
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Mara (Silent Legions)']);
+  tab('compendium');
+  assert.deepEqual($$('#comp-list .comp-name').map(n => n.textContent), ['The Black Lamp']);
+  tab('bestiary');
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Zombie']);
+  assert.match($('#mb-list').textContent, /HD 2 · AC 7 · HP 9 · sl/);
+  assert.equal($('#mb-gen').hidden, true, 'the Shadowdark PL generator is hidden for Silent Legions');
+  assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['HP (Mara)', 'Madness (Mara)']);
+  const madness = T.state.consumables.find(c => c.name === 'Madness (Mara)');
+  assert.equal(madness.value, 12);
+  assert.equal(madness.max, 100);
+
+  tab('settings');
+  setValue($('#set-system'), 'osr');
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
+  assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['HP (Garrick)']);
+  assert.equal(T.state.characters.length, 2, 'nothing deleted by switching');
 });
 
 /* ================================================================== */

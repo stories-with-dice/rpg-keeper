@@ -43,7 +43,7 @@ js/consumables.js       campaign-global trackers (rations, torches, … + each c
 js/notes.js             the campaign Journal (EasyMDE via js/mde.js)
 js/combat.js            the combat tracker: entries, HP/HD, status conditions, turn order, drag-to-
                        reorder, rolls, and Scarlet Heroes damage translation
-js/monster-form.js      the schema-aware (Shadowdark | OSE) "fill in fields" monster form, shared by
+js/monster-form.js      the schema-aware (Shadowdark | OSE | BRP | SL) "fill in fields" monster form, shared by
                        both monster modals — template, populate from a def, collect back into one
 js/monster-modals.js    the "Add monster" modal (shared by Combat and the Bestiary tab) and the
                        monster edit modal — each has a "Paste text" / "Fill in fields" toggle
@@ -63,6 +63,13 @@ js/brp-compendium-seed.js hand-authored window.BRP_COMPENDIUM_SEED — the Power
 js/brp-seed.js          seedBrpMonsters()/seedBrpCompendium() — like js/seed.js's seedMonsters() and
                        js/compendium.js's seedCompendium(), but for the BRP system (see "Basic
                        Roleplaying (BRP)" below); called from js/main.js's init()
+js/sl-monsters-data.js  hand-authored window.SL_MONSTER_LIBRARY = [...58 Silent Legions defs...] —
+                       the 11 creature templates × Weak/Average/Strong plus the named Nefarious
+                       Entities, in the OSR def shape + SL fields (see "Silent Legions (SL)" below)
+js/sl-compendium-seed.js hand-authored window.SL_COMPENDIUM_SEED — Gray Path spells, Occult
+                       Disciplines, a few rules notes, and the weapon/armor/gear/vehicle tables
+js/sl-seed.js           seedSlMonsters()/seedSlCompendium() — same mechanism as js/brp-seed.js, for
+                       system 'sl'; called from js/main.js's init()
 js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
 js/tables.js            the Tables tab: tag filter + name search over window.TABLES_LIBRARY, expand a
@@ -98,7 +105,8 @@ scripts/bundle-standalone.js  CLI: index.html + every js/css/vendor/image asset 
                        one self-contained HTML file (dist/index.html) — see "What this is" above
 test/monsters.test.js  node:test suite for the parser + converter
 test/tables.test.js    node:test suite for scripts/convert-tables.js (CSV parsing, range parsing,
-                       every table's d100 coverage) + the data/tables.json <-> tables-data.js sync check
+                       every table's coverage of its die, 1..N) + the data/tables.json <-> tables-data.js
+                       sync check
 test/logic.test.js     node:test unit tests for the app's internals (dice engine, Scarlet Heroes,
                        state migration, annotate, compendium resolve, combat, …)
 test/ui.test.js        node:test integration tests that drive the real DOM (index.html + the app's
@@ -157,7 +165,7 @@ its unpinned descendants; Esc / `closeAllCompPops()`. Match navigation is the he
 and ↑/↓ on `compPopActive` (no wheel hijack — the popup scrolls natively). `refreshCompPop()`
 re-resolves every open popup after an edit.
 
-**Game system** (Settings → System, `OSR.SYSTEMS` = `['osr','ua3e','brp']` in `js/core.js`) is a single
+**Game system** (Settings → System, `OSR.SYSTEMS` = `['osr','ua3e','brp','sl']` in `js/core.js`) is a single
 global switch, `state.settings.system`, that partitions the **Compendium only** — `compByExactName`,
 `compFuzzy` (and therefore `compResolve`, hover popups, `[` autocomplete, the sheet-selection "Add to
 Compendium" menu) and `renderCompendium`'s list/count all filter to `entry.system === currentSystem()`
@@ -208,8 +216,10 @@ creation, `consumablesForSystem()` (`js/consumables.js`) also **filters which tr
 shows**: for each consumable, it looks up whether the consumable's name matches some character's
 `hpTrackerLabel`/`woundTrackerLabel` — if it does, the tracker only shows while that character's own
 `charSystemKey` matches the active System (filtered from view, never deleted, same as everywhere else
-this pattern appears); a tracker that isn't any character's HP/Wounds label (Rations, Torches, a
-manually-renamed one, …) always shows. This filter is also what makes any *pre-existing* stray tracker
+this pattern appears); a tracker that isn't any character's HP/Wounds/Madness label (Rations, Torches, a
+manually-renamed one, …) always shows. Silent Legions characters keep their HP tracker and also get a
+`"Madness (Name)"` one (`madnessTrackerLabel`/`ensureMadnessTracker`, max `MADNESS_MAX` = 100), part of
+the same owner lookup — see "Silent Legions (SL)" below. This filter is also what makes any *pre-existing* stray tracker
 from before the `ensureHpTracker` fix harmless — e.g. a UA character's leftover `"HP (Name)"` tracker
 from an older save simply never displays in either System view, without needing a destructive migration
 to remove it.
@@ -219,14 +229,16 @@ Consumables all partition together…"** is the consolidated regression test for
 one OSR + one Unknown Armies character/compendium-entry/monster/tracker, switched back and forth twice
 through the real `#set-system` control, asserting every one of the panels above shows only the active
 system's data each time and that `state.characters`/`compendium`/`monsters`/`consumables` never shrink.
+Its sibling **"System switch: Silent Legions gets its own …"** does the same for an `'sl'` character
+(with its HP + Madness trackers), compendium entry, and monster.
 Any new UI surface that lists characters, monsters, or compendium entries should be added to both this
 test and its own narrower one (the individual tests above target one bug/feature each and pin down
 *why*; this one exists to catch a regression in how they compose).
 
 The **Character** dropdown (`#char-select`/`#char-select-b`) is partitioned too, but by a different
-signal than `entry.system`: `charSystemKey(ch)` (`js/characters.js`) classifies a character as `'ua3e'`
-or `'brp'` purely by whether its `body` has a ` ```ua ` or ` ```brp ` fence (falling back to `'osr'`
-when neither is present) — not by its free-text `ch.system` display label (`"Shadowdark"`,
+signal than `entry.system`: `charSystemKey(ch)` (`js/characters.js`) classifies a character as `'ua3e'`,
+`'brp'`, or `'sl'` purely by whether its `body` has a ` ```ua `, ` ```brp `, or ` ```sl ` fence (checked
+in that order, falling back to `'osr'` when none is present) — not by its free-text `ch.system` display label (`"Shadowdark"`,
 `"Unknown Armies"`, …), which is unvalidated and can't be trusted for filtering. A BRP character's
 ` ```brp ` fence is just a plain-text characteristics block (STR/CON/SIZ/INT/POW/DEX/CHA) for quick
 reference — unlike the UA3E fence, nothing parses or renders it specially, so it's left inside a
@@ -239,12 +251,13 @@ current bucket, same mechanism that already handled a dangling id, now also firi
 or right after creating a character whose fence-status doesn't match the system it was created under.
 Settings' `#set-system` change handler calls `OSR.refreshCharUI()` for exactly that reason — switching
 System from the Settings tab must update the Character tab's dropdown/active character immediately, not
-just lazily next time something else re-renders it. `createCharacter`'s three "blank" templates
-(`DEFAULT_BLANK_OSR`/`DEFAULT_BLANK_UA`/`DEFAULT_BLANK_BRP`) exist so **New blank** creates a character
-that actually belongs to the system it was created under — the UA template carries a near-empty
-` ```ua ` fence (all-zero Shock) and the BRP template a ` ```brp ` characteristics fence, for exactly
-this reason; without it a blank character made while System is `ua3e`/`brp` would vanish from its own
-dropdown the instant it's created.
+just lazily next time something else re-renders it. `createCharacter`'s four "blank" templates
+(`DEFAULT_BLANK_OSR`/`DEFAULT_BLANK_UA`/`DEFAULT_BLANK_BRP`/`DEFAULT_BLANK_SL`) exist so **New blank**
+creates a character that actually belongs to the system it was created under — the UA template carries a
+near-empty ` ```ua ` fence (all-zero Shock), the BRP template a ` ```brp ` characteristics fence, and the
+SL template a ` ```sl ` attributes + `Madness: 0` fence, for exactly this reason; without it a blank
+character made while System is `ua3e`/`brp`/`sl` would vanish from its own dropdown the instant it's
+created.
 
 **Unknown Armies 3rd Edition** character sheets embed their mechanical statblock as a fenced
 ` ```ua ` code block (anywhere in `ch.body`, alongside ordinary prose/Markdown). `js/ua-statblock.js`
@@ -432,6 +445,53 @@ its own monster schema and Combat display (see below) — not visibility-only.
   regex to recognize the same chains as one clickable unit. This is a general improvement (any sheet
   text with two dice terms glued by `+`/`-` benefits), not BRP-specific, even though BRP's own data —
   several creatures already had a literal `"1D3+1D6+dm"` in the book — is what surfaced the gap.
+
+**Silent Legions (SL)** (`system: 'sl'`) is Kevin Crawford's Lovecraftian investigation game (Sine
+Nomine): 3d6 attributes, descending AC, d8 Hit Dice, a d20 hit roll, 2d6 skill checks, a Slaughter
+die, and a 0–100 Madness score. Its source PDF is **not** in the repo (`*.pdf` is gitignored) and the
+repo is public, so the bundled data keeps the book's numbers but every description, ability, spell,
+and rule body is a short paraphrase — never paste the book's prose in.
+
+- **Monsters use the OSR `def` shape, not a BRP-style one of their own.** An SL stat block maps
+  cleanly onto it (`ac.desc`, `hd`/`hdNum`, structured `attacks` with `toHit`, `moraleML`), so the
+  Combat HD stepper, Populate by HD, Scarlet Heroes, and the generic attack/save/morale buttons all
+  work unchanged. `source: 'sl'` adds four fields: `skill` (flat bonus to 2d6 checks), `madness` (the
+  book's string — `'None'`, `'1'`, `'1d6'`, or `'None / 1d6'` for disguised / true form),
+  `slaughterDie` (`'1d6'` default, `'None'` for attacks that never Slaughter), and `mundaneImmune`
+  (the book's AC asterisk; `js/sl-monsters-data.js` also prepends an `AC*` ability explaining it).
+  `ac.asc` stays `null` — `acDisplay()` shows the descending number (plus `*`) for SL, and the shared
+  `monsterMetaLine()` (`js/monster-modals.js`, used by both library lists) does the same.
+- **Saves**: every SL monster saves on one target, `saveTargets: { Save: N }` / `savesText: 'N+'`.
+  The templates use the book's formula, ⌈15 − HD/2⌉; the named entities keep the printed value even
+  where it disagrees (Vampire, Cancer Man, Slasher). The fields form fills a blank Save from the
+  formula.
+- **HD/HP**: "1d4 hp" is stored as HD `'½'` (hp 2) and "1 hp" as `'0'` (hp 1) so `MonsterParse.hdNum`
+  and Populate by HD treat them like other sub-1-HD monsters; otherwise `hp` is ⌊4.5 × HD⌋.
+  `js/sl-monsters-data.js` builds all of this (and `attacksText`/`raw`) from compact specs in its
+  final `forEach` — edit the specs, not the derived fields.
+- **Combat** (`js/combat.js`): `slHitNote()` appends "hits AC N or higher" (N = 20 − total, since SL
+  hits on 1d20 + bonus + target AC ≥ 20; natural 1/20 override) to an SL monster's to-hit log line;
+  `slDetailHtml()` adds **Skill** (`rollEntrySkill`, 2d6 + skill), **Slaughter** (`rollEntrySlaughter`,
+  6+ → triple damage), and **Madness** (`rollEntryMadness`, rolls the value after any `/`, and notes
+  the per-creature-type cap) after Morale; the tracker row gets a `Mad …` chip. These button classes
+  are checked before `.roll` in `onDetailClick`, since `annotate()` also wraps the dice inside them.
+- **Monster form**: a `data-schema="sl"` block (AC, Morale, Skill, Save, Madness, Slaughter die, an
+  `AC*` checkbox). It keeps the shared HD and Attack-bonus fields and the structured attack rows;
+  Alignment/XP carry `.mf-nonsl` and are hidden. SL has no paste parser, so `FIELDS_ONLY_SOURCES`
+  (`['brp','sl']`, `js/monster-modals.js`) opens the add/edit modal in fields mode, same as BRP. The
+  attack text now keeps a damage-less note (`"weapon +3 (by weapon)"`) for every format.
+- **Characters**: a ` ```sl ` fence (attributes + `Madness: N`, plain text, not parsed for display)
+  classifies the sheet. `ensureMadnessTracker(ch)` (`js/core.js`) creates `"Madness (Name)"` once,
+  0..100, starting from `slFenceMadness(ch)` (`js/characters.js`); after that the tracker, not the
+  fence, holds the current value. It's created from `createCharacter`, `saveEdit`/`renameChar` (via
+  `renameMadnessTracker`, which also covers a sheet that just gained the fence), and
+  `ensureConsumablesShape` (old saves); `deleteChar` removes it.
+- **Compendium** (`js/sl-compendium-seed.js`): Spells (`source` `'Spell Level 1'`…`'5'`), Disciplines
+  (`'Powers'`/`'Discipline'`, one bullet per level), Rules (`'Sorcery'`/`'Combat'`/`'Vehicle'`), and
+  Items (`'Weapon (Melee|Ranged|Firearm|Heavy)'`/`'Armor'`/`'Gear'`/`'Vehicle'`). Bodies link each
+  other with `[Name]` refs; a logic test asserts every ref resolves to an SL entry.
+- **Seeding** (`js/sl-seed.js`): `seedSlMonsters()`/`seedSlCompendium()`, gated by
+  `state.slMonstersSeeded`/`state.slCompendiumSeeded`, exactly like the BRP pair.
 
 Typing `[` + ≥2 chars in the sheet editor, `#notes-area`, or the entry's EasyMDE editor opens
 `#comp-ac`, a name-substring autocomplete (`acFromTextarea` / `acFromCM`); ↑/↓/Enter/Tab/click →
@@ -718,7 +778,9 @@ t.tag))).sort()` — not hand-maintained as a separate constant, so the tag-chec
 (`#tbl-tags`, same checkbox/right-click-to-isolate pattern as the Compendium's `#comp-cats` — see
 "The Compendium" above) always exactly matches what the data actually uses. Keep it at **10 tags
 or fewer** (an explicit design constraint, not enforced elsewhere) — this repo's own table set uses
-5 (`Wilderness`, `Aquatic`, `Underground`, `City`, `Tavern`); the per-CSV mapping to a tag lives in
+6 (`Wilderness`, `Aquatic`, `Underground`, `City`, `Tavern`, and `Silent Legions` for the one d20 table,
+`sl_monster_qualities.csv` — `test/tables.test.js` checks each table covers 1..N of its own single
+die, not a hardcoded d100); the per-CSV mapping to a tag lives in
 `TAG_MAP` inside `scripts/convert-tables.js`, so adding a table CSV means adding it there too (the
 converter throws if a filename has no `TAG_MAP` entry).
 

@@ -39,6 +39,10 @@
   // opts.prefill (a def — see the generator in js/monster-browser.js) opens
   // straight into "Fill in fields", pre-populated, for review before saving;
   // a plain call opens today's default "browse + paste" view.
+  // Monster formats js/monsters.js can't parse from pasted text — their own
+  // system key doubles as their def `source` and their form Format value.
+  const FIELDS_ONLY_SOURCES = ['brp', 'sl'];
+
   function openMonsterModal(opts) {
     opts = opts || {};
     $('#monster-modal').hidden = false;
@@ -51,11 +55,13 @@
       setMonsterMode($('#mm-mode'), 'fields');
     } else {
       $('#mm-paste-area').value = '';
-      const isBrp = OSR.currentSystem() === 'brp';
-      OSR.populateMonsterForm($('#mm-fields-host'), isBrp ? { source: 'brp' } : {});
-      // BRP has no "paste text" parser (see js/monsters.js) — start in fields
-      // mode, with Format already set to BRP, when that's the active system.
-      setMonsterMode($('#mm-mode'), isBrp ? 'fields' : 'paste');
+      const sys = OSR.currentSystem();
+      const fieldsOnly = FIELDS_ONLY_SOURCES.indexOf(sys) !== -1;
+      OSR.populateMonsterForm($('#mm-fields-host'), fieldsOnly ? { source: sys } : {});
+      // BRP and Silent Legions have no "paste text" parser (see js/monsters.js)
+      // — start in fields mode, with Format already set, when that's the
+      // active system.
+      setMonsterMode($('#mm-mode'), fieldsOnly ? 'fields' : 'paste');
       $('#mm-search').focus();
     }
   }
@@ -93,6 +99,17 @@
     }).sort((a, b) => (a.hdNum || 0) - (b.hdNum || 0) || String(a.name).localeCompare(b.name));
   }
 
+  // One-line summary for a library row — shared by this modal's list and the
+  // Bestiary tab's (js/monster-browser.js). BRP has no HD/AC; Silent Legions
+  // shows its descending AC (acDisplay) instead of an ascending one.
+  function monsterMetaLine(d) {
+    if (d.source === 'brp') {
+      return ['HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'), 'DB ' + (d.damageBonus || 'None'), 'brp'].join(' · ');
+    }
+    const ac = d.source === 'sl' ? OSR.acDisplay(d) : (d.ac && d.ac.asc != null ? d.ac.asc : '?');
+    return ['HD ' + (d.hd || '?'), 'AC ' + ac, 'HP ' + (d.hp || '?'), d.source].join(' · ');
+  }
+
   function libMatches() {
     return filterMonsters(OSR.monstersForSystem(), {
       q: $('#mm-search').value,
@@ -112,9 +129,7 @@
       return;
     }
     list.innerHTML = libFiltered.map(d => {
-      const meta = d.source === 'brp'
-        ? ['HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'), 'DB ' + (d.damageBonus || 'None'), 'brp'].join(' · ')
-        : ['HD ' + (d.hd || '?'), 'AC ' + (d.ac && d.ac.asc != null ? d.ac.asc : '?'), 'HP ' + (d.hp || '?'), d.source].join(' · ');
+      const meta = monsterMetaLine(d);
       return '<li data-id="' + d.id + '"' + (d.id === libRolledId ? ' class="is-rolled"' : '') + '>' +
         '<div class="mm-li-main"><b>' + escapeHtml(d.name) + '</b>' +
         '<span class="mm-li-meta">' + escapeHtml(meta) + '</span></div>' +
@@ -181,6 +196,10 @@
     }
     if (d.attacksText) h += '<div class="mmp-line"><span>ATK</span> ' + escapeHtml(isBrp ? OSR.brpResolveDb(d.attacksText, d.damageBonus) : d.attacksText) + '</div>';
     if (isBrp && d.skillsText) h += '<div class="mmp-line"><span>SKILL</span> ' + escapeHtml(d.skillsText) + '</div>';
+    if (d.source === 'sl') {
+      h += '<div class="mmp-line">' + escapeHtml(['Skill ' + ((d.skill || 0) >= 0 ? '+' : '') + (d.skill || 0),
+        'Slaughter ' + (d.slaughterDie || '1d6'), 'Madness ' + (d.madness || 'None')].join('  ·  ')) + '</div>';
+    }
     if (d.savesText) h += '<div class="mmp-line"><span>SV</span> ' + escapeHtml(d.savesText) + '</div>';
     if (Array.isArray(d.abilities) && d.abilities.length) {
       h += '<div class="mmp-abils">' + d.abilities.map(a =>
@@ -222,9 +241,10 @@
     $('#me-msg').textContent = '';
     ensureMonsterFormBuilt($('#me-fields-host'));
     OSR.populateMonsterForm($('#me-fields-host'), d);
-    // BRP has no "paste text" parser (see js/monsters.js) — default straight
-    // to the fields form so editing one doesn't land on an empty textarea.
-    setMonsterMode($('#me-mode'), d.source === 'brp' ? 'fields' : 'paste');
+    // BRP and Silent Legions have no "paste text" parser (see js/monsters.js)
+    // — default straight to the fields form so editing one doesn't land on a
+    // stat block that would re-parse as the wrong format.
+    setMonsterMode($('#me-mode'), FIELDS_ONLY_SOURCES.indexOf(d.source) !== -1 ? 'fields' : 'paste');
     $('#monster-edit-modal').hidden = false;
     $('#me-area').focus();
   }
@@ -306,7 +326,7 @@
 
   Object.assign(OSR, {
     filterMonsters, openMonsterModal, closeMonsterModal, libMatches, renderLibrary, rollLibrary, onLibClick,
-    monsterCardHtml, showLibPreview, hideLibPreview,
+    monsterMetaLine, monsterCardHtml, showLibPreview, hideLibPreview,
     openMonsterEdit, closeMonsterEdit, saveMonsterEdit, parseAndAdd, wireMonsterModals
   });
 })(window.OSR = window.OSR || {});

@@ -43,6 +43,7 @@
           '<option value="shadowdark">Shadowdark</option>' +
           '<option value="ose">Old-School Essentials</option>' +
           '<option value="brp">Basic Roleplaying (BRP)</option>' +
+          '<option value="sl">Silent Legions</option>' +
         '</select></label>' +
       '</div>' +
       '<label class="field mf-desc"><span>Description</span><textarea class="mf-f-desc" rows="2"></textarea></label>' +
@@ -50,8 +51,8 @@
         '<span class="mf-nonbrp"><label class="field"><span>HD / LV</span><input type="text" class="mf-f-hd" placeholder="e.g. 3, 9*, &frac12;" /></label></span>' +
         '<label class="field"><span>HP</span><input type="number" class="mf-f-hp" step="1" /></label>' +
         '<label class="field"><span>Move</span><input type="text" class="mf-f-move" placeholder="near (climb)" /></label>' +
-        '<span class="mf-nonbrp"><label class="field"><span>Alignment</span><input type="text" class="mf-f-align" /></label></span>' +
-        '<span class="mf-nonbrp"><label class="field"><span>XP</span><input type="number" class="mf-f-xp" step="1" /></label></span>' +
+        '<span class="mf-nonbrp mf-nonsl"><label class="field"><span>Alignment</span><input type="text" class="mf-f-align" /></label></span>' +
+        '<span class="mf-nonbrp mf-nonsl"><label class="field"><span>XP</span><input type="number" class="mf-f-xp" step="1" /></label></span>' +
         '<span class="mf-nonbrp"><label class="field"><span>Attack bonus</span><input type="number" class="mf-f-atkbonus" step="1" /></label></span>' +
       '</div>' +
       '<div class="mf-schema-block" data-schema="shadowdark">' +
@@ -97,6 +98,19 @@
         '<label class="field mf-desc"><span>Attacks</span><textarea class="mf-f-brp-attacks" rows="2" placeholder="Bite 45%, 1D6+dm; Claw 45%, 1D4+dm"></textarea></label>' +
         '<label class="field mf-desc"><span>Skills</span><textarea class="mf-f-brp-skills" rows="2" placeholder="Dodge 35%, Listen 60%, Spot 60%"></textarea></label>' +
       '</div>' +
+      '<div class="mf-schema-block" data-schema="sl">' +
+        '<div class="mf-row">' +
+          '<label class="field"><span>AC (descending)</span><input type="number" class="mf-f-sl-ac" step="1" /></label>' +
+          '<label class="field"><span>Morale</span><input type="number" class="mf-f-sl-ml" step="1" /></label>' +
+          '<label class="field"><span>Skill</span><input type="number" class="mf-f-sl-skill" step="1" /></label>' +
+          '<label class="field"><span>Save</span><input type="number" class="mf-f-sl-save" step="1" placeholder="15 − ½HD" /></label>' +
+        '</div>' +
+        '<div class="mf-row">' +
+          '<label class="field"><span>Madness</span><input type="text" class="mf-f-sl-madness" placeholder="None, 1d6, None / 1d6" /></label>' +
+          '<label class="field"><span>Slaughter die</span><input type="text" class="mf-f-sl-slaughter" placeholder="1d6" /></label>' +
+          '<label class="comp-check"><input type="checkbox" class="mf-f-sl-immune" /> AC* — ordinary harm doesn’t work</label>' +
+        '</div>' +
+      '</div>' +
       '<div class="mf-sec mf-nonbrp-sec">' +
         '<div class="mf-sec-head"><span>Attacks</span><button type="button" class="btn mf-atk-add">+ Add attack</button></div>' +
         '<div class="mf-atks"></div>' +
@@ -111,7 +125,9 @@
   function showSchemaBlock(root, schema) {
     root.querySelectorAll('.mf-schema-block').forEach(el => { el.hidden = el.dataset.schema !== schema; });
     const isBrp = schema === 'brp';
-    root.querySelectorAll('.mf-nonbrp').forEach(el => { el.hidden = isBrp; });
+    const isSl = schema === 'sl';
+    // Silent Legions keeps HD and Attack bonus but has no Alignment or XP.
+    root.querySelectorAll('.mf-nonbrp').forEach(el => { el.hidden = isBrp || (isSl && el.classList.contains('mf-nonsl')); });
     const atkSec = root.querySelector('.mf-nonbrp-sec');
     if (atkSec) atkSec.hidden = isBrp;
     const abilsLabel = root.querySelector('.mf-abils-label');
@@ -125,7 +141,7 @@
     def = def || {};
     const q = sel => root.querySelector(sel);
     q('.mf-f-name').value = def.name || '';
-    const schema = def.source === 'ose' ? 'ose' : def.source === 'brp' ? 'brp' : 'shadowdark';
+    const schema = def.source === 'ose' ? 'ose' : def.source === 'brp' ? 'brp' : def.source === 'sl' ? 'sl' : 'shadowdark';
     q('.mf-f-schema').value = schema;
     q('.mf-f-desc').value = def.desc || '';
     q('.mf-f-hd').value = def.hd || '';
@@ -150,6 +166,14 @@
     q('.mf-f-brp-db').value = def.damageBonus || '';
     q('.mf-f-brp-attacks').value = def.attacksText && schema === 'brp' ? def.attacksText : '';
     q('.mf-f-brp-skills').value = def.skillsText || '';
+    const isSl = schema === 'sl';
+    q('.mf-f-sl-ac').value = isSl && ac.desc != null ? ac.desc : '';
+    q('.mf-f-sl-ml').value = isSl && def.moraleML != null ? def.moraleML : '';
+    q('.mf-f-sl-skill').value = def.skill != null ? def.skill : '';
+    q('.mf-f-sl-save').value = isSl && sv.Save != null ? sv.Save : '';
+    q('.mf-f-sl-madness').value = def.madness || '';
+    q('.mf-f-sl-slaughter').value = def.slaughterDie || '';
+    q('.mf-f-sl-immune').checked = !!def.mundaneImmune;
     showSchemaBlock(root, schema);
     q('.mf-atks').innerHTML = (def.attacks && def.attacks.length ? def.attacks : [null]).map(attackRowHtml).join('');
     q('.mf-abils').innerHTML = (def.abilities || []).map(abilityRowHtml).join('');
@@ -190,6 +214,17 @@
       if (def.attacksText) lines.push('Attacks: ' + def.attacksText);
       if (def.skillsText) lines.push('Skills: ' + def.skillsText);
       (def.abilities || []).forEach(a => lines.push((a.name ? a.name + '. ' : '') + a.text));
+    } else if (def.source === 'sl') {
+      // Same layout as js/sl-monsters-data.js's own `raw` — for display only,
+      // since there's no Silent Legions paste parser to round-trip through.
+      const ac = def.ac || {};
+      lines.push('AC ' + (ac.desc != null ? ac.desc : '?') + (def.mundaneImmune ? '*' : '') +
+        ', HD ' + (def.hd || '?') + ' (' + (def.hp || 0) + 'hp)' +
+        (def.attacksText ? ', Atk ' + def.attacksText : '') + (def.move ? ', Move ' + def.move : '') +
+        (def.moraleML != null ? ', ML ' + def.moraleML : '') + ', Skill ' + fmtMod(def.skill || 0) +
+        ', Madness ' + (def.madness || 'None') + ', Slaughter ' + (def.slaughterDie || '1d6') +
+        (def.savesText ? ', Save ' + def.savesText : ''));
+      (def.abilities || []).forEach(a => lines.push((a.name ? a.name + '. ' : '') + a.text));
     } else {
       let line = 'AC ' + (def.ac && def.ac.asc != null ? def.ac.asc : '?') + ', HP ' + (def.hp || 0);
       if (def.attacksText) line += ', ATK ' + def.attacksText;
@@ -211,7 +246,7 @@
     const q = sel => root.querySelector(sel);
     const num = sel => { const v = q(sel).value; return v === '' ? null : parseFloat(v); };
     const schemaSel = q('.mf-f-schema').value;
-    const schema = schemaSel === 'ose' ? 'ose' : schemaSel === 'brp' ? 'brp' : 'shadowdark';
+    const schema = schemaSel === 'ose' ? 'ose' : schemaSel === 'brp' ? 'brp' : schemaSel === 'sl' ? 'sl' : 'shadowdark';
 
     const attacks = Array.from(root.querySelectorAll('.mf-atk-row')).map(row => {
       const label = row.querySelector('.mf-atk-label').value.trim();
@@ -231,10 +266,12 @@
       text: row.querySelector('.mf-abil-text').value.trim()
     })).filter(a => a.name || a.text);
 
+    // A note with no damage dice (e.g. Silent Legions' "weapon +3 (by
+    // weapon)") still shows in the text.
     const attacksTextStructured = attacks.map(a =>
       (a.count > 1 ? a.count + ' ' : '') + a.label +
       (a.toHit != null ? ' ' + fmtMod(a.toHit) : '') +
-      (a.damage ? ' (' + a.damage + (a.note ? ' ' + a.note : '') + ')' : '')
+      (a.damage || a.note ? ' (' + [a.damage, a.note].filter(Boolean).join(' ') + ')' : '')
     ).join(' + ');
     // BRP attacks/skills are free text (skill % + damage, not a to-hit bonus),
     // so they use their own textareas instead of the structured attack rows.
@@ -249,8 +286,8 @@
       hd: schema === 'brp' ? '' : q('.mf-f-hd').value.trim(),
       hp: parseInt(q('.mf-f-hp').value, 10) || 0,
       move: q('.mf-f-move').value.trim(),
-      align: schema === 'brp' ? '' : q('.mf-f-align').value.trim(),
-      xp: schema === 'brp' ? null : num('.mf-f-xp'),
+      align: schema === 'brp' || schema === 'sl' ? '' : q('.mf-f-align').value.trim(),
+      xp: schema === 'brp' || schema === 'sl' ? null : num('.mf-f-xp'),
       moraleML: null,
       atkBonus: schema === 'brp' ? null : num('.mf-f-atkbonus'),
       attacksText, attacks: schema === 'brp' ? [] : attacks,
@@ -282,6 +319,19 @@
       def.armorNote = q('.mf-f-brp-armor-note').value.trim();
       def.damageBonus = q('.mf-f-brp-db').value.trim() || 'None';
       def.skillsText = q('.mf-f-brp-skills').value.trim();
+    } else if (schema === 'sl') {
+      def.ac.desc = num('.mf-f-sl-ac');
+      def.mundaneImmune = q('.mf-f-sl-immune').checked;
+      def.moraleML = num('.mf-f-sl-ml');
+      def.skill = num('.mf-f-sl-skill') || 0;
+      def.madness = q('.mf-f-sl-madness').value.trim() || 'None';
+      def.slaughterDie = q('.mf-f-sl-slaughter').value.trim() || '1d6';
+      // Every SL monster saves on one target; blank means the book's default,
+      // 15 − ½HD rounded up.
+      const save = num('.mf-f-sl-save');
+      const target = save != null ? save : Math.ceil(15 - (window.MonsterParse ? MonsterParse.hdNum(def.hd) : 0) / 2);
+      def.saveTargets = { Save: target };
+      def.savesText = target + '+';
     } else {
       def.ac.desc = num('.mf-f-ac-desc');
       if (def.ac.desc != null) def.ac.asc = 19 - def.ac.desc;
