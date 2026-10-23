@@ -853,6 +853,127 @@ test('Combat: a Silent Legions monster shows its descending AC, Madness chip, an
 });
 
 /* ================================================================== */
+/* Unknown Armies: Bestiary GMCs and Combat                           */
+/* ================================================================== */
+
+// An invented GMC (the repo holds no book text), in the statblock format of
+// js/ua-statblock.js's parseUAMonster.
+const UA_CLERK = 'Night Clerk\nSees everything, says nothing\nType: GMC\nWound Threshold: 50\n' +
+  'Obsession: Knowing who checks in.\n\nIdentities\nNight Clerk 55%* — Substitutes for Notice, Provides Initiative\n' +
+  'Lucky Guess 3d10+20% — Specific Information\n\nPassions\nFear (Isolation): Being forgotten.\nRage: Rude guests.\n\n' +
+  'Shock\nHelplessness: 1 hardened / 0 failed\nIsolation: 3 hardened / 1 failed\nSelf: 2 hardened / 0 failed\n' +
+  'Unnatural: 1 hardened / 0 failed\nViolence: 2 hardened / 1 failed';
+function uaSystem() { tab('settings'); setValue($('#set-system'), 'ua3e'); }
+
+test('Bestiary (Unknown Armies): pasting a GMC statblock adds a ua3e monster; no fields form, no HD filter; Edit keeps its book text', () => {
+  uaSystem();
+  tab('bestiary');
+  assert.ok($$('#tab-bestiary .mb-hd-field').every(el => el.hidden), 'no Hit Dice to filter by');
+  click($('#mb-new'));
+  assert.equal($('#monster-modal').hidden, false);
+  assert.equal($('#mm-mode .mm-mode-btn[data-mode="fields"]').hidden, true, 'GMCs are pasted, not filled in');
+  assert.match($('#mm-paste-hint').textContent, /GMC/);
+  assert.ok($$('#monster-modal .mm-hd-field').every(el => el.hidden));
+  setValue($('#mm-paste-area'), UA_CLERK + '\n---\nNight Cook\nType: GMC\n\nIdentities\nCook 40% — Substitutes for Status');
+  click($('#mm-parse-lib'));
+  assert.deepEqual(T.state.monsters.map(m => [m.name, m.source, m.system]), [['Night Clerk', 'ua3e', 'ua3e'], ['Night Cook', 'ua3e', 'ua3e']]);
+  click($('#mm-close'));
+  const row = $$('#mb-list .mb-row').find(r => /Night Clerk/.test(r.textContent));
+  assert.match(row.textContent, /GMC · WT 50 · 2 identities/);
+
+  const clerk = T.state.monsters.find(m => m.name === 'Night Clerk');
+  clerk.notes = 'Book text.'; clerk.ref = 'character:t:clerk';
+  click(row.querySelector('.mb-edit'));
+  assert.equal($('#me-mode .mm-mode-btn[data-mode="fields"]').hidden, true);
+  assert.equal($('#me-area').value, UA_CLERK);
+  setValue($('#me-area'), UA_CLERK.replace('Wound Threshold: 50', 'Wound Threshold: 60'));
+  click($('#me-save'));
+  const saved = T.state.monsters.find(m => m.name === 'Night Clerk');
+  assert.match(saved.raw, /Wound Threshold: 60/);
+  assert.equal(saved.notes, 'Book text.', 'the book text is not in the statblock, so Edit keeps it');
+  assert.equal(saved.ref, 'character:t:clerk');
+  assert.equal(saved.system, 'ua3e');
+});
+
+test('Combat (Unknown Armies): a GMC counts wounds up to its threshold, shows Init and its sheet; a d100 attack offers wounds by weapon', () => {
+  uaSystem();
+  const def = Object.assign(T.uaMonsterDef ? T.uaMonsterDef(UA_CLERK) : window.UAStatblock.uaMonsterDef(UA_CLERK),
+    { system: 'ua3e', notes: 'Knows about the [Night Shift].' });
+  T.addMonsterEntry(def);
+  tab('combat');
+  assert.equal($('#cb-populate-hd').hidden, true, 'no Hit Dice to spend');
+  assert.equal($('#cb-ua-hint').hidden, false);
+  let row = $('#tracker-list .cbt-row');
+  assert.equal(row.querySelector('.cbt-hd'), null);
+  assert.equal(row.querySelector('.cbt-hp'), null);
+  assert.doesNotMatch(row.textContent, /\bAC\b/);
+  assert.equal(row.querySelector('.cbt-wounds').value, '0');
+  assert.equal(row.querySelector('.cbt-wt').value, '50');
+  assert.match(row.textContent, /Init 55%/);
+
+  click(row.querySelector('.cbt-wd-inc'));
+  const ent = () => T.state.combat.entries[0];
+  assert.equal(ent().wounds, 1);
+  setValue($('#tracker-list .cbt-wounds'), '38');
+  row = $('#tracker-list .cbt-row');
+  assert.match(row.textContent, /Badly hurt/);
+  assert.ok(!row.classList.contains('is-down'));
+  setValue($('#tracker-list .cbt-wounds'), '45');
+  row = $('#tracker-list .cbt-row');
+  assert.match(row.textContent, /Unconscious/);
+  assert.ok(row.classList.contains('is-down'), '90% of the threshold: out of the fight');
+  setValue($('#tracker-list .cbt-wounds'), '80');
+  assert.equal(ent().wounds, 50, 'clamped to the threshold');
+  setValue($('#tracker-list .cbt-wounds'), '0');
+
+  click($('#tracker-list .cbt-name'));
+  const detail = $('#combatant-detail');
+  assert.match(detail.textContent, /hurt at 25 · badly hurt at 38 · unconscious at 45 · dead at 50/);
+  assert.match(detail.textContent, /Lucky Guess 3d10\+20%/);
+  assert.match(detail.textContent, /Notice 55%/, 'Night Clerk substitutes for Notice');
+  assert.match(detail.textContent, /Struggle 25%/, 'Violence 2 hardened → Struggle 15 + 10');
+  assert.match(detail.textContent, /Obsession: Knowing who checks in\./);
+  assert.ok(detail.querySelector('.comp-ref'), 'the book text\'s [links] open Compendium entries');
+  assert.ok($$('#combatant-detail .roll').some(r => r.dataset.formula === '3d10+20'), 'a dice rating is a roll');
+
+  // A percentile attack: 34, a success → choose the weapon to apply the wounds.
+  rig(face(34, 100));
+  click($$('#combatant-detail .roll').find(r => r.dataset.formula === '%55'));
+  const box = $('#dice-apply-ua');
+  assert.equal(box.hidden, false);
+  assert.match(box.textContent, /rolled 34 \(Success\)/);
+  assert.deepEqual($$('#dice-apply-ua .dau-btn').map(b => Number(b.dataset.wounds)), [7, 10, 13, 16, 34]);
+  click($$('#dice-apply-ua .dau-btn')[1]);   // weapon +3: 3 + 4 + 3
+  assert.equal(ent().wounds, 10);
+  assert.match(logText(), /10 wounds → 0→10 \/ 50/);
+
+  // A plain damage roll still uses "Apply damage", as wounds.
+  rig(face(6, 10));
+  setValue($('#custom-formula'), '1d10');
+  submit($('#dice-custom'));
+  assert.equal($('#dice-apply-ua').hidden, true, 'only after a percentile roll');
+  assert.match($('#dice-apply').textContent, /Apply 6 wounds to Night Clerk/);
+  click($('#dice-apply'));
+  assert.equal(ent().wounds, 16);
+});
+
+test('Combat (Unknown Armies): a UA character uses its "Wounds (Name)" tracker, up to the sheet\'s Wound Threshold', () => {
+  uaSystem();
+  T.createCharacter('# Dana [Unknown Armies]\n\n```ua\nIdentities\nBouncer 50% — Substitutes for Struggle, Provides Initiative\n\nWound Threshold: 40\n\nShock\nViolence: 3 hardened / 0 failed\n```\n');
+  tab('combat');
+  setValue($('#cb-add-char'), T.state.characters[0].id);
+  const row = $('#tracker-list .cbt-row');
+  assert.ok(row.querySelector('.cbt-wounds'));
+  assert.equal(row.querySelector('.cbt-wt'), null, 'a character\'s threshold comes from its sheet');
+  assert.match(row.textContent, /\/40/);
+  assert.match(row.textContent, /Init 50%/);
+  click(row.querySelector('.cbt-wd-inc'));
+  assert.equal(T.state.consumables.find(c => c.name === 'Wounds (Dana)').value, 1);
+  assert.equal(T.state.consumables.find(c => c.name === 'Wounds (Dana)').max, 40);
+  assert.ok(!T.state.consumables.some(c => c.name === 'HP (Dana)'), 'no HP tracker for a UA character');
+});
+
+/* ================================================================== */
 /* Combat: "+ Populate by HD…"                                        */
 /* ================================================================== */
 

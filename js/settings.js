@@ -39,19 +39,23 @@
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
   }
+  // Settings → System, and an imported pack of another system (js/io.js):
+  // re-render everything the system partitions (see AGENTS.md "Game system").
+  function setSystem(value) {
+    const s = OSR.SYSTEMS.indexOf(value) === -1 ? 'osr' : value;
+    OSR.state.settings.system = s;
+    OSR.save();
+    OSR.resetCompendiumFilters();
+    OSR.renderCompendium();
+    OSR.refreshCharUI(); // Character dropdown only lists the active system's characters
+    OSR.renderMonsterBrowser(); // ditto the Bestiary tab
+    OSR.renderCombat(); // ditto Combat's "+ Add character…"/"+ Add monster…"
+    renderSettings();
+    OSR.pushNote('Settings', 'System → ' + (OSR.SYSTEM_LABELS[s] || s));
+  }
+
   function wireSettings() {
-    $('#set-system').addEventListener('change', e => {
-      const s = OSR.SYSTEMS.indexOf(e.target.value) === -1 ? 'osr' : e.target.value;
-      OSR.state.settings.system = s;
-      OSR.save();
-      OSR.resetCompendiumFilters();
-      OSR.renderCompendium();
-      OSR.refreshCharUI(); // Character dropdown only lists the active system's characters
-      OSR.renderMonsterBrowser(); // ditto the Bestiary tab
-      OSR.renderCombat(); // ditto Combat's "+ Add character…"/"+ Add monster…"
-      renderSettings();
-      OSR.pushNote('Settings', 'System → ' + (OSR.SYSTEM_LABELS[s] || s));
-    });
+    $('#set-system').addEventListener('change', e => setSystem(e.target.value));
     $('#set-theme').addEventListener('change', e => {
       const t = OSR.THEMES.indexOf(e.target.value) === -1 ? 'default' : e.target.value;
       OSR.state.settings.theme = t;
@@ -110,5 +114,5 @@
     });
   }
 
-  Object.assign(OSR, { renderSettings, wireSettings });
+  Object.assign(OSR, { renderSettings, setSystem, wireSettings });
 })(window.OSR = window.OSR || {});

@@ -42,6 +42,30 @@
   // Monster formats js/monsters.js can't parse from pasted text — their own
   // system key doubles as their def `source` and their form Format value.
   const FIELDS_ONLY_SOURCES = ['brp', 'sl'];
+  // Unknown Armies GMCs are the opposite: pasted text only, in the same
+  // statblock format as a PC's ```ua fence plus a short header (parsed by
+  // UAStatblock.parseUAMonster, js/ua-statblock.js) — there is no fields form.
+  const PASTE_ONLY_SOURCES = ['ua3e'];
+  const UA_PASTE_EXAMPLE = 'Night Clerk\nSees everything, says nothing\nType: GMC\nWound Threshold: 50\n' +
+    'Obsession: Knowing who checks in.\n\nIdentities\nNight Clerk 55%* — Substitutes for Notice, Evaluates Isolation\n\n' +
+    'Passions\nFear (Isolation): Being forgotten.\n\nShock\nViolence: 2 hardened / 0 failed';
+  let defaultPasteHint = null, defaultPastePlaceholder = null;
+  // Hides the "Fill in fields" button of a mode toggle for a paste-only format.
+  function setFieldsModeAllowed(root, allowed) {
+    const b = root.querySelector('.mm-mode-btn[data-mode="fields"]');
+    if (b) b.hidden = !allowed;
+  }
+  function setPasteHelp(ua) {
+    const hint = $('#mm-paste-hint'), area = $('#mm-paste-area');
+    if (defaultPasteHint == null) { defaultPasteHint = hint.textContent; defaultPastePlaceholder = area.placeholder; }
+    hint.textContent = ua
+      ? 'Paste a GMC or entity statblock: its name on the first line, then the same sections as a character\'s ```ua fence. Put a line of --- between two of them.'
+      : defaultPasteHint;
+    area.placeholder = ua ? UA_PASTE_EXAMPLE : defaultPastePlaceholder;
+  }
+  function splitUaMonsters(text) {
+    return String(text || '').split(/^\s*-{3,}\s*$/m).map(t => t.trim()).filter(Boolean);
+  }
 
   function openMonsterModal(opts) {
     opts = opts || {};
@@ -51,12 +75,17 @@
     renderLibrary();
     ensureMonsterFormBuilt($('#mm-fields-host'));
     if (opts.prefill) {
+      setFieldsModeAllowed($('#mm-mode'), true);
+      setPasteHelp(false);
       OSR.populateMonsterForm($('#mm-fields-host'), opts.prefill);
       setMonsterMode($('#mm-mode'), 'fields');
     } else {
       $('#mm-paste-area').value = '';
       const sys = OSR.currentSystem();
       const fieldsOnly = FIELDS_ONLY_SOURCES.indexOf(sys) !== -1;
+      const pasteOnly = PASTE_ONLY_SOURCES.indexOf(sys) !== -1;
+      setFieldsModeAllowed($('#mm-mode'), !pasteOnly);
+      setPasteHelp(sys === 'ua3e');
       OSR.populateMonsterForm($('#mm-fields-host'), fieldsOnly ? { source: sys } : {});
       // BRP and Silent Legions have no "paste text" parser (see js/monsters.js)
       // — start in fields mode, with Format already set, when that's the
@@ -103,6 +132,11 @@
   // Bestiary tab's (js/monster-browser.js). BRP has no HD/AC; Silent Legions
   // shows its descending AC (acDisplay) instead of an ascending one.
   function monsterMetaLine(d) {
+    if (d.source === 'ua3e') {
+      const st = window.UAStatblock ? UAStatblock.parseUAMonster(d.raw || '') : {};
+      return [st.type || 'GMC', 'WT ' + (st.woundThreshold != null ? st.woundThreshold : (st.woundThresholdText ? 'special' : '?')),
+        (st.identities || []).length + ' identit' + ((st.identities || []).length === 1 ? 'y' : 'ies')].join(' · ');
+    }
     if (d.source === 'brp') {
       return ['HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'), 'DB ' + (d.damageBonus || 'None'), 'brp'].join(' · ');
     }
@@ -121,6 +155,8 @@
   function renderLibrary() {
     if (OSR.renderMonsterBrowser) OSR.renderMonsterBrowser(); // keep the Bestiary tab in sync
     libFiltered = libMatches();
+    // Unknown Armies has no Hit Dice: hide the HD range filter.
+    document.querySelectorAll('#monster-modal .mm-hd-field').forEach(el => { el.hidden = OSR.currentSystem() === 'ua3e'; });
     const list = $('#mm-lib-list');
     $('#mm-roll').disabled = libFiltered.length < 1;
     $('#mm-count').textContent = libFiltered.length + ' / ' + OSR.monstersForSystem().length;
@@ -148,8 +184,9 @@
     renderLibrary();
     const li = $('#mm-lib-list [data-id="' + d.id + '"]');
     if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    $('#mm-msg').textContent = 'Rolled → ' + d.name + '  (HD ' + (d.hd || '?') + ', ' + libFiltered.length + ' options)';
-    OSR.pushNote('Library', 'rolled → ' + d.name, 'HD ' + (d.hd || '?') + ', ' + libFiltered.length + ' options');
+    const what = d.source === 'ua3e' ? monsterMetaLine(d) : 'HD ' + (d.hd || '?');
+    $('#mm-msg').textContent = 'Rolled → ' + d.name + '  (' + what + ', ' + libFiltered.length + ' options)';
+    OSR.pushNote('Library', 'rolled → ' + d.name, what + ', ' + libFiltered.length + ' options');
   }
 
   function onLibClick(e) {
@@ -173,7 +210,25 @@
   }
 
   /* ---- library hover preview ---- */
+  function uaMonsterCardHtml(d) {
+    const st = UAStatblock.parseUAMonster(d.raw || '');
+    let h = '<div class="mmp-head"><b>' + escapeHtml(d.name) + '</b> <span>' + escapeHtml(st.type || 'ua3e') + '</span></div>' +
+      '<div class="mmp-line">' + escapeHtml('Wound threshold ' + (st.woundThreshold != null ? st.woundThreshold : (st.woundThresholdText || '?'))) + '</div>';
+    st.identities.forEach(id => {
+      h += '<div class="mmp-line"><span>' + escapeHtml(id.name) + ' ' + escapeHtml(id.value) + '%' + (id.obsession ? '*' : '') + '</span> ' +
+        escapeHtml(id.features) + '</div>';
+    });
+    const p = st.passions;
+    ['fear', 'noble', 'rage'].forEach(k => {
+      if (p[k]) h += '<div class="mmp-line"><span>' + k.toUpperCase() + '</span> ' + escapeHtml(p[k].text) + '</div>';
+    });
+    if (st.obsession) h += '<div class="mmp-line"><span>OBSESSION</span> ' + escapeHtml(st.obsession) + '</div>';
+    if (st.desc) h += '<p class="mmp-desc">' + escapeHtml(st.desc) + '</p>';
+    if (st.book) h += '<p class="mmp-desc">' + escapeHtml(st.book) + '</p>';
+    return h;
+  }
   function monsterCardHtml(d) {
+    if (d.source === 'ua3e' && window.UAStatblock) return uaMonsterCardHtml(d);
     const isBrp = d.source === 'brp';
     const bits = isBrp ? [
       'HP ' + (d.hp || '?'),
@@ -243,7 +298,9 @@
     OSR.populateMonsterForm($('#me-fields-host'), d);
     // BRP and Silent Legions have no "paste text" parser (see js/monsters.js)
     // — default straight to the fields form so editing one doesn't land on a
-    // stat block that would re-parse as the wrong format.
+    // stat block that would re-parse as the wrong format. A UA GMC is the
+    // reverse: its statblock text is all there is to edit.
+    setFieldsModeAllowed($('#me-mode'), PASTE_ONLY_SOURCES.indexOf(d.source) === -1);
     setMonsterMode($('#me-mode'), FIELDS_ONLY_SOURCES.indexOf(d.source) !== -1 ? 'fields' : 'paste');
     $('#monster-edit-modal').hidden = false;
     $('#me-area').focus();
@@ -257,7 +314,14 @@
     const idx = OSR.state.monsters.findIndex(x => x.id === editMonsterId);
     if (idx < 0) { closeMonsterEdit(); return; }
     let parsed;
-    if (activeMonsterMode($('#me-mode')) === 'fields') {
+    const orig = OSR.state.monsters[idx];
+    if (orig.source === 'ua3e') {
+      parsed = window.UAStatblock ? UAStatblock.uaMonsterDef($('#me-area').value) : null;
+      if (!parsed) { $('#me-msg').textContent = 'Could not parse — the first line must be the name.'; return; }
+      // The book text and the pack ref are not in the statblock: keep them.
+      if (orig.notes) parsed.notes = orig.notes;
+      if (orig.ref) parsed.ref = orig.ref;
+    } else if (activeMonsterMode($('#me-mode')) === 'fields') {
       parsed = OSR.collectMonsterForm($('#me-fields-host'));
       if (!parsed.name || parsed.name === 'Unnamed') { $('#me-msg').textContent = 'Name is required.'; return; }
     } else {
@@ -279,9 +343,14 @@
     $('#mm-msg').textContent = 'Saved ' + parsed.name + '.';
   }
   function parseAndAdd(text, alsoCombat) {
-    const defs = (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
+    const ua = OSR.currentSystem() === 'ua3e';
+    const defs = ua
+      ? (window.UAStatblock ? splitUaMonsters(text).map(UAStatblock.uaMonsterDef).filter(Boolean) : [])
+      : (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
     if (!defs.length) {
-      $('#mm-msg').textContent = 'No stat blocks found — each needs an "AC …" line, blank line between monsters.';
+      $('#mm-msg').textContent = ua
+        ? 'No statblock found — put the name on the first line (see the example in the box).'
+        : 'No stat blocks found — each needs an "AC …" line, blank line between monsters.';
       return;
     }
     const added = [];
@@ -326,7 +395,7 @@
 
   Object.assign(OSR, {
     filterMonsters, openMonsterModal, closeMonsterModal, libMatches, renderLibrary, rollLibrary, onLibClick,
-    monsterMetaLine, monsterCardHtml, showLibPreview, hideLibPreview,
+    monsterMetaLine, monsterCardHtml, uaMonsterCardHtml, splitUaMonsters, showLibPreview, hideLibPreview,
     openMonsterEdit, closeMonsterEdit, saveMonsterEdit, parseAndAdd, wireMonsterModals
   });
 })(window.OSR = window.OSR || {});

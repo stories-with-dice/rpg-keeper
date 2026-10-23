@@ -8,7 +8,9 @@ at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiar
 sample NPCs from the *Basic Roleplaying: Universal Game Engine* core book), and Combat shows its
 characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions ships with its Spells,
 Disciplines, and Equipment in the Compendium, and its creature templates and named horrors in the
-Bestiary; see [Silent Legions](#silent-legions) below. Plain
+Bestiary; see [Silent Legions](#silent-legions) below. Unknown Armies Combat counts wounds up to
+the wound threshold, and its book content can be loaded from your own PDFs; see
+[Unknown Armies](#unknown-armies). Plain
 HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser.
 
 - **Live:** deployed to GitHub Pages from `main` (see the repo's Pages settings for the URL).
@@ -25,6 +27,9 @@ reloads and browser restarts, but it is per-browser and per-machine.
 - **Export** (top bar) downloads a single `osr-manager-YYYYMMDD.json` with *all* your data —
   characters, notes, consumables, the monster library, the current encounter, settings and the log.
 - **Import** offers **Replace all** or **Merge** (adds the file's characters + monsters to what you have).
+  A **content pack** (a file with a `pack` header, such as the Unknown Armies catalog below) is only
+  ever added: Import asks once, skips entries you already have, and switches **System** to the
+  pack's system.
 
 Use Export/Import to back up, move between machines, or share a party.
 
@@ -274,6 +279,38 @@ customizing a creature template.
 - **Roll** rolls the table's formula, highlights the matching row, and logs the result (table name,
   formula, total, and the row's text) to the **Session Log** at the bottom — same as any other roll
   in the app.
+
+---
+
+## Unknown Armies
+
+Set Settings → **System** to **Unknown Armies 3rd Ed**.
+
+- **Characters**: a sheet keeps its statblock in a ` ```ua ` block (identities, passions,
+  relationships, `Wound Threshold: N`, and the five shock meters). View mode shows it as a sheet:
+  abilities follow from the hardened notches, and you click the notch dots to change them. Every
+  `NN%` is a percentile roll.
+- **Book content (optional)**: the app ships no Unknown Armies book text. If you own the books, the
+  separate UA3 data tools (not in this repo) read your PDFs and write a local content pack:
+  Compendium entries (spells, rituals, schools, archetypes, artifacts, identities, features, cabals,
+  phenomena, places) and every GMC and unnatural entity as a Bestiary monster. Load it with
+  **Import**. The same tools' character generator copies a finished character as sheet text, with
+  `[Name]` links to those Compendium entries; paste it with **Paste from clipboard**.
+- **Bestiary**: a GMC is pasted as text — its name on the first line, optional `Type:`, `Book:`,
+  `Wound Threshold:` and `Obsession:` lines, then the same sections as a ` ```ua ` block. An
+  identity can be rated with a range or dice (`3d10+40%`) and an `Abilities` section gives an
+  ability directly (`Struggle 70%`). Put a line of `---` between two GMCs. There is no
+  **Fill in fields** form and no HD filter for Unknown Armies.
+- **Combat**: a UA combatant counts **wounds** up to its wound threshold instead of HP and HD. The
+  row shows the wound state from Book One (hurt at ½, badly hurt at ¾, unconscious at 90%, dead at
+  the threshold; unconscious and dead grey out the row) and the rating of a *Provides Initiative*
+  identity (**Init**), because Unknown Armies has no initiative roll. A GMC's threshold can be
+  typed in the row (some entities have a formula instead of a number); a character's comes from
+  its sheet, through its **Wounds (Name)** tracker. The detail panel lists a GMC's identities,
+  abilities, passions, shock gauge, and book text, all clickable. After a percentile attack roll,
+  the Dice Roller offers the wounds for each weapon kind — fists or thrown (sum of the dice),
+  weapon +3 / +6 / +9, or a gun (the roll) — for the selected combatant. A plain dice roll still
+  uses **Apply damage**, as wounds. **Populate by HD** is hidden.
 
 ---
 

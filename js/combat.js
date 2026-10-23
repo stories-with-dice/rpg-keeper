@@ -19,6 +19,7 @@
   function updateApplyButton() {
     const btn = $('#dice-apply');
     if (!btn) return;
+    renderUaDamage();
     if (!OSR.lastRoll) { btn.hidden = true; return; }
     btn.hidden = false;
     const ent = selectedEntry();
@@ -29,6 +30,7 @@
       return;
     }
     btn.disabled = false;
+    if (isUaEntry(ent)) { btn.textContent = 'Apply ' + Math.max(0, OSR.lastRoll.total) + ' wounds to ' + ent.name; return; }
     const isBrpMonster = ent.kind === 'monster' && ent.monster && ent.monster.source === 'brp';
     const shActive = sh && !isBrpMonster;
     const unit = (shActive && ent.kind === 'monster') ? 'HD' : 'HP';
@@ -60,6 +62,8 @@
     const ent = selectedEntry();
     if (!ent || !OSR.lastRoll) return;
     const lastRoll = OSR.lastRoll;
+    // Unknown Armies: damage is wounds taken, counting up (no HP, no HD).
+    if (isUaEntry(ent)) { applyWoundsToSelected(Math.max(0, lastRoll.total), lastRoll.normalized || ''); return; }
     const round = OSR.state.combat.round || 1;
     // Scarlet Heroes translates damage into Hit Dice loss — meaningless for a
     // BRP monster (no HD at all, see js/brp-monsters-data.js), so it always
@@ -148,6 +152,10 @@
     OSR.save();
   }
   function entryDown(e) {
+    if (isUaEntry(e)) {
+      const t = entryWoundThreshold(e);
+      return t > 0 && entryWounds(e) >= UAStatblock.woundBand(t, 0.9); // unconscious or dead (p.63)
+    }
     return entryHp(e) <= 0;
   }
   function charQuickAC(ch) {
@@ -281,6 +289,157 @@
     OSR.pushLog(e.name, 'Madness ' + d, r.total, r.detail + ' — at most ' + max + ' in total from this kind of creature');
   }
 
+  /* ---- Unknown Armies: wounds count up to the wound threshold ---- */
+  // A UA combatant — a 'ua3e' Bestiary GMC, or a character whose sheet has a
+  // ```ua fence — tracks wounds taken (0 up to its Wound Threshold) instead of
+  // HP and HD. A monster keeps them on its entry (`e.wounds`,
+  // `e.woundThreshold`); a character on its campaign-global "Wounds (Name)"
+  // tracker, the same way an OSR character's HP lives on "HP (Name)".
+  function isUaEntry(e) {
+    if (!e) return false;
+    if (e.kind === 'monster') return !!e.monster && e.monster.source === 'ua3e';
+    const ch = combatCharFor(e);
+    return !!ch && OSR.charSystemKey(ch) === 'ua3e';
+  }
+  function woundConsumable(ch) {
+    if (!ch) return null;
+    return OSR.state.consumables.find(c => c.name === OSR.woundTrackerLabel(ch)) || null;
+  }
+  function entryWounds(e) {
+    if (e.kind === 'character') { const c = woundConsumable(combatCharFor(e)); return c ? c.value : 0; }
+    return Number(e.wounds) || 0;
+  }
+  function entryWoundThreshold(e) {
+    if (e.kind === 'character') { const c = woundConsumable(combatCharFor(e)); return c ? c.max || 0 : 0; }
+    return Number(e.woundThreshold) || 0;
+  }
+  function setEntryWounds(e, v) {
+    v = Math.max(0, Math.round(Number(v) || 0));
+    if (e.kind === 'character') {
+      const c = woundConsumable(combatCharFor(e));
+      if (c) { c.value = v; OSR.clampConsumable(c); OSR.save(); OSR.renderConsumables(); }
+      return;
+    }
+    const t = Number(e.woundThreshold) || 0;
+    e.wounds = t > 0 ? Math.min(t, v) : v;
+    OSR.save();
+  }
+  // The parsed statblock behind a UA entry: a GMC's `raw` text, or a
+  // character's ```ua fence (null when there is none).
+  function uaStatsFor(e) {
+    if (e.kind === 'monster') return UAStatblock.parseUAMonster(e.monster.raw || '');
+    return OSR.uaFenceDef(combatCharFor(e));
+  }
+  function uaInitChip(stats) {
+    const id = stats && UAStatblock.initiativeOf(stats.identities);
+    if (!id) return '';
+    return '<span class="chip chip-dim" title="Provides Initiative: when it matters who acts first, ' +
+      escapeHtml(id.name) + '\'s rating counts (Book One, p. 62)">Init ' + escapeHtml(id.value) + '%</span>';
+  }
+  function uaStateChip(e) {
+    const st = UAStatblock.woundState(entryWounds(e), entryWoundThreshold(e));
+    return st.key === 'ok' ? '' : '<span class="chip ua-wstate ua-wstate-' + st.key + '">' + escapeHtml(st.label) + '</span>';
+  }
+  // "Hurt at 25 · badly hurt at 38 · unconscious at 45 · dead at 50"
+  function uaBandsText(t) {
+    if (!(t > 0)) return '';
+    return UAStatblock.WOUND_BANDS.slice().reverse().map(b => b.label.toLowerCase() + ' at ' + UAStatblock.woundBand(t, b.at)).join(' · ');
+  }
+  function uaWoundsChips(e) {
+    const t = entryWoundThreshold(e);
+    return chip('Wounds', entryWounds(e) + ' / ' + (t || '—')) + uaStateChip(e);
+  }
+  function applyWoundsToSelected(amount, how) {
+    const ent = selectedEntry();
+    if (!ent || !isUaEntry(ent)) return;
+    amount = Math.max(0, Math.round(Number(amount) || 0));
+    const before = entryWounds(ent);
+    setEntryWounds(ent, before + amount);
+    const after = entryWounds(ent), t = entryWoundThreshold(ent);
+    const st = UAStatblock.woundState(after, t);
+    OSR.pushNote(ent.name, amount + ' wounds → ' + before + '→' + after + (t ? ' / ' + t : '') +
+      (st.key !== 'ok' ? ' · ' + st.label : ''),
+      (how ? how + '  ·  ' : '') + 'round ' + (OSR.state.combat.round || 1));
+    renderCombat();
+  }
+  // What a result means for damage, by Book One's attack rules (p.62-65).
+  const UA_VERDICT_NOTE = {
+    Crit: 'Crit: a punch knocks out or kills, a melee weapon kills, a gun does its damage cap.',
+    'Matched Success': 'Matched success: a melee weapon does the roll, like a gun. Fists get nothing extra.',
+    Failure: 'A miss does no damage, but a sharp weapon still does 1 wound.',
+    'Matched Failure': 'A miss. With a weapon: it is out of your hands.',
+    Fumble: 'Fumble: no damage to the target. A melee weapon hits you for 1d10; a gun jams.'
+  };
+  // The Dice Roller's "wounds from the last percentile roll" choices — one
+  // button per weapon kind (UAStatblock.damageOptions), shown while a UA
+  // combatant is selected and the last roll was a d100.
+  function renderUaDamage() {
+    const box = $('#dice-apply-ua');
+    if (!box) return;
+    const p = OSR.lastPercent;
+    const ent = selectedEntry();
+    if (!p || !ent || !isUaEntry(ent)) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = '<div class="dau-head">' + escapeHtml(p.source) + ' rolled <b>' + p.roll + '</b> (' + escapeHtml(p.verdict) +
+        ') → wounds to <b>' + escapeHtml(ent.name) + '</b></div>' +
+      '<div class="dau-btns">' + UAStatblock.damageOptions(p.roll).map(o =>
+        '<button class="btn dau-btn" type="button" data-wounds="' + o.wounds + '" data-how="' + escapeHtml(o.label + ', roll ' + p.roll) + '">' +
+          escapeHtml(o.label) + ' <b>' + o.wounds + '</b></button>').join('') + '</div>' +
+      (UA_VERDICT_NOTE[p.verdict] ? '<div class="dau-note">' + escapeHtml(UA_VERDICT_NOTE[p.verdict]) + '</div>' : '');
+  }
+  function onUaDamageClick(e) {
+    const b = e.target.closest('.dau-btn');
+    if (b) applyWoundsToSelected(Number(b.dataset.wounds), b.dataset.how);
+  }
+  // A Bestiary GMC's panel: wounds, identities, abilities, passions, shock,
+  // and the book text. Percentages and dice values become rolls (annotate).
+  function uaMonsterDetailHtml(ent) {
+    const m = ent.monster;
+    const st = UAStatblock.parseUAMonster(m.raw || '');
+    const t = entryWoundThreshold(ent);
+    let h = '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">ua3e' +
+      (st.type ? ' · ' + escapeHtml(st.type) : '') + '</span></div>';
+    h += '<div class="cd-stats">' + uaWoundsChips(ent) + uaInitChip(st) + '</div>';
+    if (t) h += '<p class="cd-desc ua-bands">' + escapeHtml(uaBandsText(t)) + '</p>';
+    if (st.woundThresholdText) h += '<p class="cd-desc"><i>Wound threshold:</i> ' + escapeHtml(st.woundThresholdText) + '</p>';
+    if (st.desc) h += '<p class="cd-desc">' + escapeHtml(st.desc) + '</p>';
+    const subs = new Set(Object.keys(UAStatblock.computeSubstitutions(st.identities)));
+    if (st.identities.length) {
+      h += '<div class="cd-sec cd-ua-top"><span class="cd-lbl">Identities</span><ul class="ua-identities cd-ua-ids">' +
+        st.identities.map(id => '<li><b>' + escapeHtml(id.name) + '</b> ' + escapeHtml(id.value) + '%' +
+          (id.obsession ? ' <span class="badge">Obsession</span>' : '') +
+          (id.features ? ': ' + OSR.uaFeaturesHtml(id.features, subs) : '') + '</li>').join('') + '</ul></div>';
+    }
+    const abil = UAStatblock.abilityValues(st);
+    const names = UAStatblock.ALL_ABILITIES.filter(a => abil[a]);
+    if (names.length) {
+      const FROM = { shock: 'from the shock gauge', identity: 'substituted by ', book: 'as the book gives it' };
+      h += '<div class="cd-sec"><span class="cd-lbl">Abilities</span><span class="cd-ua-abils">' + names.map(a => {
+        const v = abil[a];
+        const title = a + ' ' + v.value + '%: ' + FROM[v.from] + (v.identityName || '');
+        return '<span class="ua-abil' + (v.from === 'identity' ? ' ua-sub' : '') + '" title="' + escapeHtml(title) + '">' +
+          escapeHtml(a) + ' ' + escapeHtml(v.value) + '%</span>';
+      }).join('') + '</span></div>';
+    }
+    const pas = st.passions;
+    if (pas.fear || pas.noble || pas.rage || st.obsession) {
+      const row = (label, p) => p ? '<div class="ua-passion"><b>' + label + '</b>' + (p.meter ? ' (' + escapeHtml(p.meter) + ')' : '') +
+        ': ' + escapeHtml(p.text) + '</div>' : '';
+      h += '<div class="cd-sec cd-ua-top cd-ua-passions"><span class="cd-lbl">Passions</span><div>' + row('Fear', pas.fear) +
+        row('Noble', pas.noble) + row('Rage', pas.rage) +
+        (st.obsession ? '<div class="ua-passion"><b>Obsession</b>: ' + escapeHtml(st.obsession) + '</div>' : '') + '</div></div>';
+    }
+    if (st.hasShock) {
+      h += '<div class="cd-sec"><span class="cd-lbl">Shock</span><span class="cd-ua-shock">' + UAStatblock.METER_ORDER
+        .filter(k => st.shock[k]).map(k => '<span class="chip chip-dim" title="hardened / failed">' + k + ' ' +
+          st.shock[k].hardened + '/' + st.shock[k].failed + '</span>').join('') + '</span></div>';
+    }
+    if (st.book) h += '<p class="hint">' + escapeHtml(st.book) + '</p>';
+    if (m.notes) h += '<details class="cd-raw"><summary>Book text</summary><div class="cd-notes markdown-body">' + marked.parse(String(m.notes)) + '</div></details>';
+    if (m.raw) h += '<details class="cd-raw"><summary>Statblock</summary><pre>' + escapeHtml(m.raw) + '</pre></details>';
+    return h;
+  }
+
   function selectedEntry() {
     return OSR.state.combat.entries.find(e => e.id === OSR.state.combat.selectedId) || null;
   }
@@ -301,8 +460,17 @@
   function addCharEntry(charId) {
     const ch = OSR.state.characters.find(c => c.id === charId);
     if (!ch) return;
+    const isUa = OSR.charSystemKey(ch) === 'ua3e';
+    if (isUa) {
+      // The "Wounds (Name)" tracker comes from the sheet's Wound Threshold;
+      // without one, the book's default of 50 (Book One, p. 63).
+      OSR.syncWoundTracker(ch);
+      if (!woundConsumable(ch)) OSR.ensureWoundTracker(ch, 50);
+      OSR.save();
+      OSR.renderConsumables();
+    }
     // Seed the linked HP tracker from the sheet if it's still the untouched 0/0 default.
-    const det = charDetectHp(ch);
+    const det = isUa ? null : charDetectHp(ch);
     if (det) {
       OSR.ensureHpTracker(ch);
       const hpc = hpConsumable(ch);
@@ -323,6 +491,12 @@
       monster: JSON.parse(JSON.stringify(def)),
       hd: def.hd || '', hp: def.hp || 0, maxHp: def.hp || 0, side: 'enemy', statuses: []
     };
+    if (def.source === 'ua3e') {
+      // A formula threshold ("Equal to its host") parses to null: 0 = not set yet, the GM types it in.
+      const wt = UAStatblock.parseUAMonster(def.raw || '').woundThreshold;
+      e.wounds = 0;
+      e.woundThreshold = wt != null ? wt : 0;
+    }
     OSR.state.combat.entries.push(e);
     if (!OSR.state.combat.activeId) OSR.state.combat.activeId = e.id;
     OSR.state.combat.selectedId = e.id;
@@ -570,6 +744,10 @@
     sel.innerHTML = '<option value="">+ Add character…</option>' +
       OSR.charactersForSystem().map(c => '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>').join('');
     sel.value = '';
+    // Unknown Armies has no Hit Dice to spend, and no initiative roll (p.62).
+    const ua = OSR.currentSystem() === 'ua3e';
+    $('#cb-populate-hd').hidden = ua;
+    $('#cb-ua-hint').hidden = !ua;
   }
   function statusTagsHtml(e) {
     if (!Array.isArray(e.statuses) || !e.statuses.length) return '';
@@ -596,6 +774,7 @@
     const sv = m ? (m.savesText || '') : '';
     const atk = m ? (isBrp ? brpResolveDb(m.attacksText, m.damageBonus) : m.attacksText) || '' : '';
     const maxHp = entryMaxHp(e);
+    const line2 = isUaEntry(e) ? uaRowLine2(e) : null;
     return '<li class="' + cls.join(' ') + '" data-id="' + e.id + '" draggable="true">' +
       '<div class="cbt-line1">' +
         '<span class="cbt-drag" title="Drag to reorder">⠿</span>' +
@@ -605,7 +784,7 @@
         (e.id === OSR.state.combat.activeId ? '<span class="cbt-turnflag">◀ turn</span>' : '') +
         '<button class="cbt-remove" title="Remove from combat">✕</button>' +
       '</div>' +
-      '<div class="cbt-line2">' +
+      (line2 != null ? '<div class="cbt-line2">' + line2 + '</div>' : '<div class="cbt-line2">' +
         (e.kind === 'monster' && !isBrp
           ? '<span class="chip cbt-step"><span class="chip-l">HD</span>' +
               '<button class="cbt-stepbtn cbt-hd-dec" type="button" aria-label="HD −1">&minus;</button>' +
@@ -626,8 +805,26 @@
           ? '<span class="chip chip-dim">Mad ' + escapeHtml(m.madness) + '</span>' : '') +
         (atk ? '<span class="chip chip-dim">' + escapeHtml(atk) + '</span>' : '') +
         statusTagsHtml(e) +
-      '</div>' +
+      '</div>') +
     '</li>';
+  }
+  // A UA row: a wounds stepper (up to the threshold — a monster's threshold
+  // is editable, a character's comes from its sheet), the wound state, and the
+  // Provides Initiative rating. No HD, AC or saves.
+  function uaRowLine2(e) {
+    const t = entryWoundThreshold(e);
+    const st = uaStatsFor(e);
+    const max = e.kind === 'monster'
+      ? '<input class="cbt-wt" type="number" min="0" step="1" value="' + (t || '') + '" placeholder="?" title="Wound threshold" />'
+      : '<span class="cbt-max">' + (t || '—') + '</span>';
+    return '<span class="chip cbt-step"><span class="chip-l">Wounds</span>' +
+        '<button class="cbt-stepbtn cbt-wd-dec" type="button" aria-label="Wounds −1">&minus;</button>' +
+        '<input class="cbt-wounds" type="number" min="0" step="1" value="' + entryWounds(e) + '" />' +
+        '<span class="cbt-max">/</span>' + max +
+        '<button class="cbt-stepbtn cbt-wd-inc" type="button" aria-label="Wounds +1">+</button></span>' +
+      uaStateChip(e) + uaInitChip(st) +
+      (e.kind === 'monster' && st && st.type ? '<span class="chip chip-dim">' + escapeHtml(st.type) + '</span>' : '') +
+      statusTagsHtml(e);
   }
   function renderTracker() {
     const list = $('#tracker-list');
@@ -643,7 +840,9 @@
     const ent = selectedEntry();
     if (!ent) { host.innerHTML = '<p class="hint">Select a combatant for details, attacks &amp; saves.</p>'; return; }
     let h = '';
-    if (ent.kind === 'monster' && ent.monster.source === 'brp') {
+    if (ent.kind === 'monster' && ent.monster.source === 'ua3e') {
+      h += uaMonsterDetailHtml(ent);
+    } else if (ent.kind === 'monster' && ent.monster.source === 'brp') {
       const m = ent.monster;
       const c = m.characteristics || {};
       h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">brp</span></div>';
@@ -706,8 +905,13 @@
       const ch = combatCharFor(ent);
       h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">character' +
         (ch && ch.system ? ' · ' + escapeHtml(ch.system) : '') + '</span></div>';
-      h += '<div class="cd-stats">' +
-        chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—') + '  (linked to sheet)') + '</div>';
+      if (isUaEntry(ent)) {
+        h += '<div class="cd-stats">' + uaWoundsChips(ent) + uaInitChip(uaStatsFor(ent)) + '</div>';
+        if (entryWoundThreshold(ent)) h += '<p class="cd-desc ua-bands">' + escapeHtml(uaBandsText(entryWoundThreshold(ent))) + ' (linked to the Wounds tracker)</p>';
+      } else {
+        h += '<div class="cd-stats">' +
+          chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—') + '  (linked to sheet)') + '</div>';
+      }
       if (ch) h += '<div class="cd-sheet markdown-body">' + OSR.renderCharMarkdown(ch.body) + '</div>';
       else h += '<p class="hint">Character not found — it may have been deleted.</p>';
     }
@@ -788,6 +992,8 @@
     if (e.target.closest('.cbt-hp-dec')) { stepEntry(id, 'hp', -1); return; }
     if (e.target.closest('.cbt-hd-inc')) { stepEntry(id, 'hd', +1); return; }
     if (e.target.closest('.cbt-hd-dec')) { stepEntry(id, 'hd', -1); return; }
+    if (e.target.closest('.cbt-wd-inc')) { stepEntry(id, 'wounds', +1); return; }
+    if (e.target.closest('.cbt-wd-dec')) { stepEntry(id, 'wounds', -1); return; }
     setSelected(id);
   }
   function stepEntry(id, field, delta) {
@@ -795,6 +1001,7 @@
     if (!ent) return;
     OSR.state.combat.selectedId = id;
     if (field === 'hp') setEntryHp(ent, entryHp(ent) + delta);
+    else if (field === 'wounds') setEntryWounds(ent, entryWounds(ent) + delta);
     else if (ent.kind === 'monster') setEntryHd(ent, MonsterParse.hdNum(ent.hd) + delta);
     renderTracker();
     renderCombatantDetail();
@@ -814,9 +1021,11 @@
     if (!ent) return;
     if (e.target.classList.contains('cbt-hd')) { ent.hd = e.target.value; saveDebounced(); }
     else if (e.target.classList.contains('cbt-hp')) { setEntryHp(ent, e.target.value); }
+    else if (e.target.classList.contains('cbt-wounds')) { setEntryWounds(ent, e.target.value); }
+    else if (e.target.classList.contains('cbt-wt')) { ent.woundThreshold = Math.max(0, Math.round(Number(e.target.value) || 0)); saveDebounced(); }
   }
   function onTrackerChange(e) {
-    if (e.target.classList.contains('cbt-hd') || e.target.classList.contains('cbt-hp')) {
+    if (/\bcbt-(hd|hp|wounds|wt)\b/.test(e.target.className)) {
       renderTracker();
       renderCombatantDetail();
     }
@@ -905,6 +1114,7 @@
     document.addEventListener('keydown', onCombatKey);
 
     $('#dice-apply').addEventListener('click', applyDamageToSelected);
+    $('#dice-apply-ua').addEventListener('click', onUaDamageClick);
   }
 
   Object.assign(OSR, {
@@ -918,6 +1128,7 @@
     turnIndex, nextTurn, prevTurn, setRound, moveSelection,
     rollEntryAttack, rollEntrySave, rollEntryMorale, rollEntrySkill, rollEntrySlaughter, rollEntryMadness,
     slHitNote, slMadnessDice, slSlaughterDie,
+    isUaEntry, entryWounds, entryWoundThreshold, setEntryWounds, applyWoundsToSelected, renderUaDamage, uaRowLine2, uaMonsterDetailHtml,
     renderCombat, renderCombatBar, statusTagsHtml, rowHtml, renderTracker, chip, renderCombatantDetail,
     onTrackerClick, stepEntry, onTrackerContextMenu, onTrackerInput, onTrackerChange, onDetailClick, onCombatKey,
     wireCombat

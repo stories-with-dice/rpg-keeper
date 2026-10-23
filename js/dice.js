@@ -106,6 +106,9 @@
   /* Roll + log                                                         */
   /* ------------------------------------------------------------------ */
   OSR.lastRoll = null; // structured result of the most recent Dice Roller roll (for "Apply damage")
+  // The most recent percentile roll ({ roll, target, verdict, source }): an
+  // Unknown Armies attack, whose wounds depend on the weapon (js/combat.js).
+  OSR.lastPercent = null;
 
   function pushLog(source, formula, total, detail) {
     const state = OSR.state;
@@ -117,6 +120,7 @@
     showLast(total, formula, detail);
     // Any roll that isn't from the Dice Roller replaces what's shown, so retire the apply context.
     OSR.lastRoll = null;
+    OSR.lastPercent = null;
     OSR.updateApplyButton();
     return entry;
   }
@@ -159,7 +163,10 @@
     else if (roll === 1) verdict = 'Crit';
     else if (tens === ones) verdict = 'Matched ' + verdict;
     const entry = pushLog(source || 'Roll', '≤' + target + '%', roll, verdict);
-    OSR.updateApplyButton(); // pushLog already cleared lastRoll — a % roll isn't "damage"
+    // pushLog cleared lastRoll — a % roll isn't "damage" itself, but an
+    // Unknown Armies attack's wounds come from it (see js/combat.js).
+    OSR.lastPercent = { roll: roll, target: target, verdict: verdict, source: source || 'Roll' };
+    OSR.updateApplyButton();
     return entry;
   }
 

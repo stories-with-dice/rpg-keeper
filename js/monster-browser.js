@@ -37,6 +37,8 @@
     // sheet as PCs), so hide it rather than let it add nonsense 'ua3e' monsters.
     const gen = $('#mb-gen');
     if (gen) gen.hidden = (OSR.currentSystem ? OSR.currentSystem() : 'osr') !== 'osr';
+    // Unknown Armies GMCs have no Hit Dice: hide the HD range filter.
+    document.querySelectorAll('#tab-bestiary .mb-hd-field').forEach(el => { el.hidden = OSR.currentSystem() === 'ua3e'; });
     const filtered = browserMatches();
     const total = monstersForSystem().length;
     $('#mb-count').textContent = filtered.length + ' / ' + total;

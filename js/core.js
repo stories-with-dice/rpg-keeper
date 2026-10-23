@@ -244,9 +244,10 @@
     c.max = m < 0 ? 0 : m;
   }
 
+  // Returns false when the browser refuses (storage full, blocked storage).
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(OSR.state)); }
-    catch (e) { console.warn('save failed', e); }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(OSR.state)); return true; }
+    catch (e) { console.warn('save failed', e); return false; }
   }
 
   function activeChar() {

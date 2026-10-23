@@ -120,9 +120,9 @@ Kevin realized the supernatural was real after he lost time for an hour in 2006 
 
 \`\`\`ua
 Identities
-Civil War Re-Enactor 65%* — Provides Initiative, Substitutes for Dodge, Substitutes for Fitness
-Father 35% — Coerces Connect, Evaluates Helplessness, Substitutes for Secrecy
-School Custodian 20% — Evaluates Isolation, Substitutes for Knowledge, Substitutes for Notice
+Veteran 65%* — Substitutes for Fitness, Resists Violence, Provides Firearm Attacks
+Caring 35% — Substitutes for Connect, Substitutes for Status, Resists Isolation
+Autodidact 20% — Substitutes for Knowledge, Substitutes for Notice, Resists Unnatural
 
 Passions
 Fear (Isolation): Dying alone and unloved.
@@ -145,6 +145,12 @@ Self: 2 hardened / 0 failed
 Unnatural: 1 hardened / 2 failed
 Violence: 2 hardened / 3 failed
 \`\`\`
+
+## Book references
+
+- **Veteran** 65%: [Veteran], [Resists Shocks to a Meter], [Provides Firearm Attacks]
+- **Caring** 35%: [Caring], [Resists Shocks to a Meter]
+- **Autodidact** 20%: [Autodidact], [Resists Shocks to a Meter]
 `;
 
   const SEED_LA = `# Lucinda Adams [Unknown Armies]
@@ -163,8 +169,8 @@ After witnessing a bibliomancer performing magick, Lucinda rationalized that sou
 
 \`\`\`ua
 Identities
-Biblioklept 65%* — Evaluates the Unnatural, Substitutes for Knowledge, Substitutes for Secrecy
-Obnoxious 55% — Coerces Helplessness, Protects Connect, Substitutes for Lie
+Occultist 65%* — Substitutes for Knowledge, Casts Rituals, Evaluates Unnatural
+Troll 55% — Substitutes for Lie, Coerces Helplessness, Reads Rage
 
 Passions
 Fear (Helplessness): Losing her connection to reality.
@@ -187,6 +193,11 @@ Self: 2 hardened / 1 failed
 Unnatural: 1 hardened / 0 failed
 Violence: 1 hardened / 0 failed
 \`\`\`
+
+## Book references
+
+- **Occultist** 65%: [Occultist], [Casts Rituals], [Evaluates a Meter]
+- **Troll** 55%: [Troll], [Coerces a Meter], [Read Passion or Obsession]
 `;
 
   // Silent Legions pregens, one per class (Investigator, Scholar, Socialite,

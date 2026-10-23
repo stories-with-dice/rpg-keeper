@@ -14,8 +14,8 @@ After witnessing a bibliomancer performing magick, Lucinda rationalized that sou
 
 ```ua
 Identities
-Biblioklept 65%* — Evaluates the Unnatural, Substitutes for Knowledge, Substitutes for Secrecy
-Obnoxious 55% — Coerces Helplessness, Protects Connect, Substitutes for Lie
+Occultist 65%* — Substitutes for Knowledge, Casts Rituals, Evaluates Unnatural
+Troll 55% — Substitutes for Lie, Coerces Helplessness, Reads Rage
 
 Passions
 Fear (Helplessness): Losing her connection to reality.
@@ -38,3 +38,8 @@ Self: 2 hardened / 1 failed
 Unnatural: 1 hardened / 0 failed
 Violence: 1 hardened / 0 failed
 ```
+
+## Book references
+
+- **Occultist** 65%: [Occultist], [Casts Rituals], [Evaluates a Meter]
+- **Troll** 55%: [Troll], [Coerces a Meter], [Read Passion or Obsession]

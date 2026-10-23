@@ -607,6 +607,18 @@ button, input, textarea, select {
 }
 .dice-apply:hover:not(:disabled) { background: var(--apply-bg-hover); }
 .dice-apply:disabled { opacity: .55; cursor: not-allowed; }
+/* Unknown Armies: wounds from the last percentile attack roll, by weapon (js/combat.js renderUaDamage). */
+.dice-apply-ua {
+  margin-top: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.35;
+  background: var(--bg-3); border: 1px solid var(--apply-border); border-radius: var(--radius);
+}
+.dice-apply-ua[hidden] { display: none; }
+.dau-head { margin-bottom: 6px; }
+.dau-btns { display: flex; flex-wrap: wrap; gap: 4px; }
+.dau-btn { padding: 3px 7px; font-size: 12px; background: var(--apply-bg); border-color: var(--apply-border); }
+.dau-btn:hover { background: var(--apply-bg-hover); }
+.dau-btn b { margin-left: 3px; }
+.dau-note { margin-top: 6px; color: var(--text-dim); font-style: italic; }
 
 /* ---------- Settings ---------- */
 #tab-settings h2 { color: var(--accent); }
@@ -821,6 +833,12 @@ button, input, textarea, select {
 }
 .cbt-stepbtn:hover { border-color: var(--accent); color: var(--accent); }
 .cbt-max { color: var(--text-dim); }
+/* Unknown Armies rows: wounds count up to the wound threshold (p.63 bands). */
+.cbt-wounds, .cbt-wt { width: 46px; text-align: center; }
+.ua-wstate { font-weight: 600; }
+.ua-wstate-hurt { border-color: var(--accent-2); color: var(--accent-2); }
+.ua-wstate-badly-hurt { border-color: var(--danger); color: var(--danger); }
+.ua-wstate-unconscious, .ua-wstate-dead { background: var(--danger); border-color: var(--danger); color: var(--bg); }
 
 /* ---------- Status condition tags ---------- */
 .cbt-tags, .cd-statuses { display: inline-flex; flex-wrap: wrap; gap: 5px; align-items: center; }
@@ -919,6 +937,14 @@ button, input, textarea, select {
 .cd-abils p { margin: .3em 0; }
 .cd-abils b { color: var(--accent); }
 .cd-desc { color: var(--text-dim); font-style: italic; }
+/* A Bestiary GMC's panel (js/combat.js uaMonsterDetailHtml). */
+.cd-ua-top { align-items: flex-start; }
+.cd-ua-top .cd-lbl { padding-top: 3px; }
+.cd-ua-ids { padding-left: 0; margin: 0; flex: 1 1 300px; }
+.cd-ua-abils, .cd-ua-shock { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.ua-abil { padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); font-size: 12px; }
+.cd-ua-passions > div { flex: 1 1 300px; }
+.cd-notes { font-size: 13px; max-height: 340px; overflow: auto; }
 .cd-raw { margin-top: 8px; }
 .cd-raw summary { cursor: pointer; color: var(--text-dim); font-size: 12px; }
 .cd-raw pre {
@@ -943,6 +969,7 @@ button, input, textarea, select {
 }
 .mm-filter input[type="number"] { width: 64px; }
 .mm-filter label { display: inline-flex; align-items: center; color: var(--text-dim); font-size: 12px; }
+.mm-filter label[hidden] { display: none; }
 .mm-lib-list {
   list-style: none; margin: 8px 0 0; padding: 0;
   max-height: 360px; overflow: auto;
@@ -1039,6 +1066,7 @@ button, input, textarea, select {
   padding: 6px 8px; color: inherit; width: 100%;
 }
 .mb-hd-field { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-dim); }
+.mb-hd-field[hidden] { display: none; }
 .mb-hd-field input {
   width: 64px; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 6px 8px; color: inherit;

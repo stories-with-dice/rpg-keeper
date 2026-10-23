@@ -11,9 +11,18 @@
  *   UAStatblock.parseFeatures(featuresText) -> [{raw,kind,verb,target}, ...]
  *   UAStatblock.computeSubstitutions(identities) -> { <AbilityName>: {pct,identityName,obsession} }
  *   UAStatblock.setShockValue(innerText, meter, field, value) -> new inner text (see js/characters.js)
+ *   UAStatblock.parseUAMonster(text) -> a GMC/entity statblock (see "Bestiary" below)
+ *   UAStatblock.uaMonsterDef(text) -> a Bestiary def (source 'ua3e', raw = text) or null
+ *   UAStatblock.abilityValues(def) -> { <AbilityName>: { value, from } } for a GMC (Combat)
+ *   UAStatblock.woundState(wounds, threshold) -> { key, label } (p.63 wound bands)
+ *   UAStatblock.initiativeOf(identities) -> the Provides Initiative identity, or null
+ *   UAStatblock.damageOptions(roll) -> wounds from a d100 attack roll, by weapon (p.63-65)
  *
  * def shape:
- *   { identities: [ { name, pct, obsession, features } ],
+ *   { identities: [ { name, pct, value, obsession, features } ],   (pct null when value is a
+ *                                                                  range or dice, e.g. "3d10+40")
+ *     obsession: string,                          ("Obsession: …" line, optional)
+ *     abilityOverrides: { <AbilityName>: { pct, obsession, note } },  ("Abilities" section, optional)
  *     passions: { fear?: {meter, text}, noble?: {text}, rage?: {text} },
  *     relationships: [ { role, text, name, pct } ],
  *     woundThreshold: number|null,
@@ -66,6 +75,8 @@
 
   // All 10 abilities, upbeat+downbeat flattened.
   const ALL_ABILITIES = METER_ORDER.reduce((a, m) => a.concat(METER_ABILITIES[m]), []);
+  // "Struggle 80%* — note": an ability the book gives directly (a GMC's "Abilities" section).
+  const ABILITY_LINE_RE = new RegExp('^(' + ALL_ABILITIES.join('|') + ')\\s+(\\d{1,3})%(\\*)?(?:\\s*(?:[—–-]+|:)\\s*(.*))?$', 'i');
 
   // p.19's "Defend Against Challenges To… With…" table, cross-checked against
   // every sample character sheet's per-meter "Defend with X / Attack with Y"
@@ -140,13 +151,16 @@
       parseFeatures(id.features).forEach(f => {
         if (f.kind !== 'substitutes') return;
         const ability = ALL_ABILITIES.find(a => a.toLowerCase() === f.target.toLowerCase());
-        if (ability) out[ability] = { pct: id.pct, identityName: id.name, obsession: !!id.obsession };
+        if (ability) out[ability] = { pct: id.pct, value: id.value != null ? id.value : String(id.pct), identityName: id.name, obsession: !!id.obsession };
       });
     });
     return out;
   }
 
-  const SECTION_RE = /^(identities|passions|relationships|shock(?:\s+meter)?)\s*:?\s*$/i;
+  const SECTION_RE = /^(identities|passions|relationships|abilities|shock(?:\s+meter)?)\s*:?\s*$/i;
+  // An identity's rating: a number, or (for some unnatural entities) a range
+  // ("20-80") or dice ("3d10+40") the GM rolls or picks; "?" when unknown.
+  const IDENTITY_RE = /^(.+?)\s+(\?|\d[\dd+\-]*)%(\*)?(?:\s*(?:[—–-]+|:)\s*(.*))?$/;
 
   // p.30: upbeat = 65 − 5×hardened, downbeat = 15 + 5×hardened. Hardened is
   // 0–9; the formula alone keeps upbeat in [20,65] and downbeat in [15,60]
@@ -174,7 +188,7 @@
   }
 
   function parseUAStatblock(text) {
-    const def = { identities: [], passions: {}, relationships: [], woundThreshold: null, shock: {} };
+    const def = { identities: [], passions: {}, relationships: [], woundThreshold: null, shock: {}, obsession: '', abilityOverrides: {} };
     let section = '';
     String(text || '').replace(/\r\n?/g, '\n').split('\n').forEach(raw => {
       const line = raw.trim();
@@ -186,13 +200,22 @@
       const sm = line.match(SECTION_RE);
       if (sm) { section = sm[1].toLowerCase().replace(/\s+meter$/, ''); return; }
 
+      const om = line.match(/^obsession\s*:\s*(.+)$/i);
+      if (om) { def.obsession = om[1].trim(); return; }
+
       if (section === 'identities') {
-        const m = line.match(/^(.+?)\s+(\d{1,3})%(\*)?\s*(?:[—–-]+|:)\s*(.*)$/);
+        const m = line.match(IDENTITY_RE);
         if (m) {
           def.identities.push({
-            name: m[1].trim(), pct: parseInt(m[2], 10),
-            obsession: !!m[3], features: m[4].trim()
+            name: m[1].trim(), pct: /^\d{1,3}$/.test(m[2]) ? parseInt(m[2], 10) : null, value: m[2],
+            obsession: !!m[3], features: (m[4] || '').trim()
           });
+        }
+      } else if (section === 'abilities') {
+        const m = line.match(ABILITY_LINE_RE);
+        if (m) {
+          const name = ALL_ABILITIES.find(a => a.toLowerCase() === m[1].toLowerCase());
+          def.abilityOverrides[name] = { pct: parseInt(m[2], 10), obsession: !!m[3], note: (m[4] || '').trim() };
         }
       } else if (section === 'passions') {
         const m = line.match(/^(Fear|Noble|Rage)\b\s*(?:\(([^)]*)\))?\s*:\s*(.+)$/i);
@@ -212,8 +235,9 @@
         if (!meter) return;
         const rest = line.slice(line.indexOf(':') + 1);
         const nums = rest.match(/\d+/g);
-        if (nums && nums.length >= 2) {
-          def.shock[meter] = { hardened: parseInt(nums[0], 10), failed: parseInt(nums[1], 10) };
+        // A GMC's book entry sometimes gives only the hardened notches.
+        if (nums && nums.length) {
+          def.shock[meter] = { hardened: parseInt(nums[0], 10), failed: nums.length >= 2 ? parseInt(nums[1], 10) : 0 };
         }
       }
     });
@@ -264,10 +288,130 @@
     return lines.join('\n');
   }
 
+  /* ---- Bestiary: GMCs and unnatural entities (system 'ua3e') ----
+   * A GMC uses the same statblock as a PC fence, after a short header:
+   *
+   *   Night Clerk                         <- name (the first line)
+   *   Sees everything, says nothing       <- any other header line: description
+   *   Type: GMC                           <- or "Significant Unnatural Entity", …
+   *   Book: Homebrew, p. 1
+   *   Wound Threshold: 50                 <- or the book's text ("Equal to its host")
+   *   Obsession: Knowing who checks in.
+   *
+   *   Identities / Abilities / Passions / Shock   (as in parseUAStatblock)
+   *
+   * A Bestiary def keeps this text as `raw` — the only source of truth, parsed
+   * again wherever it is shown (Combat, the library preview), the same as a
+   * PC's ```ua fence. */
+  const HEADER_RE = /^(type|book|wound\s+threshold)\s*:\s*(.*)$/i;
+
+  function parseUAMonster(text) {
+    const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n').map(l => l.trim());
+    const out = { name: '', desc: '', type: '', book: '', woundThresholdText: '' };
+    const desc = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
+      if (SECTION_RE.test(line)) break; // the header ends at the first section
+      const h = line.match(HEADER_RE);
+      if (h) {
+        const key = h[1].toLowerCase().replace(/\s+/g, ' ');
+        if (key === 'type') out.type = h[2].trim();
+        else if (key === 'book') out.book = h[2].trim();
+        else if (!/^\d+\s*$/.test(h[2])) out.woundThresholdText = h[2].trim();
+      } else if (/^obsession\s*:/i.test(line)) {
+        continue; // parseUAStatblock reads it
+      } else if (!out.name) {
+        out.name = line;
+      } else {
+        desc.push(line);
+      }
+    }
+    out.desc = desc.join(' ');
+    const def = parseUAStatblock(text);
+    def.hasShock = Object.keys(def.shock).length > 0;
+    return Object.assign(def, out);
+  }
+
+  // A Bestiary def for a pasted GMC statblock (js/monster-modals.js), or null
+  // without a name. The generic def fields stay empty: no HD, AC or attacks.
+  function uaMonsterDef(text) {
+    const raw = String(text || '').replace(/\r\n?/g, '\n').trim();
+    const p = parseUAMonster(raw);
+    if (!p.name) return null;
+    return {
+      name: p.name, source: 'ua3e', raw: raw, desc: p.desc,
+      hd: '', hdNum: 0, hp: 0, attacks: [], abilities: [], attacksText: '', savesText: ''
+    };
+  }
+
+  // A GMC's ten abilities for Combat: the book's own value ("Abilities"
+  // section) first, then an identity that Substitutes for it, then the shock
+  // gauge formula (p.30). Without a Shock section the gauge gives nothing, so
+  // an ability no identity covers is left out (the book does not say).
+  // { <AbilityName>: { value: '60' | '3d10+40', from: 'book'|'identity'|'shock', identityName? } }
+  function abilityValues(def) {
+    const out = {};
+    if (def.hasShock !== false && Object.keys(def.shock || {}).length) {
+      METER_ORDER.forEach(m => {
+        const a = def.abilities[m];
+        out[a.upbeatName] = { value: String(a.upbeatPct), from: 'shock' };
+        out[a.downbeatName] = { value: String(a.downbeatPct), from: 'shock' };
+      });
+    }
+    const subs = computeSubstitutions(def.identities);
+    Object.keys(subs).forEach(a => { out[a] = { value: subs[a].value, from: 'identity', identityName: subs[a].identityName }; });
+    Object.keys(def.abilityOverrides || {}).forEach(a => { out[a] = { value: String(def.abilityOverrides[a].pct), from: 'book' }; });
+    return out;
+  }
+
+  // p.63, "Damage": at half the wound threshold you hurt after the fight, at
+  // three quarters you are badly beat up, at 90% you fall unconscious, at the
+  // threshold you are dead. Wounds count up from 0.
+  const WOUND_BANDS = [
+    { key: 'dead', at: 1, label: 'Dead' },
+    { key: 'unconscious', at: 0.9, label: 'Unconscious' },
+    { key: 'badly-hurt', at: 0.75, label: 'Badly hurt' },
+    { key: 'hurt', at: 0.5, label: 'Hurt' }
+  ];
+  function woundBand(threshold, at) { return Math.ceil(threshold * at); }
+  function woundState(wounds, threshold) {
+    const w = Math.max(0, Number(wounds) || 0), t = Number(threshold) || 0;
+    if (t > 0) {
+      const b = WOUND_BANDS.find(x => w >= woundBand(t, x.at));
+      if (b) return { key: b.key, label: b.label };
+    }
+    return { key: 'ok', label: w > 0 ? 'Wounded' : 'Unhurt' };
+  }
+
+  // p.62: a tie in who acts first goes to the higher rating used — unless an
+  // identity Provides Initiative, then that identity's rating always counts.
+  function initiativeOf(identities) {
+    return (identities || []).find(id => parseFeatures(id.features).some(f =>
+      f.kind === 'provides' && /^initiative$/i.test(f.target))) || null;
+  }
+
+  // Wounds from a successful d100 attack roll (p.63-65): fists, kicks and
+  // thrown things do the sum of the two dice (32 -> 5); a melee weapon adds
+  // +3 for each of sharp, big and heavy; a gun does the roll itself (capped
+  // by the weapon), and so does a melee weapon on a matched success.
+  function damageOptions(roll) {
+    const r = Math.max(1, Math.min(100, Math.round(Number(roll) || 0)));
+    const sum = Math.floor((r % 100) / 10) + (r % 10);
+    return [
+      { key: 'fists', label: 'Fists / thrown', wounds: sum },
+      { key: 'melee3', label: 'Weapon +3', wounds: sum + 3 },
+      { key: 'melee6', label: 'Weapon +6', wounds: sum + 6 },
+      { key: 'melee9', label: 'Weapon +9', wounds: sum + 9 },
+      { key: 'gun', label: 'Gun / matched weapon', wounds: r }
+    ];
+  }
+
   const api = {
     parseUAStatblock, computeAbilityPair, computeAllAbilities,
     METER_ORDER, METER_ABILITIES, ALL_ABILITIES, METER_DEFEND_ATTACK, METER_RELATIONSHIP, normalizeRole,
-    parseFeatureClause, parseFeatures, computeSubstitutions, FEATURE_KEYWORDS, setShockValue
+    parseFeatureClause, parseFeatures, computeSubstitutions, FEATURE_KEYWORDS, setShockValue,
+    parseUAMonster, uaMonsterDef, abilityValues, WOUND_BANDS, woundBand, woundState, initiativeOf, damageOptions
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.UAStatblock = api;

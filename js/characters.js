@@ -107,6 +107,14 @@
     const v = m && m[1].match(/^\s*Madness\s*:\s*(\d+)/im);
     return v ? parseInt(v[1], 10) : 0;
   }
+  // The first ```ua fence of a character, parsed (null when the sheet has
+  // none) — Combat reads its identities for the Provides Initiative rating.
+  function uaFenceDef(ch) {
+    if (!window.UAStatblock) return null;
+    UA_FENCE_RE.lastIndex = 0;
+    const m = UA_FENCE_RE.exec((ch && ch.body) || '');
+    return m ? window.UAStatblock.parseUAStatblock(m[1]) : null;
+  }
   function charactersForSystem() {
     const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
     return OSR.state.characters.filter(c => charSystemKey(c) === sys);
@@ -124,6 +132,12 @@
     const verbHtml = '<span class="ua-feature-kw ua-feature-' + f.kind + '">' + escapeHtml(f.verb) + '</span>';
     const targetHtml = isSubLink ? '<span class="ua-sub">' + escapeHtml(f.target) + '</span>' : escapeHtml(f.target);
     return verbHtml + (f.target ? ' ' + targetHtml : '');
+  }
+
+  // An identity's whole features string, each clause as above (the Bestiary
+  // GMC panel in Combat, js/combat.js, shows identities the same way).
+  function uaFeaturesHtml(featuresText, subAbilities) {
+    return window.UAStatblock.parseFeatures(featuresText).map(f => uaFeatureClauseHtml(f, subAbilities || new Set())).join(', ');
   }
 
   // One row of clickable Hardened/Failed dots (9 or 5 of them). `data-value`
@@ -162,8 +176,8 @@
       const sub = subs[name];
       if (!sub) return escapeHtml(name) + ' ' + computedPct + '%';
       const title = escapeHtml(name) + ': ' + computedPct + '% computed, substituted by ' +
-        escapeHtml(sub.identityName) + ' ' + sub.pct + '%';
-      return '<span class="ua-sub" title="' + title + '">' + escapeHtml(name) + '</span> ' + sub.pct + '%';
+        escapeHtml(sub.identityName) + ' ' + escapeHtml(sub.value) + '%';
+      return '<span class="ua-sub" title="' + title + '">' + escapeHtml(name) + '</span> ' + escapeHtml(sub.value) + '%';
     };
 
     // One row per meter — relationship, meter name (w/ Defend/Coerce
@@ -200,8 +214,8 @@
     const identities = def.identities.length ? '<h4>Identities</h4><ul class="ua-identities">' + def.identities.map(id => {
       const nameHtml = subIdentityNames.has(id.name)
         ? '<b class="ua-sub">' + escapeHtml(id.name) + '</b>' : '<b>' + escapeHtml(id.name) + '</b>';
-      const featuresHtml = UAS.parseFeatures(id.features).map(f => uaFeatureClauseHtml(f, subAbilities)).join(', ');
-      return '<li>' + nameHtml + ' ' + id.pct + '%' +
+      const featuresHtml = uaFeaturesHtml(id.features, subAbilities);
+      return '<li>' + nameHtml + ' ' + escapeHtml(id.value != null ? id.value : String(id.pct)) + '%' +
         (id.obsession ? ' <span class="badge">Obsession</span>' : '') +
         (featuresHtml ? ': ' + featuresHtml : '') + '</li>';
     }).join('') + '</ul>' : '';
@@ -760,12 +774,12 @@
   }
 
   Object.assign(OSR, {
-    detectNameSystem, createCharacter, charSystemKey, slFenceMadness, charactersForSystem, charB, fillCharOptions, refreshCharUI,
+    detectNameSystem, createCharacter, charSystemKey, slFenceMadness, uaFenceDef, charactersForSystem, charB, fillCharOptions, refreshCharUI,
     splitBodyColumns, charColHtml, charColHead, renderCharView, renderCharEdit,
     setMode, renameHpTracker, renameWoundTracker, renameMadnessTracker, saveEdit, renameChar, deleteChar,
     charViewTarget, linkifyInText, applyPendingCompLink,
     openSelMenu, closeSelMenu, linkSelToExisting, wireCharacters,
-    uaStatblockHtml, renderUABlocks, renderCharMarkdown, syncWoundTracker,
+    uaStatblockHtml, uaFeaturesHtml, renderUABlocks, renderCharMarkdown, syncWoundTracker,
     patchUAFence, setUAShockValue,
     get selMenuData() { return selMenuData; }
   });

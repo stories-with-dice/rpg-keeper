@@ -110,6 +110,11 @@
           <kbd>N</kbd>/<kbd>P</kbd> next/prev turn &middot;
           drag rows to reorder &middot; click stats in the panel below to roll them
         </p>
+        <p id="cb-ua-hint" class="hint cb-hint" hidden>
+          Unknown Armies: no initiative roll &mdash; declare actions; on a tie the higher rating used goes first,
+          and a Provides Initiative identity always counts (<b>Init</b>). Wounds count up to the wound threshold.
+          After a percentile attack, pick the weapon under the Dice Roller to apply the wounds.
+        </p>
         <ol class="tracker-list" id="tracker-list"></ol>
         <p id="tracker-empty" class="hint">No combatants yet. Add a character or monster above.</p>
         <div id="combatant-detail" class="combatant-detail"></div>
@@ -232,6 +237,7 @@
         </form>
         <div class="dice-last" id="dice-last" aria-live="polite"></div>
         <button id="dice-apply" class="btn dice-apply" hidden></button>
+        <div id="dice-apply-ua" class="dice-apply-ua" hidden></div>
       </aside>
 
       <section class="consumables-panel">
@@ -279,8 +285,8 @@
         <div class="mm-lib">
           <div class="mm-filter">
             <input id="mm-search" type="text" placeholder="Search name&hellip;" autocomplete="off" />
-            <label>HD&nbsp;<input id="mm-hd-min" type="number" step="0.5" placeholder="min" /></label>
-            <label>&ndash;&nbsp;<input id="mm-hd-max" type="number" step="0.5" placeholder="max" /></label>
+            <label class="mm-hd-field">HD&nbsp;<input id="mm-hd-min" type="number" step="0.5" placeholder="min" /></label>
+            <label class="mm-hd-field">&ndash;&nbsp;<input id="mm-hd-max" type="number" step="0.5" placeholder="max" /></label>
             <button id="mm-roll" class="btn" title="Pick a random monster from the filtered list">
               <i class="fa-solid fa-dice-d20"></i> Roll
             </button>
@@ -295,7 +301,7 @@
               <button type="button" class="btn mm-mode-btn" data-mode="fields">Fill in fields</button>
             </div>
             <div class="mm-mode-paste">
-              <p class="hint">Paste one or more stat blocks (Shadowdark / OSE). Leave a blank line between monsters.</p>
+              <p class="hint" id="mm-paste-hint">Paste one or more stat blocks (Shadowdark / OSE). Leave a blank line between monsters.</p>
               <textarea id="mm-paste-area" spellcheck="false" placeholder="BEAR, POLAR&#10;A mighty white bear&hellip;&#10;AC 13, HP 34, ATK 2 claw +6 (2d6), MV near, S +4, D +1, C +3, I -2, W +1, Ch -2, AL N, LV 7"></textarea>
               <div class="mm-paste-actions">
                 <button id="mm-parse-add" class="btn btn-primary">Parse &rarr; library + combat</button>

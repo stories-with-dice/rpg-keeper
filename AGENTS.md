@@ -54,7 +54,9 @@ js/combat-populate.js   Combat's "+ Populate by HD…" modal: spends a total HD 
                        always exactly, then confirms before adding to combat
 js/ua-statblock.js      pure parser for a Unknown Armies 3rd Edition character's ```ua fenced
                        statblock (identities/passions/relationships/shock meters) + the p.30
-                       computed-ability formula — no DOM, UMD-ish like js/monsters.js
+                       computed-ability formula, the Bestiary GMC statblock (parseUAMonster), and
+                       UA Combat's pure rules (wound bands, initiative, damage by weapon) — no
+                       DOM, UMD-ish like js/monsters.js
 js/brp-monsters-data.js hand-authored window.BRP_MONSTER_LIBRARY = [...73 BRP creatures/NPCs...] —
                        Basic Roleplaying: Universal Game Engine, Chapter 11: Creatures
 js/brp-compendium-seed.js hand-authored window.BRP_COMPENDIUM_SEED — the Powers (Magic/Mutation/
@@ -75,7 +77,8 @@ js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomp
 js/tables.js            the Tables tab: tag filter + name search over window.TABLES_LIBRARY, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
-js/io.js                the "paste sheet as text" modal, and whole-state export/import
+js/io.js                the "paste sheet as text" modal, whole-state export/import, and
+                       content-pack import (see "State model")
 js/dice-ui.js           the Dice Roller panel (preset grid + custom formula) and the right-click
                        "roll with modifiers" popup
 js/seed.js              first-run seeding of example characters + the monster library
@@ -187,11 +190,11 @@ re-parses, so editing one never silently reclassifies it. `seedMonsters()` (`js/
 output `'osr'` (the bundled library is Shadowdark/OSE only) and — since it's also Settings → **Reload
 defaults** — only ever *replaces* the `'osr'`-tagged slice of `state.monsters` (filter out `'osr'`,
 concat the fresh defs), preserving any other system's monsters exactly like the Compendium's
-Delete-all staying scoped to the active system. There's no ua3e-specific monster *schema* (Unknown
-Armies GMCs use the same shock-meter sheet as PCs, not HD/AC/attacks) — this is visibility-only: an
-empty Bestiary under System=ua3e until someone pastes/fills in something there, still using the
-Shadowdark/OSE field shapes since that's what the form supports today. **BRP is different** — it has
-its own real monster schema and its own bundled bestiary; see "Basic Roleplaying (BRP)" below.
+Delete-all staying scoped to the active system. Unknown Armies GMCs have their own
+schema — the same shock-meter statblock as PCs, kept as text — and their own Combat display; see
+"Unknown Armies: Bestiary GMCs and Combat" below. Nothing UA is bundled: the Bestiary under
+System=ua3e is empty until someone pastes a GMC or imports a content pack. **BRP** also has its own
+monster schema and its own bundled bestiary; see "Basic Roleplaying (BRP)" below.
 The **PL random monster
 generator** (`#mb-gen`, top of the Bestiary tab) is pure Shadowdark-core-rulebook tables though, with no
 Unknown Armies equivalent at all — `renderMonsterBrowser()` hides it outright (`el.hidden`, not a
@@ -223,6 +226,9 @@ the same owner lookup — see "Silent Legions (SL)" below. This filter is also w
 from before the `ensureHpTracker` fix harmless — e.g. a UA character's leftover `"HP (Name)"` tracker
 from an older save simply never displays in either System view, without needing a destructive migration
 to remove it.
+
+`OSR.setSystem(s)` (`js/settings.js`) is that handler's body — Settings' `#set-system` change calls
+it, and so does a content-pack import of another system (`js/io.js`'s `importPack`).
 
 `test/ui.test.js`'s **"System switch: Compendium, Bestiary, Character dropdown, Combat pickers, and
 Consumables all partition together…"** is the consolidated regression test for this whole feature area —
@@ -333,6 +339,46 @@ alone, same as HP's `value` is untouched by anything sheet-driven.
     `parseUAStatblock` of that fence's current inner text) purely to log it: `OSR.pushNote(ch.name,
     '<Meter> Hardened|Failed <before> → <after>')`, skipped when `before === after` (can't happen from a
     dot click itself, but can from a direct `setUAShockValue` call) so no-op edits don't clutter the log.
+
+**Unknown Armies: Bestiary GMCs and Combat.** A GMC or unnatural entity is a `state.monsters` def
+with `source: 'ua3e'` whose **`raw` text is the only source of truth** — like a PC's ` ```ua ` fence,
+it is parsed again wherever it is shown (`UAStatblock.parseUAMonster(def.raw)`), so nothing derived
+can drift. The text is a short header — the name on the first line, any other plain line as the
+description, optional `Type:` / `Book:` / `Wound Threshold:` (a number, or the book's formula text,
+kept as `woundThresholdText`) / `Obsession:` lines — then the PC fence's sections, plus two things
+GMC entries need: an identity rated with a range or dice (`3d10+40%` → `pct: null`, `value:
+'3d10+40'`; `computeSubstitutions` carries `value` so the PC panel shows it too), and an
+`Abilities` section (`Struggle 70%`, `abilityOverrides`). A Shock line with only hardened notches
+reads failed as 0. The generic def fields stay empty (`hd: ''`, no AC/attacks), and a UA def may
+also carry `notes` (Markdown book text, shown in Combat) and `ref` (the content pack's stable id).
+`UAStatblock.abilityValues(def)` merges a GMC's abilities: the book's `Abilities` value, then a
+Substitutes-for identity, then the shock gauge — and without a Shock section the gauge gives
+nothing (the book doesn't say), rather than the misleading 0-notch 65%/15%.
+- **The modals** (`js/monster-modals.js`): `PASTE_ONLY_SOURCES = ['ua3e']` is the reverse of
+  `FIELDS_ONLY_SOURCES` — the "Fill in fields" button is hidden (`setFieldsModeAllowed`), the paste
+  hint/placeholder switch to a GMC example, `parseAndAdd` splits the text on `---` lines and builds
+  each def with `UAStatblock.uaMonsterDef`, and `saveMonsterEdit` re-parses with it, keeping the
+  original's `notes`/`ref` (they aren't in the text). `monsterMetaLine`/`monsterCardHtml` have UA
+  branches. Both HD range filters (`.mm-hd-field`, `.mb-hd-field`) are hidden under System=ua3e.
+- **Combat** (`js/combat.js`): `isUaEntry(e)` is a `ua3e` monster or a character whose
+  `charSystemKey` is `'ua3e'`. A UA entry counts **wounds up** to its wound threshold instead of HP
+  and HD: a monster on the entry (`e.wounds`, `e.woundThreshold` — set by `addMonsterEntry` from the
+  parsed threshold, 0 when it's a formula, editable in the row as `.cbt-wt`), a character on its
+  `"Wounds (Name)"` tracker (`addCharEntry` syncs it from the sheet, or creates it at the book's
+  default 50). `setEntryWounds` clamps to the threshold. The row (`uaRowLine2`) is a wounds stepper,
+  the wound state chip (`UAStatblock.woundState`: p.63's hurt ½ / badly hurt ¾ / unconscious 90% /
+  dead 100%, `Math.ceil` per `woundBand`), and an **Init** chip — p.62 has no initiative roll, only
+  a tie-break by the rating used, where a *Provides Initiative* identity always counts
+  (`UAStatblock.initiativeOf`). `entryDown` is unconscious or worse. `uaMonsterDetailHtml` lists
+  identities (feature verbs highlighted via `OSR.uaFeaturesHtml`, shared with the PC panel),
+  abilities, passions, obsession, shock, and the `notes` book text (`marked` + `annotate`, so
+  `[links]` and `NN%` work). **Damage**: `rollPercent` (`js/dice.js`) records `OSR.lastPercent`
+  (`pushLog` clears it, like `lastRoll`), and `updateApplyButton` → `renderUaDamage` shows
+  `#dice-apply-ua` under the Dice Roller while a UA combatant is selected: one button per
+  `UAStatblock.damageOptions(roll)` (fists = sum of the dice, weapon +3/+6/+9, gun = the roll,
+  p.63-65) plus a note for the verdict (crit, matched, miss, fumble). A plain dice roll's **Apply
+  damage** adds wounds (`applyWoundsToSelected`); Scarlet Heroes never applies. `renderCombatBar`
+  hides **Populate by HD** and shows `#cb-ua-hint` under System=ua3e.
 
 Separately (not `ua`-fence-specific), `annotate.js`'s `PCT_RE` turns any bare `NN%` (0-100) anywhere in
 the Character Viewer into a clickable roll, same as dice/`$var` spans — `data-formula="%NN"` (plus any
@@ -542,6 +588,16 @@ between `data/tables.json` and `js/tables-data.js` (a test asserts this one too,
   imported files get backfilled. Per-entry backfills (e.g. `entry.statuses = []`) also go here.
 - **Export is automatic.** `exportData()` serialises the whole `state`, so any field you add to
   `state` is included in Export/Import with no extra code.
+- **Merge import** (`importData`, Cancel on its Replace/Merge question) goes through
+  `mergeCompendium`/`mergeMonsters` (`js/io.js`): each item keeps its own `system` (missing → `'osr'`),
+  and a duplicate is skipped only inside the same system — same `ref` (a content pack's stable id),
+  or for a Compendium entry the same name + category.
+- **Content packs**: a file with a `pack: { name, system }` header (plus `compendium`/`monsters`) is
+  handled by `importPack` instead — merge only, never the Replace question, one confirm, then
+  `OSR.setSystem(pack.system)`. `OSR.save()` returns `false` when the browser refuses (storage full);
+  `importPack` then removes what it added and alerts, rather than keep data a reload would lose (all
+  state is one `localStorage` key, ~5 MB). The UA3 data tools (a separate, private project that reads
+  the user's own PDFs) write such a pack for `ua3e`; its book text must never be committed here.
 - Entries created at runtime (`addCharEntry`, `addMonsterEntry`) must include every field
   `ensureStateShape` expects — it only runs on load/import, not on new entries.
 - **Trackers ("consumables") are campaign-global**: `state.consumables`, not `character.consumables`
@@ -813,7 +869,12 @@ app's own code can't be split into ES modules (see "Layout"), just plain `<scrip
   inline `SEED_FALLBACK[i]` (same order). `SEED_WWN` / `SEED_SD` are the OSR examples; `SEED_KJ` /
   `SEED_LA` (Kevin Johnson, Lucinda Adams, both from the UA3e "Karmic Ties and Fifth Wheels" starter
   kit) are the Unknown Armies examples, each with a ```ua fence (see "Unknown Armies 3rd Edition"
-  above); `SEED_SL_DEE` / `SEED_SL_MIRIAM` / `SEED_SL_VIVIAN` / `SEED_SL_RAY` are the Silent Legions
+  above). Their starter-kit identities are swapped for the nearest book identities (Veteran, Caring,
+  Autodidact; Occultist, Troll), with each book identity's substitution and features and the kit's
+  ratings, so a "Book references" list after the fence can link them — the same layout as a sheet
+  from the UA3 data tools' generator. Those entries come from the private content pack (see "State
+  model"), so the logic test checks the link names against a fixed list (`UA_PREGEN_LINKS`);
+  `SEED_SL_DEE` / `SEED_SL_MIRIAM` / `SEED_SL_VIVIAN` / `SEED_SL_RAY` are the Silent Legions
   pregens, one per class (Investigator, Scholar, Socialite, Tough), built by the book's level-1 rules
   and linked into one Boston party by their Connections. Each has a ```sl fence, so it shows only
   under System = sl, and Miriam's Affluent wealth starts her Madness tracker at 10. The UA and SL

@@ -36,12 +36,84 @@
     URL.revokeObjectURL(url);
   }
 
+  // Merge helpers, shared by a plain merge and a content pack. An entry or a
+  // monster with a `ref` (a stable id from the pack that made it) is skipped
+  // when one with the same ref is already there, so importing a pack twice
+  // adds nothing; a Compendium entry without one is matched by name and
+  // category. Both stay inside their own system (see AGENTS.md "Game system").
+  const validSystem = (s, fallback) => (OSR.SYSTEMS.indexOf(s) === -1 ? fallback : s);
+  function mergeCompendium(list, fallbackSystem) {
+    const state = OSR.state;
+    const added = [];
+    list.forEach(en => {
+      if (!en) return;
+      const system = validSystem(en.system, fallbackSystem);
+      const key = String(en.name || '').toLowerCase() + '\0' + en.category;
+      if (state.compendium.some(x => (x.system || 'osr') === system &&
+          ((en.ref && x.ref === en.ref) || (x.name.toLowerCase() + '\0' + x.category) === key))) return;
+      const item = { id: OSR.uid(), name: String(en.name || ''), category: en.category,
+        source: en.source || OSR.COMPENDIUM_DEFAULT_SOURCE, system: system,
+        body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() };
+      if (en.ref) item.ref = String(en.ref);
+      state.compendium.push(item);
+      added.push(item.id);
+    });
+    return added;
+  }
+  function mergeMonsters(list, fallbackSystem) {
+    const state = OSR.state;
+    const added = [];
+    list.forEach(m => {
+      if (!m) return;
+      const system = validSystem(m.system, fallbackSystem);
+      if (m.ref && state.monsters.some(x => x.ref === m.ref && (x.system || 'osr') === system)) return;
+      m.id = OSR.uid();
+      m.system = system;
+      state.monsters.push(m);
+      added.push(m.id);
+    });
+    return added;
+  }
+
+  // A content pack — { pack: { name, system }, compendium: [...], monsters: [...] },
+  // for example the Unknown Armies catalog that the UA3 data tools write — is
+  // only ever added to what is there. It never replaces the whole state, so
+  // the Replace/Merge question of a full export is not asked.
+  function importPack(data) {
+    const pack = data.pack || {};
+    const system = validSystem(pack.system, OSR.currentSystem());
+    const comp = Array.isArray(data.compendium) ? data.compendium : [];
+    const mons = Array.isArray(data.monsters) ? data.monsters : [];
+    const name = String(pack.name || 'content pack');
+    if (!confirm('Add "' + name + '" to ' + (OSR.SYSTEM_LABELS[system] || system) + '?\n\n' +
+        comp.length + ' Compendium entries and ' + mons.length + ' Bestiary monsters. ' +
+        'Entries you already have are skipped. Nothing is replaced.')) return;
+    const addedC = mergeCompendium(comp, system);
+    const addedM = mergeMonsters(mons, system);
+    OSR.ensureStateShape();
+    if (!OSR.save()) {
+      // The browser keeps all data in one storage entry: if it is full, keep
+      // the app as it was instead of holding data that a reload would lose.
+      const c = new Set(addedC), m = new Set(addedM);
+      OSR.state.compendium = OSR.state.compendium.filter(e => !c.has(e.id));
+      OSR.state.monsters = OSR.state.monsters.filter(d => !m.has(d.id));
+      OSR.save();
+      alert('Import failed: the browser storage is full, so "' + name + '" was not added.');
+      return;
+    }
+    OSR.pushNote('Import', 'added ' + addedC.length + ' Compendium entries and ' + addedM.length +
+      ' monsters from "' + name + '"');
+    if (OSR.currentSystem() !== system) OSR.setSystem(system);
+    else { OSR.renderCompendium(); OSR.renderMonsterBrowser(); OSR.renderSettings(); }
+  }
+
   function importData(file) {
     const reader = new FileReader();
     reader.onload = () => {
       let data;
       try { data = JSON.parse(reader.result); }
       catch (e) { alert('Import failed: not valid JSON.'); return; }
+      if (data && data.pack && typeof data.pack === 'object') { importPack(data); return; }
       if (!data || !Array.isArray(data.characters)) { alert('Import failed: no "characters" array.'); return; }
       const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters + monsters into current data.');
       if (replace) {
@@ -54,15 +126,8 @@
             state.consumables.push({ id: OSR.uid(), name: String(c.name || ''), value: Number(c.value) || 0, max: Number(c.max) || 0 });
           }
         });
-        if (Array.isArray(data.monsters)) data.monsters.forEach(m => { m.id = OSR.uid(); state.monsters.push(m); });
-        if (Array.isArray(data.compendium)) data.compendium.forEach(en => {
-          const key = String(en.name || '').toLowerCase() + '\0' + en.category;
-          if (!state.compendium.some(x => (x.name.toLowerCase() + '\0' + x.category) === key)) {
-            state.compendium.push({ id: OSR.uid(), name: String(en.name || ''), category: en.category,
-              source: en.source || OSR.COMPENDIUM_DEFAULT_SOURCE,
-              body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() });
-          }
-        });
+        if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
+        if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
         if (typeof data.notes === 'string' && data.notes.trim()) {
           state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
         }
@@ -71,7 +136,7 @@
       OSR.ensureStateShape();
       if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
       OSR.mode = 'view';
-      OSR.save();
+      if (!OSR.save()) alert('The browser storage is full: the imported data is not saved and is lost when you reload. Export it, or delete data you do not need.');
       OSR.applyTheme();
       OSR.refreshCharUI();
       OSR.renderLog();
@@ -100,5 +165,5 @@
     });
   }
 
-  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, importData, wireIO });
+  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, mergeCompendium, mergeMonsters, importPack, importData, wireIO });
 })(window.OSR = window.OSR || {});

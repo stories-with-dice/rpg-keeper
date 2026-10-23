@@ -1653,6 +1653,28 @@ test('seed fallbacks: the inline Unknown Armies and Silent Legions sheets match 
   });
 });
 
+// The Unknown Armies Compendium is not bundled (the UA3 data tools build it
+// from the user's own books), so this checks the link names themselves: the
+// names of those tools' entries for these identities and features.
+const UA_PREGEN_LINKS = ['Veteran', 'Caring', 'Autodidact', 'Occultist', 'Troll', 'Resists Shocks to a Meter',
+  'Provides Firearm Attacks', 'Casts Rituals', 'Evaluates a Meter', 'Coerces a Meter', 'Read Passion or Obsession'];
+test('Unknown Armies pregens: every identity is a book identity with a [link] to it, and the sheet parses', () => {
+  T.SEED_FILES.forEach((f, i) => {
+    if (!/-ua3e\.txt$/.test(f)) return;
+    const body = T.SEED_FALLBACK[i];
+    const refs = (body.match(/\[([^\]]+)\]/g) || []).map(r => r.slice(1, -1)).filter(r => r !== 'Unknown Armies');
+    refs.forEach(r => assert.ok(UA_PREGEN_LINKS.includes(r), f + ': [' + r + '] is not a known Compendium name'));
+    const def = window.UAStatblock.parseUAStatblock(body.match(/```ua\n([\s\S]*?)\n```/)[1]);
+    assert.ok(def.identities.length >= 2, f + ': identities parse');
+    def.identities.forEach(id => {
+      assert.ok(refs.includes(id.name), f + ': ' + id.name + ' links to its Compendium entry');
+      assert.match(id.features, /^Substitutes for \w+/, f + ': ' + id.name + ' substitutes for an ability, as the book identity does');
+    });
+    assert.equal(Object.keys(window.UAStatblock.computeSubstitutions(def.identities)).length >= def.identities.length, true);
+    assert.equal(def.woundThreshold, 50);
+  });
+});
+
 test('Silent Legions pregens: every [ref] resolves in the SL Compendium, and the sheet numbers parse', () => {
   T.state.compendium = [];
   T.seedSlCompendium();
@@ -1704,6 +1726,87 @@ test('importData: replace (OK) swaps the whole state', async () => {
   T.importData(new window.File([payload], 'p.json', { type: 'application/json' }));
   await new Promise(r => setTimeout(r, 30));
   assert.deepEqual(T.state.characters.map(c => c.name), ['Only']);
+});
+
+test('importData: a merge keeps each Compendium entry\'s system, and skips a duplicate only inside the same system', async () => {
+  window.confirm = () => false;         // Cancel => merge
+  T.state.compendium.push({ id: 'o1', name: 'Witchsight', category: 'Spells', source: 'Unknown', body: '', system: 'osr' });
+  const payload = JSON.stringify({
+    characters: [],
+    compendium: [
+      { name: 'Witchsight', category: 'Spells', source: 'Spell', body: 'UA', system: 'ua3e' },
+      { name: 'Witchsight', category: 'Spells', source: 'Spell', body: 'dup', system: 'osr' },
+      { name: 'Old Entry', category: 'Items', body: '' }
+    ]
+  });
+  T.importData(new window.File([payload], 'm.json', { type: 'application/json' }));
+  await new Promise(r => setTimeout(r, 30));
+  const ws = T.state.compendium.filter(e => e.name === 'Witchsight');
+  assert.deepEqual(ws.map(e => e.system).sort(), ['osr', 'ua3e'], 'the UA entry is added, the OSR duplicate is not');
+  assert.equal(T.state.compendium.find(e => e.name === 'Old Entry').system, 'osr', 'no system field: OSR, as before');
+});
+
+// An invented two-entry pack in the shape the UA3 data tools write (no book text in this repo).
+function uaPack() {
+  return {
+    pack: { name: 'Test UA pack', system: 'ua3e' },
+    characters: [],
+    compendium: [{ name: 'Night Shift', category: 'Spells', source: 'Spell', system: 'ua3e', ref: 'spell:t:night-shift', body: 'See [Night Clerk].' }],
+    monsters: [{ name: 'Night Clerk', source: 'ua3e', system: 'ua3e', ref: 'character:t:night-clerk', notes: 'Works nights.',
+      raw: 'Night Clerk\nType: GMC\nWound Threshold: 45\n\nIdentities\nNight Clerk 55% — Provides Initiative',
+      hd: '', hdNum: 0, hp: 0, attacks: [], abilities: [], attacksText: '', savesText: '' }]
+  };
+}
+
+test('importData: a content pack is only ever added — no Replace question — keeps its system, and switches System to it', async () => {
+  const asked = [];
+  window.confirm = m => { asked.push(m); return true; };   // OK here would mean "Replace ALL" for a full export
+  T.createCharacter('# Keeper\nHP 5/5');
+  T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+  await new Promise(r => setTimeout(r, 30));
+  assert.equal(asked.length, 1);
+  assert.match(asked[0], /Add "Test UA pack" to Unknown Armies 3rd Ed\?/);
+  assert.match(asked[0], /1 Compendium entries and 1 Bestiary monsters/);
+  assert.doesNotMatch(asked[0], /Replace ALL/);
+  assert.ok(T.state.characters.some(c => c.name === 'Keeper'), 'nothing is replaced');
+  assert.equal(T.state.compendium.find(e => e.name === 'Night Shift').system, 'ua3e');
+  assert.equal(T.state.compendium.find(e => e.name === 'Night Shift').ref, 'spell:t:night-shift');
+  assert.equal(T.state.monsters.find(m => m.name === 'Night Clerk').system, 'ua3e');
+  assert.equal(T.currentSystem(), 'ua3e');
+
+  // A second import of the same pack adds nothing (matched by ref).
+  T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+  await new Promise(r => setTimeout(r, 30));
+  assert.equal(T.state.compendium.filter(e => e.name === 'Night Shift').length, 1);
+  assert.equal(T.state.monsters.filter(m => m.name === 'Night Clerk').length, 1);
+});
+
+test('importData: Cancel on a content pack adds nothing', async () => {
+  window.confirm = () => false;
+  T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+  await new Promise(r => setTimeout(r, 30));
+  assert.equal(T.state.compendium.length, 0);
+  assert.equal(T.state.monsters.length, 0);
+});
+
+test('importData: a content pack that does not fit in browser storage is taken out again, with an alert', async () => {
+  const proto = window.Storage.prototype;
+  const setItem = proto.setItem;
+  const alerts = [];
+  const origAlert = window.alert;
+  window.alert = m => alerts.push(m);
+  proto.setItem = function () { throw new Error('QuotaExceededError'); };
+  try {
+    T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+    await new Promise(r => setTimeout(r, 30));
+  } finally {
+    proto.setItem = setItem;
+    window.alert = origAlert;
+  }
+  assert.equal(T.state.compendium.length, 0);
+  assert.equal(T.state.monsters.length, 0);
+  assert.equal(alerts.length, 1);
+  assert.match(alerts[0], /storage is full/);
 });
 
 /* ================================================================== */
