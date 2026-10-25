@@ -21,7 +21,7 @@
       <button class="tab-btn" data-tab="settings">Settings</button>
     </nav>
     <div class="header-actions">
-      <button id="gd-status" class="btn gd-status" hidden></button>
+      <button id="dbx-status" class="btn dbx-status" hidden></button>
       <button id="btn-export" class="btn">Export</button>
       <button id="btn-import" class="btn">Import</button>
       <input type="file" id="file-import" accept="application/json,.json" hidden />
@@ -225,29 +225,35 @@
           <button id="set-add-pregens" class="btn">Add missing pregens</button>
         </div>
 
-        <div class="setting-row setting-row-action gd-row">
+        <div class="setting-row setting-row-action dbx-row">
           <span class="setting-text">
-            <b>Google Drive sync</b>
-            <span class="hint" id="gd-hint">&nbsp;</span>
-            <details class="gd-setup" id="gd-setup">
-              <summary>Setup: OAuth client ID</summary>
-              <label class="gd-client">
-                <span>OAuth client ID</span>
-                <input type="text" id="gd-client-id" spellcheck="false" autocomplete="off" />
+            <b>Dropbox sync</b>
+            <span class="hint" id="dbx-hint">&nbsp;</span>
+            <span class="dbx-code-row" id="dbx-code-row" hidden>
+              <input type="text" id="dbx-code" placeholder="Paste the code from Dropbox" spellcheck="false" autocomplete="off" />
+              <button id="dbx-finish" class="btn btn-primary">Finish</button>
+              <a id="dbx-open" class="btn" href="#" target="_blank" rel="noopener">Open Dropbox</a>
+              <button id="dbx-cancel" class="btn">Cancel</button>
+            </span>
+            <details class="dbx-setup" id="dbx-setup">
+              <summary>Setup: Dropbox app key</summary>
+              <label class="dbx-key">
+                <span>App key</span>
+                <input type="text" id="dbx-app-key" spellcheck="false" autocomplete="off" />
               </label>
-              <ol class="hint gd-steps">
-                <li>In the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud console</a>, create a project and enable the <b>Google Drive API</b>.</li>
-                <li>Open <b>Google Auth Platform</b> and set up the consent screen (audience <b>External</b>). In <b>Testing</b>, add your Google account as a test user.</li>
-                <li>Under <b>Clients</b>, create a <b>Web application</b> client. Add this page's origin to <b>Authorized JavaScript origins</b>: <code id="gd-origin"></code></li>
-                <li>Paste the client ID above. The client ID is not a secret.</li>
+              <ol class="hint dbx-steps">
+                <li>In the <a href="https://www.dropbox.com/developers/apps" target="_blank" rel="noopener">Dropbox App Console</a>, click <b>Create app</b>. Choose <b>Scoped access</b> and <b>App folder</b>, and give the app a name.</li>
+                <li>On the <b>Permissions</b> tab, tick <b>files.content.write</b> and <b>files.content.read</b>. Click <b>Submit</b>.</li>
+                <li>On the <b>Settings</b> tab, keep <b>Allow public clients (Implicit Grant &amp; PKCE)</b> on <b>Allow</b>. You do not need a redirect URI.</li>
+                <li>Copy the <b>App key</b> and paste it above. The app key is not a secret. Do not use the app secret.</li>
               </ol>
             </details>
           </span>
           <span class="setting-actions">
-            <button id="gd-connect" class="btn btn-primary">Connect</button>
-            <button id="gd-resolve" class="btn" hidden>Resolve</button>
-            <button id="gd-sync" class="btn" hidden>Sync now</button>
-            <button id="gd-disconnect" class="btn" hidden>Disconnect</button>
+            <button id="dbx-connect" class="btn btn-primary">Connect</button>
+            <button id="dbx-resolve" class="btn" hidden>Resolve</button>
+            <button id="dbx-sync" class="btn" hidden>Sync now</button>
+            <button id="dbx-disconnect" class="btn" hidden>Disconnect</button>
           </span>
         </div>
       </section>
@@ -302,17 +308,17 @@
     </div>
   </div>
 
-  <div class="modal" id="gd-modal" hidden>
+  <div class="modal" id="dbx-modal" hidden>
     <div class="modal-box">
-      <h3 id="gd-modal-title">Google Drive</h3>
-      <p id="gd-modal-text"></p>
-      <ul class="gd-compare" id="gd-modal-compare"></ul>
-      <p class="hint">Google Drive keeps earlier versions of the file for 30 days (right-click it in Drive &rarr; <b>File information</b> &rarr; <b>Manage versions</b>). To keep a copy of this browser's campaign first, click <b>Export</b>.</p>
+      <h3 id="dbx-modal-title">Dropbox</h3>
+      <p id="dbx-modal-text"></p>
+      <ul class="dbx-compare" id="dbx-modal-compare"></ul>
+      <p class="hint">Dropbox keeps earlier versions of the file for at least 30 days (on dropbox.com, open the file's <b>&hellip;</b> menu &rarr; <b>Activity</b> &rarr; <b>Version history</b>). To keep a copy of this browser's campaign first, click <b>Export</b>.</p>
       <div class="modal-actions">
-        <button id="gd-use-drive" class="btn">Use the Drive copy</button>
-        <button id="gd-use-local" class="btn">Keep this browser's copy</button>
-        <button id="gd-export" class="btn">Export</button>
-        <button id="gd-later" class="btn">Decide later</button>
+        <button id="dbx-use-remote" class="btn">Use the Dropbox copy</button>
+        <button id="dbx-use-local" class="btn">Keep this browser's copy</button>
+        <button id="dbx-export" class="btn">Export</button>
+        <button id="dbx-later" class="btn">Decide later</button>
       </div>
     </div>
   </div>
@@ -501,7 +507,7 @@
   <script src="js/compendium-popups.js"></script>
   <script src="js/tables.js"></script>
   <script src="js/settings.js"></script>
-  <script src="js/gdrive.js"></script>
+  <script src="js/dropbox.js"></script>
   <script src="js/io.js"></script>
   <script src="js/dice-ui.js"></script>
   <script src="js/seed.js"></script>

@@ -1,6 +1,6 @@
 /* js/settings.js — the Settings tab: system, style theme, Scarlet Heroes toggle,
  * monster-library reload, Compendium reseed/clear, add missing example characters.
- * The Google Drive sync row has its own file, js/gdrive.js.
+ * The Dropbox sync row has its own file, js/dropbox.js.
  */
 (function (OSR) {
   'use strict';
@@ -39,7 +39,7 @@
       ' example characters (OSR, Unknown Armies, Silent Legions) are in this campaign' +
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
-    OSR.renderGdrive();
+    OSR.renderDropbox();
   }
   // Settings → System, and an imported pack of another system (js/io.js):
   // re-render everything the system partitions (see AGENTS.md "Game system").

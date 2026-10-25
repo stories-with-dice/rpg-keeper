@@ -47,7 +47,7 @@ const SCRIPTS = [
   'js/compendium-popups.js',
   'js/tables.js',
   'js/settings.js',
-  'js/gdrive.js',
+  'js/dropbox.js',
   'js/io.js',
   'js/dice-ui.js',
   'js/seed.js',

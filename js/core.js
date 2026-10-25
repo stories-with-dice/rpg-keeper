@@ -245,12 +245,12 @@
   }
 
   // Returns false when the browser refuses (storage full, blocked storage).
-  // A successful save also queues a Google Drive upload when sync is on
-  // (js/gdrive.js — a no-op otherwise).
+  // A successful save also queues a Dropbox upload when sync is on
+  // (js/dropbox.js — a no-op otherwise).
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(OSR.state)); }
     catch (e) { console.warn('save failed', e); return false; }
-    if (OSR.gdriveNoteSave) OSR.gdriveNoteSave();
+    if (OSR.dropboxNoteSave) OSR.dropboxNoteSave();
     return true;
   }
 

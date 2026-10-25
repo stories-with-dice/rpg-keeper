@@ -28,7 +28,7 @@
       if (e.key === 'Escape') {
         OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
-        OSR.closePopulateHdModal(); OSR.closeGdriveModal();
+        OSR.closePopulateHdModal(); OSR.closeDropboxModal();
         OSR.closeCompEntry(); OSR.closeAllCompPops();
       }
     });
@@ -46,7 +46,7 @@
     OSR.wireCompendiumPopups();
     OSR.wireTables();
     OSR.wireSettings();
-    OSR.wireGdrive();
+    OSR.wireDropbox();
     OSR.wireRollPopup();
   }
 
@@ -81,7 +81,7 @@
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderCombat();
-    OSR.initGdrive(); // last: syncs the seeded state, if Google Drive sync is on
+    OSR.initDropbox(); // last: syncs the seeded state, if Dropbox sync is on
   }
 
   /* ------------------------------------------------------------------ */

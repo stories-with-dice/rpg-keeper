@@ -141,7 +141,7 @@
   const STORAGE_FULL_MSG = 'The browser storage is full: the imported data is not saved and is lost when you reload. Export it, or delete data you do not need.';
 
   // Replaces the whole campaign with `data` (a full export): Import → Replace
-  // all, and a pull from Google Drive (js/gdrive.js). Returns OSR.save()'s result.
+  // all, and a pull from Dropbox (js/dropbox.js). Returns OSR.save()'s result.
   function replaceState(data) {
     OSR.state = Object.assign(JSON.parse(JSON.stringify(OSR.STATE_DEFAULTS)), data);
     return finishLoad();
