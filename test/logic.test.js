@@ -1711,8 +1711,7 @@ test('importData: merge (Cancel) adds characters, monsters and compendium entrie
     monsters: [{ name: 'Slime', hd: '1', hp: 4, ac: { asc: 10 }, attacks: [], abilities: [] }],
     compendium: [{ name: 'Mystery Tonic', category: 'Items', source: 'Homebrew', body: 'Glows.' }],
   });
-  T.importData(new window.File([payload], 'party.json', { type: 'application/json' }));
-  await new Promise(r => setTimeout(r, 30));
+  await T.importData(new window.File([payload], 'party.json', { type: 'application/json' }));
   assert.ok(T.state.characters.some(c => c.name === 'Keeper'), 'existing character kept');
   assert.ok(T.state.characters.some(c => c.name === 'Newcomer'));
   assert.ok(T.state.monsters.some(m => m.name === 'Slime'));
@@ -1723,8 +1722,7 @@ test('importData: replace (OK) swaps the whole state', async () => {
   window.confirm = () => true;          // OK => replace
   T.createCharacter('# Old\nHP 5/5');
   const payload = JSON.stringify({ characters: [{ id: 'x', name: 'Only', body: '# Only' }] });
-  T.importData(new window.File([payload], 'p.json', { type: 'application/json' }));
-  await new Promise(r => setTimeout(r, 30));
+  await T.importData(new window.File([payload], 'p.json', { type: 'application/json' }));
   assert.deepEqual(T.state.characters.map(c => c.name), ['Only']);
 });
 
@@ -1739,8 +1737,7 @@ test('importData: a merge keeps each Compendium entry\'s system, and skips a dup
       { name: 'Old Entry', category: 'Items', body: '' }
     ]
   });
-  T.importData(new window.File([payload], 'm.json', { type: 'application/json' }));
-  await new Promise(r => setTimeout(r, 30));
+  await T.importData(new window.File([payload], 'm.json', { type: 'application/json' }));
   const ws = T.state.compendium.filter(e => e.name === 'Witchsight');
   assert.deepEqual(ws.map(e => e.system).sort(), ['osr', 'ua3e'], 'the UA entry is added, the OSR duplicate is not');
   assert.equal(T.state.compendium.find(e => e.name === 'Old Entry').system, 'osr', 'no system field: OSR, as before');
@@ -1762,8 +1759,7 @@ test('importData: a content pack is only ever added — no Replace question — 
   const asked = [];
   window.confirm = m => { asked.push(m); return true; };   // OK here would mean "Replace ALL" for a full export
   T.createCharacter('# Keeper\nHP 5/5');
-  T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
-  await new Promise(r => setTimeout(r, 30));
+  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   assert.equal(asked.length, 1);
   assert.match(asked[0], /Add "Test UA pack" to Unknown Armies 3rd Ed\?/);
   assert.match(asked[0], /1 Compendium entries and 1 Bestiary monsters/);
@@ -1775,16 +1771,14 @@ test('importData: a content pack is only ever added — no Replace question — 
   assert.equal(T.currentSystem(), 'ua3e');
 
   // A second import of the same pack adds nothing (matched by ref).
-  T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
-  await new Promise(r => setTimeout(r, 30));
+  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   assert.equal(T.state.compendium.filter(e => e.name === 'Night Shift').length, 1);
   assert.equal(T.state.monsters.filter(m => m.name === 'Night Clerk').length, 1);
 });
 
 test('importData: Cancel on a content pack adds nothing', async () => {
   window.confirm = () => false;
-  T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
-  await new Promise(r => setTimeout(r, 30));
+  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   assert.equal(T.state.compendium.length, 0);
   assert.equal(T.state.monsters.length, 0);
 });
@@ -1797,8 +1791,7 @@ test('importData: a content pack that does not fit in browser storage is taken o
   window.alert = m => alerts.push(m);
   proto.setItem = function () { throw new Error('QuotaExceededError'); };
   try {
-    T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
-    await new Promise(r => setTimeout(r, 30));
+    await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   } finally {
     proto.setItem = setItem;
     window.alert = origAlert;

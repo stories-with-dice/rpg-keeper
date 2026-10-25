@@ -107,35 +107,42 @@
     else { OSR.renderCompendium(); OSR.renderMonsterBrowser(); OSR.renderSettings(); }
   }
 
+  // Resolves once the file is read and handled (tests await it; the file
+  // input ignores it). FileReader finishes after an unknown delay.
   function importData(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      let data;
-      try { data = JSON.parse(reader.result); }
-      catch (e) { alert('Import failed: not valid JSON.'); return; }
-      if (data && data.pack && typeof data.pack === 'object') { importPack(data); return; }
-      if (!data || !Array.isArray(data.characters)) { alert('Import failed: no "characters" array.'); return; }
-      const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters + monsters into current data.');
-      if (replace) {
-        if (!replaceState(data)) alert(STORAGE_FULL_MSG);
-      } else {
-        const state = OSR.state;
-        data.characters.forEach(c => { c.id = OSR.uid(); state.characters.push(c); });
-        if (Array.isArray(data.consumables)) data.consumables.forEach(c => {
-          if (!state.consumables.some(x => x.name === c.name)) {
-            state.consumables.push({ id: OSR.uid(), name: String(c.name || ''), value: Number(c.value) || 0, max: Number(c.max) || 0 });
-          }
-        });
-        if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
-        if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
-        if (typeof data.notes === 'string' && data.notes.trim()) {
-          state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => { try { handleImport(reader.result); } finally { resolve(); } };
+      reader.onerror = () => { alert('Import failed: the file could not be read.'); resolve(); };
+      reader.readAsText(file);
+    });
+  }
+
+  function handleImport(text) {
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) { alert('Import failed: not valid JSON.'); return; }
+    if (data && data.pack && typeof data.pack === 'object') { importPack(data); return; }
+    if (!data || !Array.isArray(data.characters)) { alert('Import failed: no "characters" array.'); return; }
+    const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters + monsters into current data.');
+    if (replace) {
+      if (!replaceState(data)) alert(STORAGE_FULL_MSG);
+    } else {
+      const state = OSR.state;
+      data.characters.forEach(c => { c.id = OSR.uid(); state.characters.push(c); });
+      if (Array.isArray(data.consumables)) data.consumables.forEach(c => {
+        if (!state.consumables.some(x => x.name === c.name)) {
+          state.consumables.push({ id: OSR.uid(), name: String(c.name || ''), value: Number(c.value) || 0, max: Number(c.max) || 0 });
         }
-        if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-OSR.MAX_LOG);
-        if (!finishLoad()) alert(STORAGE_FULL_MSG);
+      });
+      if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
+      if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
+      if (typeof data.notes === 'string' && data.notes.trim()) {
+        state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
       }
-    };
-    reader.readAsText(file);
+      if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-OSR.MAX_LOG);
+      if (!finishLoad()) alert(STORAGE_FULL_MSG);
+    }
   }
 
   const STORAGE_FULL_MSG = 'The browser storage is full: the imported data is not saved and is lost when you reload. Export it, or delete data you do not need.';
