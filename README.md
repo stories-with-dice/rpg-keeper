@@ -11,7 +11,8 @@ Disciplines, and Equipment in the Compendium, and its creature templates and nam
 Bestiary; see [Silent Legions](#silent-legions) below. Unknown Armies Combat counts wounds up to
 the wound threshold, and its book content can be loaded from your own PDFs; see
 [Unknown Armies](#unknown-armies). Plain
-HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser.
+HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser
+(unless you turn on the optional [Google Drive sync](#google-drive-sync-optional)).
 
 - **Live:** deployed to GitHub Pages from `main` (see the repo's Pages settings for the URL).
 - **Local:** just open `index.html` in a browser. Everything works from `file://`, including the
@@ -32,6 +33,57 @@ reloads and browser restarts, but it is per-browser and per-machine.
   pack's system.
 
 Use Export/Import to back up, move between machines, or share a party.
+
+### Google Drive sync (optional)
+
+Settings → **Google Drive sync** keeps the campaign in your Google Drive, so every browser where
+you connect has the same data. It is off until you click **Connect**.
+
+- The campaign is one file in your Drive, **Character Keeper campaign.json**. It has the same
+  format as **Export**, so **Import** can also read it. The app can see only the files it created
+  in your Drive, nothing else.
+- After each change, the app uploads the campaign a few seconds later. The header shows the state:
+  **Synced**, **Saving…**, **Reconnect**, **Resolve**, or **Sync error**. Click it to sync now.
+- When you open the app, or come back to its tab, it checks Drive. If only Drive changed, the app
+  loads the Drive copy. If Drive and this browser both changed, the app asks which copy to keep.
+  The first time you connect a browser to a Drive that already has a campaign, it asks too.
+- Google sign-in in the browser lasts about one hour. After that, the header shows **Reconnect**.
+  Your changes stay in this browser until you reconnect, then they upload.
+- **Disconnect** stops the sync. The campaign stays in this browser and the file stays in Drive.
+
+**Where it works.** It needs the app on a web address: GitHub Pages, or a local server such as
+`python3 -m http.server 8000` (then open `http://localhost:8000`). It does not work when you
+open `index.html` as a file (`file://`) or in the single-file release download, because Google
+sign-in needs a web origin.
+
+**Setup (once).** The app needs a Google OAuth client ID:
+
+1. In the [Google Cloud console](https://console.cloud.google.com/), create a project and enable
+   the **Google Drive API**.
+2. In **Google Auth Platform**, set up the consent screen with audience **External**. While the app
+   is in **Testing**, only the test users you add can sign in (up to 100). Add your own Google
+   account. The app asks only for `drive.file`, a non-sensitive scope, so publishing it for
+   everyone needs only Google's basic verification.
+3. In **Clients**, create a **Web application** client. Under **Authorized JavaScript origins**, add
+   every address you open the app from, for example `http://localhost:8000` and
+   `https://<user>.github.io`. An origin is the scheme, host, and port only: no path. No redirect
+   URI is needed.
+4. In the app, open Settings → Google Drive sync → **Setup** and paste the client ID. It is stored
+   in this browser only. (A deployment can also set `DEFAULT_CLIENT_ID` in `js/gdrive.js`, so its
+   users don't have to.) The client ID is not a secret.
+
+**If sign-in fails**, check what the Google popup says:
+
+- *Error 400: origin_mismatch*: the page address is not in **Authorized JavaScript origins**. Add
+  it exactly: scheme, host, and port. `http://localhost:8000` and `http://127.0.0.1:8000` are two
+  different origins.
+- *Access blocked … has not completed the Google verification process*: the Google account is not
+  a test user. Add it in **Google Auth Platform → Audience**.
+- *Something went wrong. Sorry, something went wrong there. Try again.*: Google's own sign-in page
+  failed. Known causes are an embedded browser (for example the browser pane in the Claude desktop
+  app), some Firefox setups, and a client or origin you changed in the last few minutes (Google
+  says changes take 5 minutes to a few hours). Try again later in Chrome or Safari.
+- No popup opens: the browser blocked it. Allow pop-ups for the site, then click **Connect** again.
 
 ---
 
@@ -362,6 +414,8 @@ Set Settings → **System** to **Silent Legions**.
   the four Silent Legions pregens) are only created on a fresh install. This adds any of them your
   campaign doesn't have, matched by name; your own characters and edits are left alone. Each one
   shows under its own **System**. The button is disabled when nothing is missing.
+- **Google Drive sync** — **Connect**, **Sync now**, **Disconnect**, and the OAuth client ID under
+  **Setup**. See [Google Drive sync](#google-drive-sync-optional).
 
 ---
 

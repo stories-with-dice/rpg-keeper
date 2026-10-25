@@ -47,6 +47,7 @@ const SCRIPTS = [
   'js/compendium-popups.js',
   'js/tables.js',
   'js/settings.js',
+  'js/gdrive.js',
   'js/io.js',
   'js/dice-ui.js',
   'js/seed.js',
@@ -77,6 +78,9 @@ function blankSave() {
  *                                    run its real first-run seeding.
  * @param {string}  [opts.storage]    raw localStorage value to preload instead.
  * @param {string|null} [opts.promptValue]  what window.prompt() returns.
+ * @param {object} [opts.extraStorage]  more localStorage keys to preload ({key: string}).
+ * @param {function} [opts.beforeScripts]  called with `window` before the app's scripts
+ *                                        run (e.g. to stub window.fetch for boot-time work).
  */
 async function boot(opts = {}) {
   const html = read('index.html')
@@ -131,6 +135,8 @@ async function boot(opts = {}) {
 
   if (opts.storage != null) window.localStorage.setItem(STORAGE_KEY, opts.storage);
   else if (!opts.freshSeed) window.localStorage.setItem(STORAGE_KEY, blankSave());
+  Object.entries(opts.extraStorage || {}).forEach(([k, v]) => window.localStorage.setItem(k, v));
+  if (opts.beforeScripts) opts.beforeScripts(window);
 
   for (const src of SCRIPTS) {
     const el = document.createElement('script');
@@ -187,4 +193,4 @@ function key(el, k, init) {
     Object.assign({ key: k, bubbles: true, cancelable: true }, init)));
 }
 
-module.exports = { boot, rigRandom, face, fire, click, setValue, key };
+module.exports = { boot, blankSave, rigRandom, face, fire, click, setValue, key };

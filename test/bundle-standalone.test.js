@@ -48,6 +48,12 @@ test('bundle-standalone: one self-contained file that boots on its own, no sibli
   assert.ok(window.OSR, 'window.OSR is set up');
   assert.ok(window.OSR.state.characters.length > 0, 'first-run character seeding ran');
   assert.ok(window.OSR.state.monsters.length > 0, 'the bundled monster library loaded');
+  // Google Drive sync needs an http(s) origin (js/gdrive.js): from file:// it is
+  // explained and disabled, and Google's sign-in script is never requested.
+  const doc = window.document;
+  assert.match(doc.querySelector('#gd-hint').textContent, /file:\/\//);
+  assert.ok(doc.querySelector('#gd-connect').disabled);
+  assert.ok(!doc.querySelector('script[src*="accounts.google.com"]'));
 
   window.close();
   fs.rmSync(outDir, { recursive: true, force: true });

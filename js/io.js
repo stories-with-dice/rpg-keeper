@@ -117,7 +117,7 @@
       if (!data || !Array.isArray(data.characters)) { alert('Import failed: no "characters" array.'); return; }
       const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters + monsters into current data.');
       if (replace) {
-        OSR.state = Object.assign(JSON.parse(JSON.stringify(OSR.STATE_DEFAULTS)), data);
+        if (!replaceState(data)) alert(STORAGE_FULL_MSG);
       } else {
         const state = OSR.state;
         data.characters.forEach(c => { c.id = OSR.uid(); state.characters.push(c); });
@@ -132,19 +132,36 @@
           state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
         }
         if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-OSR.MAX_LOG);
+        if (!finishLoad()) alert(STORAGE_FULL_MSG);
       }
-      OSR.ensureStateShape();
-      if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
-      OSR.mode = 'view';
-      if (!OSR.save()) alert('The browser storage is full: the imported data is not saved and is lost when you reload. Export it, or delete data you do not need.');
-      OSR.applyTheme();
-      OSR.refreshCharUI();
-      OSR.renderLog();
-      OSR.renderCombat();
-      OSR.renderCompendium();
-      OSR.renderSettings();
     };
     reader.readAsText(file);
+  }
+
+  const STORAGE_FULL_MSG = 'The browser storage is full: the imported data is not saved and is lost when you reload. Export it, or delete data you do not need.';
+
+  // Replaces the whole campaign with `data` (a full export): Import → Replace
+  // all, and a pull from Google Drive (js/gdrive.js). Returns OSR.save()'s result.
+  function replaceState(data) {
+    OSR.state = Object.assign(JSON.parse(JSON.stringify(OSR.STATE_DEFAULTS)), data);
+    return finishLoad();
+  }
+
+  // After OSR.state was replaced or merged into: migrate, save, re-render.
+  function finishLoad() {
+    OSR.ensureStateShape();
+    if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
+    OSR.mode = 'view';
+    const ok = OSR.save();
+    OSR.applyTheme();
+    OSR.refreshCharUI();
+    OSR.renderNotes();
+    OSR.renderLog();
+    OSR.renderCombat();
+    OSR.renderMonsterBrowser();
+    OSR.renderCompendium();
+    OSR.renderSettings();
+    return ok;
   }
 
   function wireIO() {
@@ -165,5 +182,5 @@
     });
   }
 
-  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, mergeCompendium, mergeMonsters, importPack, importData, wireIO });
+  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, mergeCompendium, mergeMonsters, importPack, importData, replaceState, wireIO });
 })(window.OSR = window.OSR || {});

@@ -24,6 +24,13 @@ Versioning is a plain incrementing counter (`v1`, `v2`, …, no semver), compute
 highest existing release tag via `gh release list`. Run it locally with `npm run bundle-standalone`
 (writes `dist/index.html`, gitignored).
 
+**A second opt-in exception: Google Drive sync** (`js/gdrive.js`, see "Google Drive sync" below).
+When the user turns it on, the app injects Google Identity Services
+(`https://accounts.google.com/gsi/client`) at runtime and calls the Drive REST API with `fetch`.
+Nothing loads from the network until a client ID is set, and the app still works offline without
+it. GIS can't be vendored (Google serves it, and it changes), and there is no `<script>` tag for
+it in `index.html`. Don't add other runtime network dependencies on the back of this one.
+
 ## Layout
 
 ```
@@ -77,6 +84,9 @@ js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomp
 js/tables.js            the Tables tab: tag filter + name search over window.TABLES_LIBRARY, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
+js/gdrive.js            optional Google Drive sync of the whole state (GIS token + Drive REST via
+                       fetch); its Settings row, header status button, and conflict dialog — see
+                       "Google Drive sync" below
 js/io.js                the "paste sheet as text" modal, whole-state export/import, and
                        content-pack import (see "State model")
 js/dice-ui.js           the Dice Roller panel (preset grid + custom formula) and the right-click
@@ -114,6 +124,8 @@ test/logic.test.js     node:test unit tests for the app's internals (dice engine
                        state migration, annotate, compendium resolve, combat, …)
 test/ui.test.js        node:test integration tests that drive the real DOM (index.html + the app's
                        js/*.js files) through the app's delegated listeners and assert on render + persistence
+test/gdrive.test.js    node:test suite for js/gdrive.js, against a fake GIS (window.google) and a fake
+                       Drive REST API (window.fetch) — nothing talks to Google
 test/helpers/boot.js   boots the app inside jsdom for the two suites above (EasyMDE omitted → the
                        Journal / Compendium editors fall back to plain <textarea>s, as designed)
 vendor/fontawesome/    icons, referenced by index.html via relative url()
@@ -587,7 +599,12 @@ between `data/tables.json` and `js/tables-data.js` (a test asserts this one too,
   add a new field to `state`, add its default there (and to `STATE_DEFAULTS`) so old saves and
   imported files get backfilled. Per-entry backfills (e.g. `entry.statuses = []`) also go here.
 - **Export is automatic.** `exportData()` serialises the whole `state`, so any field you add to
-  `state` is included in Export/Import with no extra code.
+  `state` is included in Export/Import with no extra code — and in the Google Drive file. So never
+  put per-device or secret data in `state` (the Drive sync keeps its own keys, see below).
+- `save()` also calls `OSR.gdriveNoteSave()` after a successful write (`js/gdrive.js` — a no-op
+  unless Drive sync is on). **Replace-all** loads — Import → Replace all and a pull from Drive — go
+  through `OSR.replaceState(data)` (`js/io.js`), which shares `finishLoad()` (migrate, save,
+  re-render every panel, the Journal editor included) with a merge import.
 - **Merge import** (`importData`, Cancel on its Replace/Merge question) goes through
   `mergeCompendium`/`mergeMonsters` (`js/io.js`): each item keeps its own `system` (missing → `'osr'`),
   and a duplicate is skipped only inside the same system — same `ref` (a content pack's stable id),
@@ -893,6 +910,64 @@ app's own code can't be split into ES modules (see "Layout"), just plain `<scrip
 - `window.MONSTER_LIBRARY` is a shared constant — `seedMonsters()` **deep-clones** it before putting
   it in `state`. Any code that copies a seed/def into mutable state must clone.
 
+## Google Drive sync (`js/gdrive.js`)
+
+Optional, off by default. It stores the whole `OSR.state` as one JSON file in the user's Drive and
+keeps it in sync. There is no backend, so:
+
+- **Sign-in is the GIS token model** (`google.accounts.oauth2.initTokenClient`). A popup returns an
+  access token that lasts about one hour. There is no refresh token, so after expiry the user clicks
+  **Reconnect**. The code model needs a server that keeps a client secret, which a static app can't
+  have. The direct implicit endpoint (`response_type=token` without GIS) still works, but Google
+  documents it as legacy. `loadGis()` injects the script once, and `renderGdrive()` preloads it as
+  soon as a client ID is set. Then `requestToken()` calls `requestAccessToken` synchronously inside
+  the click, which keeps pop-up blockers quiet. Reconnect passes `{ prompt: '', login_hint: email }`.
+- **The scope is `drive.file`** (non-sensitive): the app sees only files it created. The file is
+  `GDRIVE_FILE_NAME` in My Drive, marked with `appProperties: { osrKeeper: 'campaign' }`.
+  `findRemote()` first tries the file id it synced with, then searches by that property, so a rename
+  or move in Drive doesn't break it. The Drive calls are plain `fetch` (`driveFetch` adds the bearer
+  token). A 401 drops the token and sets the status to `signed-out`. Uploads: a multipart `POST`
+  creates the file, then `PATCH ?uploadType=media` replaces its content. A seeded campaign is about
+  0.6 MB, well under the 5 MB that Google suggests for these upload types.
+- **It needs an http(s) origin** listed in the OAuth client's Authorized JavaScript origins
+  (`http://localhost:<port>` works without HTTPS). `driveSupported()` is false on `file://`, and the
+  Settings row explains that and disables **Connect**. `test/bundle-standalone.test.js` asserts this.
+- **Per-device data stays out of `state`**: `localStorage['osr_gdrive_v1']` (`enabled`, `clientId`,
+  `fileId`, `remoteMd5`, `syncedHash`, `lastSync`, `email`) and `localStorage['osr_gdrive_token']`
+  (`token`, `expiresAt`). So Export, Import, and the Drive file never carry a token or another
+  device's file id. The session log is campaign data, so log lines don't name the account.
+- **One sync pass** (`syncNow()`), in order:
+  1. Hash the local state: `hashText(JSON.stringify(OSR.state))`, FNV-1a plus the length.
+  2. Read the Drive file's metadata (`findRemote()`).
+  3. `decideSync(remote, meta, hash)` returns `create` (no file yet), `link` (a file this device
+     never synced with), `noop`, `upload` (only local changed), `pull` (only Drive changed), or
+     `conflict` (both changed). "Drive changed" means its `md5Checksum` differs from `meta.remoteMd5`.
+     "Local changed" means the hash differs from `meta.syncedHash`.
+  4. `create`/`upload` sends the text. `pull` downloads the file and runs `applyRemote()` →
+     `OSR.replaceState()`, unless the local state changed during the download: then it is a
+     `conflict`. `link` and `conflict` download the file: if it is the same text, they only record
+     it; otherwise they open `#gd-modal`. Each success records the file id, md5, and hash
+     (`recordSynced`).
+
+  A pull records the hash of the state *after* `ensureStateShape`, so a migrated copy isn't uploaded
+  back. A pull also writes no log line: otherwise two devices would pull each other's log line
+  forever. If the browser storage is full, `applyRemote` throws instead of recording the sync, so a
+  reload can't upload the old campaign over the Drive copy.
+- **When it runs**: `gdriveNoteSave()` (from every `save()`) debounces an upload by `UPLOAD_DELAY`
+  (4 s), but never longer than `MAX_WAIT` (30 s) after the first unsynced save. `initGdrive()` (end
+  of `init()`) syncs at boot. The tab returning to the foreground re-checks Drive (at most once a
+  minute), and going to the background flushes a pending upload. The `online` event also syncs.
+  While `#gd-modal` is open (status `conflict`), saves don't sync. The user chooses **Use the Drive
+  copy** (`gdriveUseDriveCopy`), **Keep this browser's copy** (`gdriveUseLocalCopy`: it records the
+  remote md5 so the next pass is a plain `upload`), **Export**, or **Decide later** (Escape too).
+  The header button and the Settings row's **Resolve** reopen it.
+- **Tests** (`test/gdrive.test.js`) boot a fresh app per test, because the sync keys are per-device
+  `localStorage`. `fakeGis` answers `requestAccessToken` at once. `fakeDrive` implements the Drive
+  calls above in memory, with real md5 values. `T.gdriveFlush()` runs a debounced upload now. The
+  boot helper's `extraStorage`/`beforeScripts` options preload the sync keys and stub `fetch`
+  before `init()`. Not covered: the real Google popup and consent screen. Check those by hand with
+  a real client ID on `http://localhost:<port>`.
+
 ## Adding a feature — checklist
 
 1. New persisted field → add to `STATE_DEFAULTS` **and** backfill in `ensureStateShape()`.
@@ -906,6 +981,7 @@ app's own code can't be split into ES modules (see "Layout"), just plain `<scrip
    separate test-seam export to update — `window.__OSR_TEST__` is `window.OSR` itself (see
    "Layout"), so a new function is visible to tests the moment it's attached to `OSR`.
 8. `npm test` must stay green. Manually sanity-check from `file://` (not just a served copy).
+   Google Drive sync is the exception: it needs a served copy (see "Google Drive sync").
 
 ## Commit attribution
 

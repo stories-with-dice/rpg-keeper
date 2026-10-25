@@ -1267,3 +1267,29 @@ button, input, textarea, select {
   background: var(--bg-3); border-radius: 3px; font-family: var(--font-mono);
 }
 .editor-statusbar { color: var(--text-dim); }
+
+/* ---------- Google Drive sync (js/gdrive.js) ---------- */
+.gd-status i { margin-right: 6px; }
+.gd-status.is-warn { border-color: var(--accent); color: var(--accent); }
+.gd-status.is-error { border-color: var(--danger-border); color: var(--danger); }
+.gd-row { align-items: flex-start; }
+.gd-row .setting-actions { flex-wrap: wrap; justify-content: flex-end; }
+.gd-setup { margin-top: 4px; }
+.gd-setup summary { cursor: pointer; color: var(--text-dim); font-size: 12px; }
+.gd-client { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 4px; font-size: 12px; color: var(--text-dim); }
+.gd-client input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+}
+.gd-steps { margin: 6px 0 0; padding-left: 18px; }
+.gd-steps li { margin: 2px 0; }
+.gd-steps a { color: var(--accent-2); }
+.gd-steps code { font-family: var(--font-mono); color: var(--text); }
+.gd-compare { margin: 8px 0; padding-left: 18px; }
+.gd-compare li { margin: 4px 0; }
+#gd-modal .modal-actions { flex-wrap: wrap; }
