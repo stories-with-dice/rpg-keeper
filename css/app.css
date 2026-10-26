@@ -1427,3 +1427,16 @@ button, input, textarea, select {
 .pin-edit[hidden] { display: none; }
 .pin-edit .fa-location-dot { color: var(--accent); }
 .map-tool[hidden] { display: none; }
+
+/* ===== Pop-out map window (index.html?view=map, js/maps.js) ===== */
+.map-popout .app-header .tabs, .map-popout .header-actions, .map-popout #campaign-select,
+.map-popout .rail, .map-popout .log-panel, .map-popout #map-popout,
+.map-popout #map-scene + #map-rename, .map-popout #map-duplicate, .map-popout #map-delete { display: none; }
+.map-popout .layout { padding: 8px; }
+.map-popout .main { padding: 10px; }
+.map-popout .map-wrap { height: calc(100vh - 150px); }
+.map-popout-closed {
+  position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; text-align: center; background: color-mix(in srgb, var(--bg) 94%, transparent);
+}
+.map-popout-closed[hidden] { display: none; }

@@ -14,6 +14,13 @@
  * The SVG has these layers, in order: image, grid, drawings, pins, tokens,
  * overlay (tool feedback). The view (viewBox) of each scene is kept in memory
  * only. Map coordinates are the image's own pixels.
+ *
+ * Pop out (#map-popout) opens index.html?view=map in a window of its own. That
+ * window loads the app's scripts but no campaign: attachToMain() points its
+ * OSR.state at the main window's (window.opener) and sends its saves, log
+ * lines, and undo steps there, so both windows edit one state. Every save in
+ * the main window calls notifyMapViews(), which redraws each open pop-out
+ * (and this window's own map, for a change made in a pop-out).
  */
 (function (OSR) {
   'use strict';
@@ -219,6 +226,61 @@
     renderScene();
   }
 
+  /* ---- Pop-out windows ---- */
+
+  const isMapPopout = () => new URLSearchParams(location.search).get('view') === 'map';
+  const mapWindows = new Set(); // the pop-outs this (main) window opened
+  let notifyT = null;
+
+  function registerMapWindow(w) { if (w) mapWindows.add(w); }
+
+  // Coalesced: one redraw for all the saves of a tick.
+  function notifyMapViews() {
+    if (notifyT) return;
+    notifyT = setTimeout(() => {
+      notifyT = null;
+      mapWindows.forEach(w => {
+        if (w.closed) { mapWindows.delete(w); return; }
+        try { if (w.OSR && w.OSR.renderMaps) w.OSR.renderMaps(); } catch (e) { mapWindows.delete(w); }
+      });
+      if (mapsTabActive() && !drag) renderMaps();
+    }, 0);
+  }
+
+  function popOut() {
+    const w = window.open(location.pathname + '?view=map', 'osr-map', 'popup,width=1200,height=850');
+    if (!w) { setStatus('The browser blocked the new window. Allow pop-ups for this site, then click Pop out again.'); return null; }
+    registerMapWindow(w);
+    if (w.focus) w.focus();
+    return w;
+  }
+
+  // In a pop-out window: use the main window's state, saves, and history.
+  function attachToMain(main) {
+    Object.defineProperty(OSR, 'state', { configurable: true, get: () => main.state, set: v => { main.state = v; } });
+    Object.defineProperty(OSR, 'campaigns', { configurable: true, get: () => main.campaigns, set: v => { main.campaigns = v; } });
+    Object.defineProperty(OSR, 'campaignId', { configurable: true, get: () => main.campaignId, set: v => { main.campaignId = v; } });
+    OSR.data = main.data;
+    OSR.seeds = main.seeds;
+    ['save', 'saveNow', 'flushSave', 'pushNote', 'saveScene', 'trackScene', 'rebaseScene', 'undoScene', 'redoScene',
+      'canUndo', 'canRedo', 'resetHistories', 'dropboxFetchBlob', 'renderCompendium']
+      .forEach(k => { if (typeof main[k] === 'function') OSR[k] = (...args) => main[k](...args); });
+    OSR.notifyMapViews = () => {}; // the main window redraws this one
+    main.registerMapWindow(window);
+    window.addEventListener('pagehide', () => main.notifyMapViews());
+    const watch = setInterval(() => { if (!window.opener || window.opener.closed) { clearInterval(watch); mainWindowClosed(); } }, 1000);
+  }
+
+  // The main window is gone: its state with it. Say so; offer the full app.
+  // Wires its own button: with no main window at all, initPopout() wires nothing else.
+  function mainWindowClosed() {
+    const box = $('#map-popout-closed');
+    if (box) box.hidden = false;
+    const btn = $('#map-popout-reopen');
+    if (btn) btn.onclick = () => { location.href = location.pathname; };
+    drag = null;
+  }
+
   /* ---- Render ---- */
 
   function setStatus(text) {
@@ -248,6 +310,7 @@
     $('#map-redo').disabled = !OSR.canRedo(cur);
     OSR.renderDrawBar(cur ? tool : null);
     $('#map-empty').hidden = !!cur;
+    if (isMapPopout()) document.title = (cur ? cur.name + ' — ' : '') + 'Map — Character Keeper';
     $('#map-svg').hidden = !cur;
     renderGridPanel(cur);
     renderScene();
@@ -622,6 +685,11 @@
     $('#map-duplicate').addEventListener('click', duplicateScene);
     $('#map-delete').addEventListener('click', deleteScene);
     $('#map-fit').addEventListener('click', () => { const sc = activeScene(); if (sc) { delete views[sc.id]; renderScene(); } });
+    $('#map-popout').addEventListener('click', popOut);
+    // Closing this window ends what the pop-outs show: tell them.
+    if (!isMapPopout()) {
+      window.addEventListener('pagehide', () => mapWindows.forEach(w => { try { if (!w.closed && w.OSR) w.OSR.mainWindowClosed(); } catch (e) { /* gone */ } }));
+    }
     $('#tab-maps .map-toolbar').addEventListener('click', e => {
       const b = e.target.closest('.map-tool');
       if (!b || b.disabled) return;
@@ -654,7 +722,8 @@
 
   Object.assign(OSR, {
     ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
-    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
+    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus,
+    isMapPopout, registerMapWindow, notifyMapViews, popOut, attachToMain, mainWindowClosed, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
     openSceneModal, closeSceneModal, renderMaps, renderScene, wireMaps, mapsState
   });
 })(window.OSR = window.OSR || {});

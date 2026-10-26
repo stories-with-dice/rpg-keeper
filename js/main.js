@@ -7,6 +7,32 @@
   'use strict';
   const { $, $$ } = OSR;
 
+  // Escape closes whatever popup/modal/menu happens to be open — the one
+  // place that legitimately needs to know about every subsystem's closer.
+  function wireEscape() {
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
+        OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
+        OSR.closePopulateHdModal(); OSR.closeDropboxModal();
+        OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal();
+      }
+    });
+  }
+
+  // A pop-out map window wires only the map and what it opens (note popups,
+  // the Compendium editor) — never Dropbox, so only the main window syncs.
+  function wirePopout() {
+    wireEscape();
+    OSR.wireCompendiumEntries();
+    OSR.wireCompendiumPopups();
+    OSR.wireMaps();
+    OSR.wireTokens();
+    OSR.wireDrawings();
+    OSR.wirePins();
+    OSR.wireHistory();
+  }
+
   function wire() {
     // Tabs
     $('#tabs').addEventListener('click', e => {
@@ -23,16 +49,7 @@
       if (b.dataset.tab === 'character' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
     });
 
-    // Escape closes whatever popup/modal/menu happens to be open — the one
-    // place that legitimately needs to know about every subsystem's closer.
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
-        OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
-        OSR.closePopulateHdModal(); OSR.closeDropboxModal();
-        OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal();
-      }
-    });
+    wireEscape();
 
     OSR.wireCharacters();
     OSR.wireIO();
@@ -71,7 +88,22 @@
     $('.main').hidden = true;
   }
 
+  // A pop-out map window (index.html?view=map, js/maps.js): no campaign of its
+  // own — it shows the main window's, and shows only the Maps tab.
+  function initPopout() {
+    const main = window.opener && !window.opener.closed && window.opener.OSR;
+    document.body.classList.add('map-popout');
+    $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x.dataset.tab === 'maps'));
+    $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-maps'));
+    if (!main || !main.state || !main.registerMapWindow) { OSR.mainWindowClosed(); return; }
+    OSR.attachToMain(main);
+    OSR.applyTheme();
+    wirePopout();
+    OSR.renderMaps();
+  }
+
   async function init() {
+    if (OSR.isMapPopout()) { initPopout(); return; }
     try { await OSR.loadData(); }
     catch (e) { showLoadError(e); return; }
     if (typeof marked !== 'undefined') {

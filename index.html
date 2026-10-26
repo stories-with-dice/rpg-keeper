@@ -199,6 +199,7 @@
           <button id="map-undo" class="btn" title="Undo (Ctrl+Z)" aria-label="Undo"><i class="fa-solid fa-rotate-left"></i></button>
           <button id="map-redo" class="btn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><i class="fa-solid fa-rotate-right"></i></button>
           <button id="map-fit" class="btn" title="Show the whole map" aria-label="Show the whole map"><i class="fa-solid fa-expand"></i></button>
+          <button id="map-popout" class="btn" title="Open the map in its own window, for a second screen. Both windows show the same campaign." aria-label="Pop out"><i class="fa-solid fa-up-right-from-square"></i></button>
           <span class="map-status" id="map-status" aria-live="polite"></span>
         </div>
         <div class="map-draw-bar" id="map-draw-bar" hidden>
@@ -252,6 +253,10 @@
             <button id="pin-open" class="btn" type="button">Edit note</button>
             <button id="pin-delete" class="btn" type="button">Delete pin</button>
             <button id="pin-delete-note" class="btn btn-danger" type="button">Delete pin and note</button>
+          </div>
+          <div class="map-popout-closed" id="map-popout-closed" hidden>
+            <p>The main window of Character Keeper was closed, so this map window has nothing to show.</p>
+            <button id="map-popout-reopen" class="btn btn-primary" type="button">Open the app here</button>
           </div>
           <div class="token-card" id="token-card" hidden></div>
           <div class="map-empty" id="map-empty" hidden>No scenes for this System yet. Choose <b>+ New scene…</b>, drop an image here, or paste one (Ctrl+V).</div>

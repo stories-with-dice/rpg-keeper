@@ -302,6 +302,7 @@
     dirty = true;
     if (!flushing) flushing = runFlush();
     if (OSR.dropboxNoteSave) OSR.dropboxNoteSave();
+    if (OSR.notifyMapViews) OSR.notifyMapViews(); // pop-out map windows draw the change (js/maps.js)
     return true;
   }
 

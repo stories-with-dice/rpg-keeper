@@ -113,6 +113,9 @@ function blankSave() {
  * @param {string[]} [opts.missingData]   data/ paths that answer 404 (load-error tests).
  * @param {IDBFactory} [opts.indexedDB]  the IndexedDB to use (default: a new, empty one) —
  *                                        pass the one from an earlier boot to "reload".
+ * @param {Window} [opts.opener]        the main window, for a pop-out map window
+ *                                        (opts.url ending in ?view=map): no reset(), since
+ *                                        its state is the main window's.
  * @param {boolean} [opts.allowLoadError] return right after init(), with no reset(): for
  *                                        tests of the load-error state.
  */
@@ -175,6 +178,7 @@ async function boot(opts = {}) {
   else if (!opts.freshSeed && !opts.indexedDB) window.localStorage.setItem(STORAGE_KEY, blankSave());
   Object.entries(opts.extraStorage || {}).forEach(([k, v]) => window.localStorage.setItem(k, v));
   Object.entries(opts.session || {}).forEach(([k, v]) => window.sessionStorage.setItem(k, v));
+  if (opts.opener) window.opener = opts.opener;
   if (opts.beforeScripts) opts.beforeScripts(window);
   // jsdom has no fetch. Serve the app's data/ files, and hand anything else to
   // the test's own stub (if any) — looked up per call, so a test may replace
@@ -204,7 +208,7 @@ async function boot(opts = {}) {
   await (T.ready || Promise.resolve());
   if (opts.allowLoadError) return { dom, window, document, T, STORAGE_KEY, indexedDB: window.indexedDB };
 
-  if (!opts.freshSeed && opts.storage == null && !opts.indexedDB) T.reset();
+  if (!opts.freshSeed && opts.storage == null && !opts.indexedDB && !opts.opener) T.reset();
   await T.flushSave();
 
   return { dom, window, document, T, STORAGE_KEY, indexedDB: window.indexedDB };

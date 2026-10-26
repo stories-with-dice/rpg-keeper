@@ -138,6 +138,8 @@ test/drawings.test.js  node:test suite for js/drawings.js and js/history.js: eac
                        eraser, select/move, Clear, and undo/redo of every kind of scene change
 test/pins.test.js      node:test suite for js/pins.js: hexcrawl toggle, explored hexes, hex numbers, pins
                        and their Journal notes (popup, editor, move, delete)
+test/popout.test.js    node:test suite for the pop-out map window: two jsdom windows, the second booted at
+                       ?view=map with boot's `opener` option (no reset(): its state is the first's)
 test/tokens.test.js    node:test suite for js/tokens.js: icons, snapping, moving and selecting, combat
                        links and unlinking, the bar, Delete, pings
 test/maps.test.js      node:test suite for js/maps.js and the .zip Export/Import: scenes, images (file,
@@ -982,6 +984,21 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   (`toggleExplored()`) marks a hex explored or not. **Hex numbers** (`coords`) label each visible
   hex with `MapGrid.hexLabel()`, counted from `MapGrid.labelOrigin()` (the first whole hex in the
   image's top-left, so cut-off edge hexes get no number), only when a hex is at least 34 screen px.
+- **Pop-out window** (`#map-popout` → `popOut()`): `window.open('?view=map', 'osr-map', 'popup,…')`,
+  registered in `mapWindows`. There, `init()` runs `initPopout()` (`js/main.js`) instead: no data
+  fetch, no `load()`, no seeding, no Dropbox. `attachToMain(window.opener.OSR)` makes `OSR.state`,
+  `OSR.campaigns`, and `OSR.campaignId` getters onto the main window's, shares `OSR.data`/`OSR.seeds`,
+  and forwards `save`, `saveNow`, `flushSave`, `pushNote`, the history functions, `dropboxFetchBlob`,
+  and `renderCompendium` to it. So both windows edit one state, saved and synced by the main window
+  only, with one undo history. `wirePopout()` wires only Escape, the Compendium editor and popups,
+  and the map modules — never `wireDropbox`, because the Dropbox settings in `localStorage` are shared
+  and a second sync pass would collide. Every `save()` in the main window calls `notifyMapViews()`
+  (`js/core.js`), which redraws each open pop-out and, for a change made in a pop-out, the main
+  window's own map (coalesced to one redraw per tick, never during a drag). The main window's
+  `pagehide`, or a pop-out's once-a-second check of `opener.closed`, calls `mainWindowClosed()`:
+  `#map-popout-closed` covers the map and offers **Open the app here** (wired by that function
+  itself, since with no main window nothing else is wired). CSS `.map-popout` hides the tabs, the
+  header actions, the rail, and the log.
 - **Undo/redo** (`js/history.js`): every scene change goes through `OSR.saveScene(sc)` instead of
   `OSR.save()`: it saves and records `{ before, after }` as JSON of the scene's `name, grid,
   hexcrawl, tokens, drawings, pins` (`trackScene()` from `renderMaps()` takes the first "before").
@@ -989,7 +1006,8 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   unlinked). A new change drops the redo steps; at most 200 steps; one history for each scene, in
   memory. `rebaseScene()` (from `unlinkTokens()`) moves "before" past a change made from Combat, so
   undo never re-links a token. `finishLoad()` and a campaign switch call `resetHistories()`. The
-  keys are on `document`, only on the Maps tab, never in a form field or with a modal open.
+  keys are on `document`, only on the Maps tab, never in a form field or with a modal open. The keys
+  and buttons call `OSR.undoScene`/`OSR.redoScene`, so a pop-out uses the main window's history.
 - **Tools** (`.map-tool` buttons anywhere in `.map-toolbar`, `tool`): pointer events on the SVG, moves and ups on `window`.
   `measure` draws a line and puts `measureText()` ("3 cells · 15 ft", `MapGrid.distance`: a square
   diagonal counts 1) in `#map-status`. `calibrate` drags a rectangle over `#grid-span` × `#grid-span`

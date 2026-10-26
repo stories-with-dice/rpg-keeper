@@ -86,13 +86,14 @@
     const sc = OSR.activeScene();
     if (!sc) return;
     e.preventDefault();
-    if (k === 'y' || e.shiftKey) redo(sc); else undo(sc);
+    // Through OSR, so a pop-out window's keys use the main window's history (js/maps.js).
+    if (k === 'y' || e.shiftKey) OSR.redoScene(sc); else OSR.undoScene(sc);
   }
 
   function wireHistory() {
     document.addEventListener('keydown', onKey);
-    $('#map-undo').addEventListener('click', () => undo(OSR.activeScene()));
-    $('#map-redo').addEventListener('click', () => redo(OSR.activeScene()));
+    $('#map-undo').addEventListener('click', () => OSR.undoScene(OSR.activeScene()));
+    $('#map-redo').addEventListener('click', () => OSR.redoScene(OSR.activeScene()));
   }
 
   Object.assign(OSR, { saveScene, trackScene, rebaseScene, undoScene: undo, redoScene: redo, canUndo, canRedo, resetHistories, wireHistory });

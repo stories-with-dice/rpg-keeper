@@ -395,6 +395,11 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   - Eraser: click or drag over drawings to remove them.
   - With the hand tool, click a drawing to select it, drag it to move it, and press Delete to
     remove it. **Clear drawings** removes them all.
+- **Pop out.** The <i>window</i> button opens the map in a window of its own, for example on a
+  second screen for the players. Both windows show the same campaign: a token moved or a line drawn
+  in one shows in the other at once, and Ctrl+Z in either undoes the last map change. Keep the main
+  window open: the map window shows nothing without it. If your browser blocks the window, allow
+  pop-ups for this site.
 - **Undo and redo.** Ctrl+Z (Cmd+Z on a Mac) undoes the last change to the scene: tokens, drawings,
   grid, and name. Ctrl+Shift+Z or Ctrl+Y redoes it. The undo and redo buttons do the same. Each
   scene has its own history until you reload the page.
