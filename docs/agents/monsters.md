@@ -35,7 +35,9 @@ Pure (no DOM, no state). `MonsterParse` on `window` and `module.exports`:
 `generateMonster(pl, mutationCount)`: Shadowdark core p.190 (d20 table of offset, quality,
 strength, weakness; LV = max(0, pl + offset), AC = pl + 10, HP = LVd8, one `1d4` × `1d8` attack)
 and p.191 mutations (three d12 columns, used in order). It opens the modal with the result as a
-prefill; nothing is saved before Save.
+prefill; nothing is saved before Save. The panel `#mb-gen-pop` floats under `#mb-gen-open` (right of
+the HD filter, in `#mb-gen`, which is hidden unless the system is `'osr'`); `setGeneratorOpen()`,
+an outside `mousedown`, Escape (`closeMonsterGenerator`), and Generate close it.
 
 ## Populate by HD (`js/combat-populate.js`)
 

@@ -1083,14 +1083,21 @@ button, input, textarea, select {
 }
 
 /* ---------- Bestiary tab ---------- */
-.mb-gen {
-  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
-  padding: 10px 12px; margin-bottom: 14px;
+/* The generator: a button in the toolbar, its panel floats under it over the list. */
+.mb-gen-wrap { position: relative; display: inline-flex; }
+.mb-gen-wrap[hidden] { display: none; }
+#mb-gen-open[aria-expanded="true"] { background: var(--bg-3); }
+.mb-gen-pop {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+  width: min(380px, 90vw);
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-2);
+  padding: 10px 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
 }
+.mb-gen-pop[hidden] { display: none; }
 .mb-gen-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .mb-gen-head i { color: var(--accent); }
 .mb-gen-row { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
-.mb-gen-row .field { flex: 0 0 110px; }
+.mb-gen-row .field { flex: 0 0 110px; min-width: 0; margin: 0; }
 .mb-gen-row input {
   background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 6px 8px; color: inherit; width: 100%;

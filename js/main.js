@@ -14,7 +14,7 @@
       if (e.key === 'Escape') {
         OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
-        OSR.closePopulateHdModal(); OSR.closeDropboxModal();
+        OSR.closePopulateHdModal(); OSR.closeDropboxModal(); OSR.closeMonsterGenerator();
         OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal(); OSR.closeMapMenu();
       }
     });
