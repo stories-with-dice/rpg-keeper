@@ -359,8 +359,8 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
     its address, with a warning: that image is not saved, and it is gone if the address stops working.
 - **Scenes.** The selector at the right of the toolbar switches scenes. **Rename**, **Duplicate**
   (the copy shares the image), and **Delete** work on the open scene.
-- **Hotkeys.** Alt plus a key chooses a toolbar button: Alt+1 to Alt+5 the hand, ruler, grid, pin,
-  and hexcrawl tools; Alt+6 to Alt+0, Alt+- and Alt+= the drawing tools; Alt+S sticky mode; Alt+F
+- **Hotkeys.** Alt plus a key chooses a toolbar button: Alt+1 to Alt+4 the hand, ruler, grid, and pin
+  tools; Alt+5 to Alt+0 and Alt+- the drawing tools; Alt+= the hexcrawl tool; Alt+S sticky mode; Alt+F
   show the whole map; Alt+O pop out; Alt+G the Grid menu; Alt+K the Tokens menu. Alt is the Alt
   key on Windows and the Option (⌥) key on Mac. Hover a button to see its key, or click the
   <i>?</i> button at the end of the toolbar for the list.
