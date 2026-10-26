@@ -1076,7 +1076,8 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   drawing, or a pin reaches `onMapKey`.
 - **Hotkeys** (`onHotkey`, on `document`, Maps tab only, never in a text field or with a modal
   open): Alt + `KeyboardEvent.code` (a Mac's Alt+1 types "¡"; with no `code`, the key is used).
-  `Digit1`…`Digit0`, `Minus`, `Equal` click the `.map-tool` with that `data-key`; `KeyS` sticky,
+  `Digit1`…`Digit0`, `Minus`, `Equal` click the `.map-tool` with that `data-key` (the toolbar order: hand 1, ruler 2, grid 3,
+  pin 4, the drawing tools 5…0 and -, explore = just left of sticky); `KeyS` sticky,
   `KeyF` fit, `KeyO` pop out, `KeyG`/`KeyK` toggle the Grid/Tokens menu. The titles show the keys.
 
 ## The Tables tab (`js/tables.js`)

@@ -181,17 +181,17 @@
             <button class="btn map-tool" data-tool="measure" data-key="2" title="Measure: drag from one point to another. (Alt+2)" aria-label="Measure"><i class="fa-solid fa-ruler"></i></button>
             <button class="btn map-tool" data-tool="calibrate" data-key="3" title="Set the grid: drag over one cell of the map. Then arrow keys move the grid by 1 px. (Alt+3)" aria-label="Set the grid"><i class="fa-solid fa-crop-simple"></i></button>
             <button class="btn map-tool" data-tool="pin" data-key="4" title="Add a location note: click where it goes (Alt+4)" aria-label="Add a location note"><i class="fa-solid fa-location-dot"></i></button>
-            <button class="btn map-tool" data-tool="explore" data-key="5" title="Hexcrawl: click a hex to mark it explored or not (Alt+5)" aria-label="Mark hexes explored" hidden><i class="fa-solid fa-binoculars"></i></button>
           </span>
           <span class="map-tools" role="group" aria-label="Drawing tools">
-            <button class="btn map-tool" data-tool="pen" data-key="6" title="Draw freehand (Alt+6)" aria-label="Draw freehand"><i class="fa-solid fa-pen"></i></button>
-            <button class="btn map-tool" data-tool="line" data-key="7" title="Draw a line (Alt+7)" aria-label="Draw a line"><i class="fa-solid fa-slash"></i></button>
-            <button class="btn map-tool" data-tool="rect" data-key="8" title="Draw a rectangle (Alt+8)" aria-label="Draw a rectangle"><i class="fa-regular fa-square"></i></button>
-            <button class="btn map-tool" data-tool="ellipse" data-key="9" title="Draw an ellipse (Alt+9)" aria-label="Draw an ellipse"><i class="fa-regular fa-circle"></i></button>
-            <button class="btn map-tool" data-tool="polygon" data-key="0" title="Draw a polygon (Alt+0)" aria-label="Draw a polygon"><i class="fa-solid fa-draw-polygon"></i></button>
-            <button class="btn map-tool" data-tool="text" data-key="-" title="Write text (Alt+-)" aria-label="Write text"><i class="fa-solid fa-font"></i></button>
-            <button class="btn map-tool" data-tool="eraser" data-key="=" title="Erase drawings (Alt+=)" aria-label="Erase drawings"><i class="fa-solid fa-eraser"></i></button>
+            <button class="btn map-tool" data-tool="pen" data-key="5" title="Draw freehand (Alt+5)" aria-label="Draw freehand"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn map-tool" data-tool="line" data-key="6" title="Draw a line (Alt+6)" aria-label="Draw a line"><i class="fa-solid fa-slash"></i></button>
+            <button class="btn map-tool" data-tool="rect" data-key="7" title="Draw a rectangle (Alt+7)" aria-label="Draw a rectangle"><i class="fa-regular fa-square"></i></button>
+            <button class="btn map-tool" data-tool="ellipse" data-key="8" title="Draw an ellipse (Alt+8)" aria-label="Draw an ellipse"><i class="fa-regular fa-circle"></i></button>
+            <button class="btn map-tool" data-tool="polygon" data-key="9" title="Draw a polygon (Alt+9)" aria-label="Draw a polygon"><i class="fa-solid fa-draw-polygon"></i></button>
+            <button class="btn map-tool" data-tool="text" data-key="0" title="Write text (Alt+0)" aria-label="Write text"><i class="fa-solid fa-font"></i></button>
+            <button class="btn map-tool" data-tool="eraser" data-key="-" title="Erase drawings (Alt+-)" aria-label="Erase drawings"><i class="fa-solid fa-eraser"></i></button>
           </span>
+          <button class="btn map-tool" data-tool="explore" data-key="=" title="Hexcrawl: click a hex to mark it explored or not (Alt+=)" aria-label="Mark hexes explored" hidden><i class="fa-solid fa-binoculars"></i></button>
           <button id="map-sticky" class="btn is-active" type="button" aria-pressed="true" title="Sticky mode (Alt+S): on, a tool stays chosen after you use it. Off, the hand tool comes back." aria-label="Sticky mode"><i class="fa-solid fa-thumbtack"></i></button>
           <button id="map-rclick-pan" class="btn" type="button" aria-pressed="false" title="Right-click pan: on, a right-button drag on the map moves the view, and the browser's menu does not open. Off, a right-click on the map opens a menu to add a pin or mark a hex explored." aria-label="Right-click pan"><i class="fa-solid fa-computer-mouse"></i></button>
           <button id="map-undo" class="btn" title="Undo (Ctrl+Z)" aria-label="Undo"><i class="fa-solid fa-rotate-left"></i></button>
@@ -239,8 +239,9 @@
             <div class="map-drop-body map-help">
               <p><b>Hotkeys.</b> Alt is the Alt key on Windows and the Option (⌥) key on Mac.</p>
               <ul>
-                <li><kbd>Alt+1</kbd> to <kbd>Alt+5</kbd>: hand, ruler, grid, pin, and hexcrawl tools.</li>
-                <li><kbd>Alt+6</kbd> to <kbd>Alt+0</kbd>, then <kbd>Alt+-</kbd> and <kbd>Alt+=</kbd>: the seven drawing tools (pen, line, rectangle, ellipse, polygon, text, eraser). There are 12 tools and only 10 digits, so the last two drawing tools use - and =.</li>
+                <li><kbd>Alt+1</kbd> to <kbd>Alt+4</kbd>: hand, ruler, grid, and pin tools.</li>
+                <li><kbd>Alt+5</kbd> to <kbd>Alt+0</kbd>, then <kbd>Alt+-</kbd>: the seven drawing tools (pen, line, rectangle, ellipse, polygon, text, eraser).</li>
+                <li><kbd>Alt+=</kbd>: the hexcrawl tool (binoculars), when Hexcrawl is on. There are 12 tools and only 10 digits, so the last two tools use - and =.</li>
                 <li><kbd>Alt+S</kbd>: sticky mode. <kbd>Alt+F</kbd>: show the whole map. <kbd>Alt+O</kbd>: pop out.</li>
                 <li><kbd>Alt+G</kbd> and <kbd>Alt+K</kbd>: open the Grid and Tokens menus.</li>
               </ul>

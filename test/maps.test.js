@@ -447,6 +447,6 @@ test('Maps: a click on the map closes the Grid, Tokens, and hotkeys menus; the h
   const help = $('#map-help-panel').textContent;
   assert.match(help, /Alt key on Windows/);
   assert.match(help, /Option \(⌥\) key on Mac/);
-  ['Alt+1', 'Alt+5', 'Alt+6', 'Alt+0', 'Alt+-', 'Alt+=', 'Alt+S', 'Alt+F', 'Alt+O', 'Alt+G', 'Alt+K'].forEach(k => assert.ok(help.includes(k), k));
+  ['Alt+1', 'Alt+4', 'Alt+5', 'Alt+0', 'Alt+-', 'Alt+=', 'Alt+S', 'Alt+F', 'Alt+O', 'Alt+G', 'Alt+K'].forEach(k => assert.ok(help.includes(k), k));
   window.close();
 });
