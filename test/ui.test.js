@@ -662,9 +662,17 @@ test('Bestiary generator: rolls a monster and lands it in the fields form for re
   T.state.monsters = [];
   tab('bestiary');
   T.renderAll();
+  assert.equal($('#mb-gen-pop').hidden, true, 'the panel starts closed');
+  click($('#mb-gen-open'));
+  assert.equal($('#mb-gen-pop').hidden, false, 'the button next to the HD filter opens it');
+  assert.equal($('#mb-gen-open').getAttribute('aria-expanded'), 'true');
+  fire($('#mb-list'), 'mousedown');
+  assert.equal($('#mb-gen-pop').hidden, true, 'a mousedown outside closes it');
+  click($('#mb-gen-open'));
   setValue($('#mb-gen-pl'), '2');
   setValue($('#mb-gen-mutations'), '1');
   click($('#mb-generate'));
+  assert.equal($('#mb-gen-pop').hidden, true, 'Generate closes the panel');
   assert.equal($('#monster-modal').hidden, false);
   assert.equal($('#mm-mode .mm-mode-fields').hidden, false, 'opens straight into "Fill in fields"');
   const host = $('#mm-fields-host');

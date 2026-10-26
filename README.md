@@ -289,7 +289,8 @@ monster's stat-block text from whatever you entered, so it displays (and can be 
 **Paste text**) just like a pasted one.
 
 ### Random monster generator
-Rolls a monster following the Shadowdark core rulebook's Monster Generator and Monster Mutations
+Click **Random monster…**, to the right of the HD filter, to open the generator. A click outside it,
+or Escape, closes it. It rolls a monster following the Shadowdark core rulebook's Monster Generator and Monster Mutations
 tables, for a given **Party Level**:
 
 - Its AC is `Party Level + 10`; a **Combat** roll sets its Level (and attack bonus) somewhere around

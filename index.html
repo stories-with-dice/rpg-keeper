@@ -126,24 +126,28 @@
 
       <!-- ===== Bestiary tab ===== -->
       <section class="tab-panel" id="tab-bestiary">
-        <div class="mb-gen" id="mb-gen">
-          <div class="mb-gen-head"><i class="fa-solid fa-dice-d20"></i> <b>Random monster generator</b>
-            <span class="hint">Shadowdark core rules &mdash; rolls a Combat/Quality/Strength/Weakness result for a Party Level, then lands it in the add form to review before saving.</span>
-          </div>
-          <div class="mb-gen-row">
-            <label class="field"><span>Party Level</span><input id="mb-gen-pl" type="number" step="1" min="0" value="1" /></label>
-            <label class="field"><span>Mutations</span><input id="mb-gen-mutations" type="number" step="1" min="0" max="3" value="0" /></label>
-            <button id="mb-generate" class="btn btn-primary"><i class="fa-solid fa-dice-d20"></i> Generate&hellip;</button>
-          </div>
-        </div>
         <div class="comp-toolbar">
           <button id="mb-new" class="btn btn-primary">+ New monster</button>
           <input id="mb-search" type="text" placeholder="Search name&hellip;" autocomplete="off" />
           <label class="mb-hd-field">HD&nbsp;<input id="mb-hd-min" type="number" step="0.5" placeholder="min" /></label>
           <label class="mb-hd-field">&ndash;&nbsp;<input id="mb-hd-max" type="number" step="0.5" placeholder="max" /></label>
+          <div class="mb-gen-wrap" id="mb-gen">
+            <button id="mb-gen-open" class="btn" type="button" aria-haspopup="dialog" aria-expanded="false"
+              aria-controls="mb-gen-pop" title="Random monster generator"><i class="fa-solid fa-dice-d20"></i> Random monster&hellip;</button>
+            <div class="mb-gen-pop" id="mb-gen-pop" role="dialog" aria-label="Random monster generator" hidden>
+              <div class="mb-gen-head"><i class="fa-solid fa-dice-d20"></i> <b>Random monster generator</b>
+                <span class="hint">Shadowdark core rules &mdash; rolls a Combat/Quality/Strength/Weakness result for a Party Level, then lands it in the add form to review before saving.</span>
+              </div>
+              <div class="mb-gen-row">
+                <label class="field"><span>Party Level</span><input id="mb-gen-pl" type="number" step="1" min="0" value="1" /></label>
+                <label class="field"><span>Mutations</span><input id="mb-gen-mutations" type="number" step="1" min="0" max="3" value="0" /></label>
+                <button id="mb-generate" class="btn btn-primary"><i class="fa-solid fa-dice-d20"></i> Generate&hellip;</button>
+              </div>
+            </div>
+          </div>
           <span class="comp-count" id="mb-count"></span>
         </div>
-        <p id="mb-empty" class="hint">No monsters in the library yet. Use <strong>+ New monster</strong>, <strong>Generate&hellip;</strong>, or paste a stat block.</p>
+        <p id="mb-empty" class="hint">No monsters in the library yet. Use <strong>+ New monster</strong>, <strong>Random monster&hellip;</strong>, or paste a stat block.</p>
         <ul class="comp-list" id="mb-list"></ul>
       </section>
 

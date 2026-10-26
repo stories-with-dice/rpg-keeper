@@ -159,12 +159,26 @@
     $('#mb-hd-min').addEventListener('input', renderMonsterBrowser);
     $('#mb-hd-max').addEventListener('input', renderMonsterBrowser);
     $('#mb-list').addEventListener('click', onBrowserListClick);
+    $('#mb-gen-open').addEventListener('click', () => setGeneratorOpen($('#mb-gen-pop').hidden));
     $('#mb-generate').addEventListener('click', () => {
       const pl = parseInt($('#mb-gen-pl').value, 10) || 0;
       const muts = parseInt($('#mb-gen-mutations').value, 10) || 0;
+      setGeneratorOpen(false);
       OSR.openMonsterModal({ prefill: generateMonster(pl, muts) });
+    });
+    // A mousedown outside the button and its panel closes the panel.
+    document.addEventListener('mousedown', e => {
+      if (!$('#mb-gen-pop').hidden && !(e.target.closest && e.target.closest('#mb-gen'))) setGeneratorOpen(false);
     });
   }
 
-  Object.assign(OSR, { monstersForSystem, browserMatches, renderMonsterBrowser, generateMonster, wireMonsterBrowser });
+  // The generator's floating panel, under its toolbar button (#mb-gen-open).
+  function setGeneratorOpen(open) {
+    $('#mb-gen-pop').hidden = !open;
+    $('#mb-gen-open').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) $('#mb-gen-pl').focus();
+  }
+  function closeMonsterGenerator() { setGeneratorOpen(false); }
+
+  Object.assign(OSR, { monstersForSystem, browserMatches, renderMonsterBrowser, generateMonster, closeMonsterGenerator, wireMonsterBrowser });
 })(window.OSR = window.OSR || {});
