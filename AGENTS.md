@@ -928,7 +928,8 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
 - **Scenes** are `state.scenes` (`ensureSceneShape()` from `ensureStateShape()`):
   `{ id, name, system, imageBlobId, imageType, imageUrl, width, height, grid, hexcrawl, tokens,
   drawings, pins }`, where `grid` is `{ type: 'square'|'hex', orient: 'flat'|'pointy', size,
-  offsetX, offsetY, unitsPerCell, unit, show, locked }`. Each belongs to one system
+  offsetX, offsetY, unitsPerCell, unit, show, locked }` (`GRID_DEFAULTS`: hexes, flat top, 50 px;
+  a saved scene keeps its own `type`). Each belongs to one system
   (`splitState` puts it in that system's document) and shows only under that System;
   `state.activeSceneIds[system]` is the open one.
 - **Images** are blobs in IndexedDB (`OSR.store.putBlob(id, { bytes, type, width, height })`,
@@ -953,7 +954,8 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
 - **Tokens** (`js/tokens.js`) are in `scene.tokens`: `{ id, iconId, x, y, size, color, label, link }`,
   `(x, y)` the center in map px, `link` null, `{ kind: 'combat', entryId }`, or
   `{ kind: 'character', charId }`. The icons are `OSR.data.tokenIcons` (path data only, drawn in
-  the app's own SVG with `fill: #fff` on a circle of `color` — never a downloaded SVG). A palette
+  the app's own SVG with `fill: #fff` on a circle of `color`, `#000000` by default — never a
+  downloaded SVG). A palette
   click (`#token-palette`) or a **From combat** button (`#token-from-combat`: the combat entries
   with no token on this scene, `addTokenForEntry()`, icon guessed by name with `tokenIconFor()`)
   adds one at the view's center. `snapTokenPoint()`: an odd size on squares centers on a cell, an
@@ -998,14 +1000,19 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   eraser; its style is in memory. It and `#token-edit` are in `.map-float-top`, over the map's top
   edge, so they never move the map. A right-click on a drawing (`drawingMenu()`) or a token
   (`tokenMenu()`, js/tokens.js) opens `#map-menu` through `OSR.openMapMenu(x, y, html, onPick)`
-  (js/maps.js): its items have `data-act`, and `onPick(el)` returns true to close it. Drawing:
-  color, thickness (a text's size) in screen px at the current zoom, delete. Token: color, link to a
-  combat entry or character, unlink (keeps the name as `label`), delete. Each change is one
+  (js/maps.js): its items have `data-act`, and `onPick(el)` returns true to close it. A text field
+  in it answers Enter (`onMenuKey`) and `change`; Escape restores its `defaultValue`; the optional
+  `onClose()` runs before the menu closes (a click outside commits the field). Drawing:
+  color, thickness (a text's size) in screen px at the current zoom, delete. Token: label (saved
+  only when typed, so Unlink's label stays), color, link to a combat entry or character, unlink
+  (keeps the name as `label`), delete. Each change is one
   `saveScene()` step. A pointerdown outside the menu, the wheel, or Escape closes it.
 - **Pins** (`js/pins.js`) are in `scene.pins`: `{ id, x, y, compendiumId }`. The pin tool
   (`addPin()`) makes a pin and a Compendium entry `{ category: 'Journal', source: 'Maps', system:
   currentSystem() }` named "<scene> — Location N" (or "— Hex 0412" in hexcrawl mode, where the
-  pin snaps to the hex center), unique in the system, then opens its editor (`openCompEntry`). So a
+  pin snaps to the hex center), unique in the system, then opens its editor (`openCompEntry`).
+  Its `body` starts as `**Map:** <scene>` and, on a hex grid, `**Hex:** 0412` (one line each,
+  `breaks: true`). They are written once and never synced with later renames or moves. So a
   note is listed, searched, and `[linked]` like any entry. With the hand tool (after tokens): a click
   opens the note's popup (`openCompPop(name, pinElement)`, pinned so it stays), a double-click
   (`detail` 2) its editor, a drag moves the pin. `#pin-edit` (over the map's bottom edge): **Edit
@@ -1047,15 +1054,26 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   cells and sets the grid from it (`MapGrid.gridFromRect()`); then arrow keys on the focused
   `#map-wrap` move the offset by 1 px (Shift: 10). `grid.locked` blocks both and disables the grid
   fields. The grid fields (`#map-grid-panel`) change the grid by hand.
-- **Toolbar layout**: tools, sticky, undo, redo, fit, pop out, then the **Grid** and **Tokens**
-  menus (`<details class="map-drop">`; the body is absolute to `.map-toolbar`, over the map, one
-  open at a time), then the scene controls (`.map-scene-controls`, `margin-left: auto`).
+- **Toolbar layout**: tools, sticky, right-click pan, undo, redo, fit, pop out, then the **Grid**,
+  **Tokens**, and **?** (hotkeys, `#map-help-panel`, static text) menus (`<details class="map-drop">`;
+  the body is absolute to `.map-toolbar`, over the map, one open at a time; `onPointerDown` on the
+  map closes them with `closeMapPanels()`), then the scene controls (`.map-scene-controls`, `margin-left: auto`).
   `#map-status` floats over the map's bottom-right corner (hidden when empty). Nothing that opens
   or closes moves the map.
 - **Sticky mode** (`#map-sticky`, `sticky`, `localStorage` key `osr_map_sticky`, on by default):
   `setTool()` changes the tool; `toolUsed()` (`OSR.mapToolUsed`) is called after one use of a tool
   (a drawing, a text, a closed polygon, an erase drag, a measure, a calibrate drag, a pin, an
   explore click) and, with sticky off, goes back to `pan` and keeps the status.
+- **Right-click pan** (`#map-rclick-pan`, `rclickPan`, `localStorage` key `osr_map_rclick_pan`, off
+  by default). `MAP_ELEMENTS` (`[data-token], [data-drawing], [data-pin]`) are elements; the rest
+  is the map itself. On: a right-button `pointerdown` on the map itself is a pan drag, and
+  `onContextMenu` calls `preventDefault()` there. Off: `onContextMenu` on the map itself opens
+  `mapMenu()`: **Add a pin here** (`addPin`) and, in hexcrawl mode, **Mark hex explored / not
+  explored** (`toggleExplored`). A token or a drawing always opens its own menu; a pin keeps the
+  browser's menu.
+- **Focus**: `onPointerDown` focuses `#map-wrap` first (`preventScroll`), because the hand tool's
+  `preventDefault()` stops the browser from doing it. So Delete after a click on a token, a
+  drawing, or a pin reaches `onMapKey`.
 - **Hotkeys** (`onHotkey`, on `document`, Maps tab only, never in a text field or with a modal
   open): Alt + `KeyboardEvent.code` (a Mac's Alt+1 types "¡"; with no `code`, the key is used).
   `Digit1`…`Digit0`, `Minus`, `Equal` click the `.map-tool` with that `data-key`; `KeyS` sticky,

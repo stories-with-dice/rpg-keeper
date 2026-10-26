@@ -361,16 +361,21 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   (the copy shares the image), and **Delete** work on the open scene.
 - **Hotkeys.** Alt plus a key chooses a toolbar button: Alt+1 to Alt+5 the hand, ruler, grid, pin,
   and hexcrawl tools; Alt+6 to Alt+0, Alt+- and Alt+= the drawing tools; Alt+S sticky mode; Alt+F
-  show the whole map; Alt+O pop out; Alt+G the Grid menu; Alt+K the Tokens menu. Hover a button to
-  see its key.
+  show the whole map; Alt+O pop out; Alt+G the Grid menu; Alt+K the Tokens menu. Alt is the Alt
+  key on Windows and the Option (⌥) key on Mac. Hover a button to see its key, or click the
+  <i>?</i> button at the end of the toolbar for the list.
 - **Sticky mode** (the <i>thumbtack</i> button, on by default). On: a tool stays chosen after you
   use it. Off: after one drawing, text, measure, pin, or grid drag, the hand tool comes back.
-- **Grid** and **Tokens** are menus at the end of the toolbar. They open over the map, so the map
-  does not move.
+- **Right-click pan** (the <i>mouse</i> button next to sticky mode, off by default). On: drag with
+  the right mouse button on the map to move the view, and the browser's menu does not open. Off: a
+  right-click on the map opens a menu to add a pin there or, in hexcrawl mode, to mark the hex
+  explored. A right-click on a token or a drawing always opens its own menu.
+- **Grid**, **Tokens**, and **?** (the hotkeys) are menus at the end of the toolbar. They open over
+  the map, so the map does not move. A click on the map closes them.
 - **Move and zoom.** With the hand tool, drag to move the view. The mouse wheel zooms around the
   pointer. The middle mouse button, or Space held, moves the view with any tool. The
   <i>expand</i> button shows the whole map again.
-- **Grid.** Open **Grid** to choose squares or hexes (flat-top or pointy-top), the cell size in
+- **Grid.** A new scene has hexes. Open **Grid** to choose squares or hexes (flat-top or pointy-top), the cell size in
   image pixels, the offset, and what one cell is (for example 5 ft, or 6 miles for a hexcrawl).
   - To match the map's own grid, choose the crop tool and drag over one cell, from corner to corner.
     For more precision, drag over several cells and enter how many in **Drag covers**. For hexes,
@@ -381,7 +386,7 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   cells and in your unit, for example "3 cells · 15 ft". A diagonal step on squares counts as one cell.
 
 - **Tokens.** Open **Tokens** and click an icon: a token appears in the middle of the view, on the
-  grid. Choose its **Size** (cells across; on hexes, rings) and **Color** first.
+  grid. Choose its **Size** (cells across; on hexes, rings) and **Color** (black at first) first.
   - **More icons**: type in the search box under the icons (for example "dragon", "door", "cart").
     The list has every icon of game-icons.net, each with a preview image (the previews need the
     internet). Click a result: the app downloads that icon, puts a token with it on the map, and
@@ -395,8 +400,8 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
     box; the selection moves together.
   - The bar over the map edits the selected token: label, size, color, and **Link** (a combatant or
     a character). **Delete** (or the Delete key) removes it.
-  - Right-click a token for a menu: its color, a link to a combatant or a character, **Unlink**, and
-    **Delete token**.
+  - Right-click a token for a menu: its label (Enter saves it, Escape cancels), its color, a link to
+    a combatant or a character, **Unlink**, and **Delete token**.
   - When a combatant leaves combat, its token stays with the combatant's name. A character's token
     stays linked to the character.
   - Alt+click on the map shows a short ping at that point (it is not saved).
@@ -423,7 +428,9 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 
 - **Location notes.** With the pin tool, click a place on the map: a pin appears, and a new
   Compendium entry (category **Journal**) opens for its note. The note belongs to the current
-  System and works like any Compendium entry: search it, or link it with `[name]` in a sheet. With
+  System and works like any Compendium entry: search it, or link it with `[name]` in a sheet. The
+  note starts with the map's name and, on a hex grid, the hex number. The app writes them once: a
+  later rename of the scene or move of the pin does not change them. With
   the hand tool, click a pin to read its note, double-click to edit it, or drag the pin. The bar
   at the bottom of the map edits the note or deletes the pin (with or without its note).
 - **Hexcrawl.** On a hex grid, tick **Hexcrawl** under **Grid**. Hexes you have not explored are

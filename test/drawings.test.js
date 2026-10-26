@@ -269,7 +269,8 @@ test('drawings: the eraser removes the drawing it touches; the hand tool selects
   stroke(env, [[120, 120], [220, 170]], el(a.id));
   assert.deepEqual([a.x, a.y].map(Math.round), [200, 150], 'moved by the drag');
   assert.ok(el(a.id).classList.contains('is-selected'));
-  key(env, $('#map-wrap'), 'Delete');
+  assert.strictEqual(env.document.activeElement, $('#map-wrap'), 'a click on the map gives the map the keys');
+  key(env, env.document.activeElement, 'Delete');
   assert.deepEqual(sc.drawings.map(d => d.id), [c.id]);
   void window;
   window.close();

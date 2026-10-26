@@ -21,6 +21,10 @@ async function setup(hex) {
   env.$$ = s => Array.from(document.querySelectorAll(s));
   click(env.$('#tabs .tab-btn[data-tab="maps"]'));
   const { scene } = await T.createScene({ name: 'Wilds' });
+  // A square grid (a new scene has hexes), with no undo step for it.
+  setValue(env.$('#grid-type'), 'square');
+  T.resetHistories();
+  T.renderMaps();
   env.sc = scene;
   if (hex) {
     Object.assign(scene.grid, { type: 'hex', orient: 'flat', size: 100, offsetX: 50, offsetY: 44 });
@@ -113,6 +117,7 @@ test('pins: the pin tool adds a pin and a Journal note in this System, named aft
   assert.deepEqual([Math.round(pin.x), Math.round(pin.y)], [300, 200], 'no snapping outside hexcrawl');
   const note = T.state.compendium.find(e => e.id === pin.compendiumId);
   assert.deepEqual([note.name, note.category, note.system, note.source], ['Wilds — Location 1', 'Journal', 'osr', 'Maps']);
+  assert.strictEqual(note.body, '**Map:** Wilds\n\n', 'the map name; no hex on squares');
   assert.ok(!$('#comp-modal').hidden, 'the editor opens');
   assert.strictEqual($('#comp-f-name').value, 'Wilds — Location 1');
   click($('#comp-cancel'));
@@ -138,10 +143,16 @@ test('pins: in hexcrawl mode a pin snaps to its hex and its note is named after 
   const pin = sc.pins[0];
   assert.ok(Math.abs(pin.x - ctr.x) < 1e-6 && Math.abs(pin.y - ctr.y) < 1e-6, 'on the hex center');
   const label = G.hexLabel({ q: 3, r: 1 }, sc.grid, G.labelOrigin(sc.grid, sc.width, sc.height));
-  assert.strictEqual(T.state.compendium.find(e => e.id === pin.compendiumId).name, 'Wilds — Hex ' + label);
+  const note = T.state.compendium.find(e => e.id === pin.compendiumId);
+  assert.strictEqual(note.name, 'Wilds — Hex ' + label);
+  assert.strictEqual(note.body, '**Map:** Wilds\n**Hex:** ' + label + '\n\n');
   T.closeCompEntry();
   clickAt(env, ctr.x, ctr.y);
   assert.strictEqual(T.state.compendium.find(e => e.id === sc.pins[1].compendiumId).name, 'Wilds — Hex ' + label + ' (2)', 'a second pin in the hex gets its own name');
+  T.closeCompEntry();
+  sc.name = 'Renamed';
+  T.saveScene(sc);
+  assert.match(note.body, /\*\*Map:\*\* Wilds/, 'written once: a rename does not change it');
   window.close();
 });
 
@@ -209,5 +220,62 @@ test('pins: "Delete pin" keeps the note; "Delete pin and note" asks and removes 
   assert.match($('#map-status').textContent, /note of this pin was deleted/);
   assert.strictEqual($('#pin-edit-title').textContent, 'Note deleted');
   assert.ok($('#pin-open').disabled);
+  window.close();
+});
+
+test('map right-click: on the map itself a menu adds a pin or marks a hex; with right-click pan on, a right drag pans and no menu opens', async () => {
+  const env = await setup(true);
+  const { T, window, $, sc } = env;
+  T.closeCompEntry();
+  try { window.localStorage.removeItem('osr_map_rclick_pan'); } catch (e) { /* none */ }
+  const G = window.MapGrid;
+  const ctr = G.cellCenter({ q: 2, r: 1 }, sc.grid);
+  const menuAt = (x, y, target) => {
+    const s = toScreen(env, x, y);
+    const ev = new window.MouseEvent('contextmenu', { clientX: s[0], clientY: s[1], button: 2, bubbles: true, cancelable: true });
+    (target || $('#map-svg')).dispatchEvent(ev);
+    return ev;
+  };
+
+  // Off (the default): the map's own menu.
+  assert.ok(!$('#map-rclick-pan').classList.contains('is-active'));
+  assert.ok(menuAt(ctr.x, ctr.y).defaultPrevented);
+  assert.strictEqual($('#map-menu').hidden, false);
+  assert.strictEqual($('#map-menu [data-act="explore"]'), null, 'no hex item outside hexcrawl mode');
+  click($('#map-menu [data-act="pin"]'));
+  assert.strictEqual($('#map-menu').hidden, true);
+  assert.strictEqual(sc.pins.length, 1);
+  assert.deepEqual([Math.round(sc.pins[0].x), Math.round(sc.pins[0].y)], [Math.round(ctr.x), Math.round(ctr.y)]);
+  T.closeCompEntry();
+
+  check(env, '#hexcrawl-on', true);
+  menuAt(ctr.x + 5, ctr.y + 5);
+  assert.match($('#map-menu [data-act="explore"]').textContent, /Mark hex explored/);
+  click($('#map-menu [data-act="explore"]'));
+  assert.deepEqual(sc.hexcrawl.explored, ['2,1']);
+  menuAt(ctr.x, ctr.y);
+  assert.match($('#map-menu [data-act="explore"]').textContent, /Mark hex not explored/);
+  click($('#map-menu [data-act="explore"]'));
+  assert.deepEqual(sc.hexcrawl.explored, []);
+
+  // A pin keeps the browser's menu.
+  assert.ok(!menuAt(ctr.x, ctr.y, $('#map-svg [data-pin]')).defaultPrevented);
+  assert.strictEqual($('#map-menu').hidden, true);
+
+  // On: no menu; a right-button drag on the map pans.
+  click($('#map-rclick-pan'));
+  assert.ok($('#map-rclick-pan').classList.contains('is-active'));
+  assert.strictEqual(window.localStorage.getItem('osr_map_rclick_pan'), 'on');
+  assert.ok(menuAt(ctr.x, ctr.y).defaultPrevented, 'the browser menu does not open');
+  assert.strictEqual($('#map-menu').hidden, true, 'nor the map menu');
+  const v0 = Object.assign({}, T.mapView(sc));
+  pointer(window, $('#map-svg'), 'pointerdown', 500, 300, { button: 2 });
+  pointer(window, window, 'pointermove', 400, 250, { button: 2 });
+  pointer(window, window, 'pointerup', 400, 250, { button: 2 });
+  const v1 = T.mapView(sc);
+  assert.ok(v1.x > v0.x && v1.y > v0.y, 'the view moved');
+  assert.strictEqual(sc.pins.length, 1, 'the pan added nothing');
+  click($('#map-rclick-pan'));
+  assert.strictEqual(window.localStorage.getItem('osr_map_rclick_pan'), 'off');
   window.close();
 });

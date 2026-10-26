@@ -31,13 +31,20 @@
   const MAX_SIDE = 8192;                     // images are scaled down to this
   const BLANK = { width: 2000, height: 1500 }; // a scene with no image
   const MAX_GRID_CELLS = 4000;               // more visible cells than this: the grid is not drawn
-  const GRID_DEFAULTS = { type: 'square', orient: 'flat', size: 50, offsetX: 0, offsetY: 0, unitsPerCell: 5, unit: 'ft', show: true, locked: false };
+  const GRID_DEFAULTS = { type: 'hex', orient: 'flat', size: 50, offsetX: 0, offsetY: 0, unitsPerCell: 5, unit: 'ft', show: true, locked: false };
 
   let tool = 'pan';
   // Sticky mode (on by default, kept in this browser): a tool stays chosen
   // after it is used. Off: the hand tool comes back after one use.
   const STICKY_KEY = 'osr_map_sticky';
   let sticky = (() => { try { return localStorage.getItem(STICKY_KEY) !== 'off'; } catch (e) { return true; } })();
+  // Right-click pan (off by default, kept in this browser): a right-button
+  // drag on the map moves the view, and the browser's menu does not open.
+  // Off: a right-click on the map opens mapMenu().
+  const RCLICK_KEY = 'osr_map_rclick_pan';
+  let rclickPan = (() => { try { return localStorage.getItem(RCLICK_KEY) === 'on'; } catch (e) { return false; } })();
+  // What a right-click on the map treats as an element, not the map itself.
+  const MAP_ELEMENTS = '[data-token], [data-drawing], [data-pin]';
   // Alt + a key (KeyboardEvent.code, so it works with any layout and on a Mac,
   // where Alt+1 types a character): the buttons of the toolbar.
   const KEY_CODES = { Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Digit5: '5', Digit6: '6', Digit7: '7', Digit8: '8', Digit9: '9', Digit0: '0', Minus: '-', Equal: '=' };
@@ -322,6 +329,13 @@
     renderMaps();
   }
 
+  function setRclickPan(on) {
+    rclickPan = !!on;
+    try { localStorage.setItem(RCLICK_KEY, rclickPan ? 'on' : 'off'); } catch (e) { /* kept for this page only */ }
+    setStatus(rclickPan ? 'Right-click pan on: drag with the right button to move the view.' : 'Right-click pan off: right-click the map to add a pin or mark a hex.');
+    renderMaps();
+  }
+
   // Alt + a key on the Maps tab (or in a pop-out): the toolbar's buttons.
   function onHotkey(e) {
     if (!e.altKey || e.ctrlKey || e.metaKey || e.type !== 'keydown') return;
@@ -354,13 +368,18 @@
   /* ---- Right-click menu (drawings, tokens) ---- */
 
   let menuHandler = null;
+  let menuClose = null;
   // Opens #map-menu at a screen point. `onPick(el, event)` gets each click
-  // (and each change of an input in it); it returns true to close the menu.
-  function openMapMenu(x, y, html, onPick) {
+  // (and each change of an input in it, and Enter in a text field); it
+  // returns true to close the menu. `onClose()`, if given, runs when the
+  // menu closes, before its content goes (a text field not committed yet).
+  function openMapMenu(x, y, html, onPick, onClose) {
+    closeMapMenu();
     const m = $('#map-menu');
     m.innerHTML = html;
     m.hidden = false;
     menuHandler = onPick;
+    menuClose = onClose || null;
     const px = Math.min(x, window.innerWidth - m.offsetWidth - 8);
     const py = Math.min(y, window.innerHeight - m.offsetHeight - 8);
     m.style.left = Math.max(8, px) + 'px';
@@ -369,6 +388,9 @@
   function closeMapMenu() {
     const m = $('#map-menu');
     if (!m || m.hidden) return;
+    const done = menuClose;
+    menuClose = null;
+    if (done) done();
     m.hidden = true;
     m.innerHTML = '';
     menuHandler = null;
@@ -379,12 +401,43 @@
     const el = e.target.closest('[data-act]');
     if (el && menuHandler(el, e)) closeMapMenu();
   }
+  function onMenuKey(e) {
+    // Escape (the app-wide handler closes the menu) drops what was typed.
+    if (e.key === 'Escape' && isTextField(e.target)) { e.target.value = e.target.defaultValue; return; }
+    if (e.key !== 'Enter' || !menuHandler || !isTextField(e.target)) return;
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    e.preventDefault();
+    if (menuHandler(el, e)) closeMapMenu();
+  }
+
+  // A right-click on the map itself (no element under it), right-click pan
+  // off: add a pin there, or, in hexcrawl mode, mark its hex explored or not.
+  function mapMenu(sc, p, x, y) {
+    const items = ['<button class="ctx-item" type="button" data-act="pin"><i class="fa-solid fa-location-dot"></i><span>Add a pin here</span></button>'];
+    if (OSR.hexcrawlOn(sc)) {
+      const explored = sc.hexcrawl.explored.indexOf(G.hexKey(G.cellAt(p.x, p.y, sc.grid))) !== -1;
+      items.push('<button class="ctx-item" type="button" data-act="explore"><i class="fa-solid fa-binoculars"></i><span>' +
+        (explored ? 'Mark hex not explored' : 'Mark hex explored') + '</span></button>');
+    }
+    openMapMenu(x, y, '<div class="ctx-head">Map</div>' + items.join(''), el => {
+      if (el.dataset.act === 'pin') OSR.addPin(sc, p);
+      else if (el.dataset.act === 'explore') OSR.toggleExplored(sc, p);
+      return true;
+    });
+  }
 
   function onContextMenu(e) {
     const sc = activeScene();
     if (!sc) return;
-    const hit = e.target.closest && e.target.closest('[data-token], [data-drawing]');
-    if (!hit) return;
+    const el = e.target.closest && e.target.closest(MAP_ELEMENTS);
+    const hit = el && !el.hasAttribute('data-pin') ? el : null;
+    if (!hit) {
+      if (el) return; // a pin has no menu: the browser's
+      e.preventDefault();
+      if (!rclickPan) mapMenu(sc, screenToMap(e.clientX, e.clientY, OSR.mapRect(), viewOf(sc)), e.clientX, e.clientY);
+      return;
+    }
     e.preventDefault();
     const stroke = viewOf(sc).w / OSR.mapRect().width;
     if (hit.hasAttribute('data-token')) OSR.tokenMenu(sc, hit.getAttribute('data-token'), e.clientX, e.clientY);
@@ -402,6 +455,8 @@
     ['#map-rename', '#map-duplicate', '#map-delete', '#map-fit'].forEach(s => { $(s).disabled = !cur; });
     $('#map-sticky').classList.toggle('is-active', sticky);
     $('#map-sticky').setAttribute('aria-pressed', String(sticky));
+    $('#map-rclick-pan').classList.toggle('is-active', rclickPan);
+    $('#map-rclick-pan').setAttribute('aria-pressed', String(rclickPan));
     if (tool === 'explore' && !(cur && OSR.hexcrawlOn(cur))) tool = 'pan';
     $$('#tab-maps .map-tool').forEach(b => {
       b.classList.toggle('is-active', b.dataset.tool === tool);
@@ -585,11 +640,20 @@
 
   function onPointerDown(e) {
     const sc = activeScene();
-    if (!sc || e.button > 1) return;
+    if (!sc) return;
+    // A click on the map closes the Grid, Tokens, and hotkeys menus.
+    closeMapPanels();
+    // Right button: a pan with right-click pan on, on the map itself only.
+    const rightPan = e.button === 2 && rclickPan && !(e.target.closest && e.target.closest(MAP_ELEMENTS));
+    if (e.button > 1 && !rightPan) return;
+    // The map's keys (Delete, Escape, arrows) go to #map-wrap. The hand
+    // tool's preventDefault() below stops the browser from focusing it.
+    const wrap = $('#map-wrap');
+    if (wrap && wrap.focus && document.activeElement !== wrap) wrap.focus({ preventScroll: true });
     const rect = OSR.mapRect();
     const v = viewOf(sc);
     const p = screenToMap(e.clientX, e.clientY, rect, v);
-    const kind = e.button === 1 || spaceDown ? 'pan' : tool;
+    const kind = e.button === 1 || rightPan || spaceDown ? 'pan' : tool;
     if (kind === 'calibrate' && sc.grid.locked) { setStatus('The grid is locked. Untick Lock grid to set it.'); return; }
     if (kind === 'explore') { if (OSR.hexcrawlOn(sc)) { OSR.toggleExplored(sc, p); toolUsed(); } return; }
     if (kind === 'pin') { OSR.addPin(sc, p); toolUsed(); return; }
@@ -626,8 +690,6 @@
     drag = { kind, sceneId: sc.id, startClient: { x: e.clientX, y: e.clientY }, startView: Object.assign({}, v), a: p };
     if (kind === 'measure' || kind === 'calibrate') overlay = { kind, sceneId: sc.id, a: p, b: p };
     if (e.preventDefault) e.preventDefault();
-    const wrap = $('#map-wrap');
-    if (wrap && wrap.focus) wrap.focus();
     renderScene();
   }
 
@@ -805,11 +867,13 @@
       setTool(b.dataset.tool);
     });
     $('#map-sticky').addEventListener('click', () => setSticky(!sticky));
+    $('#map-rclick-pan').addEventListener('click', () => setRclickPan(!rclickPan));
     document.addEventListener('keydown', onHotkey);
     $$('#tab-maps .map-drop').forEach(d => d.addEventListener('toggle', onPanelToggle));
     const menu = $('#map-menu');
     menu.addEventListener('click', onMenuEvent);
     menu.addEventListener('change', onMenuEvent);
+    menu.addEventListener('keydown', onMenuKey);
     document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('#map-menu'))) closeMapMenu(); }, true);
     $('#map-grid-panel').addEventListener('change', onGridField);
     $('#scene-create').addEventListener('click', submitSceneModal);
@@ -831,12 +895,12 @@
   }
 
   // Test-only view of the in-memory map state.
-  const mapsState = () => ({ tool, sticky, views: JSON.parse(JSON.stringify(views)), overlay, status, images: new Map(images) });
+  const mapsState = () => ({ tool, sticky, rclickPan, views: JSON.parse(JSON.stringify(views)), overlay, status, images: new Map(images) });
 
   Object.assign(OSR, {
     ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
-    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus, setMapTool: setTool, mapToolUsed: toolUsed, setMapSticky: setSticky,
-    openMapMenu, closeMapMenu, closeMapPanels,
+    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus, setMapTool: setTool, mapToolUsed: toolUsed, setMapSticky: setSticky, setMapRclickPan: setRclickPan,
+    openMapMenu, closeMapMenu, closeMapPanels, mapMenu,
     isMapPopout, registerMapWindow, notifyMapViews, popOut, attachToMain, mainWindowClosed, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
     openSceneModal, closeSceneModal, renderMaps, renderScene, wireMaps, mapsState
   });

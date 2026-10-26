@@ -14,7 +14,7 @@
  *
  * js/maps.js draws tokensMarkup() into the tokens layer and sends pointer
  * events here (tokenPointerDown / tokenPointerMove / tokenPointerUp). A
- * right-click on a token opens tokenMenu(): color, link, unlink, delete.
+ * right-click on a token opens tokenMenu(): label, color, link, unlink, delete.
  */
 (function (OSR) {
   'use strict';
@@ -22,7 +22,7 @@
   const G = window.MapGrid;
 
   const SIDE_COLOR = { ally: '#4caf50', enemy: '#e05252', neutral: '#9e9e9e' };
-  const DEFAULT_COLOR = '#5b4a33';
+  const DEFAULT_COLOR = '#000000';
   const CHARACTER_ICON = 'delapouite/barbarian';
   const MONSTER_ICON = 'delapouite/orc-head';
 
@@ -291,18 +291,35 @@
       '<i class="fa-solid ' + icon + '"></i><span>' + escapeHtml(label) + '</span>' + (key === cur ? '<i class="fa-solid fa-check ctx-check"></i>' : '') + '</button>';
     const links = OSR.state.combat.entries.map(e => item('combat:' + e.id, 'fa-khanda', 'Combat: ' + e.name))
       .concat(OSR.charactersForSystem().map(c => item('character:' + c.id, 'fa-user', 'Character: ' + c.name)));
+    // The label is saved on Enter, on change, or when the menu closes.
+    const saveLabel = () => {
+      const one = sc.tokens.find(z => z.id === id);
+      const input = $('#map-menu input[data-act="label"]');
+      // Only a typed change: Unlink also sets the label.
+      if (!one || !input || input.value === input.defaultValue) return false;
+      input.defaultValue = input.value;
+      if (input.value.trim() === one.label) return false;
+      one.label = input.value.trim();
+      OSR.saveScene(sc);
+      OSR.renderMaps();
+      return true;
+    };
     OSR.openMapMenu(x, y,
       '<div class="ctx-head">' + escapeHtml(tokenName(t)) + '</div>' +
+      '<div class="ctx-sub">Label</div>' +
+      '<div class="ctx-label"><input type="text" data-act="label" value="' + escapeHtml(t.label) + '" placeholder="' + escapeHtml(tokenName(t)) +
+      '" autocomplete="off" aria-label="Token label" /></div>' +
       '<div class="ctx-sub">Color</div>' + OSR.menuSwatches(t.color) +
       '<div class="ctx-sub">Link</div>' +
       '<div class="ctx-list">' + (links.join('') || '<span class="hint map-menu-none">No combatants or characters.</span>') + '</div>' +
       (t.link ? '<button class="ctx-item" type="button" data-act="unlink"><i class="fa-solid fa-link-slash"></i><span>Unlink</span></button>' : '') +
       '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash"></i><span>Delete token</span></button>',
-      el => {
+      (el, e) => {
         const one = sc.tokens.find(z => z.id === id);
         if (!one) return true;
         const act = el.dataset.act;
         if (act === 'delete') { deleteTokens(sc, [id]); return true; }
+        if (act === 'label') { saveLabel(); return e.type === 'keydown'; }
         if (act === 'color') {
           const c = el.dataset.color || el.value;
           if (!/^#[0-9a-f]{6}$/i.test(c)) return false;
@@ -318,7 +335,7 @@
         OSR.saveScene(sc);
         OSR.renderMaps();
         return true;
-      });
+      }, saveLabel);
   }
 
   /* ---- Pointer (called by js/maps.js) ---- */
