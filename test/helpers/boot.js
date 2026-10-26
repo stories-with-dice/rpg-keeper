@@ -25,6 +25,7 @@ const SCRIPTS = [
   'vendor/fflate/fflate.min.js',
   'js/monsters.js',
   'js/ua-statblock.js',
+  'js/table-syntax.js',
   'js/core.js',
   'js/data.js',
   'js/store.js',

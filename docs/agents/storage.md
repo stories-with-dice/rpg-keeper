@@ -9,8 +9,8 @@
     for each of `OSR.SYSTEMS` (`['osr','ua3e','brp','sl']`). Also `seeds/<system>`.
   - `meta`: `'campaigns'` (`[{ id, name, createdAt, primary }]`) and `'activeCampaignId'`.
   - `blobs`: map images.
-- `splitState(state)`: characters (by `charSystemKey()`), monsters, Compendium entries, and scenes
-  (by `system`), and each character's HP/Wounds/Madness trackers go to their system's document.
+- `splitState(state)`: characters (by `charSystemKey()`), monsters, Compendium entries, scenes, and
+  user tables (`state.tables`, by `system`), and each character's HP/Wounds/Madness trackers go to their system's document.
   The rest goes to `campaign`, with `order: { characters, consumables }`. `joinState(docs)` reverses it.
 - `load()` is async (`init()` awaits it). The first run after the IndexedDB move migrates
   `localStorage['osr_manager_v1']` into a primary campaign "Default"; the old key goes only after
@@ -47,9 +47,10 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
   `system` (missing → `'osr'`); a duplicate in the same system (same `ref`, or same name + category
   for an entry) is skipped. An item with a `seedRef` replaces the campaign's item with that
   `seedRef` (`replaceSeeded()`). Scenes get new ids.
+- `mergeTables` (Merge and packs) skips a table whose name (case-insensitive) the system has.
 - **Content packs**: a file with `pack: { name, system }` goes to `importPack`: merge only, one
   confirm, then `OSR.setSystem(pack.system)`. If `saveNow()` returns `false`, it removes what it
-  added and alerts. Pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
+  added and alerts. Pack tables go only into the campaign (not the seed store). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
   store.
 
 ## Seeding (`js/data.js`, `js/seeds.js`, `js/seed.js`)

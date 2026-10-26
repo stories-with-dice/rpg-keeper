@@ -459,17 +459,53 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 
 ## Tables tab
 
-A library of **random encounter tables** (one per terrain/district — Arctic, Cave, Market, Tavern,
-Tomb, and so on), each rollable with its own dice formula (usually **d100**). The **Silent Legions**
-tag holds the d20 *Monster Qualities* table (e.g. *Acidic: Damage up, Hit up, Morale down*) for
-customizing a creature template.
+A library of **random tables**. The built-in ones are encounter tables (one per terrain/district —
+Arctic, Cave, Market, Tavern, Tomb, and so on), each rollable with its own dice formula (usually
+**d100**). The **Silent Legions** tag holds the d20 *Monster Qualities* table (e.g. *Acidic: Damage
+up, Hit up, Morale down*) for customizing a creature template. You can also make your own tables,
+and a table can roll on other tables (a **master table**).
 
 - **Tags** filter which tables are listed — tick/untick, or **right-click** a tag to show only that
   one. **Search** filters by table name. The count shows *matches / total*.
-- Click a table's name to **expand** it and see every row.
+- Click a table's name to **expand** it and see every row. A `[Name]` in a row is a link: click it
+  to open that table.
 - **Roll** rolls the table's formula, highlights the matching row, and logs the result (table name,
-  formula, total, and the row's text) to the **Session Log** at the bottom — same as any other roll
-  in the app.
+  formula, total, and the full text) to the **Session Log** at the bottom — same as any other roll
+  in the app. For a master table, every sub-roll in the result is underlined: click one to roll
+  only that part again.
+- **+ New table** opens the table editor. **Duplicate** copies any table (built-in ones too) into a
+  new one that you can change. Your tables show a **mine** badge and have **Edit** and **Delete**.
+  They belong to the current campaign and **System**, and go into Export and Dropbox sync. A table
+  of yours with the same name as a built-in one replaces it.
+
+### Table text
+
+```
+d10
+1-2: [Ruin]
+3-5: [Camp]
+6-7: The [Words.Group] of the [Words.Hue] [Words.Thing]
+8-0: [2x Ruin]
+```
+
+- **Line 1** is the die: `d12`, `2d6`, `d100`. Add named columns with `|`: `d12 | Group | Hue | Thing`.
+- **Each entry** is `range: text`. A range is `4` or `1-2` (`1–2` works too). On a d10, `0` means 10;
+  on a d100, `00` means 100. A line without a range takes the next number, so a plain list of 12
+  lines under `d12` is a full table.
+- **Columns**: split the text with `|`, one cell per column: `1: Circle | Grey | Lamp`.
+- **Lookups**: `[Name]` rolls on another table. `[Name.Column]` rolls on a table with columns and
+  takes one column (`[Name]` alone gives every cell). `[2x Name]` or `[1d4x Name]` rolls more than
+  once, joined with commas. `[2d6]` rolls dice in the text.
+- Blank lines and lines that start with `#` are skipped.
+
+The editor colors the text as you type: ranges, lookups to known tables, dice, and lookups to
+tables that do not exist (red). Type `[` for a list of table names; pick a table with columns and
+the list shows its columns. Below the text, the editor lists problems: a bad die (Save is blocked),
+values with no entry, overlapping ranges, and unknown tables. **Test roll** rolls the draft without
+logging it. If you rename a table, the lookups to it in your other tables change too.
+
+A content pack can carry tables too (a `tables` list of `{ name, tag, source }`), so you can keep
+the tables from your books in a private pack.
 
 ---
 

@@ -1356,6 +1356,140 @@ test('Tables tab: expanding a table and clicking Roll rolls its formula, highlig
   assert.equal(hitRow.querySelector('details').open, true, 'stays expanded across the re-render');
 });
 
+// Fills the table editor (#tbl-modal) and clicks Save.
+function makeTable(name, source, tag) {
+  click($('#tbl-new'));
+  setValue($('#tbl-f-name'), name);
+  if (tag) setValue($('#tbl-f-tag'), tag);
+  setValue($('#tbl-f-src'), source);
+  click($('#tbl-f-save'));
+}
+const tblRow = name => $$('#tbl-list .tbl-row').find(li => li.querySelector('.tbl-name').textContent === name);
+
+test('Tables tab: New table saves a user table (this system, persisted) that rolls on sub-tables', async () => {
+  tab('tables');
+  makeTable('Color', 'd2\n1: red\n2: blue\n');
+  makeTable('Thing', 'd2 | Shape | Size\n1: cube | small\n2: orb | large\n');
+  makeTable('Omen', 'd2\n1: A [Color] [Thing.Shape]\n2: [2x Color] lights\n');
+  assert.equal($('#tbl-modal').hidden, true, 'Save closes the editor');
+  const saved = (await savedState()).tables;
+  assert.deepEqual(saved.map(t => [t.name, t.system, t.tag]), [['Color', 'osr', 'Custom'], ['Thing', 'osr', 'Custom'], ['Omen', 'osr', 'Custom']]);
+
+  const omen = tblRow('Omen');
+  assert.ok(omen.classList.contains('is-user'));
+  assert.equal(omen.querySelector('details').open, true, 'a saved table opens');
+  assert.match(omen.querySelector('.tbl-subs').textContent, /2/, 'rolls on 2 tables');
+  assert.equal(omen.querySelectorAll('.tbl-ref[data-ref-id]').length, 3);
+
+  rig([face(1, 2), face(2, 2), face(1, 2)]);
+  click(omen.querySelector('.tbl-roll'));
+  const last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.source, 'Omen');
+  assert.equal(last.detail, 'A blue cube');
+  assert.equal(tblRow('Omen').querySelector('.tbl-result-text').textContent, 'A blue cube');
+
+  // Click the color part: only it rolls again.
+  rig(face(1, 2));
+  click(tblRow('Omen').querySelector('.tbl-sub[data-path="1"]'));
+  assert.equal(tblRow('Omen').querySelector('.tbl-result-text').textContent, 'A red cube');
+  assert.equal(T.state.log[T.state.log.length - 1].source, 'Omen (again: Color)');
+
+  // A table with columns shows a header row.
+  assert.deepEqual(Array.from(tblRow('Thing').querySelectorAll('.tbl-entries th')).map(th => th.textContent), ['', 'Shape', 'Size']);
+});
+
+test('Tables tab: the editor highlights refs, lists problems, blocks errors, and test-rolls the draft', () => {
+  tab('tables');
+  makeTable('Color', 'd2\n1: red\n2: blue\n');
+  click($('#tbl-new'));
+  setValue($('#tbl-f-name'), 'Draft');
+  setValue($('#tbl-f-src'), 'd4\n1: [Color] fog\n2: [Missing]\n');
+  assert.ok($('#tbl-hl .hl-ref'), 'a known ref is marked');
+  assert.ok($('#tbl-hl .hl-bad'), 'an unknown ref is marked');
+  const problems = $$('#tbl-problems li').map(li => li.textContent);
+  assert.ok(problems.some(p => /no table named "Missing"/.test(p)), problems.join('; '));
+  assert.ok(problems.some(p => /No entry for 3–4/.test(p)), problems.join('; '));
+
+  rig([face(1, 4), face(2, 2)]);
+  click($('#tbl-f-test'));
+  assert.equal($('#tbl-test-out').textContent, '1 blue fog');
+  assert.equal(logCount(), 0, 'a test roll is not logged');
+
+  setValue($('#tbl-f-src'), 'six\n1: x\n');
+  click($('#tbl-f-save'));
+  assert.equal($('#tbl-modal').hidden, false, 'an error blocks Save');
+  assert.match($('#tbl-msg').textContent, /Fix the errors/);
+
+  setValue($('#tbl-f-src'), 'd1\n1: x\n');
+  setValue($('#tbl-f-name'), 'color');
+  click($('#tbl-f-save'));
+  assert.match($('#tbl-msg').textContent, /already have a table named "Color"/);
+  click($('#tbl-f-cancel'));
+  assert.equal(T.state.tables.length, 1);
+});
+
+test('Tables tab: "[" in the editor lists tables, then the columns of a table with columns', () => {
+  tab('tables');
+  makeTable('Thing', 'd2 | Shape | Size\n1: cube | small\n2: orb | large\n');
+  click($('#tbl-new'));
+  const ta = $('#tbl-f-src');
+  ta.focus();
+  setValue(ta, 'd2\n1: [2x Thi');
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+  window.OSR.acFromTableEditor(ta);
+  assert.equal($('#comp-ac').hidden, false);
+  assert.deepEqual($$('#comp-ac .ac-name').map(n => n.textContent), ['Thing']);
+  key(ta, 'Enter');
+  assert.equal(ta.value, 'd2\n1: [2x Thing.');
+  assert.deepEqual($$('#comp-ac .ac-name').map(n => n.textContent), ['Thing.Shape', 'Thing.Size'], 'the column list opens');
+  key(ta, 'ArrowDown');
+  key(ta, 'Enter');
+  assert.equal(ta.value, 'd2\n1: [2x Thing.Size]');
+  click($('#tbl-f-cancel'));
+});
+
+test('Tables tab: Duplicate copies a built-in table; renaming a table updates the refs to it; Delete removes it', () => {
+  tab('tables');
+  const arctic = $('#tbl-list .tbl-row[data-id="arctic"]');
+  assert.equal(arctic.querySelector('.tbl-edit'), null, 'a built-in table has no Edit');
+  click(arctic.querySelector('.tbl-dup'));
+  assert.equal($('#tbl-f-name').value, 'Arctic (copy)');
+  assert.match($('#tbl-f-src').value, /^d100\n01: /);
+  click($('#tbl-f-save'));
+  const copy = T.state.tables.find(t => t.name === 'Arctic (copy)');
+  assert.ok(copy);
+  assert.equal(window.TableSyntax.parseTable(copy.source).entries.length, window.OSR.data.tables.find(t => t.id === 'arctic').entries.length);
+
+  makeTable('Weather', 'd1\n1: snow\n');
+  makeTable('Day', 'd1\n1: [Weather] and [2x Weather]\n');
+  click(tblRow('Weather').querySelector('.tbl-edit'));
+  setValue($('#tbl-f-name'), 'Sky');
+  click($('#tbl-f-save'));
+  assert.equal(T.state.tables.find(t => t.name === 'Day').source, 'd1\n1: [Sky] and [2x Sky]\n');
+
+  click(tblRow('Sky').querySelector('.tbl-del'));
+  assert.equal(tblRow('Sky'), undefined);
+  assert.ok(tblRow('Day').querySelector('.tbl-ref.is-bad'), 'a ref to a deleted table shows as broken');
+});
+
+test('Tables tab: user tables belong to one System; a user table hides a built-in one with the same name', () => {
+  tab('tables');
+  const builtins = window.OSR.data.tables.length;
+  makeTable('Arctic', 'd1\n1: my own arctic\n');
+  assert.equal($$('#tbl-list .tbl-row').length, builtins, 'the user Arctic replaces the built-in one');
+  assert.ok(tblRow('Arctic').classList.contains('is-user'));
+
+  window.OSR.setSystem('sl');
+  assert.equal($$('#tbl-list .tbl-row').length, builtins);
+  assert.equal(tblRow('Arctic').classList.contains('is-user'), false, 'Silent Legions sees the built-in Arctic');
+  makeTable('Cult', 'd1\n1: a cult\n');
+  assert.ok(tblRow('Cult'));
+
+  window.OSR.setSystem('osr');
+  assert.equal(tblRow('Cult'), undefined);
+  assert.deepEqual(T.state.tables.map(t => [t.name, t.system]), [['Arctic', 'osr'], ['Cult', 'sl']], 'nothing is deleted');
+});
+
 /* ================================================================== */
 /* Settings tab                                                       */
 /* ================================================================== */

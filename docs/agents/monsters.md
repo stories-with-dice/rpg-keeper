@@ -58,9 +58,29 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   a tag (the script throws on a missing one). `parseRange`: `"00"` after `"98-99"` is 100.
 - `scripts/build-token-icons.js`, `scripts/build-icon-index.js`: see maps.md.
 
-## Tables tab (`js/tables.js`)
+## Tables tab (`js/tables.js`, `js/table-syntax.js`)
 
-Read-only over `OSR.data.tables`: `{ id, name, tag, formula, entries: [{ range, lo, hi, text }] }`. No
-state. Tags come from the data (keep 10 or fewer). `rollTable` uses `evalFormula(t.formula)` and
-`pushLog`. Rows are `<details>`; `tblOpenIds` keeps open rows across renders (capture-phase
-`toggle` listener). `test/tables.test.js` checks each table covers 1..N of its die.
+- Two kinds of table. Built-in: `OSR.data.tables`, `{ id, name, tag, formula, entries: [{ range, lo,
+  hi, text }] }`, read-only; tags come from the data (keep 10 or fewer). User: `state.tables`,
+  `{ id, name, tag, system, source, createdAt, updatedAt }`, saved in its system's document (see
+  storage.md). `tablesForSystem()` is the per-system list.
+- `library()` gives the current system's user tables (parsed, cached by `source`) and every built-in
+  table that no user table hides by name (case-insensitive). Both have the parsed shape
+  `{ id, name, tag, formula, columns, entries: [{ range, lo, hi, text, cells }], problems, user }`.
+- `js/table-syntax.js` (`window.TableSyntax`, pure, also `module.exports`): `parseTable(source)`
+  (the format is in its header comment and README.md), `rollTable(table, ctx)` → a node tree,
+  `nodeText()`, `rerollAt(tree, path, ctx)`, `highlight(source, resolve)`, `refProblems()`,
+  `toSource()`, `renameRefs()`. `ctx` is `{ resolve(name), roll(formula) }`; `js/tables.js` builds it
+  from `library()` and `evalFormula`. A ref that names a table wins over a dice reading
+  (`[d6]` with a table "d6"). Depth limit 12, repeat limit 20, a table on its own stack is an error.
+- Roll: `pushLog(name, formula, total, nodeText(tree))`. `tblLastRoll[id].tree` keeps the result;
+  each sub-node renders as `.tbl-sub[data-path]` and a click calls `rerollAt` (logged as
+  "Name (again: Sub)"). Rows are `<details>`; `tblOpenIds` keeps open rows across renders
+  (capture-phase `toggle` listener). `tblTagOff` holds the unticked tags, so a new tag shows.
+- Editor `#tbl-modal`: a transparent `<textarea id="tbl-f-src">` over `<pre id="tbl-hl">`; both must
+  keep the same font, padding, border, and wrapping (css/app.css). `[` autocomplete is
+  `OSR.acFromTableEditor` (mode `'table'` of `OSR.compAC` in js/compendium-popups.js, items from
+  `OSR.tableAcItems`). Save is blocked by `error` problems, an empty name, `[`/`]` in the name, or a
+  name the system already has. A rename rewrites refs in the system's other user tables.
+- Tests: `test/table-syntax.test.js` (parser, roller), `test/ui.test.js` "Tables tab",
+  `test/tables.test.js` (each built-in table covers 1..N of its die).

@@ -9,7 +9,7 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 | [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions |
 | [compendium.md](docs/agents/compendium.md) | Compendium entries, hover popups (also the map's), `[`/`$` autocomplete, the sheet-selection menu |
 | [dice.md](docs/agents/dice.md) | the dice engine, `annotate()`, sheet variables and `$Name`, the roll-with-modifiers popup |
-| [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab |
+| [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab and user tables |
 | [combat.md](docs/agents/combat.md) | the Combat tracker: entries, statuses, the right-click menu, the detail panel |
 | [maps.md](docs/agents/maps.md) | Maps tab: scenes, view, tokens, drawings, pins, hexcrawl, toolbar, hotkeys, pop-out, undo |
 
@@ -35,7 +35,7 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 Every `js/*.js` file (except vendored ones) is an IIFE: `(function (OSR) {…})(window.OSR = window.OSR || {})`.
 `js/core.js` loads first and `js/main.js` last (`index.html` order). Cross-file calls are `OSR.foo()`,
 resolved at call time. Keep a helper local to its file unless another file or a test calls it.
-Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/icons.js`) are UMD-ish:
+Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
 they also `module.exports` for Node.
 
 | File | Contents |
@@ -53,7 +53,8 @@ they also `module.exports` for Node.
 | `js/ua-statblock.js`, `js/brp-seed.js`, `js/sl-seed.js`, `js/seed.js` | UA parser and rules; BRP/SL/OSR seeding and pregens |
 | `js/compendium.js`, `js/compendium-popups.js` | Compendium CRUD and filters; hover popups and autocomplete |
 | `js/maps.js`, `js/grid.js`, `js/tokens.js`, `js/drawings.js`, `js/pins.js`, `js/history.js`, `js/icons.js` | Maps tab |
-| `js/tables.js`, `js/settings.js`, `js/io.js`, `js/dropbox.js` | Tables tab; Settings; paste modal, Export/Import, packs; Dropbox |
+| `js/tables.js`, `js/table-syntax.js` | Tables tab and table editor; table text parser and master-table roller |
+| `js/settings.js`, `js/io.js`, `js/dropbox.js` | Settings; paste modal, Export/Import, packs; Dropbox |
 | `js/main.js` | `wire()` calls every `wireX()`, `init()`, `boot()`, the test seam, the last-tab memory |
 | `scripts/*.js` | CLI converters (bestiary, spells, tables, token icons, icon index) |
 | `test/*.test.js`, `test/helpers/boot.js` | `node:test` suites; boots the app in jsdom |
@@ -97,7 +98,7 @@ npm run convert-tables       # data/tables/*.csv → data/tables.json
   `osr_dropbox_*`).
 - **System scoping**: lists of characters, monsters, Compendium entries, and trackers go through
   the per-system helpers (`charactersForSystem`, `monstersForSystem`, `compendiumForSystem`,
-  `consumablesForSystem`), never the bare `state` arrays. Scenes use `scene.system`. See systems.md.
+  `consumablesForSystem`, `tablesForSystem`), never the bare `state` arrays. Scenes use `scene.system`. See systems.md.
 - **Shared data**: `OSR.data` and `OSR.seeds` are read-only. Deep-clone before you put a def in `state`.
 
 ## Checklist for a change

@@ -171,6 +171,7 @@
         <div class="comp-toolbar">
           <input id="tbl-search" type="text" placeholder="Search table name&hellip;" autocomplete="off" />
           <span class="comp-count" id="tbl-count"></span>
+          <button id="tbl-new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New table</button>
         </div>
         <div class="comp-filter-row"><span class="comp-filter-label">Tags</span><div class="comp-cats" id="tbl-tags"></div></div>
         <p id="tbl-empty" class="hint" hidden>No tables yet.</p>
@@ -642,6 +643,49 @@
     </div>
   </div>
 
+  <div class="modal" id="tbl-modal" hidden>
+    <div class="modal-box modal-box-lg">
+      <div class="mm-head">
+        <h3 id="tbl-modal-title">Table</h3>
+        <button id="tbl-close" class="btn">&times;</button>
+      </div>
+      <div class="comp-form">
+        <label class="field tbl-f-name">
+          <span>Name</span>
+          <input id="tbl-f-name" type="text" autocomplete="off" />
+        </label>
+        <label class="field tbl-f-tag">
+          <span>Tag</span>
+          <input id="tbl-f-tag" type="text" list="tbl-tag-list" autocomplete="off" />
+          <datalist id="tbl-tag-list"></datalist>
+        </label>
+      </div>
+      <div class="tbl-editor">
+        <pre class="tbl-hl" id="tbl-hl" aria-hidden="true"></pre>
+        <textarea id="tbl-f-src" spellcheck="false" autocomplete="off" aria-label="Table text"></textarea>
+      </div>
+      <ul class="tbl-problems" id="tbl-problems" hidden></ul>
+      <details class="tbl-help">
+        <summary>Syntax</summary>
+        <ul>
+          <li>Line 1 is the die: <code>d12</code>, <code>2d6</code>, <code>d100</code>. Add columns with <code>|</code>: <code>d12 | Group | Hue</code>.</li>
+          <li>Each entry is <code>range: text</code>: <code>4: A ruin</code>, <code>1-2: A cave</code>. On a d10, <code>0</code> means 10; on a d100, <code>00</code> means 100. A line without a range takes the next number.</li>
+          <li>With columns, split the text with <code>|</code>: <code>1: Circle | Azure</code>.</li>
+          <li><code>[Name]</code> rolls on another table. <code>[Name.Column]</code> takes one column. <code>[2x Name]</code> or <code>[1d4x Name]</code> rolls more than once. <code>[2d6]</code> rolls dice.</li>
+          <li>Type <code>[</code> for a list of tables. Blank lines and lines that start with <code>#</code> are skipped.</li>
+        </ul>
+      </details>
+      <div class="modal-actions">
+        <button id="tbl-f-save" class="btn btn-primary">Save</button>
+        <button id="tbl-f-test" class="btn"><i class="fa-solid fa-dice-d20"></i> Test roll</button>
+        <button id="tbl-f-delete" class="btn btn-danger">Delete</button>
+        <button id="tbl-f-cancel" class="btn">Cancel</button>
+        <span id="tbl-msg" class="hint"></span>
+      </div>
+      <p class="tbl-test-out" id="tbl-test-out"></p>
+    </div>
+  </div>
+
   <div class="ctx-menu" id="ctx-menu" hidden></div>
   <div class="ctx-menu" id="sel-menu" hidden></div>
   <div class="mm-preview" id="mm-preview" hidden></div>
@@ -667,6 +711,7 @@
   <script src="vendor/easymde/easymde.min.js"></script>
   <script src="js/monsters.js"></script>
   <script src="js/ua-statblock.js"></script>
+  <script src="js/table-syntax.js"></script>
   <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
        all attach to window.OSR, so load order only requires core.js first. -->
   <script src="js/core.js"></script>

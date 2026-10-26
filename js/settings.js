@@ -55,6 +55,7 @@
     OSR.renderMonsterBrowser(); // ditto the Bestiary tab
     OSR.renderCombat(); // ditto Combat's "+ Add character…"/"+ Add monster…"
     OSR.renderMaps(); // scenes belong to one system too
+    OSR.renderTables(); // ditto user-made tables
     renderSettings();
     OSR.pushNote('Settings', 'System → ' + (OSR.SYSTEM_LABELS[s] || s));
   }

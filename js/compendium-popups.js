@@ -306,7 +306,7 @@
     el.innerHTML = '<ul class="ac-list">' + OSR.compAC.items.map((e, i) => {
       const badge = OSR.compAC.mode === 'var'
         ? '<span class="badge">' + (e.value >= 0 ? '+' : '') + e.value + '</span>'
-        : '<span class="badge">' + escapeHtml(e.category) + '</span>';
+        : '<span class="badge">' + escapeHtml(OSR.compAC.mode === 'table' ? e.badge : e.category) + '</span>';
       return '<li class="ac-item' + (i === OSR.compAC.sel ? ' is-sel' : '') + '" data-i="' + i + '">' +
         '<span class="ac-name">' + escapeHtml(e.name) + '</span>' + badge + '</li>';
     }).join('') + '</ul>';
@@ -332,7 +332,8 @@
     if (!OSR.compAC || !item) return;
     // $ references can't contain spaces (VAR_TOKEN_RE), so a multi-word
     // variable name has them stripped — case is kept as detected.
-    const insert = OSR.compAC.mode === 'var' ? item.name.replace(/\s+/g, '') : item.name + ']';
+    const insert = OSR.compAC.mode === 'var' ? item.name.replace(/\s+/g, '')
+      : OSR.compAC.mode === 'table' ? item.insert : item.name + ']';
     if (OSR.compAC.kind === 'cm') {
       // CodeMirror records replaceRange in its own undo history (Ctrl-Z works).
       OSR.compAC.cm.replaceRange(insert, OSR.compAC.qStart, OSR.compAC.cm.getCursor());
@@ -352,7 +353,9 @@
         ta.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
+    const ta = OSR.compAC.ta, columns = OSR.compAC.mode === 'table' && /\.$/.test(insert);
     closeAC();
+    if (columns) acFromTableEditor(ta); // "Name." → list that table's columns
   }
   function textareaCaretXY(ta, index) {
     const div = document.createElement('div');
@@ -418,6 +421,24 @@
     acRender();
     const c = textareaCaretXY(ta, pos);
     acPlace(c.left, c.top, c.bottom);
+  }
+  // The Tables tab's table editor (js/tables.js): "[" lists table names at
+  // once (0 chars needed), after a count prefix ("[2x ") too; "[Name." lists
+  // that table's columns. Picking a table with columns inserts "Name." and
+  // opens the column list.
+  function acFromTableEditor(ta) {
+    if (!ta || ta.selectionStart !== ta.selectionEnd) return closeAC();
+    const pos = ta.selectionStart;
+    const m = ta.value.slice(0, pos).match(/\[([^[\]\n]*)$/);
+    if (!m) return closeAC();
+    const c = m[1].match(/^(\d*d(?:\d+|%)|\d+)\s*[x×]\s+/i);
+    const qStart = pos - m[1].length + (c ? c[0].length : 0);
+    const items = OSR.tableAcItems(ta.value.slice(qStart, pos));
+    if (!items.length) return closeAC();
+    OSR.compAC = { kind: 'ta', mode: 'table', ta: ta, cm: null, qStart: qStart, items: items, sel: 0 };
+    acRender();
+    const xy = textareaCaretXY(ta, pos);
+    acPlace(xy.left, xy.top, xy.bottom);
   }
   // The Dice Roller's plain-text custom-formula input: only the "$" trigger
   // is meaningful there (no "[" compendium references in a dice formula).
@@ -622,7 +643,7 @@
   Object.assign(OSR, {
     openCompPop, openSourcePop, setPopPinned, closePop, scheduleHidePop, cancelHideAllPops, scheduleHideAllPops,
     closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop, refreshSourcePops, syncCompPopsToTab, showScenePops,
-    acSearch, acSearchVars, closeAC, acFromTextarea, acFromFormulaInput, acFromCM,
+    acSearch, acSearchVars, closeAC, acFromTextarea, acFromFormulaInput, acFromCM, acFromTableEditor,
     wireCompendiumPopups
   });
 })(window.OSR = window.OSR || {});

@@ -135,7 +135,25 @@
     return added;
   }
 
-  // A content pack — { pack: { name, system }, compendium: [...], monsters: [...] },
+  // User-made random tables (js/tables.js). A table whose name the system
+  // already has is skipped.
+  function mergeTables(list, fallbackSystem) {
+    const state = OSR.state;
+    const added = [];
+    list.forEach(t => {
+      if (!t || typeof t.source !== 'string') return;
+      const system = validSystem(t.system, fallbackSystem);
+      const name = String(t.name || '').trim();
+      if (!name || state.tables.some(x => x.system === system && x.name.toLowerCase() === name.toLowerCase())) return;
+      const item = { id: OSR.uid(), name: name, tag: String(t.tag || 'Custom'), system: system,
+        source: t.source, createdAt: t.createdAt || Date.now(), updatedAt: Date.now() };
+      state.tables.push(item);
+      added.push(item.id);
+    });
+    return added;
+  }
+
+  // A content pack — { pack: { name, system }, compendium: [...], monsters: [...], tables: [...] },
   // for example the Unknown Armies catalog that the UA3 data tools write — is
   // only ever added to what is there. It never replaces the whole state, so
   // the Replace/Merge question of a full export is not asked.
@@ -144,12 +162,14 @@
     const system = validSystem(pack.system, OSR.currentSystem());
     const comp = Array.isArray(data.compendium) ? data.compendium : [];
     const mons = Array.isArray(data.monsters) ? data.monsters : [];
+    const tbls = Array.isArray(data.tables) ? data.tables : [];
     const name = String(pack.name || 'content pack');
     if (!confirm('Add "' + name + '" to ' + (OSR.SYSTEM_LABELS[system] || system) + '?\n\n' +
-        comp.length + ' Compendium entries and ' + mons.length + ' Bestiary monsters. ' +
+        comp.length + ' Compendium entries, ' + mons.length + ' Bestiary monsters, and ' + tbls.length + ' tables. ' +
         'Entries you already have are skipped. Nothing is replaced.')) return;
     const addedC = mergeCompendium(comp, system, true);
     const addedM = mergeMonsters(mons.map(m => JSON.parse(JSON.stringify(m))), system, true);
+    const addedT = mergeTables(tbls, system);
     OSR.ensureStateShape();
     if (!(await OSR.saveNow())) {
       // The browser storage refused the write (full or blocked): keep the
@@ -157,6 +177,8 @@
       const c = new Set(addedC), m = new Set(addedM);
       OSR.state.compendium = OSR.state.compendium.filter(e => !c.has(e.id));
       OSR.state.monsters = OSR.state.monsters.filter(d => !m.has(d.id));
+      const t = new Set(addedT);
+      OSR.state.tables = OSR.state.tables.filter(x => !t.has(x.id));
       OSR.save();
       alert('Import failed: the browser storage is full, so "' + name + '" was not added.');
       return;
@@ -164,10 +186,10 @@
     // The pack also goes into the system's seed, so every other campaign
     // (and every device, through Dropbox) is offered it (js/seeds.js).
     try { await OSR.addToSeed(system, comp, mons); } catch (e) { console.warn('seed write failed', e); }
-    OSR.pushNote('Import', 'added ' + addedC.length + ' Compendium entries and ' + addedM.length +
-      ' monsters from "' + name + '"');
+    OSR.pushNote('Import', 'added ' + addedC.length + ' Compendium entries, ' + addedM.length +
+      ' monsters, and ' + addedT.length + ' tables from "' + name + '"');
     if (OSR.currentSystem() !== system) OSR.setSystem(system);
-    else { OSR.renderCompendium(); OSR.renderMonsterBrowser(); OSR.renderSettings(); }
+    else { OSR.renderCompendium(); OSR.renderMonsterBrowser(); OSR.renderTables(); OSR.renderSettings(); }
   }
 
   // Resolves once the file is read and handled (tests await it; the file
@@ -219,6 +241,7 @@
       });
       if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
       if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
+      if (Array.isArray(data.tables)) mergeTables(data.tables, 'osr');
       if (Array.isArray(data.scenes)) data.scenes.forEach(sc => {
         if (!sc) return;
         sc.id = OSR.uid();
@@ -258,6 +281,7 @@
     OSR.renderCombat();
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
+    OSR.renderTables();
     OSR.renderMaps();
     OSR.renderSettings();
     return ok;

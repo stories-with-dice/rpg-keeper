@@ -1181,6 +1181,62 @@ button, input, textarea, select {
 .tbl-range { color: var(--text-dim); white-space: nowrap; width: 1%; }
 .tbl-entry.is-hit { background: var(--bg-3); }
 .tbl-entry.is-hit .tbl-range { color: var(--accent); font-weight: 600; }
+.tbl-entries th { text-align: left; padding: 4px 8px; color: var(--text-dim); font-weight: 600; font-size: 12px; }
+.tbl-subs { font-size: 12px; }
+.tbl-mine { color: var(--accent); }
+.tbl-actions .btn-danger { margin-left: auto; }
+.tbl-result { margin: 0 0 10px; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); line-height: 1.7; }
+.tbl-result-text { font-size: 14px; }
+.tbl-sub { border-bottom: 1px dashed var(--accent-2); cursor: pointer; border-radius: 3px; }
+.tbl-sub:hover { background: var(--roll-tint); }
+.tbl-sub .tbl-sub { border-bottom-color: var(--comp-ref); }
+.tbl-sub.is-error { color: var(--danger); border-bottom-color: var(--danger); }
+.tbl-ref { color: var(--comp-ref); }
+.tbl-ref[data-ref-id] { cursor: pointer; }
+.tbl-ref[data-ref-id]:hover { background: var(--comp-ref-tint); }
+.tbl-ref.is-dice { color: var(--accent-2); }
+.tbl-ref.is-bad { color: var(--danger); text-decoration: wavy underline; }
+#tbl-new { margin-left: 8px; }
+
+/* Table editor modal: a <textarea> with transparent text over a <pre> that
+   draws the same text with colors (js/table-syntax.js highlight()). Both
+   need the same font, padding, border, and wrapping. */
+#tbl-modal .modal-box-lg { max-height: 92vh; overflow: auto; }
+.comp-form .tbl-f-name { flex: 1 1 220px; }
+.comp-form .tbl-f-tag { flex: 0 0 180px; }
+.tbl-editor { position: relative; }
+.tbl-editor .tbl-hl, .modal-box .tbl-editor textarea {
+  margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.5; tab-size: 4;
+  white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; letter-spacing: 0;
+  scrollbar-gutter: stable; /* same text width whether or not the textarea scrolls */
+}
+.tbl-editor .tbl-hl {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  background: var(--bg); color: var(--text); border-color: transparent;
+}
+.modal-box .tbl-editor textarea {
+  position: relative; display: block; min-height: 320px; background: transparent;
+  color: transparent; caret-color: var(--text);
+}
+.modal-box .tbl-editor textarea::selection { background: var(--roll-tint); color: transparent; }
+.tbl-hl .hl-head { color: var(--accent); font-weight: 600; }
+.tbl-hl .hl-range { color: var(--accent); }
+.tbl-hl .hl-ref { color: var(--comp-ref); }
+.tbl-hl .hl-dice { color: var(--accent-2); }
+.tbl-hl .hl-bad { color: var(--danger); text-decoration: wavy underline; }
+.tbl-hl .hl-pipe { color: var(--text-dim); }
+.tbl-hl .hl-comment { color: var(--text-dim); font-style: italic; }
+.tbl-problems { list-style: none; margin: 8px 0 0; padding: 0; font-size: 12.5px; max-height: 110px; overflow: auto; }
+.tbl-problems[hidden] { display: none; }
+.tbl-problems li { padding: 2px 0; }
+.tbl-problems li.is-error { color: var(--danger); }
+.tbl-problems li.is-warn { color: var(--accent); }
+.tbl-help { margin-top: 8px; font-size: 12.5px; color: var(--text-dim); }
+.tbl-help summary { cursor: pointer; }
+.tbl-help ul { margin: 6px 0 0; padding-left: 18px; }
+.tbl-help li { margin: 3px 0; }
+.tbl-test-out { margin: 8px 0 0; min-height: 1.2em; }
 
 /* Bracketed-reference hover popups (stackable) */
 .comp-pop {

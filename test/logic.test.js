@@ -15,7 +15,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face } = require('./helpers/boot.js');
+const { boot, rigRandom, face, savedState } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -1749,7 +1749,7 @@ test('importData: a content pack is only ever added — no Replace question — 
   await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   assert.equal(asked.length, 1);
   assert.match(asked[0], /Add "Test UA pack" to Unknown Armies 3rd Ed\?/);
-  assert.match(asked[0], /1 Compendium entries and 1 Bestiary monsters/);
+  assert.match(asked[0], /1 Compendium entries, 1 Bestiary monsters, and 0 tables/);
   assert.doesNotMatch(asked[0], /Replace ALL/);
   assert.ok(T.state.characters.some(c => c.name === 'Keeper'), 'nothing is replaced');
   assert.equal(T.state.compendium.find(e => e.name === 'Night Shift').system, 'ua3e');
@@ -1761,6 +1761,16 @@ test('importData: a content pack is only ever added — no Replace question — 
   await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   assert.equal(T.state.compendium.filter(e => e.name === 'Night Shift').length, 1);
   assert.equal(T.state.monsters.filter(m => m.name === 'Night Clerk').length, 1);
+});
+
+test('importData: a content pack adds its tables to its system; a table name the system has is skipped', async () => {
+  window.confirm = () => true;
+  const pack = Object.assign(uaPack(), { tables: [{ name: 'Omen', tag: 'Pack', source: 'd2\n1: [Sign]\n2: calm\n' }, { name: 'Sign', source: 'd1\n1: crow\n' }] });
+  T.state.tables.push({ id: 'x', name: 'sign', tag: 'Custom', system: 'ua3e', source: 'd1\n1: mine\n', createdAt: 1 });
+  await T.importData(new window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' }));
+  assert.deepEqual(T.state.tables.map(t => [t.name, t.system, t.tag]), [['sign', 'ua3e', 'Custom'], ['Omen', 'ua3e', 'Pack']]);
+  const saved = await savedState(T);
+  assert.deepEqual(saved.tables.map(t => t.name), ['sign', 'Omen'], 'tables are saved in the system document');
 });
 
 test('importData: Cancel on a content pack adds nothing', async () => {
