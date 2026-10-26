@@ -1665,3 +1665,17 @@ test('Combat right-click: a custom condition the combatant does not have goes un
   assert.strictEqual($('#ctx-menu .ctx-more'), null, 'no "More" when every custom condition is applied');
   T.closeCtxMenu();
 });
+
+test('a reload opens the tab that was open last (localStorage, per device)', async () => {
+  tab('tables');
+  assert.strictEqual(window.localStorage.getItem('osr_last_tab'), 'tables');
+  const env = await boot({ extraStorage: { osr_last_tab: 'compendium' } });
+  const active = env.document.querySelector('.tab-btn.is-active');
+  assert.strictEqual(active.dataset.tab, 'compendium');
+  assert.ok(env.document.querySelector('#tab-compendium').classList.contains('is-active'));
+  env.window.close();
+  const bad = await boot({ extraStorage: { osr_last_tab: 'nope' } });
+  assert.strictEqual(bad.document.querySelector('.tab-btn.is-active').dataset.tab, 'character', 'an unknown tab: the first tab');
+  bad.window.close();
+  tab('character');
+});
