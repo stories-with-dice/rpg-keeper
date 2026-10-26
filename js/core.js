@@ -35,7 +35,8 @@
 
   // Compendium entry categories. "Other" is the default for new entries.
   // "Powers" covers BRP's magic/mutations/psychic abilities/sorcery/superpowers.
-  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Powers', 'Abilities', 'Rules', 'Other'];
+  // "Journal" holds the notes of map pins (js/pins.js).
+  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Powers', 'Abilities', 'Rules', 'Journal', 'Other'];
   const COMPENDIUM_DEFAULT_SOURCE = 'Unknown';
 
   // Style themes (dark only) — see the theme blocks in css/app.css.

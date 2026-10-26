@@ -127,7 +127,33 @@
   }
   const mod = (a, n) => ((a % n) + n) % n;
 
-  const api = { cellAt, cellCenter, cellCorners, distance, cellsCovered, cellsIn, gridFromRect, hexRound };
+  // A hex as a column and a row ("offset" coordinates): flat-top hexes in
+  // columns that zigzag down by half a hex; pointy-top hexes in rows that
+  // zigzag right.
+  function offsetCoords(c, g) {
+    if (g.orient === 'pointy') return { col: c.q + (c.r - mod(c.r, 2)) / 2, row: c.r };
+    return { col: c.q, row: c.r + (c.q - mod(c.q, 2)) / 2 };
+  }
+
+  // The column and row of the top-left whole hex of a w × h image (half a
+  // hex in from each corner, so a cut-off edge hex is not counted), so
+  // labels start at 0101.
+  function labelOrigin(g, w, h) {
+    const i = g.size / 2;
+    const corners = [[i, i], [w - i, i], [i, h - i], [w - i, h - i]].map(p => offsetCoords(cellAt(p[0], p[1], g), g));
+    return { col: Math.min(...corners.map(c => c.col)), row: Math.min(...corners.map(c => c.row)) };
+  }
+
+  // "0412": column 4, row 12, counted from `origin` (labelOrigin) as 01.
+  function hexLabel(c, g, origin) {
+    const o = offsetCoords(c, g);
+    const pad = n => (n < 10 && n >= 0 ? '0' : '') + n;
+    return pad(o.col - origin.col + 1) + pad(o.row - origin.row + 1);
+  }
+
+  const hexKey = c => c.q + ',' + c.r;
+
+  const api = { cellAt, cellCenter, cellCorners, distance, cellsCovered, cellsIn, gridFromRect, hexRound, offsetCoords, labelOrigin, hexLabel, hexKey };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MapGrid = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -89,6 +89,26 @@ test('grid: gridFromRect — a dragged square becomes the cell size and a corner
   assert.deepStrictEqual(G.cellAt(130, 126, h), { q: 0, r: 0 });
 });
 
+test('grid: hex labels count columns and rows from the image\'s top-left hex, as 0101', () => {
+  const g = { type: 'hex', orient: 'flat', size: 60, offsetX: 30, offsetY: 26 };
+  const origin = G.labelOrigin(g, 600, 400);
+  assert.strictEqual(G.hexLabel(G.cellAt(30, 26, g), g, origin), '0101');
+  // The next column to the right, and the hex below the first one.
+  assert.strictEqual(G.hexLabel(G.cellAt(30 + 45, 26 + 26, g), g, origin), '0201');
+  assert.strictEqual(G.hexLabel(G.cellAt(30, 26 + 52, g), g, origin), '0102');
+  // Pointy-top: rows first.
+  const p = { type: 'hex', orient: 'pointy', size: 52, offsetX: 26, offsetY: 30 };
+  const po = G.labelOrigin(p, 600, 400);
+  assert.strictEqual(G.hexLabel(G.cellAt(26, 30, p), p, po), '0101');
+  assert.strictEqual(G.hexLabel(G.cellAt(26 + 52, 30, p), p, po), '0201');
+  assert.strictEqual(G.hexKey({ q: -2, r: 3 }), '-2,3');
+  // Offset coordinates are the same hex grid, numbered another way.
+  for (let q = -3; q <= 3; q++) for (let r = -3; r <= 3; r++) {
+    const o = G.offsetCoords({ q, r }, g);
+    assert.ok(Number.isInteger(o.col) && Number.isInteger(o.row));
+  }
+});
+
 test('grid: gridFromRect over several cells divides the drag by their number', () => {
   const s = G.gridFromRect({ x: 10, y: 20, w: 180, h: 180 }, { type: 'square' }, 3);
   assert.deepStrictEqual([s.size, s.offsetX, s.offsetY], [60, 10, 20]);

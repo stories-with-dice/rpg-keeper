@@ -44,6 +44,7 @@ const SCRIPTS = [
   'js/maps.js',
   'js/tokens.js',
   'js/drawings.js',
+  'js/pins.js',
   'js/history.js',
   'js/compendium.js',
   'js/compendium-popups.js',

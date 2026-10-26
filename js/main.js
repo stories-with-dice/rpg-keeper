@@ -52,6 +52,7 @@
     OSR.wireMaps();
     OSR.wireTokens();
     OSR.wireDrawings();
+    OSR.wirePins();
     OSR.wireHistory();
     OSR.wireSeeds();
     OSR.wireRollPopup();

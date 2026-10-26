@@ -184,6 +184,8 @@
             <button class="btn map-tool is-active" data-tool="pan" title="Move the view: drag. Zoom: mouse wheel." aria-label="Move the view"><i class="fa-solid fa-hand"></i></button>
             <button class="btn map-tool" data-tool="measure" title="Measure: drag from one point to another." aria-label="Measure"><i class="fa-solid fa-ruler"></i></button>
             <button class="btn map-tool" data-tool="calibrate" title="Set the grid: drag over one cell of the map. Then arrow keys move the grid by 1 px." aria-label="Set the grid"><i class="fa-solid fa-crop-simple"></i></button>
+            <button class="btn map-tool" data-tool="pin" title="Add a location note: click where it goes" aria-label="Add a location note"><i class="fa-solid fa-location-dot"></i></button>
+            <button class="btn map-tool" data-tool="explore" title="Hexcrawl: click a hex to mark it explored or not" aria-label="Mark hexes explored" hidden><i class="fa-solid fa-binoculars"></i></button>
           </span>
           <span class="map-tools" role="group" aria-label="Drawing tools">
             <button class="btn map-tool" data-tool="pen" title="Draw freehand" aria-label="Draw freehand"><i class="fa-solid fa-pen"></i></button>
@@ -219,6 +221,8 @@
             <label title="How many cells your drag with the grid tool covers, across and down. A longer drag sets the grid more exactly.">Drag covers <input type="number" id="grid-span" min="1" step="1" value="1" /> cells</label>
             <label class="map-check"><input type="checkbox" id="grid-show" /> Show grid</label>
             <label class="map-check"><input type="checkbox" id="grid-lock" /> Lock grid</label>
+            <label class="map-check" title="Hex grids only: shade the hexes not explored yet, and mark them with the binoculars tool"><input type="checkbox" id="hexcrawl-on" /> Hexcrawl</label>
+            <label class="map-check" title="Show each hex's column and row, for example 0412"><input type="checkbox" id="hexcrawl-coords" /> Hex numbers</label>
           </div>
           <p class="hint">To set the grid from the map: choose <i class="fa-solid fa-crop-simple"></i>, then drag over one cell of the map's own grid, from corner to corner. For more precision, drag over several cells and enter their number in <b>Drag covers</b>. For hexes, drag across a row of hexes, from the left edge of the first to the right edge of the last. Arrow keys then move the grid by 1 px (Shift: 10 px).</p>
         </details>
@@ -242,6 +246,12 @@
             <label class="token-one">Color <input type="color" id="token-edit-color" /></label>
             <label class="token-one">Link <select id="token-link" class="btn"></select></label>
             <button id="token-delete" class="btn btn-danger" type="button">Delete</button>
+          </div>
+          <div class="pin-edit" id="pin-edit" hidden>
+            <i class="fa-solid fa-location-dot"></i> <b id="pin-edit-title"></b>
+            <button id="pin-open" class="btn" type="button">Edit note</button>
+            <button id="pin-delete" class="btn" type="button">Delete pin</button>
+            <button id="pin-delete-note" class="btn btn-danger" type="button">Delete pin and note</button>
           </div>
           <div class="token-card" id="token-card" hidden></div>
           <div class="map-empty" id="map-empty" hidden>No scenes for this System yet. Choose <b>+ New scene…</b>, drop an image here, or paste one (Ctrl+V).</div>
@@ -633,6 +643,7 @@
   <script src="js/maps.js"></script>
   <script src="js/tokens.js"></script>
   <script src="js/drawings.js"></script>
+  <script src="js/pins.js"></script>
   <script src="js/history.js"></script>
   <script src="js/compendium.js"></script>
   <script src="js/compendium-popups.js"></script>

@@ -77,7 +77,8 @@ js/sl-seed.js           seedSlMonsters()/seedSlCompendium() — same mechanism a
 js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
 js/grid.js              pure map grid geometry (window.MapGrid / module.exports): squares and flat/pointy
-                       hexes — cellAt, cellCenter, cellCorners, distance, cellsCovered, cellsIn, gridFromRect
+                       hexes — cellAt, cellCenter, cellCorners, distance, cellsCovered, cellsIn, gridFromRect,
+                       offsetCoords, labelOrigin, hexLabel, hexKey
 js/maps.js              the Maps tab: scenes (state.scenes), the SVG view (pan, zoom), images in IndexedDB
                        blobs, grid settings and calibration, the measure tool — see "The Maps tab"
 js/tokens.js            map tokens on a scene: add/snap/move/select/delete, links to combat entries and
@@ -85,6 +86,8 @@ js/tokens.js            map tokens on a scene: add/snap/move/select/delete, link
                        "The Maps tab"
 js/drawings.js          drawing on a scene: pen (RDP-simplified), line, rect, ellipse, polygon, text, eraser;
                        the draw bar; select and move with the hand tool
+js/pins.js              location pins (notes = Compendium 'Journal' entries) and hexcrawl mode (explored
+                       hexes, hex numbers) on a scene
 js/history.js           undo/redo of scene changes (OSR.saveScene records before/after); Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y
 js/tables.js            the Tables tab: tag filter + name search over OSR.data.tables, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
@@ -133,6 +136,8 @@ test/monsters.test.js  node:test suite for the parser + converter
 test/grid.test.js      node:test suite for js/grid.js (pure)
 test/drawings.test.js  node:test suite for js/drawings.js and js/history.js: each tool, the draw bar,
                        eraser, select/move, Clear, and undo/redo of every kind of scene change
+test/pins.test.js      node:test suite for js/pins.js: hexcrawl toggle, explored hexes, hex numbers, pins
+                       and their Journal notes (popup, editor, move, delete)
 test/tokens.test.js    node:test suite for js/tokens.js: icons, snapping, moving and selecting, combat
                        links and unlinking, the bar, Delete, pings
 test/maps.test.js      node:test suite for js/maps.js and the .zip Export/Import: scenes, images (file,
@@ -909,8 +914,7 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   drawings, pins }`, where `grid` is `{ type: 'square'|'hex', orient: 'flat'|'pointy', size,
   offsetX, offsetY, unitsPerCell, unit, show, locked }`. Each belongs to one system
   (`splitState` puts it in that system's document) and shows only under that System;
-  `state.activeSceneIds[system]` is the open one. `pins` and `hexcrawl` are for the later Maps PRs
-  (docs/maps-plan.md).
+  `state.activeSceneIds[system]` is the open one.
 - **Images** are blobs in IndexedDB (`OSR.store.putBlob(id, { bytes, type, width, height })`,
   `bytes` an ArrayBuffer — fake-indexeddb cannot store a jsdom Blob). `storeImage()` runs
   `OSR.decodeImage()` first (canvas: scaled to `MAX_SIDE` 8192 px, encoded as WebP, or PNG where the
@@ -963,6 +967,21 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   first, then `drawSelectDown` selects and drags a drawing; Delete removes it. **Clear drawings**
   asks, and is one undo step. The draw bar (`#map-draw-bar`) shows for the draw tools but not the
   eraser; its style is in memory.
+- **Pins** (`js/pins.js`) are in `scene.pins`: `{ id, x, y, compendiumId }`. The pin tool
+  (`addPin()`) makes a pin and a Compendium entry `{ category: 'Journal', source: 'Maps', system:
+  currentSystem() }` named "<scene> — Location N" (or "— Hex 0412" in hexcrawl mode, where the
+  pin snaps to the hex center), unique in the system, then opens its editor (`openCompEntry`). So a
+  note is listed, searched, and `[linked]` like any entry. With the hand tool (after tokens): a click
+  opens the note's popup (`openCompPop(name, pinElement)`, pinned so it stays), a double-click
+  (`detail` 2) its editor, a drag moves the pin. `#pin-edit` (over the map's bottom edge): **Edit
+  note**, **Delete pin** (also Delete), **Delete pin and note** (asks; undo brings the pin back, not
+  the note). A pin whose entry is gone draws gray (`.is-orphan`) and says so.
+- **Hexcrawl mode** (`scene.hexcrawl = { on, explored: ['q,r', …], coords }`, hex grids only —
+  the grid panel's checkboxes are disabled on squares, and the explore tool hides): unexplored
+  visible hexes get a shade (`.map-unexplored`, under the grid lines); the binoculars tool
+  (`toggleExplored()`) marks a hex explored or not. **Hex numbers** (`coords`) label each visible
+  hex with `MapGrid.hexLabel()`, counted from `MapGrid.labelOrigin()` (the first whole hex in the
+  image's top-left, so cut-off edge hexes get no number), only when a hex is at least 34 screen px.
 - **Undo/redo** (`js/history.js`): every scene change goes through `OSR.saveScene(sc)` instead of
   `OSR.save()`: it saves and records `{ before, after }` as JSON of the scene's `name, grid,
   hexcrawl, tokens, drawings, pins` (`trackScene()` from `renderMaps()` takes the first "before").

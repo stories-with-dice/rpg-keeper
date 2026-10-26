@@ -31,7 +31,8 @@
     calibrate: 'Drag over one cell of the map to set the grid.', measure: 'Drag to measure.',
     pen: 'Drag to draw.', line: 'Drag to draw a line.', rect: 'Drag to draw a rectangle.', ellipse: 'Drag to draw an ellipse.',
     polygon: 'Click each corner. Click the first corner, double-click, or press Enter to finish. Escape cancels.',
-    text: 'Click where the text goes.', eraser: 'Click or drag over drawings to erase them.'
+    text: 'Click where the text goes.', eraser: 'Click or drag over drawings to erase them.',
+    pin: 'Click where the note goes.', explore: 'Click a hex to mark it explored, or not.'
   };
   const views = Object.create(null);  // scene id -> { x, y, w, h }
   const images = new Map();           // blob id -> object URL | 'loading' | 'missing'
@@ -54,9 +55,13 @@
     ['offsetX', 'offsetY'].forEach(k => { sc.grid[k] = Number(sc.grid[k]) || 0; });
     sc.grid.unitsPerCell = Number(sc.grid.unitsPerCell) >= 0 ? Number(sc.grid.unitsPerCell) : GRID_DEFAULTS.unitsPerCell;
     sc.hexcrawl = Object.assign({ on: false, explored: [], coords: false }, sc.hexcrawl || {});
+    sc.hexcrawl.on = !!sc.hexcrawl.on;
+    sc.hexcrawl.coords = !!sc.hexcrawl.coords;
+    sc.hexcrawl.explored = Array.isArray(sc.hexcrawl.explored) ? sc.hexcrawl.explored.filter(k => /^-?\d+,-?\d+$/.test(k)) : [];
     ['tokens', 'drawings', 'pins'].forEach(k => { if (!Array.isArray(sc[k])) sc[k] = []; });
     if (OSR.ensureTokenShape) sc.tokens.forEach(OSR.ensureTokenShape); // js/tokens.js
     if (OSR.ensureDrawingShape) sc.drawings.forEach(OSR.ensureDrawingShape); // js/drawings.js
+    if (OSR.ensurePinShape) sc.pins.forEach(OSR.ensurePinShape); // js/pins.js
     return sc;
   }
 
@@ -231,10 +236,13 @@
       '<option value="' + NEW + '">+ New scene…</option>';
     sel.value = cur ? cur.id : NEW;
     ['#map-rename', '#map-duplicate', '#map-delete', '#map-fit'].forEach(s => { $(s).disabled = !cur; });
+    if (tool === 'explore' && !(cur && OSR.hexcrawlOn(cur))) tool = 'pan';
     $$('#tab-maps .map-tool').forEach(b => {
       b.classList.toggle('is-active', b.dataset.tool === tool);
       b.disabled = !cur;
     });
+    $('.map-tool[data-tool="explore"]').hidden = !(cur && OSR.hexcrawlOn(cur));
+    OSR.renderPinBar();
     OSR.trackScene(cur);
     $('#map-undo').disabled = !OSR.canUndo(cur);
     $('#map-redo').disabled = !OSR.canRedo(cur);
@@ -260,6 +268,11 @@
     $('#grid-show').checked = !!g.show;
     $('#grid-lock').checked = !!g.locked;
     $('#grid-orient-label').hidden = g.type !== 'hex';
+    const hc = sc ? sc.hexcrawl : { on: false, coords: false };
+    $('#hexcrawl-on').checked = !!hc.on;
+    $('#hexcrawl-coords').checked = !!hc.coords;
+    $('#hexcrawl-on').disabled = !sc || g.type !== 'hex';
+    $('#hexcrawl-coords').disabled = !sc || g.type !== 'hex';
     ['#grid-type', '#grid-orient', '#grid-size', '#grid-ox', '#grid-oy'].forEach(s => { $(s).disabled = !sc || g.locked; });
     ['#grid-units', '#grid-unit', '#grid-show', '#grid-lock'].forEach(s => { $(s).disabled = !sc; });
   }
@@ -282,8 +295,7 @@
       const p = G.cellCorners(c, g);
       return 'M' + p.map(q => num(q.x) + ' ' + num(q.y)).join('L') + 'Z';
     }).join('');
-    return '<defs><clipPath id="map-clip"><rect x="0" y="0" width="' + sc.width + '" height="' + sc.height + '"/></clipPath></defs>' +
-      '<path class="map-grid map-grid-line" clip-path="url(#map-clip)" fill="none" stroke-width="' + num(stroke) + '" d="' + d + '"/>';
+    return '<path class="map-grid map-grid-line" clip-path="url(#map-clip)" fill="none" stroke-width="' + num(stroke) + '" d="' + d + '"/>';
   }
 
   function overlayMarkup(sc, stroke) {
@@ -324,9 +336,11 @@
       image += '<text class="map-missing" x="' + sc.width / 2 + '" y="' + sc.height / 2 + '" font-size="' + num(stroke * 18) + '">The image of this scene is not in this browser.</text>';
     }
     svg.innerHTML =
+      '<defs><clipPath id="map-clip"><rect x="0" y="0" width="' + sc.width + '" height="' + sc.height + '"/></clipPath></defs>' +
       '<g class="map-layer-image">' + image + '</g>' +
-      '<g class="map-layer-grid">' + gridMarkup(sc, v, stroke) + '</g>' +
-      '<g class="map-layer-drawings">' + OSR.drawingsMarkup(sc, stroke) + '</g><g class="map-layer-pins"></g>' +
+      '<g class="map-layer-grid">' + OSR.hexcrawlMarkup(sc, v, stroke) + gridMarkup(sc, v, stroke) + '</g>' +
+      '<g class="map-layer-drawings">' + OSR.drawingsMarkup(sc, stroke) + '</g>' +
+      '<g class="map-layer-pins">' + OSR.pinsMarkup(sc, stroke) + '</g>' +
       '<g class="map-layer-tokens">' + OSR.tokensMarkup(sc, stroke) + '</g>' +
       '<g class="map-layer-overlay">' + overlayMarkup(sc, stroke) + '</g>';
   }
@@ -410,6 +424,8 @@
     const p = screenToMap(e.clientX, e.clientY, rect, v);
     const kind = e.button === 1 || spaceDown ? 'pan' : tool;
     if (kind === 'calibrate' && sc.grid.locked) { setStatus('The grid is locked. Untick Lock grid to set it.'); return; }
+    if (kind === 'explore') { if (OSR.hexcrawlOn(sc)) OSR.toggleExplored(sc, p); return; }
+    if (kind === 'pin') { OSR.addPin(sc, p); return; }
     if (OSR.isDrawTool(kind)) {
       const dd = OSR.drawPointerDown(e, sc, p, kind, v.w / OSR.mapRect().width);
       if (e.preventDefault) e.preventDefault();
@@ -430,6 +446,13 @@
         return;
       }
       if (e.altKey) { OSR.tokenPing(sc, p, v.w / OSR.mapRect().width); return; }
+      const pd = OSR.pinPointerDown(e, sc, p);
+      if (pd) {
+        if (pd.kind !== 'none') drag = Object.assign(pd, { sceneId: sc.id });
+        if (e.preventDefault) e.preventDefault();
+        renderMaps();
+        return;
+      }
       const ds = OSR.drawSelectDown(e, sc, p);
       if (ds) { drag = Object.assign(ds, { sceneId: sc.id }); if (e.preventDefault) e.preventDefault(); return; }
     }
@@ -453,6 +476,8 @@
     const rect = OSR.mapRect();
     if (drag.kind === 'draw' || drag.kind === 'erase') {
       OSR.drawPointerMove(drag, sc, screenToMap(e.clientX, e.clientY, rect, viewOf(sc)), e);
+    } else if (drag.kind === 'pin') {
+      OSR.pinPointerMove(drag, sc, screenToMap(e.clientX, e.clientY, rect, viewOf(sc)));
     } else if (drag.kind === 'move-drawing') {
       OSR.drawSelectMove(drag, sc, screenToMap(e.clientX, e.clientY, rect, viewOf(sc)));
     } else if (drag.kind === 'tokens' || drag.kind === 'box') {
@@ -480,6 +505,7 @@
     const sc = activeScene();
     if (sc && d.kind === 'draw') { OSR.drawPointerUp(d, sc); return; }
     if (sc && d.kind === 'move-drawing') { OSR.drawSelectUp(d, sc); return; }
+    if (sc && d.kind === 'pin') { OSR.pinPointerUp(d, sc); return; }
     if (d.kind === 'erase') return;
     if (sc && (d.kind === 'tokens' || d.kind === 'box')) {
       if (d.kind === 'box') overlay = null;
@@ -516,7 +542,7 @@
     if (!sc || isTextField(e.target) || e.target.tagName === 'SELECT') return;
     if (e.key === ' ') { spaceDown = e.type === 'keydown'; if (e.type === 'keydown') e.preventDefault(); return; }
     if (e.type !== 'keydown') return;
-    if (OSR.drawKey(e, sc)) return;
+    if (OSR.pinKey(e, sc) || OSR.drawKey(e, sc)) return;
     const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     if (arrows[e.key] && tool === 'calibrate') {
       if (sc.grid.locked) { setStatus('The grid is locked.'); return; }
@@ -579,6 +605,8 @@
       case 'grid-unit': g.unit = String(v).trim().slice(0, 12); break;
       case 'grid-show': g.show = e.target.checked; break;
       case 'grid-lock': g.locked = e.target.checked; break;
+      case 'hexcrawl-on': sc.hexcrawl.on = e.target.checked; break;
+      case 'hexcrawl-coords': sc.hexcrawl.coords = e.target.checked; break;
       default: return;
     }
     OSR.saveScene(sc);
@@ -626,7 +654,7 @@
 
   Object.assign(OSR, {
     ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
-    mapRect, mapView: viewOf, mapsIdle, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
+    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
     openSceneModal, closeSceneModal, renderMaps, renderScene, wireMaps, mapsState
   });
 })(window.OSR = window.OSR || {});

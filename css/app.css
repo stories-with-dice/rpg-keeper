@@ -1410,3 +1410,20 @@ button, input, textarea, select {
 .map-drawing-text { font-family: var(--font-body); paint-order: stroke; stroke: rgba(0, 0, 0, .7); stroke-width: .15em; }
 .map-drawing-draft { stroke-dasharray: 6 4; }
 .map-polygon-start { fill: var(--accent); }
+
+/* ===== Hexcrawl and location pins (js/pins.js) ===== */
+.map-unexplored { fill: rgba(0, 0, 0, .38); stroke: none; pointer-events: none; }
+.map-hex-labels text { fill: rgba(255, 255, 255, .8); text-anchor: middle; font-family: var(--font-mono); pointer-events: none; }
+.map-pin { cursor: pointer; }
+.map-pin path { fill: var(--accent); stroke: rgba(0, 0, 0, .7); }
+.map-pin circle { fill: var(--bg); }
+.map-pin.is-selected path { fill: var(--accent-2); }
+.map-pin.is-orphan path { fill: var(--text-dim); }
+.pin-edit {
+  position: absolute; bottom: 8px; left: 8px; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px;
+  background: color-mix(in srgb, var(--bg-2) 92%, transparent); box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.pin-edit[hidden] { display: none; }
+.pin-edit .fa-location-dot { color: var(--accent); }
+.map-tool[hidden] { display: none; }

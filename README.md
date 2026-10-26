@@ -399,7 +399,15 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   grid, and name. Ctrl+Shift+Z or Ctrl+Y redoes it. The undo and redo buttons do the same. Each
   scene has its own history until you reload the page.
 
-Hexcrawl notes come in a later version.
+- **Location notes.** With the pin tool, click a place on the map: a pin appears, and a new
+  Compendium entry (category **Journal**) opens for its note. The note belongs to the current
+  System and works like any Compendium entry: search it, or link it with `[name]` in a sheet. With
+  the hand tool, click a pin to read its note, double-click to edit it, or drag the pin. The bar
+  at the bottom of the map edits the note or deletes the pin (with or without its note).
+- **Hexcrawl.** On a hex grid, tick **Hexcrawl** under **Grid**. Hexes you have not explored are
+  shaded; the binoculars tool marks a hex explored (click again to undo). **Hex numbers** shows
+  each hex's column and row, for example 0412. In hexcrawl mode, a pin sits in the middle of its
+  hex, and its note is named after the hex.
 
 ---
 
