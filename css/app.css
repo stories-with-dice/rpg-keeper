@@ -928,6 +928,19 @@ button, input, textarea, select {
 .ctx-item.is-on > i:first-child { color: var(--accent-2); }
 .ctx-check { margin-left: auto; font-size: 11px; }
 .ctx-new { border-top: 1px solid var(--border); margin-top: 4px; }
+#ctx-menu { overflow: visible; } /* its .ctx-list scrolls; "More" opens beside it */
+.ctx-menu > .ctx-more { flex: none; position: relative; }
+.ctx-submenu {
+  display: none; position: absolute; left: 100%; top: -5px; z-index: 1;
+  min-width: 180px; max-height: 60vh; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 4px; margin-left: 2px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .5);
+}
+.ctx-flip .ctx-submenu { left: auto; right: 100%; margin: 0 2px 0 0; }
+.ctx-up .ctx-submenu { top: auto; bottom: -5px; }
+.ctx-more:hover > .ctx-submenu, .ctx-more.is-open > .ctx-submenu { display: block; }
+.ctx-more:hover > .ctx-more-btn, .ctx-more.is-open > .ctx-more-btn { background: var(--bg-3); }
 .ctx-new > i:first-child { color: var(--ok); }
 
 .log-note .log-formula { color: var(--text); }
