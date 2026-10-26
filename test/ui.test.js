@@ -1687,3 +1687,54 @@ test('a reload opens the tab that was open last (localStorage, per device)', asy
   bad.window.close();
   tab('character');
 });
+
+test('Compendium popups: a pinned popup from the Combat tab shows only on the Combat tab', () => {
+  tab('combat');
+  const ref = document.createElement('span');
+  ref.className = 'comp-ref'; ref.dataset.name = 'Sleep';
+  $('#tab-combat').appendChild(ref);
+  fire(ref, 'mouseover');
+  const pop = $('.comp-pop');
+  assert.ok(pop && !pop.hidden, 'the popup opens');
+  click(pop.querySelector('[data-act="pin"]'));
+  tab('character');
+  assert.ok(pop.isConnected, 'a pinned popup stays open');
+  assert.strictEqual(pop.hidden, true, 'and hides on another tab');
+  // A popup from another tab is not tied to Combat.
+  const other = document.createElement('span');
+  other.className = 'comp-ref'; other.dataset.name = 'Light';
+  $('#tab-character').appendChild(other);
+  fire(other, 'mouseover');
+  const pop2 = $$('.comp-pop').find(p => p !== pop);
+  click(pop2.querySelector('[data-act="pin"]'));
+  tab('combat');
+  assert.strictEqual(pop.hidden, false, 'it shows again on Combat');
+  assert.strictEqual(pop2.hidden, false, 'a popup from the Characters tab still shows');
+  T.closeAllCompPops();
+  ref.remove(); other.remove();
+});
+
+test('Compendium popups: the corner grip resizes a popup and pins it', () => {
+  const ref = document.createElement('span');
+  ref.className = 'comp-ref'; ref.dataset.name = 'Sleep';
+  document.body.appendChild(ref);
+  fire(ref, 'mouseover');
+  const pop = $('.comp-pop');
+  const grip = pop.querySelector('.cpop-resize');
+  assert.ok(grip, 'the popup has a resize grip');
+  const mouse = (target, type, x, y) => target.dispatchEvent(new window.MouseEvent(type,
+    { clientX: x, clientY: y, button: 0, bubbles: true, cancelable: true }));
+  mouse(grip, 'mousedown', 10, 10);
+  mouse(document, 'mousemove', 310, 160);
+  mouse(document, 'mouseup', 310, 160);
+  assert.strictEqual(pop.style.width, '300px');
+  assert.strictEqual(pop.style.height, '150px');
+  assert.ok(pop.classList.contains('is-pinned') && pop.classList.contains('is-sized'));
+  mouse(grip, 'mousedown', 0, 0);
+  mouse(document, 'mousemove', -500, -500);
+  mouse(document, 'mouseup', -500, -500);
+  assert.strictEqual(pop.style.width, '200px', 'a minimum width');
+  assert.strictEqual(pop.style.height, '100px', 'a minimum height');
+  T.closeAllCompPops();
+  ref.remove();
+});

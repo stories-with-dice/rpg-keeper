@@ -1200,6 +1200,15 @@ button, input, textarea, select {
 .comp-pop.is-pinned .cpop-head button { cursor: pointer; }
 .comp-pop.is-dragging { user-select: none; }
 .comp-pop.is-dragging .cpop-body { pointer-events: none; }
+/* A resized popup keeps its inline width and height; the body fills it. */
+.comp-pop.is-sized { max-height: none; }
+.comp-pop.is-sized > .cpop-body { flex: 1 1 auto; }
+.cpop-resize {
+  position: absolute; right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, var(--border) 50%, var(--border) 60%,
+    transparent 60%, transparent 75%, var(--border) 75%, var(--border) 85%, transparent 85%);
+  border-bottom-right-radius: var(--radius);
+}
 .cpop-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
 .cpop-head b { color: var(--comp-ref); font-size: 14px; }
 .cpop-head .comp-src-badge { margin-right: 0; }

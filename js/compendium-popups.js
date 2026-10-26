@@ -1,5 +1,5 @@
 /* js/compendium-popups.js — hover popups on [bracketed] Compendium
- * references (stackable, pinnable, draggable-when-pinned) and the "["
+ * references (stackable, pinnable, draggable-when-pinned, resizable) and the "["
  * (Compendium) / "$" (variable) autocomplete used across editing surfaces.
  */
 (function (OSR) {
@@ -11,7 +11,9 @@
   // the whole chain stays open. A pinned popup ignores mouse-leave.
   // A popup with a `source` is not a Compendium entry: source.render() gives
   // its title, badges, and body (openSourcePop — the map's actor tokens).
-  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, source? }]
+  // A popup opened from the Combat tab (or from a popup that was) has `combat`
+  // set: it shows only while the Combat tab is open (syncCompPopsToTab).
+  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, combat, source? }]
   let compPopActive = null;  // popup the mouse is over — target for ↑/↓ match nav
 
   function popByName(name) { return compPops.find(p => p.name === name) || null; }
@@ -61,6 +63,7 @@
   function renderPop(pop) {
     pop.el.innerHTML = compPopBodyHtml(pop);
     pop.el.classList.toggle('is-pinned', !!pop.pinned);
+    pop.el.insertAdjacentHTML('beforeend', '<span class="cpop-resize" title="Drag to resize"></span>');
     const body = pop.el.querySelector('.cpop-body');
     if (body) OSR.annotate(body, { vars: popVars(pop) });
   }
@@ -89,8 +92,10 @@
     el.className = 'comp-pop';
     document.body.appendChild(el);
     const r = OSR.compResolve(name);
+    const parent = parentEl ? popByEl(parentEl) : null;
+    const combat = parent ? !!parent.combat : !!(anchor.closest && anchor.closest('#tab-combat'));
     pop = { el: el, name: name, matches: r.items, fuzzy: r.fuzzy, scores: r.scores,
-      idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null };
+      idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null, combat: combat };
     compPops.push(pop);
     renderPop(pop);
     positionPop(pop, anchor);
@@ -161,6 +166,11 @@
       if (pop.idx >= pop.matches.length) pop.idx = 0;
       renderPop(pop);
     });
+  }
+
+  // Hide the Combat popups while another tab is open; show them again on Combat.
+  function syncCompPopsToTab(tab) {
+    compPops.forEach(pop => { if (pop.combat) pop.el.hidden = tab !== 'combat'; });
   }
 
   // Only the popups with a source (the map's actors), after a combat change.
@@ -345,6 +355,9 @@
   // Drag-a-pinned-popup state, used only by wireCompendiumPopups()'s own
   // mousedown/mousemove/mouseup wiring below.
   let dragPop = null, dragDX = 0, dragDY = 0;
+  // Resize-a-popup state: the popup, and the pointer and size at mousedown.
+  const POP_MIN_W = 200, POP_MIN_H = 100;
+  let sizePop = null, sizeX = 0, sizeY = 0, sizeW = 0, sizeH = 0;
 
   function wireCompendiumPopups() {
     // --- stackable hover popups: refs live in the sheet or inside popup bodies
@@ -357,7 +370,7 @@
       if (popEl) { compPopActive = popByEl(popEl); cancelHideAllPops(); }
     });
     document.addEventListener('mouseout', e => {
-      if (dragPop) return;
+      if (dragPop || sizePop) return;
       const t = e.target;
       if (!(t.closest && (t.closest('.comp-ref') || t.closest('.comp-pop')))) return;
       if (intoSafe(e.relatedTarget)) return;
@@ -450,6 +463,35 @@
       dragPop = null;
     });
 
+    // Resize a popup by its corner grip. A resized popup is pinned, so it stays.
+    document.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      const grip = e.target.closest && e.target.closest('.cpop-resize');
+      if (!grip) return;
+      const pop = popByEl(grip.closest('.comp-pop'));
+      if (!pop) return;
+      e.preventDefault();
+      cancelHideAllPops();
+      if (!pop.pinned) setPopPinned(pop, true);
+      sizePop = pop;
+      sizeX = e.clientX; sizeY = e.clientY;
+      sizeW = pop.el.offsetWidth; sizeH = pop.el.offsetHeight;
+      pop.el.classList.add('is-dragging', 'is-sized');
+    });
+    document.addEventListener('mousemove', e => {
+      if (!sizePop) return;
+      const el = sizePop.el, r = el.getBoundingClientRect();
+      const w = Math.max(POP_MIN_W, Math.min(sizeW + e.clientX - sizeX, window.innerWidth - r.left - 4));
+      const h = Math.max(POP_MIN_H, Math.min(sizeH + e.clientY - sizeY, window.innerHeight - r.top - 4));
+      el.style.width = w + 'px';
+      el.style.height = h + 'px';
+    });
+    document.addEventListener('mouseup', () => {
+      if (!sizePop) return;
+      sizePop.el.classList.remove('is-dragging');
+      sizePop = null;
+    });
+
     // --- "[" / "$" autocomplete wiring
     $('#edit-host').addEventListener('input', e => {
       if (e.target.classList && e.target.classList.contains('edit-col-area')) acFromTextarea(e.target);
@@ -484,7 +526,7 @@
 
   Object.assign(OSR, {
     openCompPop, openSourcePop, setPopPinned, closePop, scheduleHidePop, cancelHideAllPops, scheduleHideAllPops,
-    closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop, refreshSourcePops,
+    closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop, refreshSourcePops, syncCompPopsToTab,
     acSearch, acSearchVars, closeAC, acFromTextarea, acFromFormulaInput, acFromCM,
     wireCompendiumPopups
   });
