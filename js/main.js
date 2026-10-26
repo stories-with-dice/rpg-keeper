@@ -51,6 +51,8 @@
     OSR.wireCampaigns();
     OSR.wireMaps();
     OSR.wireTokens();
+    OSR.wireDrawings();
+    OSR.wireHistory();
     OSR.wireSeeds();
     OSR.wireRollPopup();
   }

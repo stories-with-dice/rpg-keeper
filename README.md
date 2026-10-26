@@ -386,7 +386,20 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
     stays linked to the character.
   - Alt+click on the map shows a short ping at that point (it is not saved).
 
-Drawing and hexcrawl notes come in later versions.
+- **Drawing.** The second group of tools draws on the map: pen, line, rectangle, ellipse, polygon,
+  text, and eraser. The bar under the tools sets the color, the line width, Fill (for shapes), and
+  the opacity.
+  - Polygon: click each corner; click the first corner, double-click, or press Enter to finish.
+    Escape cancels.
+  - Text: click where it goes and type it.
+  - Eraser: click or drag over drawings to remove them.
+  - With the hand tool, click a drawing to select it, drag it to move it, and press Delete to
+    remove it. **Clear drawings** removes them all.
+- **Undo and redo.** Ctrl+Z (Cmd+Z on a Mac) undoes the last change to the scene: tokens, drawings,
+  grid, and name. Ctrl+Shift+Z or Ctrl+Y redoes it. The undo and redo buttons do the same. Each
+  scene has its own history until you reload the page.
+
+Hexcrawl notes come in a later version.
 
 ---
 

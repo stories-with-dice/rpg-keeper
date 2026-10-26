@@ -67,6 +67,7 @@
     if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
     OSR.resetCompendiumFilters();
     OSR.resetTableFilters();
+    OSR.resetHistories();
     renderAll();
     OSR.save();
     if (OSR.dropboxCampaignChanged) OSR.dropboxCampaignChanged();

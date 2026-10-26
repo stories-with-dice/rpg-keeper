@@ -83,6 +83,9 @@ js/maps.js              the Maps tab: scenes (state.scenes), the SVG view (pan, 
 js/tokens.js            map tokens on a scene: add/snap/move/select/delete, links to combat entries and
                        characters (unlinkTokens from js/combat.js), the hover card, pings — see
                        "The Maps tab"
+js/drawings.js          drawing on a scene: pen (RDP-simplified), line, rect, ellipse, polygon, text, eraser;
+                       the draw bar; select and move with the hand tool
+js/history.js           undo/redo of scene changes (OSR.saveScene records before/after); Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y
 js/tables.js            the Tables tab: tag filter + name search over OSR.data.tables, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
@@ -128,6 +131,8 @@ scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json (see "T
                        for the table shape and the per-file tag mapping)
 test/monsters.test.js  node:test suite for the parser + converter
 test/grid.test.js      node:test suite for js/grid.js (pure)
+test/drawings.test.js  node:test suite for js/drawings.js and js/history.js: each tool, the draw bar,
+                       eraser, select/move, Clear, and undo/redo of every kind of scene change
 test/tokens.test.js    node:test suite for js/tokens.js: icons, snapping, moving and selecting, combat
                        links and unlinking, the bar, Delete, pings
 test/maps.test.js      node:test suite for js/maps.js and the .zip Export/Import: scenes, images (file,
@@ -904,8 +909,8 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   drawings, pins }`, where `grid` is `{ type: 'square'|'hex', orient: 'flat'|'pointy', size,
   offsetX, offsetY, unitsPerCell, unit, show, locked }`. Each belongs to one system
   (`splitState` puts it in that system's document) and shows only under that System;
-  `state.activeSceneIds[system]` is the open one. `drawings`, `pins`, and `hexcrawl` are for the
-  later Maps PRs (docs/maps-plan.md).
+  `state.activeSceneIds[system]` is the open one. `pins` and `hexcrawl` are for the later Maps PRs
+  (docs/maps-plan.md).
 - **Images** are blobs in IndexedDB (`OSR.store.putBlob(id, { bytes, type, width, height })`,
   `bytes` an ArrayBuffer — fake-indexeddb cannot store a jsdom Blob). `storeImage()` runs
   `OSR.decodeImage()` first (canvas: scaled to `MAX_SIDE` 8192 px, encoded as WebP, or PNG where the
@@ -948,7 +953,25 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   token links to the character, any other keeps the entry's name as its `label`. The hover card
   (`#token-card`) shows the same data on `mouseover`. Settings credits the icon authors
   (`#set-token-credits`).
-- **Tools** (`#map-tools`, `tool`): pointer events on the SVG, moves and ups on `window`.
+- **Drawings** (`js/drawings.js`) are in `scene.drawings`: `{ id, kind, points | x,y,w,h | x,y,text,size,
+  stroke, fill, width, opacity }` in map px, so they move and zoom with the map; `width` and a
+  text's `size` come from the draw bar's px times the zoom at the time. The draw tools hand pointer
+  events to `drawPointerDown/Move/Up`: pen (simplified on release with `simplifyLine`, Ramer–
+  Douglas–Peucker, ε = 1.5 screen px), line, rect, ellipse (drag), polygon (click corners; the first
+  corner, a double-click — `detail` 2 — or Enter closes; Escape cancels), text (`prompt()`), eraser
+  (deletes the drawing under the pointer on down and on each move). With the hand tool, tokens come
+  first, then `drawSelectDown` selects and drags a drawing; Delete removes it. **Clear drawings**
+  asks, and is one undo step. The draw bar (`#map-draw-bar`) shows for the draw tools but not the
+  eraser; its style is in memory.
+- **Undo/redo** (`js/history.js`): every scene change goes through `OSR.saveScene(sc)` instead of
+  `OSR.save()`: it saves and records `{ before, after }` as JSON of the scene's `name, grid,
+  hexcrawl, tokens, drawings, pins` (`trackScene()` from `renderMaps()` takes the first "before").
+  Undo/redo restore one of them (a token linked to a combat entry that is gone comes back
+  unlinked). A new change drops the redo steps; at most 200 steps; one history for each scene, in
+  memory. `rebaseScene()` (from `unlinkTokens()`) moves "before" past a change made from Combat, so
+  undo never re-links a token. `finishLoad()` and a campaign switch call `resetHistories()`. The
+  keys are on `document`, only on the Maps tab, never in a form field or with a modal open.
+- **Tools** (`.map-tool` buttons anywhere in `.map-toolbar`, `tool`): pointer events on the SVG, moves and ups on `window`.
   `measure` draws a line and puts `measureText()` ("3 cells · 15 ft", `MapGrid.distance`: a square
   diagonal counts 1) in `#map-status`. `calibrate` drags a rectangle over `#grid-span` × `#grid-span`
   cells and sets the grid from it (`MapGrid.gridFromRect()`); then arrow keys on the focused

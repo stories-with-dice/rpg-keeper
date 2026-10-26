@@ -247,6 +247,7 @@
   // Resolves to OSR.saveNow()'s result.
   function finishLoad() {
     OSR.ensureStateShape();
+    if (OSR.resetHistories) OSR.resetHistories(); // the scenes are new objects: their undo steps no longer apply
     if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
     OSR.mode = 'view';
     const ok = OSR.saveNow();

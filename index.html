@@ -185,8 +185,27 @@
             <button class="btn map-tool" data-tool="measure" title="Measure: drag from one point to another." aria-label="Measure"><i class="fa-solid fa-ruler"></i></button>
             <button class="btn map-tool" data-tool="calibrate" title="Set the grid: drag over one cell of the map. Then arrow keys move the grid by 1 px." aria-label="Set the grid"><i class="fa-solid fa-crop-simple"></i></button>
           </span>
+          <span class="map-tools" role="group" aria-label="Drawing tools">
+            <button class="btn map-tool" data-tool="pen" title="Draw freehand" aria-label="Draw freehand"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn map-tool" data-tool="line" title="Draw a line" aria-label="Draw a line"><i class="fa-solid fa-slash"></i></button>
+            <button class="btn map-tool" data-tool="rect" title="Draw a rectangle" aria-label="Draw a rectangle"><i class="fa-regular fa-square"></i></button>
+            <button class="btn map-tool" data-tool="ellipse" title="Draw an ellipse" aria-label="Draw an ellipse"><i class="fa-regular fa-circle"></i></button>
+            <button class="btn map-tool" data-tool="polygon" title="Draw a polygon" aria-label="Draw a polygon"><i class="fa-solid fa-draw-polygon"></i></button>
+            <button class="btn map-tool" data-tool="text" title="Write text" aria-label="Write text"><i class="fa-solid fa-font"></i></button>
+            <button class="btn map-tool" data-tool="eraser" title="Erase drawings" aria-label="Erase drawings"><i class="fa-solid fa-eraser"></i></button>
+          </span>
+          <button id="map-undo" class="btn" title="Undo (Ctrl+Z)" aria-label="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+          <button id="map-redo" class="btn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><i class="fa-solid fa-rotate-right"></i></button>
           <button id="map-fit" class="btn" title="Show the whole map" aria-label="Show the whole map"><i class="fa-solid fa-expand"></i></button>
           <span class="map-status" id="map-status" aria-live="polite"></span>
+        </div>
+        <div class="map-draw-bar" id="map-draw-bar" hidden>
+          <span class="draw-swatches" id="draw-swatches"></span>
+          <label>Color <input type="color" id="draw-color" /></label>
+          <label>Width <select id="draw-width" class="btn"><option value="2">2 px</option><option value="4">4 px</option><option value="8">8 px</option><option value="16">16 px</option></select></label>
+          <label id="draw-fill-label" class="map-check"><input type="checkbox" id="draw-fill" /> Fill</label>
+          <label>Opacity <input type="range" id="draw-opacity" min="0.1" max="1" step="0.1" /></label>
+          <button id="draw-clear" class="btn btn-danger" type="button">Clear drawings</button>
         </div>
         <details class="map-grid-panel" id="map-grid-panel">
           <summary>Grid</summary>
@@ -613,6 +632,8 @@
   <script src="js/grid.js"></script>
   <script src="js/maps.js"></script>
   <script src="js/tokens.js"></script>
+  <script src="js/drawings.js"></script>
+  <script src="js/history.js"></script>
   <script src="js/compendium.js"></script>
   <script src="js/compendium-popups.js"></script>
   <script src="js/tables.js"></script>

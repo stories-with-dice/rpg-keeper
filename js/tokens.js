@@ -126,7 +126,7 @@
     const t = ensureTokenShape({ id: uid(), iconId: o.iconId || icons()[0].id, x: at.x, y: at.y, size, color: o.color, label: o.label, link: o.link || null });
     sc.tokens.push(t);
     selectOnly(sc, [t.id]);
-    OSR.save();
+    OSR.saveScene(sc);
     OSR.renderMaps();
     return t;
   }
@@ -144,7 +144,7 @@
     const before = sc.tokens.length;
     sc.tokens = sc.tokens.filter(t => !gone.has(t.id));
     ids.forEach(id => selected.delete(id));
-    OSR.save();
+    OSR.saveScene(sc);
     OSR.renderMaps();
     return before - sc.tokens.length;
   }
@@ -155,13 +155,17 @@
     const ids = new Set(entryIds);
     const entries = new Map(OSR.state.combat.entries.map(e => [e.id, e]));
     let changed = false;
-    (OSR.state.scenes || []).forEach(sc => sc.tokens.forEach(t => {
-      if (!t.link || t.link.kind !== 'combat' || !ids.has(t.link.entryId)) return;
-      const e = entries.get(t.link.entryId);
-      t.label = e ? e.name : t.label;
-      t.link = e && e.kind === 'character' && e.charId ? { kind: 'character', charId: e.charId } : null;
-      changed = true;
-    }));
+    (OSR.state.scenes || []).forEach(sc => {
+      let here = false;
+      sc.tokens.forEach(t => {
+        if (!t.link || t.link.kind !== 'combat' || !ids.has(t.link.entryId)) return;
+        const e = entries.get(t.link.entryId);
+        t.label = e ? e.name : t.label;
+        t.link = e && e.kind === 'character' && e.charId ? { kind: 'character', charId: e.charId } : null;
+        here = changed = true;
+      });
+      if (here && OSR.rebaseScene) OSR.rebaseScene(sc);
+    });
     return changed;
   }
 
@@ -318,7 +322,7 @@
       const dx = at.x - lead.x, dy = at.y - lead.y;
       sc.tokens.forEach(t => { if (d.start[t.id]) { t.x += dx; t.y += dy; } });
     }
-    OSR.save();
+    OSR.saveScene(sc);
     OSR.renderMaps();
   }
 
@@ -367,7 +371,7 @@
         const [kind, id] = e.target.value.split(':');
         one.link = kind === 'combat' ? { kind, entryId: id } : kind === 'character' ? { kind, charId: id } : null;
       } else return;
-      OSR.save();
+      OSR.saveScene(sc);
       OSR.renderMaps();
     });
     $('#token-delete').addEventListener('click', () => {

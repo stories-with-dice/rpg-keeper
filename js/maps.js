@@ -27,6 +27,12 @@
   const GRID_DEFAULTS = { type: 'square', orient: 'flat', size: 50, offsetX: 0, offsetY: 0, unitsPerCell: 5, unit: 'ft', show: true, locked: false };
 
   let tool = 'pan';
+  const TOOL_HINTS = {
+    calibrate: 'Drag over one cell of the map to set the grid.', measure: 'Drag to measure.',
+    pen: 'Drag to draw.', line: 'Drag to draw a line.', rect: 'Drag to draw a rectangle.', ellipse: 'Drag to draw an ellipse.',
+    polygon: 'Click each corner. Click the first corner, double-click, or press Enter to finish. Escape cancels.',
+    text: 'Click where the text goes.', eraser: 'Click or drag over drawings to erase them.'
+  };
   const views = Object.create(null);  // scene id -> { x, y, w, h }
   const images = new Map();           // blob id -> object URL | 'loading' | 'missing'
   let drag = null;                    // the pointer drag in progress
@@ -50,6 +56,7 @@
     sc.hexcrawl = Object.assign({ on: false, explored: [], coords: false }, sc.hexcrawl || {});
     ['tokens', 'drawings', 'pins'].forEach(k => { if (!Array.isArray(sc[k])) sc[k] = []; });
     if (OSR.ensureTokenShape) sc.tokens.forEach(OSR.ensureTokenShape); // js/tokens.js
+    if (OSR.ensureDrawingShape) sc.drawings.forEach(OSR.ensureDrawingShape); // js/drawings.js
     return sc;
   }
 
@@ -62,6 +69,7 @@
   function setActiveScene(id) {
     OSR.state.activeSceneIds = Object.assign({}, OSR.state.activeSceneIds, { [OSR.currentSystem()]: id });
     overlay = null;
+    OSR.cancelDrawDraft();
     OSR.save();
     renderMaps();
   }
@@ -223,10 +231,14 @@
       '<option value="' + NEW + '">+ New scene…</option>';
     sel.value = cur ? cur.id : NEW;
     ['#map-rename', '#map-duplicate', '#map-delete', '#map-fit'].forEach(s => { $(s).disabled = !cur; });
-    $$('#map-tools .map-tool').forEach(b => {
+    $$('#tab-maps .map-tool').forEach(b => {
       b.classList.toggle('is-active', b.dataset.tool === tool);
       b.disabled = !cur;
     });
+    OSR.trackScene(cur);
+    $('#map-undo').disabled = !OSR.canUndo(cur);
+    $('#map-redo').disabled = !OSR.canRedo(cur);
+    OSR.renderDrawBar(cur ? tool : null);
     $('#map-empty').hidden = !!cur;
     $('#map-svg').hidden = !cur;
     renderGridPanel(cur);
@@ -314,7 +326,7 @@
     svg.innerHTML =
       '<g class="map-layer-image">' + image + '</g>' +
       '<g class="map-layer-grid">' + gridMarkup(sc, v, stroke) + '</g>' +
-      '<g class="map-layer-drawings"></g><g class="map-layer-pins"></g>' +
+      '<g class="map-layer-drawings">' + OSR.drawingsMarkup(sc, stroke) + '</g><g class="map-layer-pins"></g>' +
       '<g class="map-layer-tokens">' + OSR.tokensMarkup(sc, stroke) + '</g>' +
       '<g class="map-layer-overlay">' + overlayMarkup(sc, stroke) + '</g>';
   }
@@ -327,7 +339,7 @@
     const name = prompt('New name for the scene:', sc.name);
     if (name == null || !name.trim() || name.trim() === sc.name) return;
     sc.name = name.trim();
-    OSR.save();
+    OSR.saveScene(sc);
     renderMaps();
   }
 
@@ -398,6 +410,13 @@
     const p = screenToMap(e.clientX, e.clientY, rect, v);
     const kind = e.button === 1 || spaceDown ? 'pan' : tool;
     if (kind === 'calibrate' && sc.grid.locked) { setStatus('The grid is locked. Untick Lock grid to set it.'); return; }
+    if (OSR.isDrawTool(kind)) {
+      const dd = OSR.drawPointerDown(e, sc, p, kind, v.w / OSR.mapRect().width);
+      if (e.preventDefault) e.preventDefault();
+      if (dd.kind !== 'none') drag = Object.assign(dd, { sceneId: sc.id });
+      renderScene();
+      return;
+    }
     // With the hand tool, tokens come first: select, move, box-select (Shift),
     // or Alt+click on the map for a ping.
     if (kind === 'pan' && e.button === 0 && !spaceDown) {
@@ -411,6 +430,8 @@
         return;
       }
       if (e.altKey) { OSR.tokenPing(sc, p, v.w / OSR.mapRect().width); return; }
+      const ds = OSR.drawSelectDown(e, sc, p);
+      if (ds) { drag = Object.assign(ds, { sceneId: sc.id }); if (e.preventDefault) e.preventDefault(); return; }
     }
     drag = { kind, sceneId: sc.id, startClient: { x: e.clientX, y: e.clientY }, startView: Object.assign({}, v), a: p };
     if (kind === 'measure' || kind === 'calibrate') overlay = { kind, sceneId: sc.id, a: p, b: p };
@@ -421,11 +442,20 @@
   }
 
   function onPointerMove(e) {
-    if (!drag) return;
+    if (!drag) {
+      // A polygon being drawn follows the pointer to its next corner.
+      const sc = tool === 'polygon' ? activeScene() : null;
+      if (sc && OSR.drawPolygonMove(sc, screenToMap(e.clientX, e.clientY, OSR.mapRect(), viewOf(sc)))) renderScene();
+      return;
+    }
     const sc = activeScene();
     if (!sc || sc.id !== drag.sceneId) { drag = null; return; }
     const rect = OSR.mapRect();
-    if (drag.kind === 'tokens' || drag.kind === 'box') {
+    if (drag.kind === 'draw' || drag.kind === 'erase') {
+      OSR.drawPointerMove(drag, sc, screenToMap(e.clientX, e.clientY, rect, viewOf(sc)), e);
+    } else if (drag.kind === 'move-drawing') {
+      OSR.drawSelectMove(drag, sc, screenToMap(e.clientX, e.clientY, rect, viewOf(sc)));
+    } else if (drag.kind === 'tokens' || drag.kind === 'box') {
       const p = screenToMap(e.clientX, e.clientY, rect, viewOf(sc));
       OSR.tokenPointerMove(drag, sc, p);
       if (drag.kind === 'box') overlay.b = p;
@@ -448,6 +478,9 @@
     const d = drag;
     drag = null;
     const sc = activeScene();
+    if (sc && d.kind === 'draw') { OSR.drawPointerUp(d, sc); return; }
+    if (sc && d.kind === 'move-drawing') { OSR.drawSelectUp(d, sc); return; }
+    if (d.kind === 'erase') return;
     if (sc && (d.kind === 'tokens' || d.kind === 'box')) {
       if (d.kind === 'box') overlay = null;
       OSR.tokenPointerUp(d, sc);
@@ -459,7 +492,7 @@
     overlay = null;
     if (Math.abs(b.x - a.x) < 4 || Math.abs(b.y - a.y) < 4) { setStatus('Drag over a whole cell to set the grid.'); renderScene(); return; }
     sc.grid = Object.assign(sc.grid, G.gridFromRect({ x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y }, sc.grid, calibrateSpan()));
-    OSR.save();
+    OSR.saveScene(sc);
     setStatus('Grid set: ' + num(sc.grid.size) + ' px per cell. Arrow keys move it by 1 px.');
     renderMaps();
   }
@@ -483,6 +516,7 @@
     if (!sc || isTextField(e.target) || e.target.tagName === 'SELECT') return;
     if (e.key === ' ') { spaceDown = e.type === 'keydown'; if (e.type === 'keydown') e.preventDefault(); return; }
     if (e.type !== 'keydown') return;
+    if (OSR.drawKey(e, sc)) return;
     const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     if (arrows[e.key] && tool === 'calibrate') {
       if (sc.grid.locked) { setStatus('The grid is locked.'); return; }
@@ -490,7 +524,7 @@
       sc.grid.offsetX += arrows[e.key][0] * step;
       sc.grid.offsetY += arrows[e.key][1] * step;
       e.preventDefault();
-      OSR.save();
+      OSR.saveScene(sc);
       renderMaps();
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && OSR.selectedTokenIds(sc).length) {
       e.preventDefault();
@@ -547,7 +581,7 @@
       case 'grid-lock': g.locked = e.target.checked; break;
       default: return;
     }
-    OSR.save();
+    OSR.saveScene(sc);
     renderMaps();
   }
 
@@ -560,12 +594,13 @@
     $('#map-duplicate').addEventListener('click', duplicateScene);
     $('#map-delete').addEventListener('click', deleteScene);
     $('#map-fit').addEventListener('click', () => { const sc = activeScene(); if (sc) { delete views[sc.id]; renderScene(); } });
-    $('#map-tools').addEventListener('click', e => {
+    $('#tab-maps .map-toolbar').addEventListener('click', e => {
       const b = e.target.closest('.map-tool');
       if (!b || b.disabled) return;
       tool = b.dataset.tool;
       overlay = null;
-      setStatus(tool === 'calibrate' ? 'Drag over one cell of the map to set the grid.' : tool === 'measure' ? 'Drag to measure.' : '');
+      OSR.cancelDrawDraft();
+      setStatus(TOOL_HINTS[tool] || '');
       renderMaps();
     });
     $('#map-grid-panel').addEventListener('change', onGridField);

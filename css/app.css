@@ -1397,3 +1397,16 @@ button, input, textarea, select {
 }
 .token-card[hidden] { display: none; }
 .set-credits { margin-top: 16px; }
+
+/* ===== Map drawings (js/drawings.js) ===== */
+.map-draw-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+.map-draw-bar[hidden], .map-draw-bar label[hidden] { display: none; }
+.map-draw-bar label { display: inline-flex; align-items: center; gap: 6px; }
+.draw-swatches { display: inline-flex; gap: 4px; }
+.draw-swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; padding: 0; }
+.draw-swatch.is-active { border-color: var(--text); box-shadow: 0 0 0 2px var(--accent); }
+.map-drawing { stroke-linecap: round; stroke-linejoin: round; }
+.map-drawing.is-selected { filter: drop-shadow(0 0 3px var(--accent-2)); }
+.map-drawing-text { font-family: var(--font-body); paint-order: stroke; stroke: rgba(0, 0, 0, .7); stroke-width: .15em; }
+.map-drawing-draft { stroke-dasharray: 6 4; }
+.map-polygon-start { fill: var(--accent); }

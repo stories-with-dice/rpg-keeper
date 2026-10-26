@@ -43,6 +43,8 @@ const SCRIPTS = [
   'js/grid.js',
   'js/maps.js',
   'js/tokens.js',
+  'js/drawings.js',
+  'js/history.js',
   'js/compendium.js',
   'js/compendium-popups.js',
   'js/tables.js',
