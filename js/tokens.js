@@ -74,6 +74,13 @@
     const e = combatEntry(t);
     return e && e.kind === 'character' ? OSR.combatCharFor(e) : null;
   };
+  // The combat entry whose statuses a token shows: its own, or, for a token
+  // linked to a character, that character's entry in combat.
+  const actorEntry = t => {
+    const e = combatEntry(t);
+    if (e || !t.link || t.link.kind !== 'character') return e;
+    return OSR.state.combat.entries.find(x => x.kind === 'character' && x.charId === t.link.charId) || null;
+  };
 
   // The name a token shows: its actor's, else its label, else its icon's.
   function tokenName(t) {
@@ -98,6 +105,8 @@
       info.active = OSR.state.combat.activeId === e.id;
       info.down = OSR.entryDown(e);
     } else if (ch) {
+      const ae = actorEntry(t);
+      if (ae) info.statuses = (ae.statuses || []).map(s => s.name || s);
       // The HP tracker, or the sheet's HP while the tracker is unused (0/0;
       // Combat fills it from the sheet the same way when the character joins).
       const hpc = OSR.hpConsumable(ch);
@@ -257,19 +266,63 @@
     if ($('#token-link').value === '' && one.link) $('#token-link').value = ''; // a link to someone gone
   }
 
-  /* ---- Hover card ---- */
+  /* ---- Hover ---- */
 
+  const linkKey = l => (l ? l.kind + ':' + (l.entryId || l.charId) : '');
+
+  // A linked token: a popup like a Compendium entry's (js/compendium-popups.js,
+  // pinnable) with HP, AC, side, the combat statuses (✕ removes one), and the
+  // actor's stat block or sheet. One popup per actor, whichever token.
+  function actorPopSource(sc, id) {
+    const token = () => sc.tokens.find(z => z.id === id) || null;
+    return {
+      title: 'Token',
+      render() {
+        const t = token();
+        if (!t || !t.link) return null;
+        const i = tokenInfo(t);
+        const e = combatEntry(t);
+        const ae = actorEntry(t);
+        const ch = linkedChar(t);
+        const badges = (i.side ? '<span class="badge">' + escapeHtml(i.side) + (i.active ? ' · their turn' : '') + '</span>' : '') +
+          (i.down ? '<span class="badge">Down</span>' : '');
+        let html = '';
+        // A monster's stat block has its own HP and AC; a UA entry counts wounds.
+        const own = e && (e.kind === 'monster' || OSR.isUaEntry(e));
+        if (!own && (i.hp != null || (i.ac != null && i.ac !== ''))) {
+          html += '<div class="cd-stats">' + (i.hp != null ? OSR.chip('HP', i.hp + (i.maxHp ? ' / ' + i.maxHp : '')) : '') +
+            (i.ac != null && i.ac !== '' ? OSR.chip('AC', i.ac) : '') + '</div>';
+        }
+        if (ae && ae.statuses && ae.statuses.length) {
+          html += '<div class="cd-sec tok-pop-status" data-entry="' + escapeHtml(ae.id) + '"><span class="cd-lbl">Status</span>' + OSR.statusListHtml(ae) + '</div>';
+        }
+        if (e && e.kind === 'monster') html += OSR.actorStatHtml(e);
+        else if (ch) html += '<div class="markdown-body">' + OSR.renderCharMarkdown(ch.body) + '</div>';
+        else html += '<p class="hint">' + (t.link.kind === 'combat' ? 'The combat entry is gone.' : 'The character is gone.') + '</p>';
+        return { title: i.name, badges, html };
+      },
+      vars() { const t = token(); return OSR.charVars(t ? linkedChar(t) : null); },
+      rollSource() { const t = token(); return t ? tokenName(t) : 'Token'; },
+      onClick(e) {
+        const x = e.target.closest('.status-x');
+        const box = x && x.closest('.tok-pop-status');
+        if (!box) return false;
+        OSR.removeStatus(box.dataset.entry, x.closest('.status-tag').dataset.name);
+        OSR.refreshSourcePops();
+        return true;
+      }
+    };
+  }
+  const popKey = t => 'actor:' + linkKey(t.link);
+  function openActorPop(sc, t, anchor) {
+    OSR.closeUnpinnedCompPops(popKey(t)); // another token's popup goes
+    return OSR.openSourcePop(popKey(t), anchor, actorPopSource(sc, t.id));
+  }
+
+  // An unlinked token: a small card with its name.
   function showCard(t, clientX, clientY) {
     const card = $('#token-card');
-    const i = tokenInfo(t);
-    const rows = [];
-    if (i.hp != null) rows.push('HP ' + i.hp + (i.maxHp ? ' / ' + i.maxHp : ''));
-    if (i.ac != null && i.ac !== '') rows.push('AC ' + i.ac);
-    if (i.side) rows.push(i.side.charAt(0).toUpperCase() + i.side.slice(1) + (i.active ? ' · their turn' : ''));
-    if (i.down) rows.push('Down');
-    if (i.statuses.length) rows.push(i.statuses.join(', '));
-    if (!t.link) rows.push(iconOf(t.iconId).name + ' · not linked');
-    card.innerHTML = '<b>' + escapeHtml(i.name) + '</b>' + rows.map(r => '<div>' + escapeHtml(r) + '</div>').join('');
+    card.innerHTML = '<b>' + escapeHtml(tokenName(t)) + '</b><div>' + escapeHtml(iconOf(t.iconId).name + ' · not linked') + '</div>';
     card.style.left = (clientX + 14) + 'px';
     card.style.top = (clientY + 14) + 'px';
     card.hidden = false;
@@ -277,8 +330,6 @@
   function hideCard() { const c = $('#token-card'); if (c) c.hidden = true; }
 
   /* ---- Right-click menu ---- */
-
-  const linkKey = l => (l ? l.kind + ':' + (l.entryId || l.charId) : '');
 
   function tokenMenu(sc, id, x, y) {
     const t = sc.tokens.find(z => z.id === id);
@@ -445,11 +496,18 @@
     svg.addEventListener('mouseover', e => {
       const hit = e.target.closest && e.target.closest('[data-token]');
       const sc = OSR.activeScene();
-      if (!hit || !sc) return;
+      // No popup while a button is down (a drag) or the map menu is open.
+      if (!hit || !sc || e.buttons || !$('#map-menu').hidden) return;
       const t = sc.tokens.find(x => x.id === hit.getAttribute('data-token'));
-      if (t) showCard(t, e.clientX, e.clientY);
+      if (!t) return;
+      if (t.link) openActorPop(sc, t, hit); else showCard(t, e.clientX, e.clientY);
     });
-    svg.addEventListener('mouseout', e => { if (e.target.closest && e.target.closest('[data-token]')) hideCard(); });
+    svg.addEventListener('mouseout', e => {
+      if (!(e.target.closest && e.target.closest('[data-token]'))) return;
+      hideCard();
+      const to = e.relatedTarget;
+      if (!(to && to.closest && to.closest('.comp-pop'))) OSR.scheduleHideAllPops();
+    });
     renderTokenCredits();
   }
 
@@ -464,6 +522,6 @@
   Object.assign(OSR, {
     ensureTokenShape, tokenRadius, snapTokenPoint: snapPoint, tokenName, tokenInfo, tokenIconFor: iconFor,
     addToken, addTokenForEntry, deleteTokens, unlinkTokens, tokenMenu, selectTokens: selectOnly, selectedTokenIds: selectedIds,
-    tokensMarkup, renderTokenPanel, renderTokenCredits, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, wireTokens
+    tokensMarkup, renderTokenPanel, renderTokenCredits, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, openActorPop, wireTokens
   });
 })(window.OSR = window.OSR || {});

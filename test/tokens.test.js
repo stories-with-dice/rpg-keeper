@@ -158,11 +158,11 @@ test('tokens: "From combat" places a linked token with a matching icon; it shows
   assert.ok(tokenEl(env, sc.tokens[1]).querySelector('.map-token-turn'), 'Next turn moves the ring');
 
   tokenEl(env, t).dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, clientX: 10, clientY: 10 }));
-  const card = $('#token-card');
-  assert.ok(!card.hidden);
-  assert.match(card.textContent, /^Goblin.*HP 2 \/ 6.*AC 13.*Enemy/);
-  tokenEl(env, t).dispatchEvent(new window.MouseEvent('mouseout', { bubbles: true }));
-  assert.ok(card.hidden);
+  const pop = window.document.querySelector('.comp-pop');
+  assert.ok(pop, 'a linked token opens a popup');
+  assert.match(pop.textContent, /^Goblin.*enemy[\s\S]*HP 2 \/ 6[\s\S]*AC 13/);
+  assert.ok($('#token-card').hidden);
+  T.closeAllCompPops();
   window.close();
 });
 
@@ -344,5 +344,53 @@ test('tokens: a right-click edits the label: Enter, a change, or closing the men
   assert.strictEqual(t.label, 'Gamma', 'Escape drops the change');
   T.undoScene(sc);
   assert.strictEqual(T.activeScene().tokens[0].label, 'Beta', 'each save is one undo step');
+  window.close();
+});
+
+test('tokens: the popup of a linked token shows the stat block and combat statuses, removes a status, pins, and follows combat', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  const doc = window.document;
+  const over = el => el.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, clientX: 10, clientY: 10 }));
+  T.addMonsterEntry({ name: 'Goblin', hd: '1', hp: 6, ac: { asc: 13 }, attacksText: '1 club +1 (1d6)', attacks: [], abilities: [{ name: 'Sneaky', text: 'Hides well.' }], source: 'shadowdark' });
+  const gob = T.state.combat.entries[0];
+  T.toggleStatus(gob.id, 'Prone');
+  T.toggleStatus(gob.id, 'Blinded');
+  const t = T.addTokenForEntry(sc, gob.id, { x: 125, y: 125 });
+  over(tokenEl(env, t));
+  const pop = doc.querySelector('.comp-pop');
+  assert.match(pop.textContent, /Attacks:[\s\S]*1 club \+1 \(1d6\)[\s\S]*Sneaky/);
+  assert.ok(pop.querySelector('.roll'), 'the dice in the stat block roll');
+  assert.deepEqual(Array.from(pop.querySelectorAll('.status-tag')).map(x => x.dataset.name), ['Prone', 'Blinded']);
+  click(pop.querySelector('.status-tag[data-name="Prone"] .status-x'));
+  assert.deepEqual(gob.statuses.map(x => x.name), ['Blinded'], 'the ✕ removes the status in Combat');
+  assert.deepEqual(Array.from(doc.querySelectorAll('.comp-pop .status-tag')).map(x => x.dataset.name), ['Blinded']);
+  click(doc.querySelector('.comp-pop [data-act="pin"]'));
+  assert.ok(doc.querySelector('.comp-pop').classList.contains('is-pinned'));
+  T.toggleStatus(gob.id, 'Stunned');
+  assert.deepEqual(Array.from(doc.querySelectorAll('.comp-pop .status-tag')).map(x => x.dataset.name), ['Blinded', 'Stunned'], 'a pinned popup follows combat');
+  T.closeAllCompPops();
+
+  // A character token: the sheet, and the statuses of the character's combat entry.
+  T.createCharacter('# Aria\nHP 8/8\nAC 14\n\nSword 1d8');
+  const ch = T.state.characters[0];
+  const ct = T.addToken(sc, { iconId: T.data.tokenIcons[0].id, x: 325, y: 125 });
+  ct.link = { kind: 'character', charId: ch.id };
+  T.addCharEntry(ch.id);
+  T.toggleStatus(T.state.combat.entries[1].id, 'Prone');
+  T.renderMaps();
+  over(tokenEl(env, ct));
+  const cp = doc.querySelector('.comp-pop');
+  assert.match(cp.textContent, /Aria[\s\S]*Sword 1d8/);
+  assert.deepEqual(Array.from(cp.querySelectorAll('.status-tag')).map(x => x.dataset.name), ['Prone']);
+
+  // Another token replaces an unpinned popup; an unlinked token shows the small card.
+  over(tokenEl(env, t));
+  assert.strictEqual(doc.querySelectorAll('.comp-pop').length, 1);
+  const u = T.addToken(sc, { iconId: T.data.tokenIcons[0].id, x: 525, y: 125 });
+  T.renderMaps();
+  over(tokenEl(env, u));
+  assert.ok(!$('#token-card').hidden);
+  assert.match($('#token-card').textContent, /not linked/);
   window.close();
 });

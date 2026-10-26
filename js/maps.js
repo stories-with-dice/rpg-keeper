@@ -431,16 +431,16 @@
     const sc = activeScene();
     if (!sc) return;
     const el = e.target.closest && e.target.closest(MAP_ELEMENTS);
-    const hit = el && !el.hasAttribute('data-pin') ? el : null;
+    const hit = el;
     if (!hit) {
-      if (el) return; // a pin has no menu: the browser's
       e.preventDefault();
       if (!rclickPan) mapMenu(sc, screenToMap(e.clientX, e.clientY, OSR.mapRect(), viewOf(sc)), e.clientX, e.clientY);
       return;
     }
     e.preventDefault();
     const stroke = viewOf(sc).w / OSR.mapRect().width;
-    if (hit.hasAttribute('data-token')) OSR.tokenMenu(sc, hit.getAttribute('data-token'), e.clientX, e.clientY);
+    if (hit.hasAttribute('data-pin')) OSR.pinMenu(sc, hit.getAttribute('data-pin'), e.clientX, e.clientY);
+    else if (hit.hasAttribute('data-token')) OSR.tokenMenu(sc, hit.getAttribute('data-token'), e.clientX, e.clientY);
     else OSR.drawingMenu(sc, hit.getAttribute('data-drawing'), e.clientX, e.clientY, stroke);
   }
 

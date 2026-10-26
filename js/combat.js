@@ -835,10 +835,77 @@
     const ents = OSR.state.combat.entries;
     $('#tracker-empty').hidden = ents.length > 0;
     list.innerHTML = ents.map(rowHtml).join('');
+    OSR.refreshSourcePops(); // the map's token popups show HP and statuses
   }
   function chip(l, v) {
     return '<span class="chip"><span class="chip-l">' + escapeHtml(l) + '</span> ' + escapeHtml(String(v)) + '</span>';
   }
+  // A BRP monster: HP, Major Wound, Armor, DB, characteristics, then its
+  // attacks, skills, and powers as plain text (annotate() makes the rolls).
+  function brpDetailHtml(ent) {
+    let h = '';
+    const m = ent.monster;
+    const c = m.characteristics || {};
+    h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">brp</span></div>';
+    const majorWound = entryMaxHp(ent) ? Math.ceil(entryMaxHp(ent) / 2) : null;
+    h += '<div class="cd-stats">' +
+      chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
+      (majorWound != null ? chip('Major Wound', majorWound) : '') +
+      chip('Armor', m.armor != null ? m.armor : '—') +
+      chip('DB', m.damageBonus || 'None') +
+      (m.move ? chip('Move', m.move) : '') +
+      ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA'].filter(k => c[k] != null).map(k => chip(k, c[k])).join('') +
+    '</div>';
+    if (m.armorNote) h += '<p class="cd-desc"><i>Armor:</i> ' + escapeHtml(m.armorNote) + '</p>';
+    if (m.attacksText) h += '<div class="cd-sec"><span class="cd-lbl">Attacks</span><p>' + escapeHtml(brpResolveDb(m.attacksText, m.damageBonus)) + '</p></div>';
+    if (m.skillsText) h += '<div class="cd-sec"><span class="cd-lbl">Skills</span><p>' + escapeHtml(m.skillsText) + '</p></div>';
+    if (m.abilities && m.abilities.length) {
+      h += '<div class="cd-abils">' + m.abilities.map(a =>
+        '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
+    }
+    if (m.desc) h += '<p class="cd-desc">' + escapeHtml(m.desc) + '</p>';
+    return h;
+  }
+
+  // The stat block of a combat entry for the map's token popups
+  // (js/tokens.js): read-only, no roll buttons — annotate() makes the dice in
+  // the text rollable. A character entry is its sheet.
+  function actorStatHtml(ent) {
+    const noHead = h => h.replace(/^<div class="cd-head">[\s\S]*?<\/div>/, '');
+    if (ent.kind === 'character') {
+      const ch = combatCharFor(ent);
+      return ch ? '<div class="markdown-body">' + OSR.renderCharMarkdown(ch.body) + '</div>' : '<p class="hint">Character not found.</p>';
+    }
+    const m = ent.monster || {};
+    if (m.source === 'ua3e') return noHead(uaMonsterDetailHtml(ent));
+    if (m.source === 'brp') return noHead(brpDetailHtml(ent));
+    const line = (label, v) => v ? '<p><b>' + label + ':</b> ' + escapeHtml(v) + '</p>' : '';
+    let h = '<div class="cd-stats">' +
+      chip('AC', acDisplay(m)) + chip('HD', ent.hd || '—') +
+      chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
+      (m.move ? chip('MV', m.move) : '') + (m.align ? chip('AL', m.align) : '') +
+      (m.moraleML != null ? chip('ML', m.moraleML) : '') +
+      (m.source === 'sl' ? chip('Skill', fmtMod(m.skill || 0)) + chip('Madness', m.madness || 'None') : '') + '</div>';
+    h += line('Attacks', m.attacksText) + line('Saves', m.savesText);
+    if (m.abilities && m.abilities.length) {
+      h += '<div class="cd-abils">' + m.abilities.map(a =>
+        '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
+    }
+    if (m.desc) h += '<p class="cd-desc">' + escapeHtml(m.desc) + '</p>';
+    return h;
+  }
+
+  // The statuses of an entry as tags; a tag's ✕ removes it.
+  function statusListHtml(ent) {
+    return '<span class="cd-statuses">' + ent.statuses.map(s =>
+      '<span class="status-tag" data-name="' + escapeHtml(s.name) + '" tabindex="0">' +
+      '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '"></i>' +
+      '<span class="status-name">' + escapeHtml(s.name) + '</span>' +
+      '<button class="status-x" title="Remove ' + escapeHtml(s.name) + '">✕</button>' +
+      '<span class="status-tip">' + escapeHtml((statusDescOf(s.name) ? statusDescOf(s.name) + '  ·  ' : '') + 'added round ' + (s.round || '?')) + '</span>' +
+      '</span>').join('') + '</span>';
+  }
+
   function renderCombatantDetail() {
     const host = $('#combatant-detail');
     const ent = selectedEntry();
@@ -847,26 +914,7 @@
     if (ent.kind === 'monster' && ent.monster.source === 'ua3e') {
       h += uaMonsterDetailHtml(ent);
     } else if (ent.kind === 'monster' && ent.monster.source === 'brp') {
-      const m = ent.monster;
-      const c = m.characteristics || {};
-      h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">brp</span></div>';
-      const majorWound = entryMaxHp(ent) ? Math.ceil(entryMaxHp(ent) / 2) : null;
-      h += '<div class="cd-stats">' +
-        chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
-        (majorWound != null ? chip('Major Wound', majorWound) : '') +
-        chip('Armor', m.armor != null ? m.armor : '—') +
-        chip('DB', m.damageBonus || 'None') +
-        (m.move ? chip('Move', m.move) : '') +
-        ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA'].filter(k => c[k] != null).map(k => chip(k, c[k])).join('') +
-      '</div>';
-      if (m.armorNote) h += '<p class="cd-desc"><i>Armor:</i> ' + escapeHtml(m.armorNote) + '</p>';
-      if (m.attacksText) h += '<div class="cd-sec"><span class="cd-lbl">Attacks</span><p>' + escapeHtml(brpResolveDb(m.attacksText, m.damageBonus)) + '</p></div>';
-      if (m.skillsText) h += '<div class="cd-sec"><span class="cd-lbl">Skills</span><p>' + escapeHtml(m.skillsText) + '</p></div>';
-      if (m.abilities && m.abilities.length) {
-        h += '<div class="cd-abils">' + m.abilities.map(a =>
-          '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
-      }
-      if (m.desc) h += '<p class="cd-desc">' + escapeHtml(m.desc) + '</p>';
+      h += brpDetailHtml(ent);
     } else if (ent.kind === 'monster') {
       const m = ent.monster;
       h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">' + escapeHtml(m.source || 'monster') + '</span></div>';
@@ -920,15 +968,7 @@
       else h += '<p class="hint">Character not found — it may have been deleted.</p>';
     }
     if (Array.isArray(ent.statuses) && ent.statuses.length) {
-      h += '<div class="cd-sec"><span class="cd-lbl">Status</span><span class="cd-statuses">' +
-        ent.statuses.map(s =>
-          '<span class="status-tag" data-name="' + escapeHtml(s.name) + '" tabindex="0">' +
-          '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '"></i>' +
-          '<span class="status-name">' + escapeHtml(s.name) + '</span>' +
-          '<button class="status-x" title="Remove ' + escapeHtml(s.name) + '">✕</button>' +
-          '<span class="status-tip">' + escapeHtml((statusDescOf(s.name) ? statusDescOf(s.name) + '  ·  ' : '') + 'added round ' + (s.round || '?')) + '</span>' +
-          '</span>').join('') +
-        '</span></div>';
+      h += '<div class="cd-sec"><span class="cd-lbl">Status</span>' + statusListHtml(ent) + '</div>';
     }
     h += '<p class="hint cd-ctx-hint">Right-click a combatant in the tracker to add a status.</p>';
     host.innerHTML = h;
@@ -1134,7 +1174,7 @@
     rollEntryAttack, rollEntrySave, rollEntryMorale, rollEntrySkill, rollEntrySlaughter, rollEntryMadness,
     slHitNote, slMadnessDice, slSlaughterDie,
     isUaEntry, entryWounds, entryWoundThreshold, setEntryWounds, applyWoundsToSelected, renderUaDamage, uaRowLine2, uaMonsterDetailHtml,
-    renderCombat, renderCombatBar, statusTagsHtml, rowHtml, renderTracker, chip, renderCombatantDetail,
+    renderCombat, renderCombatBar, statusTagsHtml, statusListHtml, rowHtml, renderTracker, chip, brpDetailHtml, actorStatHtml, renderCombatantDetail,
     onTrackerClick, stepEntry, onTrackerContextMenu, onTrackerInput, onTrackerChange, onDetailClick, onCombatKey,
     wireCombat
   });
