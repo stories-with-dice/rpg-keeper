@@ -27,6 +27,7 @@ const SCRIPTS = [
   'js/core.js',
   'js/data.js',
   'js/store.js',
+  'js/seeds.js',
   'js/dice.js',
   'js/annotate.js',
   'js/mde.js',

@@ -48,19 +48,25 @@ Use Export/Import to back up, move between machines, or share a party.
 Settings → **Dropbox sync** keeps the campaign in your Dropbox, so every browser where you connect
 has the same data. It is off until you click **Connect**.
 
-- The campaign is one file in your Dropbox, **Apps/&lt;app name&gt;/Character Keeper campaign.json**.
-  Each other campaign has its own file, **campaigns/&lt;id&gt;/campaign.json**. For now, another
-  browser sees only the first campaign; the other campaigns sync but do not show up there yet.
-  It has the same format as **Export**, so **Import** can also read it. The app can see only its own
-  folder in your Dropbox, nothing else.
-- After each change, the app uploads the campaign a few seconds later. The header shows the state:
+- Your Dropbox app folder (**Apps/&lt;app name&gt;/**) holds a **campaigns** folder: the list of
+  campaigns, and one folder for each campaign with one file for the shared data (**shared.json**)
+  and one for each system (**osr.json**, **ua3e.json**, **brp.json**, **sl.json**). A change uploads
+  only the file it changed. The **seeds** folder holds the default Bestiary and Compendium of each
+  system, with any content pack you imported. The app can see only its own folder in your Dropbox,
+  nothing else.
+- Every browser where you connect sees every campaign. A campaign made in another browser is
+  downloaded when you first open it.
+- Older versions kept the whole campaign in one file, **Character Keeper campaign.json**. The first
+  sync of this version splits it and keeps the old file as **Character Keeper campaign (before
+  split).json**. That file has the same format as **Export**, so **Import** can read it.
+- After each change, the app uploads the changed files a few seconds later. The header shows the state:
   **Synced**, **Saving…**, **Reconnect**, **Resolve**, or **Sync error**. Click it to sync now.
 - When you open the app, or come back to its tab, it checks Dropbox. If only Dropbox changed, the
   app loads the Dropbox copy. If Dropbox and this browser both changed, the app asks which copy to
   keep. The first time you connect a browser to a Dropbox that already has a campaign, it asks too.
 - You connect once per browser. The sign-in does not expire. The header shows **Reconnect** only if
   you remove the app from your Dropbox account.
-- **Disconnect** stops the sync. The campaign stays in this browser and the file stays in Dropbox.
+- **Disconnect** stops the sync. The campaigns stay in this browser and the files stay in Dropbox.
 
 **Connect.**
 
@@ -428,6 +434,10 @@ Set Settings → **System** to **Silent Legions**.
   isn't already present, matched by name; your own entries and edits are left alone.
 - **Compendium → Delete all** — clears every Compendium entry after a confirmation. They don't come
   back on reload; use **Reseed defaults** to restore the bundled gear.
+- **New defaults** — shows when the defaults of the current System changed: a new version of the
+  app, or a content pack imported in another campaign or browser. **Apply** adds the new items and
+  updates the changed ones. Items you edited stay as they are, unless you click **Apply and
+  overwrite my edits**. **Skip** hides the notice until the defaults change again.
 - **Example characters → Add missing pregens** — the example characters (OSR, Unknown Armies, and
   the four Silent Legions pregens) are only created on a fresh install. This adds any of them your
   campaign doesn't have, matched by name; your own characters and edits are left alone. Each one

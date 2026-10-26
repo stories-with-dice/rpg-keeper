@@ -57,9 +57,12 @@
     if (!OSR.campaigns.some(c => c.id === id) || id === OSR.campaignId) { renderCampaigns(); return; }
     await OSR.flushSave();
     if (OSR.dropboxBeforeCampaignSwitch) await OSR.dropboxBeforeCampaignSwitch();
-    const had = await OSR.loadCampaign(id);
+    let had = await OSR.loadCampaign(id);
+    // A campaign from another device: its documents are only in Dropbox yet.
+    if (!had && OSR.dropboxFetchCampaign && await OSR.dropboxFetchCampaign(id)) had = await OSR.loadCampaign(id);
     await OSR.writeCampaigns();
-    if (!had) OSR.seedMissing(false);
+    if (!had) { OSR.state.seedVersions = {}; OSR.seedMissing(false); }
+    OSR.checkSeeds();
     if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
     OSR.resetCompendiumFilters();
     OSR.resetTableFilters();

@@ -183,9 +183,8 @@
   }
 
   /* ---- default seed ---- */
-  // OSR.data.seeds.osr (js/data.js): the gear from data/seed-osr.json plus
-  // the spells from data/spells.json, as { name, category, body }.
-  const osrSeed = () => OSR.data.seeds.osr;
+  // OSR.seeds.osr (js/seeds.js): the gear from data/seed-osr.json plus the
+  // spells from data/spells.json, and any OSR content pack.
 
   // Add every default entry not already present (matched by name, case-insensitive),
   // using each entry's own `category` (default "Items") and source "Shadowdark
@@ -194,18 +193,13 @@
   function seedCompendium() {
     const have = new Set(OSR.state.compendium.map(e => (e.name || '').toLowerCase()));
     let added = 0;
-    osrSeed().compendium.forEach(e => {
+    OSR.seeds.osr.compendium.forEach(e => {
       if (!e || !e.name || have.has(String(e.name).toLowerCase())) return;
-      OSR.state.compendium.push({
-        id: uid(), name: e.name,
-        category: COMPENDIUM_CATEGORIES.indexOf(e.category) === -1 ? 'Items' : e.category,
-        source: 'Shadowdark Core', system: 'osr',
-        body: e.body || '', createdAt: Date.now(), updatedAt: Date.now()
-      });
+      OSR.state.compendium.push(OSR.compCopy('osr', e));
       added++;
     });
     OSR.state.compendiumSeeded = true;
-    OSR.state.compendiumSeedVersion = osrSeed().version;
+    OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
     OSR.save();
     renderCompendium();
     return added;

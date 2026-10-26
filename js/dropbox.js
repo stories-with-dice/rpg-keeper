@@ -1,10 +1,16 @@
-/* js/dropbox.js — optional Dropbox sync of the whole campaign (OSR.state).
+/* js/dropbox.js — optional Dropbox sync of the campaigns and the seeds.
  *
- * Off until the user clicks Settings → Dropbox sync → Connect. Then the
- * campaign is one JSON file in the app's Dropbox folder (Apps/<app name>/
- * "Character Keeper campaign.json", the same shape as Export, so Import reads
- * it too), and every save() (js/core.js calls OSR.dropboxNoteSave) uploads it
- * again a few seconds later.
+ * Off until the user clicks Settings → Dropbox sync → Connect. Then the app
+ * folder (Apps/<app name>/) holds:
+ *   /campaigns/index.json            the campaign list [{ id, name, createdAt, primary }]
+ *   /campaigns/<id>/shared.json      a campaign's 'campaign' document (js/store.js)
+ *   /campaigns/<id>/<system>.json    its document for each system
+ *   /seeds/<system>.json             the seed of each system (js/seeds.js)
+ * Every save() (js/core.js calls OSR.dropboxNoteSave) uploads the changed
+ * files a few seconds later. Each file is synced on its own, by its
+ * content_hash. Older versions kept a whole campaign in one file
+ * ("Character Keeper campaign.json", or /campaigns/<id>/campaign.json); the
+ * first pass moves it aside as "... (before split).json" after syncing it.
  *
  * Sign-in is Dropbox OAuth 2 with PKCE: Connect sends this tab to Dropbox,
  * and Dropbox redirects back to the app's own URL with ?code=…, which
@@ -45,8 +51,11 @@
   const FOCUS_CHECK_MS = 60000;  // re-check Dropbox at most this often when the tab regains focus
   const TOKEN_MARGIN = 60000;    // treat an access token as expired a minute early
 
-  const META_DEFAULTS = { enabled: false, appKey: '', files: {} };
-  // One sync record for each campaign (js/campaigns.js), in meta.files[campaignId].
+  const META_DEFAULTS = { enabled: false, appKey: '', files: {}, legacy: {}, migrated: {}, hidden: {} };
+  // One sync record for each Dropbox file, by lower-case path, in meta.files.
+  // meta.legacy[campaignId] is the record of a campaign's old whole-campaign
+  // file, meta.migrated[campaignId] is set once that file is split, and
+  // meta.hidden[campaignId] marks a campaign deleted in this browser.
   const FILE_DEFAULTS = { fileId: '', remoteHash: '', syncedHash: '', lastSync: 0 };
 
   function readJson(key) {
@@ -60,41 +69,62 @@
     } catch (e) { console.warn('dropbox: storage write failed', e); }
   }
 
-  let meta = Object.assign({}, META_DEFAULTS, readJson(META_KEY) || {});
+  let meta = loadMeta();
+  function loadMeta() {
+    const m = Object.assign({}, META_DEFAULTS, readJson(META_KEY) || {});
+    ['files', 'legacy', 'migrated', 'hidden'].forEach(k => { if (!m[k] || typeof m[k] !== 'object') m[k] = {}; });
+    return m;
+  }
   function saveMeta() { writeJson(META_KEY, meta); }
-
-  // The current campaign's sync record. Reading never creates one (render
-  // code reads it before initDropbox() migrates the old flat record);
-  // setFm() does.
-  function fm() {
-    return (meta.files && meta.files[OSR.campaignId || '']) || FILE_DEFAULTS;
+  // Disconnect: forget every record, keep the app key.
+  function loadMetaDefaults(key) {
+    return Object.assign({}, META_DEFAULTS, { appKey: key, files: {}, legacy: {}, migrated: {}, hidden: {} });
   }
-  function setFm(values) {
-    const id = OSR.campaignId || '';
-    if (!meta.files || typeof meta.files !== 'object') meta.files = {};
-    meta.files[id] = Object.assign({}, FILE_DEFAULTS, meta.files[id], values);
+
+  const rec = path => meta.files[path.toLowerCase()] || FILE_DEFAULTS;
+  function setRec(path, values) {
+    const k = path.toLowerCase();
+    meta.files[k] = Object.assign({}, FILE_DEFAULTS, meta.files[k], values);
+    saveMeta();
+  }
+  const legacyRec = id => meta.legacy[id] || FILE_DEFAULTS;
+  function setLegacyRec(id, values) {
+    meta.legacy[id] = Object.assign({}, FILE_DEFAULTS, meta.legacy[id], values);
     saveMeta();
   }
 
-  // Before campaigns, the sync record was flat on `meta`: it belongs to the
-  // primary campaign (the one the old single save was migrated into).
+  // Older versions kept a flat record on meta (one campaign, one file), then
+  // one record per campaign id in meta.files (one file per campaign). Both
+  // describe an old whole-campaign file: they move to meta.legacy.
   function migrateMeta() {
-    if (!('fileId' in meta)) return;
-    const primary = OSR.campaigns.find(c => c.primary) || OSR.campaigns[0];
-    meta.files = meta.files || {};
-    if (primary && !meta.files[primary.id]) {
-      meta.files[primary.id] = { fileId: meta.fileId || '', remoteHash: meta.remoteHash || '', syncedHash: meta.syncedHash || '', lastSync: meta.lastSync || 0 };
+    let changed = false;
+    if ('fileId' in meta) {
+      const primary = OSR.campaigns.find(c => c.primary) || OSR.campaigns[0];
+      if (primary && !meta.legacy[primary.id]) {
+        meta.legacy[primary.id] = { fileId: meta.fileId || '', remoteHash: meta.remoteHash || '', syncedHash: meta.syncedHash || '', lastSync: meta.lastSync || 0 };
+      }
+      ['fileId', 'remoteHash', 'syncedHash', 'lastSync'].forEach(k => delete meta[k]);
+      changed = true;
     }
-    ['fileId', 'remoteHash', 'syncedHash', 'lastSync'].forEach(k => delete meta[k]);
-    saveMeta();
+    Object.keys(meta.files).forEach(k => {
+      if (k.charAt(0) === '/') return;
+      if (!meta.legacy[k]) meta.legacy[k] = meta.files[k];
+      delete meta.files[k];
+      changed = true;
+    });
+    if (changed) saveMeta();
   }
 
-  // The primary campaign keeps the original file, so a new browser finds the
-  // campaign every earlier version synced. Every other campaign has its own.
-  function filePath() {
-    const c = OSR.currentCampaign && OSR.currentCampaign();
-    return !c || c.primary ? FILE_PATH : '/campaigns/' + c.id + '/campaign.json';
-  }
+  /* ---- Dropbox layout ---- */
+  const LEGACY_FILE = FILE_PATH;
+  const INDEX_PATH = '/campaigns/index.json';
+  const campaignDir = id => '/campaigns/' + id;
+  const docPath = (id, key) => campaignDir(id) + '/' + (key === 'campaign' ? 'shared' : key) + '.json';
+  const seedPath = sys => '/seeds/' + sys + '.json';
+  // The old whole-campaign file of a campaign, and where the split moves it.
+  const legacyPath = c => (c.primary ? LEGACY_FILE : campaignDir(c.id) + '/campaign.json');
+  const backupPath = c => (c.primary ? '/Character Keeper campaign (before split).json' : campaignDir(c.id) + '/campaign (before split).json');
+  const hasDocRecords = id => Object.keys(meta.files).some(k => k.startsWith(campaignDir(id).toLowerCase() + '/'));
 
   // Runtime state (not persisted).
   const dbx = {
@@ -259,20 +289,18 @@
 
   // Dropbox's file metadata, cut down to what the sync uses.
   function toRemote(f) {
-    return { id: f.id, rev: f.rev, hash: f.content_hash || '', path: f.path_lower || filePath(), modified: f.server_modified || '' };
+    return { id: f.id, rev: f.rev, hash: f.content_hash || '', path: f.path_lower, modified: f.server_modified || '' };
   }
 
-  // The campaign file: the one this device synced with (by id, so a rename or
-  // move inside the app folder doesn't lose it), else the campaign's path.
-  async function findRemote() {
-    const paths = fm().fileId ? [fm().fileId, filePath()] : [filePath()];
-    for (const path of paths) {
-      try {
-        const f = await apiCall('files/get_metadata', { path });
-        if (f && f['.tag'] === 'file') return toRemote(f);
-      } catch (e) { if (!/not_found/.test(e.summary)) throw e; }
+  // Every file in the app folder, by lower-case path: one listing per pass.
+  async function listAll() {
+    const out = new Map();
+    let r = await apiCall('files/list_folder', { path: '', recursive: true });
+    for (;;) {
+      (r.entries || []).forEach(e => { if (e['.tag'] === 'file') out.set(e.path_lower, toRemote(e)); });
+      if (!r.has_more) return out;
+      r = await apiCall('files/list_folder/continue', { cursor: r.cursor });
     }
-    return null;
   }
 
   // By rev, so the text always matches the metadata the pass decided on.
@@ -282,12 +310,12 @@
     })).text();
   }
 
-  // Creates the file, or replaces it only if it is still at `remote.rev`:
-  // Dropbox refuses (409 conflict) when another device wrote in between.
-  async function uploadText(text, remote) {
+  // Creates the file at `path`, or replaces it only if it is still at
+  // `remote.rev`: Dropbox refuses (409 conflict) when another device wrote in between.
+  async function uploadText(path, text, remote) {
     const arg = remote
       ? { path: remote.path, mode: { '.tag': 'update', update: remote.rev }, autorename: false, mute: true }
-      : { path: filePath(), mode: 'add', autorename: false, mute: true };
+      : { path, mode: 'add', autorename: false, mute: true };
     return toRemote(await (await dbxFetch(CONTENT_API + '/files/upload', {
       headers: { 'Content-Type': 'application/octet-stream', 'Dropbox-API-Arg': headerJson(arg) },
       body: text
@@ -301,26 +329,166 @@
     renderDropbox();
   }
 
-  function recordSynced(remote, hash) {
-    setFm({ fileId: remote.id, remoteHash: remote.hash, syncedHash: hash, lastSync: Date.now() });
+  function recordFile(path, remote, hash) {
+    setRec(path, { fileId: remote.id, remoteHash: remote.hash, syncedHash: hash, lastSync: Date.now() });
   }
 
-  // Replaces this browser's campaign with the Dropbox copy (same path as
-  // Import → Replace all), then records the result as synced.
-  async function applyRemote(text, remote) {
+  // One file against its Dropbox copy: uploads when only this browser changed
+  // (or Dropbox has no file), and records a download whose text is the same.
+  // Otherwise returns the downloaded text for the caller: action 'pull' (only
+  // Dropbox changed), 'link', or 'conflict'.
+  async function syncFile(path, localText, listing) {
+    const remote = listing.get(path.toLowerCase()) || null;
+    const hash = hashText(localText);
+    const action = decideSync(remote, rec(path), hash);
+    if (action === 'noop') return { action };
+    if (action === 'create' || action === 'upload') {
+      recordFile(path, await uploadText(path, localText, action === 'upload' ? remote : null), hash);
+      return { action };
+    }
+    const text = await downloadRemote(remote);
+    if (action !== 'pull' && hashText(text) === hash) { recordFile(path, remote, hash); return { action: 'noop' }; }
+    return { action, text, remote, hash };
+  }
+
+  // Step 1: a campaign's old whole-campaign file. Synced with the old rules
+  // (a pull replaces the whole campaign; both sides changed → ask), then moved
+  // aside, so the split files of step 4 take over. 'conflict' stops the pass.
+  async function legacyStep(c, listing) {
+    if (!c || meta.migrated[c.id]) return 'done';
+    const remote = listing.get(legacyPath(c).toLowerCase());
+    if (remote) {
+      const hash = hashText(JSON.stringify(OSR.state));
+      const action = decideSync(remote, legacyRec(c.id), hash);
+      if (action === 'pull' || action === 'link' || action === 'conflict') {
+        const text = await downloadRemote(remote);
+        const mode = action === 'pull' && hashText(JSON.stringify(OSR.state)) !== hash ? 'conflict' : action;
+        if (mode === 'pull') await applyLegacy(c, text, remote);
+        else if (hashText(text) !== hash) {
+          dbx.conflict = { mode, campaignId: c.id, legacy: true, files: [{ path: remote.path, remote, text }] };
+          return 'conflict';
+        }
+      }
+      // In sync, or this browser's copy wins: the split files are made from it.
+      await apiCall('files/move_v2', { from_path: remote.path, to_path: backupPath(c), autorename: true });
+    }
+    meta.migrated[c.id] = true;
+    delete meta.legacy[c.id];
+    saveMeta();
+    return remote ? 'moved' : 'done';
+  }
+
+  async function applyLegacy(c, text, remote) {
     let data;
     try { data = JSON.parse(text); } catch (e) { throw dbxError(0, 'The Dropbox file is not valid JSON.'); }
     if (!data || !Array.isArray(data.characters)) throw dbxError(0, 'The Dropbox file has no "characters" array.');
-    // replaceState() saves at once (dropboxNoteSave sees `applying` and
-    // skips), then resolves when the write reached the storage.
+    await replaceAndWait(data);
+    setLegacyRec(c.id, { fileId: remote.id, remoteHash: remote.hash, syncedHash: hashText(JSON.stringify(OSR.state)), lastSync: Date.now() });
+  }
+
+  // replaceState() saves at once (dropboxNoteSave sees `applying` and skips),
+  // then resolves when the write reached the storage. Not saved = a reload
+  // brings back the old campaign: never record a sync that would then upload
+  // it over the Dropbox copy.
+  // A refused write puts the previous campaign back, as a refused content
+  // pack does (js/io.js), so the next pass sees the same pull again.
+  async function replaceAndWait(data) {
+    const before = OSR.state;
     dbx.applying = true;
     let written;
     try { written = OSR.replaceState(data); } finally { dbx.applying = false; }
-    const saved = await written;
-    // Not saved = a reload brings back the old campaign: don't record a sync
-    // that would then upload it over the Dropbox copy.
-    if (!saved) throw dbxError(0, 'The browser storage is full, so the Dropbox copy could not be saved here.');
-    recordSynced(remote, hashText(JSON.stringify(OSR.state)));
+    if (await written) return;
+    dbx.applying = true;
+    try { OSR.replaceState(before); } finally { dbx.applying = false; }
+    throw dbxError(0, 'The browser storage is full, so the Dropbox copy could not be saved here.');
+  }
+
+  // Step 2: the campaign list. A pull adds the campaigns this browser lacks
+  // and takes their names; both changed → the union, then upload. A fresh
+  // browser's first campaign takes the id of the primary campaign in Dropbox
+  // (its files then sync, or ask, like any other device's).
+  function indexText() {
+    return JSON.stringify(OSR.campaigns.map(c => ({ id: c.id, name: c.name, createdAt: c.createdAt, primary: !!c.primary })));
+  }
+  async function syncIndex(listing) {
+    const r = await syncFile(INDEX_PATH, indexText(), listing);
+    if (!r.text) return;
+    let list = [];
+    try { list = JSON.parse(r.text); } catch (e) { list = []; }
+    if (!Array.isArray(list)) list = [];
+    const lp = OSR.campaigns.find(c => c.primary);
+    const rp = list.find(c => c && c.primary);
+    let adopted = null;
+    if (lp && rp && lp.id !== rp.id && !list.some(c => c.id === lp.id) && !OSR.campaigns.some(c => c.id === rp.id) && !hasDocRecords(lp.id)) {
+      await OSR.rekeyCampaign(lp.id, rp.id);
+      ['legacy', 'migrated'].forEach(k => { if (meta[k][lp.id]) { meta[k][rp.id] = meta[k][lp.id]; delete meta[k][lp.id]; } });
+      saveMeta();
+      adopted = rp.id;
+    }
+    list.forEach(rc => {
+      if (!rc || !rc.id || meta.hidden[rc.id]) return;
+      const lc = OSR.campaigns.find(c => c.id === rc.id);
+      if (!lc) OSR.campaigns.push({ id: rc.id, name: String(rc.name || 'Campaign'), createdAt: rc.createdAt || Date.now(), primary: !!rc.primary });
+      else if ((r.action === 'pull' || rc.id === adopted) && rc.name) Object.assign(lc, { name: String(rc.name), createdAt: rc.createdAt || lc.createdAt });
+    });
+    await OSR.writeCampaigns();
+    if (OSR.renderCampaigns) OSR.renderCampaigns();
+    const merged = indexText();
+    recordFile(INDEX_PATH, merged === r.text ? r.remote : await uploadText(INDEX_PATH, merged, r.remote), hashText(merged));
+  }
+
+  // Step 3: the seeds. A pull replaces this browser's seed; both changed →
+  // merged (js/seeds.js's mergeSeeds), then upload. Never asks.
+  async function syncSeeds(listing) {
+    for (const sys of OSR.SYSTEMS) {
+      const seed = OSR.seeds[sys];
+      const path = seedPath(sys);
+      if (!seed || (!seed.compendium.length && !seed.monsters.length && !listing.has(path))) continue;
+      const r = await syncFile(path, JSON.stringify(seed), listing);
+      if (!r.text) continue;
+      let remoteSeed;
+      try { remoteSeed = JSON.parse(r.text); } catch (e) { continue; }
+      const next = r.action === 'pull' ? remoteSeed : OSR.mergeSeeds(seed, remoteSeed);
+      await OSR.setSeed(sys, next);
+      const text = JSON.stringify(next);
+      recordFile(path, r.action === 'pull' ? r.remote : await uploadText(path, text, r.remote), hashText(text));
+    }
+  }
+
+  // Step 4: the current campaign's documents (js/store.js's splitState).
+  // Pulled documents replace their part of OSR.state together; documents
+  // changed on both sides (or found in Dropbox before this browser synced
+  // them) go to one question for the whole campaign.
+  async function syncDocs(c, listing) {
+    const docs = OSR.serializeState(OSR.state);
+    const pulled = [], conflicts = [];
+    for (const key of Object.keys(docs)) {
+      const path = docPath(c.id, key);
+      const r = await syncFile(path, docs[key], listing);
+      if (!r.text) continue;
+      // An edit made during the download turns a pull into a conflict.
+      const mode = r.action === 'pull' && OSR.serializeState(OSR.state)[key] !== docs[key] ? 'conflict' : r.action;
+      (mode === 'pull' ? pulled : conflicts).push({ key, path, mode, remote: r.remote, text: r.text });
+    }
+    if (pulled.length) await applyDocs(pulled);
+    if (!conflicts.length) return 'synced';
+    dbx.conflict = { mode: conflicts.every(f => f.mode === 'link') ? 'link' : 'conflict', campaignId: c.id, files: conflicts };
+    return 'conflict';
+  }
+
+  // OSR.state with the given Dropbox documents in place of this browser's.
+  function withDocs(files) {
+    const docs = OSR.splitState(OSR.state);
+    files.forEach(f => {
+      try { docs[f.key] = JSON.parse(f.text); } catch (e) { throw dbxError(0, 'The Dropbox file ' + f.path + ' is not valid JSON.'); }
+    });
+    return OSR.joinState(docs);
+  }
+
+  async function applyDocs(files) {
+    await replaceAndWait(withDocs(files));
+    const now = OSR.serializeState(OSR.state);
+    files.forEach(f => recordFile(f.path, f.remote, hashText(now[f.key])));
   }
 
   async function syncNow() {
@@ -336,20 +504,14 @@
     dbx.lastCheck = Date.now();
     setStatus('syncing');
     try {
-      const text = JSON.stringify(OSR.state);
-      const hash = hashText(text);
-      const remote = await findRemote();
-      const action = decideSync(remote, fm(), hash);
-      if (action === 'create' || action === 'upload') {
-        recordSynced(await uploadText(text, action === 'upload' ? remote : null), hash);
-      } else if (action !== 'noop') { // pull, link, conflict
-        const remoteText = await downloadRemote(remote);
-        // An edit made during the download turns a pull into a conflict.
-        const mode = action === 'pull' && hashText(JSON.stringify(OSR.state)) !== hash ? 'conflict' : action;
-        if (mode === 'pull') await applyRemote(remoteText, remote);
-        else if (hashText(remoteText) === hash) recordSynced(remote, hash); // already the same campaign
-        else { dbx.conflict = { mode, remote, text: remoteText }; setStatus('conflict'); openDropboxModal(); return; }
-      }
+      let listing = await listAll();
+      const legacy = await legacyStep(OSR.currentCampaign(), listing);
+      if (legacy === 'conflict') { setStatus('conflict'); openDropboxModal(); return; }
+      if (legacy === 'moved') listing = await listAll();
+      await syncIndex(listing);
+      await syncSeeds(listing);
+      // The index step may have given the current campaign a new id.
+      if ((await syncDocs(OSR.currentCampaign(), listing)) === 'conflict') { setStatus('conflict'); openDropboxModal(); return; }
       setStatus('synced');
     } catch (e) {
       if (e.status === 401) setStatus('signed-out');
@@ -485,7 +647,7 @@
     clearToken();
     // Revoke the token too, so it stops working everywhere. Best effort.
     if (t && t.token) window.fetch(API + '/auth/token/revoke', { method: 'POST', headers: { Authorization: 'Bearer ' + t.token } }).catch(() => {});
-    meta = Object.assign({}, META_DEFAULTS, { appKey: meta.appKey, files: {} });
+    meta = loadMetaDefaults(meta.appKey);
     saveMeta();
     dbx.conflict = null;
     dbx.auth = null;
@@ -505,15 +667,21 @@
     return isNaN(d) ? '' : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   }
 
+  // The Dropbox side of an open question, as a whole campaign.
+  function conflictRemoteState(c) {
+    if (c.legacy) { try { return JSON.parse(c.files[0].text) || {}; } catch (e) { return {}; } }
+    try { return withDocs(c.files); } catch (e) { return {}; }
+  }
+
   function openDropboxModal() {
     const c = dbx.conflict;
     if (!c) return;
-    let remoteState = {};
-    try { remoteState = JSON.parse(c.text) || {}; } catch (e) { /* summarized as empty */ }
+    const remoteState = conflictRemoteState(c);
     $('#dbx-modal-title').textContent = c.mode === 'link' ? 'Campaign found in Dropbox' : 'Dropbox copy changed';
-    $('#dbx-modal-text').textContent = c.mode === 'link'
-      ? 'Your Dropbox already has a Character Keeper campaign, and it is different from the one in this browser. Choose which one to keep. The other one is replaced.'
-      : 'The Dropbox copy changed on another device, and this browser has changes too. Choose which one to keep. The other one is replaced.';
+    $('#dbx-modal-text').textContent = (c.mode === 'link'
+      ? 'Your Dropbox already has this Character Keeper campaign, and it is different from the one in this browser. Choose which one to keep. The other one is replaced.'
+      : 'The Dropbox copy changed on another device, and this browser has changes too. Choose which one to keep. The other one is replaced.') +
+      (c.legacy ? '' : ' Files: ' + c.files.map(f => f.path.split('/').pop()).join(', ') + '.');
     // Counts alone often match (one character added on each side), so also
     // name the characters that only one copy has.
     const charNames = s => (Array.isArray(s.characters) ? s.characters : []).map(ch => String((ch && ch.name) || ''));
@@ -522,8 +690,9 @@
       const only = a.filter(x => b.indexOf(x) === -1);
       return only.length ? ' Only here: ' + only.join(', ') + '.' : '';
     };
+    const newest = c.files.map(f => f.remote.modified).sort().pop();
     $('#dbx-modal-compare').innerHTML =
-      '<li><b>Dropbox</b> (saved ' + OSR.escapeHtml(fmtTime(c.remote.modified)) + '): ' +
+      '<li><b>Dropbox</b> (saved ' + OSR.escapeHtml(fmtTime(newest)) + '): ' +
         OSR.escapeHtml(summarize(remoteState) + '.' + onlyIn(remoteNames, localNames)) + '</li>' +
       '<li><b>This browser</b>: ' + OSR.escapeHtml(summarize(OSR.state) + '.' + onlyIn(localNames, remoteNames)) + '</li>';
     $('#dbx-use-remote').classList.toggle('btn-primary', c.mode === 'link');
@@ -534,8 +703,10 @@
   async function useRemoteCopy() {
     const c = dbx.conflict;
     if (!c) return;
-    try { await applyRemote(c.text, c.remote); }
-    catch (e) { alert(e.message); return; }
+    try {
+      if (c.legacy) await applyLegacy(OSR.currentCampaign(), c.files[0].text, c.files[0].remote);
+      else await applyDocs(c.files);
+    } catch (e) { alert(e.message); return; }
     dbx.conflict = null;
     closeDropboxModal();
     setStatus('synced');
@@ -547,8 +718,11 @@
     if (!c) return;
     dbx.conflict = null;
     closeDropboxModal();
-    // Make the next pass see "only this browser changed": it uploads over the file.
-    setFm({ fileId: c.remote.id, remoteHash: c.remote.hash, syncedHash: '' });
+    // Make the next pass see "only this browser changed": it uploads over the files.
+    c.files.forEach(f => {
+      const values = { fileId: f.remote.id, remoteHash: f.remote.hash, syncedHash: '' };
+      if (c.legacy) setLegacyRec(c.campaignId, values); else setRec(f.path, values);
+    });
     setStatus('pending');
     OSR.pushNote('Dropbox', 'Replaced the Dropbox copy with this browser’s campaign'); // saves → schedules
     await syncNow();
@@ -565,9 +739,10 @@
   };
 
   function statusText() {
-    const last = fm().lastSync ? ' Last synced ' + fmtTime(fm().lastSync) + '.' : '';
+    const lastSync = Object.keys(meta.files).reduce((t, k) => Math.max(t, meta.files[k].lastSync || 0), 0);
+    const last = lastSync ? ' Last synced ' + fmtTime(lastSync) + '.' : '';
     switch (dbx.status) {
-      case 'synced': return 'Connected. The campaign is saved in your Dropbox app folder as “' + filePath().slice(1) + '”.' + last;
+      case 'synced': return 'Connected. Your campaigns are saved in your Dropbox app folder, in the “campaigns” folder.' + last;
       case 'pending':
       case 'syncing': return 'Connected. Saving changes to Dropbox…';
       case 'signed-out': return 'Dropbox access was removed or expired. Your changes stay in this browser. Click Reconnect to sync them.' + last;
@@ -655,11 +830,8 @@
   }
 
   // Test-only view of the per-device bookkeeping.
-  // meta shows the current campaign's sync record flat, as before campaigns.
   function dropboxState() {
-    const m = Object.assign({}, meta, fm());
-    delete m.files;
-    return { status: dbx.status, message: dbx.message, meta: m, conflict: dbx.conflict, auth: dbx.auth };
+    return { status: dbx.status, message: dbx.message, meta: JSON.parse(JSON.stringify(meta)), conflict: dbx.conflict, auth: dbx.auth };
   }
 
   /* ---- Campaign switch (js/campaigns.js) ---- */
@@ -680,8 +852,39 @@
     if (dbx.status === 'conflict') setStatus('pending');
     if (meta.enabled && hasToken()) syncNow(); else renderDropbox();
   }
+  // A campaign deleted in this browser: its records go, and a pull of the
+  // index does not bring it back here (its Dropbox files stay).
   function dropboxForgetCampaign(id) {
-    if (meta.files && meta.files[id]) { delete meta.files[id]; saveMeta(); }
+    const dir = campaignDir(id).toLowerCase() + '/';
+    Object.keys(meta.files).forEach(k => { if (k.startsWith(dir)) delete meta.files[k]; });
+    delete meta.legacy[id];
+    delete meta.migrated[id];
+    meta.hidden[id] = true;
+    saveMeta();
+  }
+
+  // A campaign this browser has no documents for (one another device made):
+  // downloads its files into IndexedDB before js/campaigns.js opens it.
+  // Resolves to true when it found any.
+  async function dropboxFetchCampaign(id) {
+    if (!meta.enabled || !hasToken()) return false;
+    try {
+      const listing = await listAll();
+      const docs = {};
+      for (const key of ['campaign'].concat(OSR.SYSTEMS)) {
+        const path = docPath(id, key);
+        const remote = listing.get(path.toLowerCase());
+        if (!remote) continue;
+        docs[key] = await downloadRemote(remote);
+        recordFile(path, remote, hashText(docs[key]));
+      }
+      if (!Object.keys(docs).length) return false;
+      await OSR.store.putDocs(id, docs);
+      return true;
+    } catch (e) {
+      console.warn('dropbox: could not download the campaign', e);
+      return false;
+    }
   }
 
   Object.assign(OSR, {
@@ -689,7 +892,8 @@
     hashText, decideSync, pkcePair, dropboxNoteSave, dropboxFlush, dropboxSyncNow: syncNow,
     dropboxConnect: connect, dropboxConnectWithCode: connectWithCode, dropboxFinishConnect: finishConnect,
     dropboxFinishRedirect: finishRedirect, DROPBOX_PENDING_KEY: PENDING_KEY,
-    dropboxBeforeCampaignSwitch, dropboxCampaignChanged, dropboxForgetCampaign,
+    dropboxBeforeCampaignSwitch, dropboxCampaignChanged, dropboxForgetCampaign, dropboxFetchCampaign,
+    DROPBOX_INDEX_PATH: INDEX_PATH, dropboxDocPath: docPath, dropboxSeedPath: seedPath,
     // Leaves the app for Dropbox's consent page. Tests replace it.
     dropboxRedirect: url => location.assign(url), dropboxDisconnect: disconnect,
     dropboxUseRemoteCopy: useRemoteCopy, dropboxUseLocalCopy: useLocalCopy,

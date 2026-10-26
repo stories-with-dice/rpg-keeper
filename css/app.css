@@ -647,6 +647,9 @@ button, input, textarea, select {
   background: var(--bg-2);
   cursor: pointer;
 }
+.setting-row[hidden] { display: none; }
+/* Settings → New defaults (js/seeds.js's renderSeedNotice). */
+.setting-row.seed-notice { border-color: var(--accent); }
 .setting-row input[type="checkbox"] { margin-top: 3px; flex: none; width: 16px; height: 16px; }
 .setting-text { display: flex; flex-direction: column; gap: 4px; }
 .setting-text .hint { margin: 0; }

@@ -144,7 +144,10 @@ test('migration: when the first write fails, the old key stays, so the next boot
       Object.defineProperty(w.OSR, 'store', {
         configurable: true,
         get: () => real,
-        set: v => { real = v; v.putDocs = () => Promise.reject(new w.DOMException('quota', 'QuotaExceededError')); }
+        set: v => {
+          real = v;
+          v.putDocs = () => Promise.reject(new w.DOMException('quota', 'QuotaExceededError'));
+        }
       });
     }
   });

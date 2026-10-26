@@ -48,6 +48,7 @@
     OSR.wireSettings();
     OSR.wireDropbox();
     OSR.wireCampaigns();
+    OSR.wireSeeds();
     OSR.wireRollPopup();
   }
 
@@ -71,7 +72,7 @@
       marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
     }
     let had;
-    try { had = await OSR.load(); }
+    try { await OSR.loadSeeds(); had = await OSR.load(); }
     catch (e) { showLoadError(new Error('The browser storage (IndexedDB) did not open: ' + e.message)); return; }
     OSR.applyTheme();
     OSR.buildDiceGrid();
@@ -84,7 +85,9 @@
     OSR.renderSettings();
     OSR.renderCampaigns();
     wire();
+    if (!had) OSR.state.seedVersions = {};
     OSR.seedMissing(!had);
+    OSR.checkSeeds();
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderCombat();
@@ -121,7 +124,7 @@
       OSR.state.brpMonstersSeeded = true;
       OSR.state.slMonstersSeeded = true;
       OSR.state.compendiumSeeded = true;
-      OSR.state.compendiumSeedVersion = OSR.data.seeds.osr.version;
+      OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
       OSR.state.brpCompendiumSeeded = true;
       OSR.state.slCompendiumSeeded = true;
       OSR.ensureStateShape();

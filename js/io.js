@@ -41,13 +41,26 @@
   // when one with the same ref is already there, so importing a pack twice
   // adds nothing; a Compendium entry without one is matched by name and
   // category. Both stay inside their own system (see AGENTS.md "Game system").
+  // An item with a `seedRef` (a seeded item, from an export) replaces the
+  // campaign's item with the same seedRef instead (js/seeds.js). With
+  // `fromPack`, every added item becomes a seed copy (seedRef + seedHash).
   const validSystem = (s, fallback) => (OSR.SYSTEMS.indexOf(s) === -1 ? fallback : s);
-  function mergeCompendium(list, fallbackSystem) {
+  function replaceSeeded(list, item, system) {
+    if (!item.seedRef) return false;
+    const i = list.findIndex(x => (x.system || 'osr') === system && x.seedRef === item.seedRef);
+    if (i === -1) return false;
+    item.id = list[i].id;
+    item.system = system;
+    list[i] = item;
+    return true;
+  }
+  function mergeCompendium(list, fallbackSystem, fromPack) {
     const state = OSR.state;
     const added = [];
     list.forEach(en => {
       if (!en) return;
       const system = validSystem(en.system, fallbackSystem);
+      if (!fromPack && replaceSeeded(state.compendium, Object.assign({}, en), system)) return;
       const key = String(en.name || '').toLowerCase() + '\0' + en.category;
       if (state.compendium.some(x => (x.system || 'osr') === system &&
           ((en.ref && x.ref === en.ref) || (x.name.toLowerCase() + '\0' + x.category) === key))) return;
@@ -55,18 +68,22 @@
         source: en.source || OSR.COMPENDIUM_DEFAULT_SOURCE, system: system,
         body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() };
       if (en.ref) item.ref = String(en.ref);
+      if (fromPack) { item.seedRef = OSR.seedRefOf(system, 'c', en); item.seedHash = OSR.contentHash(item); }
+      else if (en.seedRef) { item.seedRef = en.seedRef; if (en.seedHash) item.seedHash = en.seedHash; }
       state.compendium.push(item);
       added.push(item.id);
     });
     return added;
   }
-  function mergeMonsters(list, fallbackSystem) {
+  function mergeMonsters(list, fallbackSystem, fromPack) {
     const state = OSR.state;
     const added = [];
     list.forEach(m => {
       if (!m) return;
       const system = validSystem(m.system, fallbackSystem);
+      if (!fromPack && replaceSeeded(state.monsters, m, system)) return;
       if (m.ref && state.monsters.some(x => x.ref === m.ref && (x.system || 'osr') === system)) return;
+      if (fromPack) { const copy = OSR.monsterCopy(system, m); Object.keys(copy).forEach(k => { m[k] = copy[k]; }); }
       m.id = OSR.uid();
       m.system = system;
       state.monsters.push(m);
@@ -88,8 +105,8 @@
     if (!confirm('Add "' + name + '" to ' + (OSR.SYSTEM_LABELS[system] || system) + '?\n\n' +
         comp.length + ' Compendium entries and ' + mons.length + ' Bestiary monsters. ' +
         'Entries you already have are skipped. Nothing is replaced.')) return;
-    const addedC = mergeCompendium(comp, system);
-    const addedM = mergeMonsters(mons, system);
+    const addedC = mergeCompendium(comp, system, true);
+    const addedM = mergeMonsters(mons.map(m => JSON.parse(JSON.stringify(m))), system, true);
     OSR.ensureStateShape();
     if (!(await OSR.saveNow())) {
       // The browser storage refused the write (full or blocked): keep the
@@ -101,6 +118,9 @@
       alert('Import failed: the browser storage is full, so "' + name + '" was not added.');
       return;
     }
+    // The pack also goes into the system's seed, so every other campaign
+    // (and every device, through Dropbox) is offered it (js/seeds.js).
+    try { await OSR.addToSeed(system, comp, mons); } catch (e) { console.warn('seed write failed', e); }
     OSR.pushNote('Import', 'added ' + addedC.length + ' Compendium entries and ' + addedM.length +
       ' monsters from "' + name + '"');
     if (OSR.currentSystem() !== system) OSR.setSystem(system);

@@ -39,6 +39,7 @@
       ' example characters (OSR, Unknown Armies, Silent Legions) are in this campaign' +
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
+    OSR.renderSeedNotice();
     OSR.renderDropbox();
   }
   // Settings → System, and an imported pack of another system (js/io.js):

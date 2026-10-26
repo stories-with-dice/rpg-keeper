@@ -173,6 +173,7 @@
     if (!state.combat || typeof state.combat !== 'object') state.combat = {};
     state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
     if (!Array.isArray(state.combat.entries)) state.combat.entries = [];
+    if (OSR.linkSeeds && OSR.seeds && Object.keys(OSR.seeds).length) OSR.linkSeeds(state); // js/seeds.js
     state.combat.entries.forEach(e => {
       if (!e.id) e.id = uid();
       if (e.side !== 'ally' && e.side !== 'enemy' && e.side !== 'neutral') {
@@ -330,6 +331,26 @@
     return true;
   }
 
+  // Gives campaign `oldId` the id `newId` (js/dropbox.js: a fresh browser's
+  // first campaign takes the id of the campaign in Dropbox). Moves its
+  // documents in IndexedDB.
+  async function rekeyCampaign(oldId, newId) {
+    await flushSave();
+    const raw = await OSR.store.getDocs(oldId);
+    if (Object.keys(raw).length) await OSR.store.putDocs(newId, raw);
+    OSR.campaigns.forEach(c => { if (c.id === oldId) c.id = newId; });
+    if (OSR.campaignId === oldId) {
+      // A save made while the copy above ran went to the old id: write the
+      // whole campaign again under the new one.
+      OSR.campaignId = newId;
+      lastWritten = {};
+      save();
+      await flushSave();
+    }
+    await OSR.store.deleteDocs(oldId);
+    await writeCampaigns();
+  }
+
   async function writeCampaigns() {
     await OSR.store.setMeta('campaigns', OSR.campaigns);
     await OSR.store.setMeta('activeCampaignId', OSR.campaignId);
@@ -344,7 +365,7 @@
     STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
     THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
-    applyTheme, load, loadCampaign, writeCampaigns, flushSave, saveNow, ensureStateShape, ensureCharShape,
+    applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
     woundTrackerLabel, ensureWoundTracker, MADNESS_MAX, madnessTrackerLabel, ensureMadnessTracker,
     save, activeChar

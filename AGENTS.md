@@ -36,6 +36,9 @@ js/core.js              window.OSR = {} (created here) + constants, $/$$/escapeH
 js/store.js             IndexedDB persistence (OSR.store: open/getDocs/putDocs/deleteDocs/getMeta/
                        setMeta) + splitState/joinState, the cut of OSR.state into one document per
                        system plus a campaign document — see "State model"
+js/seeds.js             the seed store (OSR.seeds, one per system, shared by every campaign; packs add
+                       to it), seed copies with seedRef/seedHash, and Settings → New defaults — see
+                       "Seeding"
 js/campaigns.js         the Campaign selector (#campaign-select) and Settings → Campaign: switch,
                        create, rename, delete (each campaign is its own set of documents)
 js/data.js              OSR.loadData(): fetch()es every data/ file init() needs (monsters, spells,
@@ -119,11 +122,13 @@ test/ui.test.js        node:test integration tests that drive the real DOM (inde
                        js/*.js files) through the app's delegated listeners and assert on render + persistence
 test/campaigns.test.js node:test suite for js/store.js and js/campaigns.js: split/join, writes of only
                        the changed documents, reload, the localStorage migration, and the Campaign UI
+test/seeds.test.js     node:test suite for js/seeds.js: seed refs, a newer code seed offered and
+                       applied, packs into the seed, and the Merge rule for seeded items
 test/data.test.js      node:test suite for js/data.js: the data/ files' shape, the seeds built from
                        them, first-run seeding, and the load-error state
 test/dropbox.test.js   node:test suite for js/dropbox.js, against a fake window.open, a fake
                        redirect (OSR.dropboxRedirect), and a fake Dropbox API + token endpoint
-                       (window.fetch) — nothing talks to Dropbox
+                       (test/helpers/fake-dropbox.js, on window.fetch) — nothing talks to Dropbox
 test/helpers/boot.js   boots the app inside jsdom for the suites above (EasyMDE omitted → the
                        Journal / Compendium editors fall back to plain <textarea>s, as designed).
                        jsdom has no fetch: boot() serves the app's data/ files from disk and hands
@@ -167,10 +172,11 @@ one to isolate it (unticks every other checkbox in that row, `#comp-cats` or `#c
 entry editor's `Enter` saves (same as clicking Save) and `Shift+Enter` inserts a newline in the body,
 via `onSubmit` on the EasyMDE `compMdeInstance()` plus a `#comp-modal` keydown fallback for the
 plain-textarea case; `Escape` cancels (the app-wide Escape handler already covers every modal). The
-default seed is `OSR.data.seeds.osr` (`js/data.js`): the gear in `data/seed-osr.json` plus the spells
-in `data/spells.json`. `seedCompendium()` adds missing-by-name entries and stamps
-`state.compendiumSeedVersion` with the seed's `version`, so raising `version` in `data/seed-osr.json`
-re-seeds on next load. Settings → **Reseed defaults** calls `seedCompendium()` directly;
+default seed is `OSR.seeds.osr` (`js/seeds.js`): the gear in `data/seed-osr.json` plus the spells
+in `data/spells.json`, plus any OSR content pack. `seedCompendium()` adds missing-by-name entries
+(first run only, `state.compendiumSeeded`). Raising `version` in `data/seed-osr.json` does not
+re-seed by itself: Settings → **New defaults** offers the change (see "Seeding" below). Settings →
+**Reseed defaults** calls `seedCompendium()` directly;
 **Delete all** empties `state.compendium` (version left as-is, so it does not auto-return).
 `annotate()` also wraps bare `[bracketed]` text in `<span class="comp-ref">` (skipping short
 all-caps system tags). Hovering one calls `openCompPop(name, ref)`, which creates a **fresh
@@ -640,11 +646,16 @@ edit the source data or the converter, run it, and commit the result.
 - **Merge import** (`importData`, Cancel on its Replace/Merge question) goes through
   `mergeCompendium`/`mergeMonsters` (`js/io.js`): each item keeps its own `system` (missing → `'osr'`),
   and a duplicate is skipped only inside the same system — same `ref` (a content pack's stable id),
-  or for a Compendium entry the same name + category.
+  or for a Compendium entry the same name + category. An item with a `seedRef` (a seeded item in an
+  export) replaces the campaign's item with the same `seedRef` instead (`replaceSeeded()`), so an
+  export with newer seeded items updates them; the user's own item with the same name stays.
 - **Content packs**: a file with a `pack: { name, system }` header (plus `compendium`/`monsters`) is
   handled by `importPack` instead — merge only, never the Replace question, one confirm, then
   `OSR.setSystem(pack.system)`. `OSR.saveNow()` resolves to `false` when the browser refuses (storage full);
-  `importPack` then removes what it added and alerts, rather than keep data a reload would lose. The UA3 data tools (a separate, private project that reads
+  `importPack` then removes what it added and alerts, rather than keep data a reload would lose.
+  A pack's items become seed copies (`seedRef` = the item's `ref`), and `OSR.addToSeed()` adds the
+  pack to the system's seed store too, so every other campaign (and every device, through Dropbox)
+  is offered it under Settings → New defaults. The UA3 data tools (a separate, private project that reads
   the user's own PDFs) write such a pack for `ua3e`; its book text must never be committed here.
 - Entries created at runtime (`addCharEntry`, `addMonsterEntry`) must include every field
   `ensureStateShape` expects — it only runs on load/import, not on new entries.
@@ -915,13 +926,34 @@ in parallel and fills `OSR.data`:
 
 If any file fails, `loadData()` rejects with every failed file's name, and `showLoadError()` shows
 `#load-error` and hides `.main`. `init()` then stops: it never calls `load()` or `save()`, so the
-saved campaign is not touched. After a successful load, everything that seeds reads `OSR.data`
-synchronously:
+saved campaign is not touched.
 
-- Monsters: `seedMonsters()` (`js/seed.js`) deep-clones `OSR.data.monsters`.
-- Spells and gear: `seedCompendium()` (`js/compendium.js`) reads `OSR.data.seeds.osr`.
+**The seed store** (`js/seeds.js`). `init()` then awaits `OSR.loadSeeds()`, before `load()`.
+`OSR.seeds[system]` = `{ system, version, codeVersion, compendium, monsters }`, one for each of
+`OSR.SYSTEMS`, shared by every campaign on the device. It is stored in IndexedDB as the documents
+`seeds/<system>` and in Dropbox as `/seeds/<system>.json`. It starts as the code's seed
+(`codeSeed()` from `OSR.data.seeds`); a higher `version` in `OSR.data` (a new `data/seed-*.json`
+version) is merged in at boot (`codeVersion` tracks it), and content packs add to it
+(`addToSeed()`). `version` goes up on every change. Every seed item has a `seedRef` (`seedRefOf()`):
+a pack's `ref`, a monster's own `id` (`sd-aboleth`), or `"<system>:c:<lower-case name>"`.
+
+A campaign keeps its own copies (`compCopy()` / `monsterCopy()`), each with `seedRef` and
+`seedHash` = `contentHash()` of the copy as it came from the seed (all fields but ids, times, system,
+and the seed fields). `linkSeeds()` (from `ensureStateShape()`) gives older items their `seedRef` by
+name (monsters by id first). `state.seedVersions[system]` is the seed version the campaign has seen:
+a save from before it existed counts as up to date; a new campaign starts at `{}`. `seedStatus(sys)`
+sorts the seed against the campaign into `added`, `changed` (the seed item changed and the copy is
+unedited: `contentHash(copy) === copy.seedHash`), and `edited` (both changed). While `seen <
+version`, Settings shows `#set-seed-row` ("New defaults") for the current system: **Apply**
+(`applySeed(sys)`: adds, updates `changed`, keeps `edited`), **Apply and overwrite my edits**, or
+**Skip**. `checkSeeds()` moves `seen` up silently when nothing differs.
+
+After a successful load, everything that seeds reads `OSR.seeds` synchronously:
+
+- Monsters: `seedMonsters()` (`js/seed.js`) copies `OSR.seeds.osr.monsters`.
+- Spells and gear: `seedCompendium()` (`js/compendium.js`) reads `OSR.seeds.osr`.
 - BRP and SL: `seedBrpMonsters()`/`seedBrpCompendium()` and `seedSlMonsters()`/`seedSlCompendium()`
-  read `OSR.data.seeds.brp` / `.sl`.
+  read `OSR.seeds.brp` / `.sl`.
 - Characters: `seed()` (`js/seed.js`) creates one character for each `OSR.data.pregens` sheet.
   Garrick and Gulzund are the OSR examples. Kevin Johnson and Lucinda Adams (both from the UA3e
   "Karmic Ties and Fifth Wheels" starter kit) are the Unknown Armies examples, each with a ```ua fence
@@ -947,13 +979,9 @@ synchronously:
 
 ## Dropbox sync (`js/dropbox.js`)
 
-Optional, off by default. It stores each campaign's whole `OSR.state` as one JSON file in the user's
-Dropbox and keeps it in sync. The primary campaign (the one the old single save was migrated into, or
-the first one on a fresh install) keeps `FILE_PATH`, so a new browser finds the campaign that earlier
-versions synced. Every other campaign uses `/campaigns/<campaignId>/campaign.json` (`filePath()`).
-Campaign ids are per device until the multi-file sync (docs/maps-plan.md, PR 3), so another browser
-does not see the other campaigns yet. It replaced a Google Drive sync: Google gives a static app only a one-hour token
-with no refresh. There is no backend, so:
+Optional, off by default. It keeps the campaigns and the seeds in the user's Dropbox, one file for
+each document, and keeps them in sync. It replaced a Google Drive sync: Google gives a static app
+only a one-hour token with no refresh. There is no backend, so:
 
 - **Sign-in is OAuth 2 with PKCE and a redirect back to the app.** `connect()` makes a verifier with
   `pkcePair()` (S256 with `crypto.subtle`, else `plain`) and a random `state`, stores
@@ -976,60 +1004,90 @@ with no refresh. There is no backend, so:
   a code, the user pastes it into `#dbx-code`, and `finishConnect()` trades it. `#dbx-open` links the
   same URL when the tab was blocked.
 - **The app is a Dropbox "App folder" app** with `files.content.read` and `files.content.write`. It
-  sees only `Apps/<app name>/`. The file is `FILE_PATH` (`/Character Keeper campaign.json`).
-  `findRemote()` first tries the file id it synced with, then the path, so a rename or move inside
-  the app folder doesn't break it. The app key comes from Settings (`meta.appKey`) or
+  sees only `Apps/<app name>/`. The app key comes from Settings (`meta.appKey`) or
   `DEFAULT_APP_KEY`. It is not a secret; never put the app secret in the code.
 - **API calls** are plain `fetch` (`dbxFetch` adds the bearer token and always uses `POST`). A 401
   refreshes once and retries; a second 401, or a refused refresh, drops the tokens and sets the status
-  to `signed-out`. Errors carry Dropbox's `error_summary` (`e.summary`). Metadata is
-  `files/get_metadata`, cut down by `toRemote()` to `{ id, rev, hash, path, modified }`, where
-  `hash` is Dropbox's `content_hash`. `files/download` asks for `rev:<rev>`, so the text always
+  to `signed-out`. Errors carry Dropbox's `error_summary` (`e.summary`). Metadata comes from one
+  `files/list_folder` (`path: ''`, `recursive: true`, then `files/list_folder/continue`) per pass
+  (`listAll()`), cut down by `toRemote()` to `{ id, rev, hash, path, modified }`, where `hash` is
+  Dropbox's `content_hash` and `path` is `path_lower`. Files are found by path, not by id. `files/download` asks for `rev:<rev>`, so the text always
   matches the metadata. `files/upload` uses `mode: add` to create and `mode: update` with the rev
   to replace: Dropbox refuses (409 `path/conflict`) if another device wrote in between, and the
   next pass then sees the change. `Dropbox-API-Arg` is a header, so `headerJson()` escapes non-ASCII.
+- **Layout in the app folder**:
+  - `/campaigns/index.json` — the campaign list, `[{ id, name, createdAt, primary }]` (`indexText()`).
+  - `/campaigns/<id>/shared.json` — the campaign's `campaign` document; `/campaigns/<id>/<system>.json`
+    — one for each of `OSR.SYSTEMS` (`docPath()`; the documents of `js/store.js`'s `splitState`).
+  - `/seeds/<system>.json` — the seed store of `js/seeds.js` (`seedPath()`); none for a system whose
+    seed is empty.
+  - Older versions: `/Character Keeper campaign.json` (`LEGACY_FILE`, the whole primary campaign) and
+    `/campaigns/<id>/campaign.json` (a whole non-primary campaign). The first pass of a campaign
+    moves its old file to `… (before split).json` (`backupPath()`).
 - **Per-device data stays out of `state`**: `sessionStorage['osr_dropbox_pending']` (above),
-  `localStorage['osr_dropbox_v1']` (`enabled`, `appKey`, and `files[campaignId]` = one sync record
-  for each campaign: `fileId`, `remoteHash`, `syncedHash`, `lastSync`; read it with `fm()`, which
-  never creates a record, and write it with `setFm()`. `migrateMeta()` in `initDropbox()` moves the
-  flat record of an older version to the primary campaign), and `localStorage['osr_dropbox_token']`
-  (`token`, `expiresAt`, `refresh`, `appKey`). So Export, Import, and the Dropbox file never carry a
-  token or another device's file id. `initDropbox()` also removes the old `osr_gdrive_*` keys.
-- **Campaign switch**: `dropboxBeforeCampaignSwitch()` runs a queued upload and waits for a running
-  pass (`dbx.pass`), so no pass mixes two campaigns; an open conflict is dropped and comes back when
-  that campaign is active again. `dropboxCampaignChanged()` then syncs the new campaign, and
-  `dropboxForgetCampaign(id)` removes a deleted campaign's record (its Dropbox file stays).
-- **One sync pass** (`syncNow()`), in order:
-  1. Hash the local state: `hashText(JSON.stringify(OSR.state))`, FNV-1a plus the length.
-  2. Read the Dropbox file's metadata (`findRemote()`).
-  3. `decideSync(remote, meta, hash)` returns `create` (no file yet), `link` (a file this device
-     never synced with), `noop`, `upload` (only local changed), `pull` (only Dropbox changed), or
-     `conflict` (both changed). "Dropbox changed" means its `content_hash` differs from
-     `meta.remoteHash`. "Local changed" means the hash differs from `meta.syncedHash`.
-  4. `create`/`upload` sends the text. `pull` downloads the file and runs `applyRemote()` →
-     `OSR.replaceState()`, unless the local state changed during the download: then it is a
-     `conflict`. `link` and `conflict` download the file: if it is the same text, they only record
-     it; otherwise they open `#dbx-modal`. Each success records the file id, content hash, and local
-     hash (`recordSynced`).
+  `localStorage['osr_dropbox_v1']`, and `localStorage['osr_dropbox_token']` (`token`, `expiresAt`,
+  `refresh`, `appKey`). `osr_dropbox_v1` has `enabled`, `appKey`, and:
+  - `files[<lower-case path>]` — one sync record for each file: `fileId`, `remoteHash`,
+    `syncedHash`, `lastSync` (`rec()` reads without creating, `setRec()`/`recordFile()` write);
+  - `legacy[<campaignId>]` — the record of a campaign's old whole-campaign file; `migrateMeta()` (in
+    `initDropbox()`) moves the flat record of the oldest version and the per-campaign records of the
+    previous one here;
+  - `migrated[<campaignId>]` — set once that campaign's old file was split;
+  - `hidden[<campaignId>]` — a campaign deleted in this browser (`dropboxForgetCampaign()`); a pull
+    of the index does not bring it back here. Its Dropbox files stay.
 
-  A pull records the hash of the state *after* `ensureStateShape`, so a migrated copy isn't uploaded
-  back. A pull also writes no log line: otherwise two devices would pull each other's log line
-  forever. If the browser storage is full, `applyRemote` throws instead of recording the sync, so a
+  So Export, Import, and the Dropbox files never carry a token or another device's file id.
+  `initDropbox()` also removes the old `osr_gdrive_*` keys.
+- **One sync pass** (`syncNow()`) lists the app folder once, then:
+  1. `legacyStep()` — the current campaign's old whole-campaign file, if it has one and is not
+     `migrated`. It syncs with the old rules against `meta.legacy[id]` (`pull` replaces the whole
+     campaign through `applyLegacy()`; `link`/`conflict` with different text open `#dbx-modal`
+     and stop the pass), then `files/move_v2` moves the file aside and the pass lists again.
+  2. `syncIndex()` — `/campaigns/index.json`. A pull adds the campaigns this browser lacks and takes
+     their names; a link or conflict keeps both lists (union) and uploads. A fresh browser's
+     primary campaign that has no document records takes the id of the primary campaign in Dropbox
+     (`OSR.rekeyCampaign()`, `js/core.js`), so its documents then sync or ask like any device's.
+  3. `syncSeeds()` — `/seeds/<system>.json`. A pull replaces the local seed (`OSR.setSeed()`); both
+     changed → `OSR.mergeSeeds()` (union by `seedRef`, the higher `version` wins) and upload. Never asks.
+  4. `syncDocs()` — the current campaign's documents (`OSR.serializeState`). Each goes through
+     `syncFile()`: `decideSync(remote, rec(path), hashText(text))` returns `create`, `link` (a file
+     this device never synced with), `noop`, `upload`, `pull`, or `conflict`; "Dropbox changed"
+     means its `content_hash` differs from `remoteHash`, "local changed" means the text's hash
+     differs from `syncedHash`. `create`/`upload` send the text; a download with the same text is
+     only recorded. Pulled documents replace their part of `OSR.state` together (`applyDocs()` →
+     `withDocs()` → `OSR.replaceState()`), unless the document changed during the download: then it
+     is a `conflict`. Conflicts of all documents go to one question for the campaign.
+
+  A pull records the hash of the document *after* `ensureStateShape`, so a migrated copy isn't
+  uploaded back (it can upload once, for example the HP tracker `ensureStateShape` adds for a pulled
+  character). A pull also writes no log line: otherwise two devices would pull each other's log line
+  forever. If the browser storage refuses the write, `replaceAndWait()` puts the previous campaign
+  back and throws instead of recording the sync, so the next pass sees the same pull again and a
   reload can't upload the old campaign over the Dropbox copy.
+- **Campaigns**: only the current campaign's documents sync in a pass. `dropboxBeforeCampaignSwitch()`
+  runs a queued upload and waits for a running pass (`dbx.pass`), so no pass mixes two campaigns; an
+  open question is dropped and comes back when that campaign is active again.
+  `dropboxCampaignChanged()` then syncs the new campaign. A campaign this browser has no documents
+  for (one another device made) is downloaded by `dropboxFetchCampaign(id)` before `switchCampaign`
+  opens it (`js/campaigns.js`), so it is not seeded empty.
 - **When it runs**: `dropboxNoteSave()` (from every `save()`) debounces an upload by `UPLOAD_DELAY`
   (4 s), but never longer than `MAX_WAIT` (30 s) after the first unsynced save. `initDropbox()` (end
   of `init()`) syncs at boot. The tab returning to the foreground re-checks Dropbox (at most once a
   minute), and going to the background flushes a pending upload. The `online` event also syncs.
-  While `#dbx-modal` is open (status `conflict`), saves don't sync. The user chooses **Use the
-  Dropbox copy** (`dropboxUseRemoteCopy`), **Keep this browser's copy** (`dropboxUseLocalCopy`: it
-  records the remote hash so the next pass is a plain `upload`), **Export**, or **Decide later**
+  While `#dbx-modal` is open (status `conflict`), saves don't sync. It names the files in question
+  and compares the two campaigns. The user chooses **Use the Dropbox copy** (`dropboxUseRemoteCopy`),
+  **Keep this browser's copy** (`dropboxUseLocalCopy`: it records the remote hashes so the next pass
+  is a plain `upload` of each file), **Export**, or **Decide later**
   (Escape too). The header button and the Settings row's **Resolve** reopen it. **Disconnect**
   revokes the token (best effort) and forgets it.
 - **Tests** (`test/dropbox.test.js`) boot a fresh app per test, because the sync keys are
-  per-device `localStorage`. `fakeOpen` records the consent URL of the code flow. The redirect tests
-  replace `T.dropboxRedirect`, then boot a second app at the reply URL with the first tab's
-  `sessionStorage` (boot's `url` and `session` options). `fakeDropbox` implements the token
-  endpoint and the API calls above in memory, with revs and real `content_hash` values. jsdom has
+  per-device `localStorage` and IndexedDB. `test/helpers/fake-dropbox.js` has `fakeOpen` (records
+  the consent URL of the code flow) and `fakeDropbox(window, shared)`: the token endpoint and the API
+  calls above in memory (`files/list_folder` pages of 4, so `/continue` runs too; `files/move_v2`;
+  `dbx.before(endpoint, arg)` runs before each call, to change Dropbox mid-pass), with revs and real
+  `content_hash` values. Pass the `dbx` of one window as `shared` to give a second device the same
+  Dropbox. The redirect tests replace `T.dropboxRedirect`, then boot a second app at the reply URL
+  with the first tab's `sessionStorage` (boot's `url` and `session` options). jsdom has
   no `crypto.subtle`, so the flow runs with `plain`; `pkcePair` is tested with Node's S256 too.
   `T.dropboxFlush()` runs a debounced upload now. The boot helper's `extraStorage`/`beforeScripts`
   options preload the sync keys and stub `fetch` before `init()`. Not covered: the real Dropbox
