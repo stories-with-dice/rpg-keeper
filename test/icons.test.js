@@ -90,6 +90,9 @@ test('icons: the search finds by name, by author, and by several words; best mat
   const results = await search(env, 'goblin');
   assert.ok(results.length >= 1 && results.length <= 40);
   assert.match(results[0].textContent, /Goblin/);
+  const img = results.map(r => r.querySelector('img.icon-preview')).find(Boolean);
+  assert.ok(img && img.getAttribute('src').startsWith(T.ICON_URL) && /\.svg$/.test(img.getAttribute('src')), 'a preview from game-icons');
+  assert.ok(results.find(r => r.title === 'caro-asercion/goblin').querySelector('svg.icon-preview'), 'a preset is drawn here, not loaded');
   assert.ok((await search(env, 'zzzz-nothing')).length === 0);
   assert.match(env.$('#icon-results').textContent, /No icon matches/);
   window.close();

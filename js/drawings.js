@@ -10,10 +10,12 @@
  *
  * Tools (js/maps.js's `tool`): pen, line, rect, ellipse (drag), polygon (click
  * each corner; click the first corner, double-click, or Enter to close;
- * Escape cancels), text (click, then type), eraser (click or drag over
+ * Escape cancels), text (click, then type in the box #map-text-input; Enter
+ * or a click elsewhere writes it, Escape cancels), eraser (click or drag over
  * drawings). With the hand tool, a click on a drawing selects it and a drag
- * moves it. Every change goes through OSR.saveScene (js/history.js), so it
- * can be undone.
+ * moves it. A right-click on a drawing opens a menu (drawingMenu): color,
+ * thickness (a text's size), delete. Every change goes through OSR.saveScene
+ * (js/history.js), so it can be undone.
  */
 (function (OSR) {
   'use strict';
@@ -28,6 +30,7 @@
   let polygon = null;   // { sceneId, points, cursor } while a polygon is being drawn
   let polygonStroke = 1; // one screen px in map units when that polygon started
   let draft = null;     // the drawing a drag is making
+  let textAt = null;    // { sceneId, x, y, stroke } while the text box is open
 
   const isDrawTool = t => TOOLS.indexOf(t) !== -1;
 
@@ -158,8 +161,42 @@
     if (!polygon || polygon.sceneId !== sc.id) return;
     const points = polygon.points;
     polygon = null;
-    if (points.length >= 3) addDrawing(sc, { kind: 'polygon', points, stroke: style.stroke, width: style.width * polygonStroke, fill: style.fill, opacity: style.opacity });
+    if (points.length >= 3) { addDrawing(sc, { kind: 'polygon', points, stroke: style.stroke, width: style.width * polygonStroke, fill: style.fill, opacity: style.opacity }); OSR.mapToolUsed(); }
     else OSR.renderMaps();
+  }
+
+  /* ---- Text box ---- */
+
+  // Opens the text box (#map-text-input) over the map at the pointer. A box
+  // still open with text in it is written first.
+  function openTextInput(e, sc, p, stroke) {
+    closeTextInput();
+    const input = $('#map-text-input');
+    const wrap = $('#map-wrap').getBoundingClientRect();
+    textAt = { sceneId: sc.id, x: p.x, y: p.y, stroke };
+    input.value = '';
+    input.style.left = (e.clientX - wrap.left) + 'px';
+    input.style.top = (e.clientY - wrap.top) + 'px';
+    input.style.color = style.stroke;
+    input.hidden = false;
+    // After the pointer's own focus change, so the box keeps the focus.
+    setTimeout(() => { if (!input.hidden) input.focus(); }, 0);
+  }
+
+  // Writes the text (unless `discard`) and hides the box.
+  function closeTextInput(discard) {
+    const input = $('#map-text-input');
+    if (!input || !textAt) return false;
+    const at = textAt;
+    textAt = null;
+    input.hidden = true;
+    const text = input.value.trim();
+    input.value = '';
+    const sc = OSR.activeScene();
+    if (discard || !text || !sc || sc.id !== at.sceneId) return false;
+    addDrawing(sc, { kind: 'text', x: at.x, y: at.y, text, size: at.stroke * 16, stroke: style.stroke, opacity: style.opacity });
+    OSR.mapToolUsed();
+    return true;
   }
 
   /* ---- Pointer (called by js/maps.js) ---- */
@@ -172,8 +209,7 @@
       return { kind: 'erase' };
     }
     if (tool === 'text') {
-      const text = prompt('Text:', '');
-      if (text && text.trim()) addDrawing(sc, { kind: 'text', x: p.x, y: p.y, text: text.trim(), size: stroke * 16, stroke: style.stroke, opacity: style.opacity });
+      openTextInput(e, sc, p, stroke);
       return { kind: 'none' };
     }
     if (tool === 'polygon') {
@@ -266,6 +302,53 @@
   // Leaving a tool, or another scene, drops what was half drawn.
   function cancelDraft() { polygon = null; draft = null; }
 
+  /* ---- Right-click menu ---- */
+
+  const WIDTHS = [2, 4, 8, 16];
+  const TEXT_SIZES = [12, 16, 24, 32];
+
+  // `stroke` = one screen pixel in map units now: a thickness is screen px
+  // at this zoom, like the draw bar's.
+  function drawingMenu(sc, id, x, y, stroke) {
+    const d = sc.drawings.find(z => z.id === id);
+    if (!d) return;
+    selectedId = id;
+    OSR.renderMaps();
+    const isText = d.kind === 'text';
+    const now = (isText ? d.size : d.width) / stroke;
+    const sizes = (isText ? TEXT_SIZES : WIDTHS).map(n =>
+      '<button class="ctx-item' + (Math.abs(now - n) < 0.5 ? ' is-on' : '') + '" type="button" data-act="size" data-n="' + n + '">' +
+      '<i class="fa-solid ' + (isText ? 'fa-text-height' : 'fa-minus') + '"></i><span>' + n + ' px</span></button>').join('');
+    OSR.openMapMenu(x, y,
+      '<div class="ctx-head">' + (isText ? 'Text' : 'Drawing') + '</div>' +
+      '<div class="ctx-sub">Color</div>' + swatchRow(d.stroke) +
+      '<div class="ctx-sub">' + (isText ? 'Size' : 'Thickness') + '</div><div class="ctx-list">' + sizes + '</div>' +
+      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash"></i><span>Delete</span></button>',
+      el => {
+        const cur = sc.drawings.find(z => z.id === id);
+        if (!cur) return true;
+        const act = el.dataset.act;
+        if (act === 'delete') { deleteDrawing(sc, id); return true; }
+        if (act === 'color') {
+          const c = el.dataset.color || el.value;
+          if (!/^#[0-9a-f]{6}$/i.test(c)) return false;
+          cur.stroke = c;
+        } else if (act === 'size') {
+          if (isText) cur.size = Number(el.dataset.n) * stroke; else cur.width = Number(el.dataset.n) * stroke;
+        } else return false;
+        OSR.saveScene(sc);
+        OSR.renderMaps();
+        return true;
+      });
+  }
+
+  // The color choices of a right-click menu: the swatches and a color field.
+  function swatchRow(current) {
+    return '<div class="map-menu-swatches">' + SWATCHES.map(c =>
+      '<button type="button" class="draw-swatch' + (c === current ? ' is-active' : '') + '" data-act="color" data-color="' + c + '" style="background:' + c + '" title="' + c + '" aria-label="Color ' + c + '"></button>').join('') +
+      '<input type="color" data-act="color" value="' + escapeHtml(current) + '" aria-label="Another color" /></div>';
+  }
+
   function wireDrawings() {
     $('#draw-swatches').addEventListener('click', e => {
       const b = e.target.closest('[data-color]');
@@ -283,12 +366,19 @@
       OSR.renderMaps();
     });
     $('#draw-clear').addEventListener('click', () => clearDrawings(OSR.activeScene()));
+    const input = $('#map-text-input');
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); closeTextInput(); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeTextInput(true); }
+    });
+    // Later, so a click that opens a new box (and moves the focus) keeps it.
+    input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== input) closeTextInput(); }, 0));
   }
 
   const drawingState = () => ({ style: Object.assign({}, style), selectedId, polygon: polygon && { points: polygon.points.slice() } });
 
   Object.assign(OSR, {
-    DRAW_TOOLS: TOOLS, isDrawTool, ensureDrawingShape, simplifyLine: simplify, drawingsMarkup, renderDrawBar,
+    DRAW_TOOLS: TOOLS, DRAW_SWATCHES: SWATCHES, isDrawTool, drawingMenu, menuSwatches: swatchRow, closeMapTextInput: closeTextInput, ensureDrawingShape, simplifyLine: simplify, drawingsMarkup, renderDrawBar,
     addDrawing, deleteDrawing, clearDrawings, drawPointerDown, drawPointerMove, drawPointerUp, drawPolygonMove: polygonMove,
     drawKey, drawSelectDown: selectPointerDown, drawSelectMove: selectPointerMove, drawSelectUp: selectPointerUp,
     cancelDrawDraft: cancelDraft, wireDrawings, drawingState

@@ -16,11 +16,14 @@
     return 4;
   }
 
+  // The apply buttons show only on the Combat tab, where the target is chosen.
+  const combatTabActive = () => { const t = $('#tab-combat'); return !!t && t.classList.contains('is-active'); };
+
   function updateApplyButton() {
     const btn = $('#dice-apply');
     if (!btn) return;
     renderUaDamage();
-    if (!OSR.lastRoll) { btn.hidden = true; return; }
+    if (!OSR.lastRoll || !combatTabActive()) { btn.hidden = true; return; }
     btn.hidden = false;
     const ent = selectedEntry();
     const sh = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
@@ -378,7 +381,7 @@
     if (!box) return;
     const p = OSR.lastPercent;
     const ent = selectedEntry();
-    if (!p || !ent || !isUaEntry(ent)) { box.hidden = true; box.innerHTML = ''; return; }
+    if (!p || !ent || !isUaEntry(ent) || !combatTabActive()) { box.hidden = true; box.innerHTML = ''; return; }
     box.hidden = false;
     box.innerHTML = '<div class="dau-head">' + escapeHtml(p.source) + ' rolled <b>' + p.roll + '</b> (' + escapeHtml(p.verdict) +
         ') → wounds to <b>' + escapeHtml(ent.name) + '</b></div>' +

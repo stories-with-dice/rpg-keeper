@@ -13,7 +13,8 @@
  * the entry's name as its label.
  *
  * js/maps.js draws tokensMarkup() into the tokens layer and sends pointer
- * events here (tokenPointerDown / tokenPointerMove / tokenPointerUp).
+ * events here (tokenPointerDown / tokenPointerMove / tokenPointerUp). A
+ * right-click on a token opens tokenMenu(): color, link, unlink, delete.
  */
 (function (OSR) {
   'use strict';
@@ -275,6 +276,51 @@
   }
   function hideCard() { const c = $('#token-card'); if (c) c.hidden = true; }
 
+  /* ---- Right-click menu ---- */
+
+  const linkKey = l => (l ? l.kind + ':' + (l.entryId || l.charId) : '');
+
+  function tokenMenu(sc, id, x, y) {
+    const t = sc.tokens.find(z => z.id === id);
+    if (!t) return;
+    selectOnly(sc, [id]);
+    hideCard();
+    OSR.renderMaps();
+    const cur = linkKey(t.link);
+    const item = (key, icon, label) => '<button class="ctx-item' + (key === cur ? ' is-on' : '') + '" type="button" data-act="link" data-link="' + escapeHtml(key) + '">' +
+      '<i class="fa-solid ' + icon + '"></i><span>' + escapeHtml(label) + '</span>' + (key === cur ? '<i class="fa-solid fa-check ctx-check"></i>' : '') + '</button>';
+    const links = OSR.state.combat.entries.map(e => item('combat:' + e.id, 'fa-khanda', 'Combat: ' + e.name))
+      .concat(OSR.charactersForSystem().map(c => item('character:' + c.id, 'fa-user', 'Character: ' + c.name)));
+    OSR.openMapMenu(x, y,
+      '<div class="ctx-head">' + escapeHtml(tokenName(t)) + '</div>' +
+      '<div class="ctx-sub">Color</div>' + OSR.menuSwatches(t.color) +
+      '<div class="ctx-sub">Link</div>' +
+      '<div class="ctx-list">' + (links.join('') || '<span class="hint map-menu-none">No combatants or characters.</span>') + '</div>' +
+      (t.link ? '<button class="ctx-item" type="button" data-act="unlink"><i class="fa-solid fa-link-slash"></i><span>Unlink</span></button>' : '') +
+      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash"></i><span>Delete token</span></button>',
+      el => {
+        const one = sc.tokens.find(z => z.id === id);
+        if (!one) return true;
+        const act = el.dataset.act;
+        if (act === 'delete') { deleteTokens(sc, [id]); return true; }
+        if (act === 'color') {
+          const c = el.dataset.color || el.value;
+          if (!/^#[0-9a-f]{6}$/i.test(c)) return false;
+          one.color = c;
+        } else if (act === 'unlink') {
+          // Like a combatant leaving combat: the token keeps the name it showed.
+          one.label = tokenName(one);
+          one.link = null;
+        } else if (act === 'link') {
+          const [kind, lid] = el.dataset.link.split(':');
+          one.link = kind === 'combat' ? { kind, entryId: lid } : { kind, charId: lid };
+        } else return false;
+        OSR.saveScene(sc);
+        OSR.renderMaps();
+        return true;
+      });
+  }
+
   /* ---- Pointer (called by js/maps.js) ---- */
 
   // Pointer down on the map. Returns a drag for js/maps.js, or null when the
@@ -400,7 +446,7 @@
 
   Object.assign(OSR, {
     ensureTokenShape, tokenRadius, snapTokenPoint: snapPoint, tokenName, tokenInfo, tokenIconFor: iconFor,
-    addToken, addTokenForEntry, deleteTokens, unlinkTokens, selectTokens: selectOnly, selectedTokenIds: selectedIds,
+    addToken, addTokenForEntry, deleteTokens, unlinkTokens, tokenMenu, selectTokens: selectOnly, selectedTokenIds: selectedIds,
     tokensMarkup, renderTokenPanel, renderTokenCredits, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, wireTokens
   });
 })(window.OSR = window.OSR || {});

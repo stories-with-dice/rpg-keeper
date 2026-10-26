@@ -34,6 +34,15 @@
   const GRID_DEFAULTS = { type: 'square', orient: 'flat', size: 50, offsetX: 0, offsetY: 0, unitsPerCell: 5, unit: 'ft', show: true, locked: false };
 
   let tool = 'pan';
+  // Sticky mode (on by default, kept in this browser): a tool stays chosen
+  // after it is used. Off: the hand tool comes back after one use.
+  const STICKY_KEY = 'osr_map_sticky';
+  let sticky = (() => { try { return localStorage.getItem(STICKY_KEY) !== 'off'; } catch (e) { return true; } })();
+  // Alt + a key (KeyboardEvent.code, so it works with any layout and on a Mac,
+  // where Alt+1 types a character): the buttons of the toolbar.
+  const KEY_CODES = { Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Digit5: '5', Digit6: '6', Digit7: '7', Digit8: '8', Digit9: '9', Digit0: '0', Minus: '-', Equal: '=' };
+  const KEY_BUTTONS = { KeyS: '#map-sticky', KeyF: '#map-fit', KeyO: '#map-popout' };
+  const KEY_PANELS = { KeyG: '#map-grid-panel', KeyK: '#map-token-panel' };
   const TOOL_HINTS = {
     calibrate: 'Drag over one cell of the map to set the grid.', measure: 'Drag to measure.',
     pen: 'Drag to draw.', line: 'Drag to draw a line.', rect: 'Drag to draw a rectangle.', ellipse: 'Drag to draw an ellipse.',
@@ -289,6 +298,99 @@
     if (el) el.textContent = status;
   }
 
+  /* ---- Tools ---- */
+
+  function setTool(t, keepStatus) {
+    tool = t;
+    overlay = null;
+    OSR.cancelDrawDraft();
+    OSR.closeMapTextInput();
+    if (!keepStatus) setStatus(TOOL_HINTS[tool] || '');
+    renderMaps();
+  }
+
+  // A tool was used once (a drawing, a text, a measure, a pin…): without
+  // sticky mode, the hand tool comes back. The status stays (a measure's result).
+  function toolUsed() {
+    if (!sticky && tool !== 'pan') setTool('pan', true);
+  }
+
+  function setSticky(on) {
+    sticky = !!on;
+    try { localStorage.setItem(STICKY_KEY, sticky ? 'on' : 'off'); } catch (e) { /* kept for this page only */ }
+    setStatus(sticky ? 'Sticky mode on: a tool stays chosen after you use it.' : 'Sticky mode off: the hand tool comes back after you use a tool.');
+    renderMaps();
+  }
+
+  // Alt + a key on the Maps tab (or in a pop-out): the toolbar's buttons.
+  function onHotkey(e) {
+    if (!e.altKey || e.ctrlKey || e.metaKey || e.type !== 'keydown') return;
+    if (!mapsTabActive() || isTextField(e.target) || document.querySelector('.modal:not([hidden])')) return;
+    // With no code (some keyboards and tools), the key itself: "6", "-", "s".
+    const k = String(e.key || '').toLowerCase();
+    const code = e.code || (/^[0-9]$/.test(k) ? 'Digit' + k : k === '-' ? 'Minus' : k === '=' ? 'Equal' : /^[a-z]$/.test(k) ? 'Key' + k.toUpperCase() : '');
+    let btn = null;
+    if (KEY_CODES[code]) btn = $('#tab-maps .map-tool[data-key="' + KEY_CODES[code] + '"]');
+    else if (KEY_BUTTONS[code]) btn = $(KEY_BUTTONS[code]);
+    else if (KEY_PANELS[code]) {
+      const panel = $(KEY_PANELS[code]);
+      if (!panel || panel.hidden) return;
+      e.preventDefault();
+      panel.open = !panel.open;
+      return;
+    }
+    if (!btn) return;
+    e.preventDefault();
+    if (!btn.hidden && !btn.disabled) btn.click();
+  }
+
+  // The Grid and Tokens menus float over the map: one open at a time.
+  function onPanelToggle(e) {
+    if (!e.target.open) return;
+    $$('#tab-maps .map-drop').forEach(d => { if (d !== e.target) d.open = false; });
+  }
+  function closeMapPanels() { $$('#tab-maps .map-drop').forEach(d => { d.open = false; }); }
+
+  /* ---- Right-click menu (drawings, tokens) ---- */
+
+  let menuHandler = null;
+  // Opens #map-menu at a screen point. `onPick(el, event)` gets each click
+  // (and each change of an input in it); it returns true to close the menu.
+  function openMapMenu(x, y, html, onPick) {
+    const m = $('#map-menu');
+    m.innerHTML = html;
+    m.hidden = false;
+    menuHandler = onPick;
+    const px = Math.min(x, window.innerWidth - m.offsetWidth - 8);
+    const py = Math.min(y, window.innerHeight - m.offsetHeight - 8);
+    m.style.left = Math.max(8, px) + 'px';
+    m.style.top = Math.max(8, py) + 'px';
+  }
+  function closeMapMenu() {
+    const m = $('#map-menu');
+    if (!m || m.hidden) return;
+    m.hidden = true;
+    m.innerHTML = '';
+    menuHandler = null;
+  }
+  function onMenuEvent(e) {
+    if (!menuHandler) return;
+    if (e.type === 'click' && e.target.tagName === 'INPUT') return; // an input answers with "change"
+    const el = e.target.closest('[data-act]');
+    if (el && menuHandler(el, e)) closeMapMenu();
+  }
+
+  function onContextMenu(e) {
+    const sc = activeScene();
+    if (!sc) return;
+    const hit = e.target.closest && e.target.closest('[data-token], [data-drawing]');
+    if (!hit) return;
+    e.preventDefault();
+    const stroke = viewOf(sc).w / OSR.mapRect().width;
+    if (hit.hasAttribute('data-token')) OSR.tokenMenu(sc, hit.getAttribute('data-token'), e.clientX, e.clientY);
+    else OSR.drawingMenu(sc, hit.getAttribute('data-drawing'), e.clientX, e.clientY, stroke);
+  }
+
   function renderMaps() {
     const sel = $('#map-scene');
     if (!sel) return;
@@ -298,6 +400,8 @@
       '<option value="' + NEW + '">+ New scene…</option>';
     sel.value = cur ? cur.id : NEW;
     ['#map-rename', '#map-duplicate', '#map-delete', '#map-fit'].forEach(s => { $(s).disabled = !cur; });
+    $('#map-sticky').classList.toggle('is-active', sticky);
+    $('#map-sticky').setAttribute('aria-pressed', String(sticky));
     if (tool === 'explore' && !(cur && OSR.hexcrawlOn(cur))) tool = 'pan';
     $$('#tab-maps .map-tool').forEach(b => {
       b.classList.toggle('is-active', b.dataset.tool === tool);
@@ -487,8 +591,8 @@
     const p = screenToMap(e.clientX, e.clientY, rect, v);
     const kind = e.button === 1 || spaceDown ? 'pan' : tool;
     if (kind === 'calibrate' && sc.grid.locked) { setStatus('The grid is locked. Untick Lock grid to set it.'); return; }
-    if (kind === 'explore') { if (OSR.hexcrawlOn(sc)) OSR.toggleExplored(sc, p); return; }
-    if (kind === 'pin') { OSR.addPin(sc, p); return; }
+    if (kind === 'explore') { if (OSR.hexcrawlOn(sc)) { OSR.toggleExplored(sc, p); toolUsed(); } return; }
+    if (kind === 'pin') { OSR.addPin(sc, p); toolUsed(); return; }
     if (OSR.isDrawTool(kind)) {
       const dd = OSR.drawPointerDown(e, sc, p, kind, v.w / OSR.mapRect().width);
       if (e.preventDefault) e.preventDefault();
@@ -566,10 +670,11 @@
     const d = drag;
     drag = null;
     const sc = activeScene();
-    if (sc && d.kind === 'draw') { OSR.drawPointerUp(d, sc); return; }
+    if (sc && d.kind === 'draw') { OSR.drawPointerUp(d, sc); toolUsed(); return; }
     if (sc && d.kind === 'move-drawing') { OSR.drawSelectUp(d, sc); return; }
     if (sc && d.kind === 'pin') { OSR.pinPointerUp(d, sc); return; }
-    if (d.kind === 'erase') return;
+    if (d.kind === 'erase') { toolUsed(); return; }
+    if (d.kind === 'measure') { toolUsed(); return; }
     if (sc && (d.kind === 'tokens' || d.kind === 'box')) {
       if (d.kind === 'box') overlay = null;
       OSR.tokenPointerUp(d, sc);
@@ -584,12 +689,15 @@
     OSR.saveScene(sc);
     setStatus('Grid set: ' + num(sc.grid.size) + ' px per cell. Arrow keys move it by 1 px.');
     renderMaps();
+    toolUsed();
   }
 
   function onWheel(e) {
     const sc = activeScene();
     if (!sc) return;
     e.preventDefault();
+    closeMapMenu();
+    OSR.closeMapTextInput();
     const p = screenToMap(e.clientX, e.clientY, OSR.mapRect(), viewOf(sc));
     // By the wheel's distance: one mouse notch (about 100 px) is about 16%,
     // and a trackpad's many small steps add up the same way. deltaMode 1 =
@@ -619,6 +727,7 @@
       e.preventDefault();
       OSR.deleteTokens(sc, OSR.selectedTokenIds(sc));
     } else if (e.key === 'Escape' && overlay) { overlay = null; setStatus(''); renderScene(); }
+    else if (e.key === 'Escape') closeMapPanels();
   }
 
   /* ---- Paste and drop ---- */
@@ -693,12 +802,15 @@
     $('#tab-maps .map-toolbar').addEventListener('click', e => {
       const b = e.target.closest('.map-tool');
       if (!b || b.disabled) return;
-      tool = b.dataset.tool;
-      overlay = null;
-      OSR.cancelDrawDraft();
-      setStatus(TOOL_HINTS[tool] || '');
-      renderMaps();
+      setTool(b.dataset.tool);
     });
+    $('#map-sticky').addEventListener('click', () => setSticky(!sticky));
+    document.addEventListener('keydown', onHotkey);
+    $$('#tab-maps .map-drop').forEach(d => d.addEventListener('toggle', onPanelToggle));
+    const menu = $('#map-menu');
+    menu.addEventListener('click', onMenuEvent);
+    menu.addEventListener('change', onMenuEvent);
+    document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('#map-menu'))) closeMapMenu(); }, true);
     $('#map-grid-panel').addEventListener('change', onGridField);
     $('#scene-create').addEventListener('click', submitSceneModal);
     $('#scene-cancel').addEventListener('click', closeSceneModal);
@@ -708,6 +820,7 @@
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
     svg.addEventListener('wheel', onWheel, { passive: false });
+    svg.addEventListener('contextmenu', onContextMenu);
     const wrap = $('#map-wrap');
     wrap.addEventListener('keydown', onMapKey);
     wrap.addEventListener('keyup', onMapKey);
@@ -718,11 +831,12 @@
   }
 
   // Test-only view of the in-memory map state.
-  const mapsState = () => ({ tool, views: JSON.parse(JSON.stringify(views)), overlay, status, images: new Map(images) });
+  const mapsState = () => ({ tool, sticky, views: JSON.parse(JSON.stringify(views)), overlay, status, images: new Map(images) });
 
   Object.assign(OSR, {
     ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
-    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus,
+    mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus, setMapTool: setTool, mapToolUsed: toolUsed, setMapSticky: setSticky,
+    openMapMenu, closeMapMenu, closeMapPanels,
     isMapPopout, registerMapWindow, notifyMapViews, popOut, attachToMain, mainWindowClosed, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
     openSceneModal, closeSceneModal, renderMaps, renderScene, wireMaps, mapsState
   });

@@ -1316,13 +1316,47 @@ button, input, textarea, select {
 .dbx-code-row a.btn { text-decoration: none; }
 
 /* ===== Maps tab (js/maps.js) ===== */
-.map-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.map-toolbar { position: relative; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
 .map-toolbar #map-scene { max-width: 16em; }
 .map-tools { display: inline-flex; gap: 4px; }
 .map-tool.is-active { border-color: var(--accent); color: var(--accent); }
-.map-status { color: var(--text-dim); font-size: 12px; margin-left: auto; min-height: 1em; }
-.map-grid-panel { margin-bottom: 10px; }
-.map-grid-panel summary { cursor: pointer; color: var(--text-dim); }
+#map-sticky:not(.is-active) { color: var(--text-dim); }
+.map-scene-controls { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
+/* Grid and Tokens: a button in the toolbar; the menu floats over the map,
+   placed by the toolbar (position: relative), so it never runs off the page. */
+.map-drop { position: static; }
+.map-drop > summary { list-style: none; display: inline-block; user-select: none; }
+.map-drop > summary::-webkit-details-marker { display: none; }
+.map-drop[open] > summary { border-color: var(--accent); color: var(--accent); }
+.map-drop-body {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 20;
+  width: min(720px, 100%); max-height: 70vh; overflow: auto;
+  padding: 4px 12px 8px; background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .5);
+}
+/* Over the map: the status line, the draw bar, the token bar, the text box. */
+.map-status {
+  position: absolute; right: 8px; bottom: 8px; z-index: 5; max-width: 60%; pointer-events: none;
+  padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-2) 92%, transparent); color: var(--text-dim); font-size: 12px;
+}
+.map-status:empty { display: none; }
+.map-float-top {
+  position: absolute; top: 8px; left: 8px; right: 8px; z-index: 5;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; pointer-events: none;
+}
+.map-float-top > * { pointer-events: auto; }
+.map-text-input {
+  position: absolute; z-index: 6; transform: translateY(-75%); min-width: 14em;
+  background: color-mix(in srgb, var(--bg) 85%, transparent); border: 1px dashed var(--accent); border-radius: var(--radius);
+  padding: 2px 6px; font: 16px var(--font-body); outline: none;
+}
+.map-text-input[hidden] { display: none; }
+.map-menu-swatches { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 4px 8px; max-width: 220px; }
+.map-menu-swatches input[type="color"] { width: 26px; height: 24px; padding: 0; border: 1px solid var(--border); background: none; cursor: pointer; }
+.map-menu-none { padding: 4px 8px; }
+.ctx-item.ctx-delete { color: var(--danger); border-top: 1px solid var(--border); border-radius: 0; margin-top: 4px; }
+.ctx-item.ctx-delete > i:first-child { color: var(--danger); }
 .map-grid-fields { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 8px 0; }
 .map-grid-fields label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
 .map-grid-fields label[hidden] { display: none; }
@@ -1333,7 +1367,7 @@ button, input, textarea, select {
 }
 .map-wrap {
   position: relative;
-  height: calc(100vh - 260px);
+  height: calc(100vh - 200px);
   min-height: 320px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1370,14 +1404,11 @@ button, input, textarea, select {
 .map-token.is-down { opacity: .5; }
 .map-ping { fill: none; stroke: var(--accent); animation: map-ping 2s ease-out forwards; transform-box: fill-box; transform-origin: center; }
 @keyframes map-ping { from { opacity: 1; transform: scale(.2); } to { opacity: 0; transform: scale(1.4); } }
-.map-token-panel { margin-bottom: 10px; }
 .map-token-panel[hidden] { display: none; }
-.map-token-panel summary { cursor: pointer; color: var(--text-dim); }
 .token-add, .token-edit { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 8px 0; font-size: 13px; }
-/* Over the map's top edge, so showing it never moves the map under the pointer. */
-.token-edit {
-  position: absolute; top: 8px; left: 8px; right: 8px; z-index: 5; margin: 0;
-  padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+/* Over the map's top edge (.map-float-top), so showing it never moves the map under the pointer. */
+.token-edit, .map-draw-bar {
+  margin: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius);
   background: color-mix(in srgb, var(--bg-2) 92%, transparent); box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
 }
 .token-add label, .token-edit label { display: inline-flex; align-items: center; gap: 6px; }
@@ -1399,7 +1430,7 @@ button, input, textarea, select {
 .set-credits { margin-top: 16px; }
 
 /* ===== Map drawings (js/drawings.js) ===== */
-.map-draw-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+.map-draw-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 13px; }
 .map-draw-bar[hidden], .map-draw-bar label[hidden] { display: none; }
 .map-draw-bar label { display: inline-flex; align-items: center; gap: 6px; }
 .draw-swatches { display: inline-flex; gap: 4px; }
@@ -1434,7 +1465,7 @@ button, input, textarea, select {
 .map-popout #map-scene + #map-rename, .map-popout #map-duplicate, .map-popout #map-delete { display: none; }
 .map-popout .layout { padding: 8px; }
 .map-popout .main { padding: 10px; }
-.map-popout .map-wrap { height: calc(100vh - 150px); }
+.map-popout .map-wrap { height: calc(100vh - 120px); }
 .map-popout-closed {
   position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; padding: 24px; text-align: center; background: color-mix(in srgb, var(--bg) 94%, transparent);
@@ -1442,5 +1473,7 @@ button, input, textarea, select {
 .map-popout-closed[hidden] { display: none; }
 .icon-search { margin-top: 10px; }
 .icon-search input { width: min(420px, 100%); background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; color: var(--text); }
-.icon-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-height: 180px; overflow: auto; }
+.icon-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-height: 240px; overflow: auto; }
+.icon-result { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; }
+.icon-preview { width: 32px; height: 32px; flex: none; border-radius: 4px; background: #000; fill: #fff; display: block; }
 .icon-author { color: var(--text-dim); font-size: 11px; }
