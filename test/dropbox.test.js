@@ -15,7 +15,7 @@ const { test } = require('node:test');
 // Values from the app live in jsdom's realm: compare them with deepEqual, not deepStrictEqual.
 const assert = require('node:assert');
 const crypto = require('node:crypto');
-const { boot, blankSave, click, setValue } = require('./helpers/boot.js');
+const { boot, blankSave, click, setValue, savedState } = require('./helpers/boot.js');
 
 const APP_KEY = 'testappkey123';
 const GOOD_CODE = 'code-ok';
@@ -208,7 +208,7 @@ test('Dropbox sync: "Connect with a code" opens Dropbox, the pasted code creates
 
   const tok = JSON.parse(window.localStorage.getItem(T.DROPBOX_TOKEN_KEY));
   assert.match(tok.refresh, /^ref-/);
-  const saved = window.localStorage.getItem(T.STORAGE_KEY);
+  const saved = JSON.stringify(await savedState(T));
   assert.ok(!/tok-\d|ref-\d|osr_dropbox/.test(saved), 'tokens and sync bookkeeping stay out of OSR.state');
   assert.ok(!/tok-\d|ref-\d/.test(f.content), 'and out of the Dropbox file');
 
@@ -306,7 +306,7 @@ test('Dropbox sync: a change made on another device is pulled when this browser 
   assert.deepEqual(names(T), ['Aria', 'Corvin']);
   assert.strictEqual(T.dropboxState().status, 'synced');
   assert.ok($('#dbx-modal').hidden, 'no question when only Dropbox changed');
-  assert.deepEqual(JSON.parse(window.localStorage.getItem(T.STORAGE_KEY)).characters.map(c => c.name), ['Aria', 'Corvin'], 'saved locally');
+  assert.deepEqual((await savedState(T)).characters.map(c => c.name), ['Aria', 'Corvin'], 'saved locally');
   await T.dropboxSyncNow();
   assert.strictEqual(dbx.writes().length, writes, 'the pull itself is not uploaded back');
   window.close();
@@ -388,6 +388,7 @@ test('Dropbox sync: "Use the Dropbox copy" replaces this browser\'s campaign', a
   assert.strictEqual(T.dropboxState().status, 'conflict');
 
   click($('#dbx-use-remote'));
+  for (let i = 0; i < 5; i++) await tick(); // the Dropbox copy is written to IndexedDB first
   assert.deepEqual(names(T), ['Aria', 'Remote Only']);
   assert.ok($('#dbx-modal').hidden);
   await T.dropboxFlush(); // the "Replaced…" log line is a local change: it uploads
@@ -410,6 +411,7 @@ test('Dropbox sync: a browser connecting to an existing Dropbox campaign is aske
   assert.deepEqual(dbx.writes(), []);
 
   click($('#dbx-use-remote'));
+  for (let i = 0; i < 5; i++) await tick();
   assert.deepEqual(names(T), ['Old Hero', 'Dropbox Hero']);
   window.close();
 });
@@ -575,5 +577,54 @@ test('Dropbox sync: a refused redirect code shows the sign-in message and keeps 
   assert.match(alerted, /did not accept the sign-in/);
   assert.strictEqual(env.T.dropboxState().meta.enabled, false);
   assert.strictEqual(env.window.location.search, '');
+  env.window.close();
+});
+
+/* ---- Campaigns (js/campaigns.js): one Dropbox file for each campaign ---- */
+
+test('Dropbox sync: each campaign has its own file; the first campaign keeps the original one; a pending upload goes to the campaign it belongs to', async () => {
+  const env = await setup();
+  const { T, window, $, dbx } = env;
+  T.createCharacter('# Aria');
+  await connect(env);
+  const primaryFile = dbx.only();
+  assert.strictEqual(primaryFile.path, '/Character Keeper campaign.json');
+
+  window.prompt = () => 'Second Game';
+  setValue($('#campaign-select'), '__new');
+  for (let i = 0; i < 30; i++) await tick();
+  const second = T.campaignId;
+  await T.dropboxFlush();
+  const file2 = [...dbx.files.values()].find(f => f.path === '/campaigns/' + second + '/campaign.json');
+  assert.ok(file2, 'the new campaign gets its own file');
+  assert.deepEqual(JSON.parse(file2.content).characters, []);
+  assert.deepEqual(JSON.parse(primaryFile.content).characters.map(c => c.name), ['Aria'], 'the first file is untouched');
+  assert.match($('#dbx-hint').textContent, new RegExp('campaigns/' + second + '/campaign\\.json'));
+
+  // An edit, then a switch before the upload ran: it goes to the second file.
+  T.createCharacter('# Brannoc');
+  assert.strictEqual(T.dropboxState().status, 'pending');
+  setValue($('#campaign-select'), T.campaigns[0].id);
+  for (let i = 0; i < 30; i++) await tick();
+  assert.deepEqual(JSON.parse(file2.content).characters.map(c => c.name), ['Brannoc']);
+  assert.deepEqual(JSON.parse(primaryFile.content).characters.map(c => c.name), ['Aria']);
+  assert.deepEqual(names(T), ['Aria']);
+  assert.strictEqual(T.dropboxState().meta.fileId, primaryFile.id, 'back on the first campaign\'s sync record');
+  window.close();
+});
+
+test('Dropbox sync: the flat sync record of an older version moves to the first campaign', async () => {
+  const env = await boot({
+    extraStorage: {
+      osr_dropbox_v1: JSON.stringify({ enabled: true, appKey: APP_KEY, fileId: 'id:f1', remoteHash: 'r', syncedHash: 's', lastSync: 5 })
+    },
+    beforeScripts(window) { fakeDropbox(window); } // no token: boot asks to reconnect, no API call
+  });
+  const stored = JSON.parse(env.window.localStorage.getItem('osr_dropbox_v1'));
+  const primary = env.T.campaigns.find(c => c.primary);
+  assert.ok(!('fileId' in stored));
+  assert.strictEqual(stored.files[primary.id].fileId, 'id:f1');
+  assert.strictEqual(stored.files[primary.id].syncedHash, 's');
+  assert.strictEqual(env.T.dropboxState().meta.fileId, 'id:f1');
   env.window.close();
 });

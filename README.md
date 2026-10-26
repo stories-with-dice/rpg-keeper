@@ -23,8 +23,16 @@ HTML/CSS/JS — no build step, no backend, no account, nothing leaves your brows
 
 ## Your data
 
-Everything is stored in your browser's **`localStorage`** (key `osr_manager_v1`). It survives
-reloads and browser restarts, but it is per-browser and per-machine.
+Everything is stored in your browser's **IndexedDB** (database `osr_store`). It survives reloads
+and browser restarts, but it is per-browser and per-machine. (Older versions used `localStorage`;
+the first start of this version moves that data into a campaign named "Default".)
+
+**Campaigns.** The selector next to the title switches between campaigns. Its last option,
+**+ New campaign…**, creates one. Each campaign has its own characters, Journal, log, trackers,
+combat, Bestiary, Compendium, and settings (theme and System too). A new campaign starts with the
+default Bestiary and Compendium of every system, and no example characters. Settings → **Campaign**
+renames or deletes the current campaign. Export, Import, and Dropbox sync work on the current
+campaign.
 
 - **Export** (top bar) downloads a single `osr-manager-YYYYMMDD.json` with *all* your data —
   characters, notes, consumables, the monster library, the current encounter, settings and the log.
@@ -41,6 +49,8 @@ Settings → **Dropbox sync** keeps the campaign in your Dropbox, so every brows
 has the same data. It is off until you click **Connect**.
 
 - The campaign is one file in your Dropbox, **Apps/&lt;app name&gt;/Character Keeper campaign.json**.
+  Each other campaign has its own file, **campaigns/&lt;id&gt;/campaign.json**. For now, another
+  browser sees only the first campaign; the other campaigns sync but do not show up there yet.
   It has the same format as **Export**, so **Import** can also read it. The app can see only its own
   folder in your Dropbox, nothing else.
 - After each change, the app uploads the campaign a few seconds later. The header shows the state:

@@ -12,6 +12,7 @@
 <body>
   <header class="app-header">
     <h1>Character Keeper</h1>
+    <select id="campaign-select" class="btn campaign-select" title="Campaign" aria-label="Campaign"></select>
     <nav class="tabs" id="tabs">
       <button class="tab-btn is-active" data-tab="character">Character</button>
       <button class="tab-btn" data-tab="combat">Combat</button>
@@ -174,6 +175,17 @@
       <!-- ===== Settings tab ===== -->
       <section class="tab-panel" id="tab-settings">
         <h2>Settings</h2>
+
+        <div class="setting-row setting-row-action">
+          <span class="setting-text">
+            <b>Campaign</b>
+            <span class="hint" id="set-campaign-hint">&nbsp;</span>
+          </span>
+          <span class="setting-actions">
+            <button id="set-campaign-rename" class="btn">Rename</button>
+            <button id="set-campaign-delete" class="btn btn-danger">Delete</button>
+          </span>
+        </div>
 
         <div class="setting-row setting-row-action">
           <span class="setting-text">
@@ -487,6 +499,7 @@
        all attach to window.OSR, so load order only requires core.js first. -->
   <script src="js/core.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
   <script src="js/dice.js"></script>
   <script src="js/annotate.js"></script>
   <script src="js/mde.js"></script>
@@ -504,6 +517,7 @@
   <script src="js/settings.js"></script>
   <script src="js/dropbox.js"></script>
   <script src="js/io.js"></script>
+  <script src="js/campaigns.js"></script>
   <script src="js/dice-ui.js"></script>
   <script src="js/seed.js"></script>
   <script src="js/brp-seed.js"></script>

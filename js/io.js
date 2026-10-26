@@ -79,7 +79,7 @@
   // for example the Unknown Armies catalog that the UA3 data tools write — is
   // only ever added to what is there. It never replaces the whole state, so
   // the Replace/Merge question of a full export is not asked.
-  function importPack(data) {
+  async function importPack(data) {
     const pack = data.pack || {};
     const system = validSystem(pack.system, OSR.currentSystem());
     const comp = Array.isArray(data.compendium) ? data.compendium : [];
@@ -91,9 +91,9 @@
     const addedC = mergeCompendium(comp, system);
     const addedM = mergeMonsters(mons, system);
     OSR.ensureStateShape();
-    if (!OSR.save()) {
-      // The browser keeps all data in one storage entry: if it is full, keep
-      // the app as it was instead of holding data that a reload would lose.
+    if (!(await OSR.saveNow())) {
+      // The browser storage refused the write (full or blocked): keep the
+      // app as it was instead of holding data that a reload would lose.
       const c = new Set(addedC), m = new Set(addedM);
       OSR.state.compendium = OSR.state.compendium.filter(e => !c.has(e.id));
       OSR.state.monsters = OSR.state.monsters.filter(d => !m.has(d.id));
@@ -112,21 +112,21 @@
   function importData(file) {
     return new Promise(resolve => {
       const reader = new FileReader();
-      reader.onload = () => { try { handleImport(reader.result); } finally { resolve(); } };
+      reader.onload = () => { handleImport(reader.result).catch(e => console.warn('import failed', e)).finally(resolve); };
       reader.onerror = () => { alert('Import failed: the file could not be read.'); resolve(); };
       reader.readAsText(file);
     });
   }
 
-  function handleImport(text) {
+  async function handleImport(text) {
     let data;
     try { data = JSON.parse(text); }
     catch (e) { alert('Import failed: not valid JSON.'); return; }
-    if (data && data.pack && typeof data.pack === 'object') { importPack(data); return; }
+    if (data && data.pack && typeof data.pack === 'object') { await importPack(data); return; }
     if (!data || !Array.isArray(data.characters)) { alert('Import failed: no "characters" array.'); return; }
     const replace = confirm('OK = Replace ALL current data with the imported file.\nCancel = Merge imported characters + monsters into current data.');
     if (replace) {
-      if (!replaceState(data)) alert(STORAGE_FULL_MSG);
+      if (!(await replaceState(data))) alert(STORAGE_FULL_MSG);
     } else {
       const state = OSR.state;
       data.characters.forEach(c => { c.id = OSR.uid(); state.characters.push(c); });
@@ -141,25 +141,27 @@
         state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
       }
       if (Array.isArray(data.log)) state.log = state.log.concat(data.log).slice(-OSR.MAX_LOG);
-      if (!finishLoad()) alert(STORAGE_FULL_MSG);
+      if (!(await finishLoad())) alert(STORAGE_FULL_MSG);
     }
   }
 
   const STORAGE_FULL_MSG = 'The browser storage is full: the imported data is not saved and is lost when you reload. Export it, or delete data you do not need.';
 
   // Replaces the whole campaign with `data` (a full export): Import → Replace
-  // all, and a pull from Dropbox (js/dropbox.js). Returns OSR.save()'s result.
+  // all, and a pull from Dropbox (js/dropbox.js). OSR.state changes at once;
+  // the returned promise resolves to whether the write reached the storage.
   function replaceState(data) {
     OSR.state = Object.assign(JSON.parse(JSON.stringify(OSR.STATE_DEFAULTS)), data);
     return finishLoad();
   }
 
   // After OSR.state was replaced or merged into: migrate, save, re-render.
+  // Resolves to OSR.saveNow()'s result.
   function finishLoad() {
     OSR.ensureStateShape();
     if (!OSR.activeChar() && OSR.state.characters.length) OSR.state.activeId = OSR.state.characters[0].id;
     OSR.mode = 'view';
-    const ok = OSR.save();
+    const ok = OSR.saveNow();
     OSR.applyTheme();
     OSR.refreshCharUI();
     OSR.renderNotes();

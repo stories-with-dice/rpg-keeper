@@ -1771,16 +1771,16 @@ test('importData: Cancel on a content pack adds nothing', async () => {
 });
 
 test('importData: a content pack that does not fit in browser storage is taken out again, with an alert', async () => {
-  const proto = window.Storage.prototype;
-  const setItem = proto.setItem;
+  const putDocs = T.store.putDocs;
   const alerts = [];
   const origAlert = window.alert;
   window.alert = m => alerts.push(m);
-  proto.setItem = function () { throw new Error('QuotaExceededError'); };
+  // IndexedDB refuses the write (QuotaExceededError aborts the transaction).
+  T.store.putDocs = () => Promise.reject(new window.DOMException('quota', 'QuotaExceededError'));
   try {
     await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
   } finally {
-    proto.setItem = setItem;
+    T.store.putDocs = putDocs;
     window.alert = origAlert;
   }
   assert.equal(T.state.compendium.length, 0);

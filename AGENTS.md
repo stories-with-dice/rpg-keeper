@@ -33,6 +33,11 @@ css/app.css             all styles (one file, dark only; palette + fonts are CSS
                        style themes chosen in Settings, applied as data-theme on <html> by applyTheme())
 js/core.js              window.OSR = {} (created here) + constants, $/$$/escapeHtml/uid, the state
                        model + persistence (STATE_DEFAULTS, load/save/ensureStateShape), applyTheme
+js/store.js             IndexedDB persistence (OSR.store: open/getDocs/putDocs/deleteDocs/getMeta/
+                       setMeta) + splitState/joinState, the cut of OSR.state into one document per
+                       system plus a campaign document — see "State model"
+js/campaigns.js         the Campaign selector (#campaign-select) and Settings → Campaign: switch,
+                       create, rename, delete (each campaign is its own set of documents)
 js/data.js              OSR.loadData(): fetch()es every data/ file init() needs (monsters, spells,
                        tables, the seed-<system>.json files, the pregen sheets) into OSR.data — see
                        "Seeding" below
@@ -112,6 +117,8 @@ test/logic.test.js     node:test unit tests for the app's internals (dice engine
                        state migration, annotate, compendium resolve, combat, …)
 test/ui.test.js        node:test integration tests that drive the real DOM (index.html + the app's
                        js/*.js files) through the app's delegated listeners and assert on render + persistence
+test/campaigns.test.js node:test suite for js/store.js and js/campaigns.js: split/join, writes of only
+                       the changed documents, reload, the localStorage migration, and the Campaign UI
 test/data.test.js      node:test suite for js/data.js: the data/ files' shape, the seeds built from
                        them, first-run seeding, and the load-error state
 test/dropbox.test.js   node:test suite for js/dropbox.js, against a fake window.open, a fake
@@ -120,7 +127,10 @@ test/dropbox.test.js   node:test suite for js/dropbox.js, against a fake window.
 test/helpers/boot.js   boots the app inside jsdom for the suites above (EasyMDE omitted → the
                        Journal / Compendium editors fall back to plain <textarea>s, as designed).
                        jsdom has no fetch: boot() serves the app's data/ files from disk and hands
-                       every other request to the test's own window.fetch stub
+                       every other request to the test's own window.fetch stub. jsdom has no
+                       IndexedDB either: each boot gets a fresh fake-indexeddb (devDependency);
+                       pass `indexedDB` from an earlier boot to reload. `savedState(T)` reads the
+                       current campaign back from IndexedDB
 vendor/fontawesome/    icons, referenced by index.html via relative url()
 ```
 
@@ -586,27 +596,55 @@ edit the source data or the converter, run it, and commit the result.
 
 ## State model
 
-- One object, `OSR.state`, shaped by `STATE_DEFAULTS` (both in `js/core.js`).
-- `load()` reads `localStorage['osr_manager_v1']`; `save()` writes `JSON.stringify(state)`.
+- One object, `OSR.state`, shaped by `STATE_DEFAULTS` (both in `js/core.js`). It is the current
+  **campaign** (`OSR.campaignId`, one of `OSR.campaigns`).
+- **Storage is IndexedDB** (`js/store.js`, database `osr_store`): the `docs` store keeps each
+  campaign as documents (JSON strings), `'<campaignId>/campaign'` plus one `'<campaignId>/<system>'`
+  for each of `OSR.SYSTEMS`; the `meta` store keeps the per-device campaign list (`'campaigns'`:
+  `[{ id, name, createdAt, primary }]`) and `'activeCampaignId'`; the `blobs` store is for the Maps
+  PRs. `splitState(state)` cuts `OSR.state` into those documents: characters (by
+  `charSystemKey()`), monsters and Compendium entries (by `system`), and the HP/Wounds/Madness
+  trackers of each character go to their system's document; everything else — log, Journal,
+  conditions, settings, combat, seed flags, trackers no character owns — goes to `campaign`, with
+  `order: { characters, consumables }` (ids). `joinState(docs)` reverses it: characters and trackers
+  come back in their saved order, monsters and Compendium entries in system order (every list of
+  them is filtered to one system, so only the order inside a system matters).
+- **`load()` is async** (`init()` awaits it). It reads the campaign list, then the active campaign's
+  documents (`loadCampaign(id)`, which also sets `OSR.campaignId` in the same tick as `OSR.state`).
+  The first run after the move to IndexedDB migrates the old `localStorage['osr_manager_v1']` into a
+  campaign "Default" (`primary: true`). The old key, and the campaign list, are written only after
+  that campaign's documents are on disk; if the write fails, the next boot migrates again. If
+  IndexedDB does not open, `init()` shows `#load-error` and stops.
+- **`save()` stays synchronous** and returns `true`: it queues one write (saves in the same tick
+  share it) of only the documents whose JSON changed since the last write (`lastWritten`), in one
+  IndexedDB transaction. Code that must know the write worked awaits **`saveNow()`** (Promise of a
+  boolean) or `flushSave()` (waits for queued writes): Import, a content pack, a pull from Dropbox,
+  and a campaign switch. A failed write logs a warning; it does not alert.
 - **`ensureStateShape()`** is the migration hook. It runs after `load()` and after import. When you
   add a new field to `state`, add its default there (and to `STATE_DEFAULTS`) so old saves and
   imported files get backfilled. Per-entry backfills (e.g. `entry.statuses = []`) also go here.
 - **Export is automatic.** `exportData()` serialises the whole `state`, so any field you add to
   `state` is included in Export/Import with no extra code — and in the Dropbox file. So never
   put per-device or secret data in `state` (the Dropbox sync keeps its own keys, see below).
-- `save()` also calls `OSR.dropboxNoteSave()` after a successful write (`js/dropbox.js` — a no-op
-  unless Dropbox sync is on). **Replace-all** loads — Import → Replace all and a pull from Dropbox — go
-  through `OSR.replaceState(data)` (`js/io.js`), which shares `finishLoad()` (migrate, save,
-  re-render every panel, the Journal editor included) with a merge import.
+- `save()` also calls `OSR.dropboxNoteSave()` (`js/dropbox.js` — a no-op unless Dropbox sync is on).
+  **Replace-all** loads — Import → Replace all and a pull from Dropbox — go through
+  `OSR.replaceState(data)` (`js/io.js`), which shares `finishLoad()` (migrate, save, re-render every
+  panel, the Journal editor included) with a merge import. Both return a promise of `saveNow()`'s
+  result.
+- **Campaigns** (`js/campaigns.js`): the header's `#campaign-select` switches, and its last option
+  "+ New campaign…" creates one (named with `prompt()`); Settings → Campaign has Rename and Delete
+  (never the last campaign). `switchCampaign(id)` awaits `flushSave()` and
+  `dropboxBeforeCampaignSwitch()`, then `loadCampaign(id)`, seeds an empty campaign with
+  `seedMissing(false)` (`js/seed.js`: every system's Bestiary and Compendium, no pregens), and
+  re-renders every panel. Theme and System are in `state.settings`, so they are per campaign.
 - **Merge import** (`importData`, Cancel on its Replace/Merge question) goes through
   `mergeCompendium`/`mergeMonsters` (`js/io.js`): each item keeps its own `system` (missing → `'osr'`),
   and a duplicate is skipped only inside the same system — same `ref` (a content pack's stable id),
   or for a Compendium entry the same name + category.
 - **Content packs**: a file with a `pack: { name, system }` header (plus `compendium`/`monsters`) is
   handled by `importPack` instead — merge only, never the Replace question, one confirm, then
-  `OSR.setSystem(pack.system)`. `OSR.save()` returns `false` when the browser refuses (storage full);
-  `importPack` then removes what it added and alerts, rather than keep data a reload would lose (all
-  state is one `localStorage` key, ~5 MB). The UA3 data tools (a separate, private project that reads
+  `OSR.setSystem(pack.system)`. `OSR.saveNow()` resolves to `false` when the browser refuses (storage full);
+  `importPack` then removes what it added and alerts, rather than keep data a reload would lose. The UA3 data tools (a separate, private project that reads
   the user's own PDFs) write such a pack for `ua3e`; its book text must never be committed here.
 - Entries created at runtime (`addCharEntry`, `addMonsterEntry`) must include every field
   `ensureStateShape` expects — it only runs on load/import, not on new entries.
@@ -909,8 +947,12 @@ synchronously:
 
 ## Dropbox sync (`js/dropbox.js`)
 
-Optional, off by default. It stores the whole `OSR.state` as one JSON file in the user's Dropbox and
-keeps it in sync. It replaced a Google Drive sync: Google gives a static app only a one-hour token
+Optional, off by default. It stores each campaign's whole `OSR.state` as one JSON file in the user's
+Dropbox and keeps it in sync. The primary campaign (the one the old single save was migrated into, or
+the first one on a fresh install) keeps `FILE_PATH`, so a new browser finds the campaign that earlier
+versions synced. Every other campaign uses `/campaigns/<campaignId>/campaign.json` (`filePath()`).
+Campaign ids are per device until the multi-file sync (docs/maps-plan.md, PR 3), so another browser
+does not see the other campaigns yet. It replaced a Google Drive sync: Google gives a static app only a one-hour token
 with no refresh. There is no backend, so:
 
 - **Sign-in is OAuth 2 with PKCE and a redirect back to the app.** `connect()` makes a verifier with
@@ -947,10 +989,16 @@ with no refresh. There is no backend, so:
   to replace: Dropbox refuses (409 `path/conflict`) if another device wrote in between, and the
   next pass then sees the change. `Dropbox-API-Arg` is a header, so `headerJson()` escapes non-ASCII.
 - **Per-device data stays out of `state`**: `sessionStorage['osr_dropbox_pending']` (above),
-  `localStorage['osr_dropbox_v1']` (`enabled`, `appKey`,
-  `fileId`, `remoteHash`, `syncedHash`, `lastSync`) and `localStorage['osr_dropbox_token']`
+  `localStorage['osr_dropbox_v1']` (`enabled`, `appKey`, and `files[campaignId]` = one sync record
+  for each campaign: `fileId`, `remoteHash`, `syncedHash`, `lastSync`; read it with `fm()`, which
+  never creates a record, and write it with `setFm()`. `migrateMeta()` in `initDropbox()` moves the
+  flat record of an older version to the primary campaign), and `localStorage['osr_dropbox_token']`
   (`token`, `expiresAt`, `refresh`, `appKey`). So Export, Import, and the Dropbox file never carry a
   token or another device's file id. `initDropbox()` also removes the old `osr_gdrive_*` keys.
+- **Campaign switch**: `dropboxBeforeCampaignSwitch()` runs a queued upload and waits for a running
+  pass (`dbx.pass`), so no pass mixes two campaigns; an open conflict is dropped and comes back when
+  that campaign is active again. `dropboxCampaignChanged()` then syncs the new campaign, and
+  `dropboxForgetCampaign(id)` removes a deleted campaign's record (its Dropbox file stays).
 - **One sync pass** (`syncNow()`), in order:
   1. Hash the local state: `hashText(JSON.stringify(OSR.state))`, FNV-1a plus the length.
   2. Read the Dropbox file's metadata (`findRemote()`).

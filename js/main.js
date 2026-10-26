@@ -47,6 +47,7 @@
     OSR.wireTables();
     OSR.wireSettings();
     OSR.wireDropbox();
+    OSR.wireCampaigns();
     OSR.wireRollPopup();
   }
 
@@ -69,7 +70,9 @@
     if (typeof marked !== 'undefined') {
       marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
     }
-    const had = OSR.load();
+    let had;
+    try { had = await OSR.load(); }
+    catch (e) { showLoadError(new Error('The browser storage (IndexedDB) did not open: ' + e.message)); return; }
     OSR.applyTheme();
     OSR.buildDiceGrid();
     OSR.renderLog();
@@ -79,14 +82,9 @@
     OSR.renderCompendium();
     OSR.renderTables();
     OSR.renderSettings();
+    OSR.renderCampaigns();
     wire();
-    if (!had && !OSR.state.characters.length) OSR.seed();
-    if (!OSR.state.monsters.length && !OSR.state.monstersSeeded) OSR.seedMonsters();
-    if (!OSR.state.brpMonstersSeeded) OSR.seedBrpMonsters();
-    if (!OSR.state.slMonstersSeeded) OSR.seedSlMonsters();
-    if ((OSR.state.compendiumSeedVersion || 0) < OSR.data.seeds.osr.version) OSR.seedCompendium();
-    if (!OSR.state.brpCompendiumSeeded) OSR.seedBrpCompendium();
-    if (!OSR.state.slCompendiumSeeded) OSR.seedSlCompendium();
+    OSR.seedMissing(!had);
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderCombat();
@@ -111,7 +109,7 @@
 
     OSR.renderAll = function () {
       OSR.refreshCharUI(); OSR.renderCombat(); OSR.renderMonsterBrowser(); OSR.renderCompendium();
-      OSR.renderTables(); OSR.renderSettings(); OSR.renderLog(); OSR.renderConsumables();
+      OSR.renderTables(); OSR.renderSettings(); OSR.renderLog(); OSR.renderConsumables(); OSR.renderCampaigns();
     };
 
     // Wipe to an already-migrated empty state (no async seeding) and clear the

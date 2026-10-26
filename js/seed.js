@@ -66,5 +66,19 @@
     OSR.renderSettings();
   }
 
-  Object.assign(OSR, { loadSeedSheets, seed, missingPregens, addMissingPregens, seedMonsters });
+  // Seeds whatever the current campaign lacks: the example characters (only
+  // when `withPregens`, i.e. a fresh install), then the Bestiary and
+  // Compendium defaults of every system. init() calls it at boot; a new
+  // campaign (js/campaigns.js) calls it without the pregens.
+  function seedMissing(withPregens) {
+    if (withPregens && !OSR.state.characters.length) seed();
+    if (!OSR.state.monsters.length && !OSR.state.monstersSeeded) seedMonsters();
+    if (!OSR.state.brpMonstersSeeded) OSR.seedBrpMonsters();
+    if (!OSR.state.slMonstersSeeded) OSR.seedSlMonsters();
+    if ((OSR.state.compendiumSeedVersion || 0) < OSR.data.seeds.osr.version) OSR.seedCompendium();
+    if (!OSR.state.brpCompendiumSeeded) OSR.seedBrpCompendium();
+    if (!OSR.state.slCompendiumSeeded) OSR.seedSlCompendium();
+  }
+
+  Object.assign(OSR, { seedMissing, loadSeedSheets, seed, missingPregens, addMissingPregens, seedMonsters });
 })(window.OSR = window.OSR || {});

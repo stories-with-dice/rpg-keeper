@@ -10,6 +10,7 @@
     "convert-tables": "node scripts/convert-tables.js"
   },
   "devDependencies": {
+    "fake-indexeddb": "^6.2.6",
     "jsdom": "^30.0.1"
   }
 }

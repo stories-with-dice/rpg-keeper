@@ -13,6 +13,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { IDBFactory, IDBKeyRange } = require('fake-indexeddb');
 
 const ROOT = path.join(__dirname, '..', '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -25,6 +26,7 @@ const SCRIPTS = [
   'js/ua-statblock.js',
   'js/core.js',
   'js/data.js',
+  'js/store.js',
   'js/dice.js',
   'js/annotate.js',
   'js/mde.js',
@@ -42,6 +44,7 @@ const SCRIPTS = [
   'js/settings.js',
   'js/dropbox.js',
   'js/io.js',
+  'js/campaigns.js',
   'js/dice-ui.js',
   'js/seed.js',
   'js/brp-seed.js',
@@ -100,6 +103,8 @@ function blankSave() {
  *                                        Dropbox ?code= reply.
  * @param {object}  [opts.session]        sessionStorage keys to preload ({key: string}).
  * @param {string[]} [opts.missingData]   data/ paths that answer 404 (load-error tests).
+ * @param {IDBFactory} [opts.indexedDB]  the IndexedDB to use (default: a new, empty one) —
+ *                                        pass the one from an earlier boot to "reload".
  * @param {boolean} [opts.allowLoadError] return right after init(), with no reset(): for
  *                                        tests of the load-error state.
  */
@@ -153,9 +158,13 @@ async function boot(opts = {}) {
     (Object.prototype.hasOwnProperty.call(opts, 'promptValue') ? opts.promptValue : def);
 
   window.__OSR_ENABLE_TEST_SEAM__ = true;   // opt in to window.__OSR_TEST__
+  // jsdom has no IndexedDB: a fresh in-memory one per boot (opts.indexedDB
+  // shares one between boots, as one browser profile would).
+  window.indexedDB = opts.indexedDB || new IDBFactory();
+  window.IDBKeyRange = IDBKeyRange;
 
   if (opts.storage != null) window.localStorage.setItem(STORAGE_KEY, opts.storage);
-  else if (!opts.freshSeed) window.localStorage.setItem(STORAGE_KEY, blankSave());
+  else if (!opts.freshSeed && !opts.indexedDB) window.localStorage.setItem(STORAGE_KEY, blankSave());
   Object.entries(opts.extraStorage || {}).forEach(([k, v]) => window.localStorage.setItem(k, v));
   Object.entries(opts.session || {}).forEach(([k, v]) => window.sessionStorage.setItem(k, v));
   if (opts.beforeScripts) opts.beforeScripts(window);
@@ -185,11 +194,12 @@ async function boot(opts = {}) {
   const T = window.__OSR_TEST__;
   if (!T) throw new Error('test seam missing — expected window.__OSR_TEST__ (see js/main.js installTestSeam)');
   await (T.ready || Promise.resolve());
-  if (opts.allowLoadError) return { dom, window, document, T, STORAGE_KEY };
+  if (opts.allowLoadError) return { dom, window, document, T, STORAGE_KEY, indexedDB: window.indexedDB };
 
-  if (!opts.freshSeed && opts.storage == null) T.reset();
+  if (!opts.freshSeed && opts.storage == null && !opts.indexedDB) T.reset();
+  await T.flushSave();
 
-  return { dom, window, document, T, STORAGE_KEY };
+  return { dom, window, document, T, STORAGE_KEY, indexedDB: window.indexedDB };
 }
 
 /** Force Math.random to walk `fractions` (looping). Returns a restore fn. */
@@ -227,4 +237,11 @@ function key(el, k, init) {
     Object.assign({ key: k, bubbles: true, cancelable: true }, init)));
 }
 
-module.exports = { boot, blankSave, rigRandom, face, fire, click, setValue, key };
+/** The current campaign as saved in IndexedDB (after every queued write). */
+async function savedState(T) {
+  await T.flushSave();
+  const raw = await T.store.getDocs(T.campaignId);
+  return T.joinState(T.parseDocs(raw));
+}
+
+module.exports = { savedState, boot, blankSave, rigRandom, face, fire, click, setValue, key };

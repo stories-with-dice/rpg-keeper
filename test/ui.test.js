@@ -12,7 +12,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, fire, click, setValue, key } = require('./helpers/boot.js');
+const { boot, rigRandom, face, fire, click, setValue, key, savedState: readSaved } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -30,7 +30,7 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 const logText = () => $$('#log-list li').map(li => li.textContent).join('\n');
 const logCount = () => $$('#log-list li:not(.log-empty)').length;
-const savedState = () => JSON.parse(window.localStorage.getItem('osr_manager_v1'));
+const savedState = () => readSaved(T); // the current campaign as saved in IndexedDB
 // A second rig() in one test restores the real Math.random first (see test/logic.test.js).
 function rig(f) { if (T._restoreRandom) T._restoreRandom(); T._restoreRandom = rigRandom(window, f); }
 function tab(name) { click($$('#tabs .tab-btn').find(b => b.dataset.tab === name)); }
@@ -101,14 +101,14 @@ test('apply-damage button: hidden until a Dice Roller roll, then applies to the 
 /* Session log                                                        */
 /* ================================================================== */
 
-test('session log: Clear empties the list back to the empty-state row', () => {
+test('session log: Clear empties the list back to the empty-state row', async () => {
   rig(face(1, 20));
   click($$('#dice-grid button').find(b => b.textContent === 'd20'));
   assert.equal(logCount(), 1);
   click($('#btn-log-clear'));            // confirm() stubbed true
   assert.equal(logCount(), 0);
   assert.ok($('#log-list .log-empty'));
-  assert.deepEqual(savedState().log, []);
+  assert.deepEqual((await savedState()).log, []);
 });
 
 /* ================================================================== */
@@ -1346,25 +1346,25 @@ test('Tables tab: expanding a table and clicking Roll rolls its formula, highlig
 /* Settings tab                                                       */
 /* ================================================================== */
 
-test('Settings: Style theme select recolours (data-theme on <html>) and is persisted', () => {
+test('Settings: Style theme select recolours (data-theme on <html>) and is persisted', async () => {
   tab('settings');
   setValue($('#set-theme'), 'fantasy');
   assert.equal(document.documentElement.dataset.theme, 'fantasy');
-  assert.equal(savedState().settings.theme, 'fantasy');
+  assert.equal((await savedState()).settings.theme, 'fantasy');
   assert.match(logText(), /Style theme/);
 
   setValue($('#set-theme'), 'default');
   assert.equal(document.documentElement.dataset.theme, undefined);
 });
 
-test('Settings: Scarlet Heroes checkbox toggles the setting and logs it', () => {
+test('Settings: Scarlet Heroes checkbox toggles the setting and logs it', async () => {
   tab('settings');
   const cb = $('#set-scarlet-heroes');
   assert.equal(cb.checked, false);
   cb.checked = true;
   cb.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal(T.state.settings.scarletHeroes, true);
-  assert.equal(savedState().settings.scarletHeroes, true);
+  assert.equal((await savedState()).settings.scarletHeroes, true);
   assert.match(logText(), /Scarlet Heroes/);
 });
 
@@ -1379,13 +1379,13 @@ test('Settings: Compendium "Reseed defaults" adds the bundled gear; "Delete all"
   assert.equal(T.state.compendium.length, 0);
 });
 
-test('Settings: System select partitions the Compendium — an entry created under one system is invisible under the other', () => {
+test('Settings: System select partitions the Compendium — an entry created under one system is invisible under the other', async () => {
   tab('settings');
   assert.equal($('#set-system').value, 'osr');
 
   setValue($('#set-system'), 'ua3e');
   assert.equal(T.state.settings.system, 'ua3e');
-  assert.equal(savedState().settings.system, 'ua3e');
+  assert.equal((await savedState()).settings.system, 'ua3e');
   assert.match(logText(), /System/);
 
   tab('compendium');
@@ -1616,10 +1616,10 @@ test('Settings → "Add missing pregens": counts the example characters, adds th
 /* Persistence & export                                               */
 /* ================================================================== */
 
-test('persistence: an action writes the new state straight to localStorage', () => {
+test('persistence: an action writes the new state to the campaign in IndexedDB', async () => {
   click($('#btn-new-blank'));
-  assert.equal(savedState().characters.length, 1);
-  assert.equal(savedState().activeId, T.state.activeId);
+  assert.equal((await savedState()).characters.length, 1);
+  assert.equal((await savedState()).activeId, T.state.activeId);
 });
 
 test('export: clicking Export builds a JSON object URL and an <a download>', () => {

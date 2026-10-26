@@ -80,19 +80,54 @@
   OSR.state = JSON.parse(JSON.stringify(STATE_DEFAULTS));
   OSR.mode = 'view'; // 'view' | 'edit'
 
-  function load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          OSR.state = Object.assign(JSON.parse(JSON.stringify(STATE_DEFAULTS)), parsed);
-        }
-        ensureStateShape();
-        return true;
-      }
-    } catch (e) { console.warn('load failed', e); }
-    return false;
+  // Campaigns (js/campaigns.js has the UI). Each one is a set of documents in
+  // IndexedDB (js/store.js). OSR.campaignId is the one in OSR.state. The
+  // list is per device: IndexedDB meta 'campaigns' / 'activeCampaignId'.
+  OSR.campaigns = [];   // [{ id, name, createdAt, primary }]
+  OSR.campaignId = null;
+
+  const defaults = () => JSON.parse(JSON.stringify(STATE_DEFAULTS));
+
+  // Loads the active campaign into OSR.state. Resolves to true when it had
+  // saved data (false = a fresh install: init() then seeds the pregens).
+  // The first run after the move to IndexedDB migrates the old
+  // localStorage[STORAGE_KEY] save into a campaign named "Default"; the old
+  // key is removed only after that campaign is written (see writeDocs).
+  // Rejects when IndexedDB does not open.
+  async function load() {
+    const campaigns = await OSR.store.getMeta('campaigns');
+    if (Array.isArray(campaigns) && campaigns.length) {
+      OSR.campaigns = campaigns;
+      const active = await OSR.store.getMeta('activeCampaignId');
+      OSR.campaignId = campaigns.some(c => c.id === active) ? active : campaigns[0].id;
+      return loadCampaign(OSR.campaignId);
+    }
+    OSR.campaigns = [{ id: uid(), name: 'Default', createdAt: Date.now(), primary: true }];
+    OSR.campaignId = OSR.campaigns[0].id;
+    campaignsDirty = true;
+    lastWritten = {};
+    let parsed = null;
+    try { parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { console.warn('old save unreadable', e); }
+    OSR.state = Object.assign(defaults(), parsed && typeof parsed === 'object' ? parsed : {});
+    ensureStateShape();
+    if (!parsed) return false;
+    migrateOldKey = true;
+    await saveNow();
+    return true;
+  }
+
+  // Makes campaign `id` the current one: OSR.state becomes its saved
+  // documents (an empty campaign gets the defaults). OSR.campaignId and
+  // OSR.state change in the same tick, so a save never writes one
+  // campaign's state under the other's id. Resolves to whether it had any.
+  async function loadCampaign(id) {
+    const raw = await OSR.store.getDocs(id);
+    const had = Object.keys(raw).length > 0;
+    OSR.campaignId = id;
+    lastWritten = Object.assign({}, raw);
+    OSR.state = Object.assign(defaults(), had ? OSR.joinState(OSR.parseDocs(raw)) : {});
+    ensureStateShape();
+    return had;
   }
 
   function ensureStateShape() {
@@ -244,14 +279,61 @@
     c.max = m < 0 ? 0 : m;
   }
 
-  // Returns false when the browser refuses (storage full, blocked storage).
-  // A successful save also queues a Dropbox upload when sync is on
-  // (js/dropbox.js — a no-op otherwise).
+  /* ---- Saving ---- */
+  // save() is synchronous for its many callers: it queues a write of the
+  // documents that changed (compared with what was last written) and a
+  // Dropbox upload when sync is on (js/dropbox.js — a no-op otherwise).
+  // Saves in the same tick share one write. Callers that must know the write
+  // worked (Import, a Dropbox pull) await saveNow() instead.
+  let lastWritten = {};      // document key -> JSON string, for OSR.campaignId
+  let dirty = false;
+  let flushing = null;
+  let lastOk = true;
+  let campaignsDirty = false; // OSR.campaigns / campaignId not yet in IndexedDB
+  let migrateOldKey = false;  // remove localStorage[STORAGE_KEY] after the next good write
+
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(OSR.state)); }
-    catch (e) { console.warn('save failed', e); return false; }
+    dirty = true;
+    if (!flushing) flushing = runFlush();
     if (OSR.dropboxNoteSave) OSR.dropboxNoteSave();
     return true;
+  }
+
+  async function runFlush() {
+    await Promise.resolve(); // let the rest of this tick's saves join in
+    try {
+      while (dirty) { dirty = false; lastOk = await writeDocs(); }
+    } finally { flushing = null; }
+    return lastOk;
+  }
+
+  // Resolves to true when every queued write is on disk, false when the last
+  // one failed (storage full, blocked storage).
+  function flushSave() { return flushing || Promise.resolve(lastOk); }
+  function saveNow() { save(); return flushSave(); }
+
+  async function writeDocs() {
+    const id = OSR.campaignId;
+    if (!id) return false;
+    const docs = OSR.serializeState(OSR.state);
+    const changed = {};
+    Object.keys(docs).forEach(k => { if (docs[k] !== lastWritten[k]) changed[k] = docs[k]; });
+    try {
+      if (Object.keys(changed).length) await OSR.store.putDocs(id, changed);
+      Object.assign(lastWritten, changed);
+      if (campaignsDirty) { await writeCampaigns(); }
+    } catch (e) { console.warn('save failed', e); return false; }
+    if (migrateOldKey) {
+      migrateOldKey = false;
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* blocked storage: harmless */ }
+    }
+    return true;
+  }
+
+  async function writeCampaigns() {
+    await OSR.store.setMeta('campaigns', OSR.campaigns);
+    await OSR.store.setMeta('activeCampaignId', OSR.campaignId);
+    campaignsDirty = false;
   }
 
   function activeChar() {
@@ -262,7 +344,7 @@
     STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
     THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
-    applyTheme, load, ensureStateShape, ensureCharShape,
+    applyTheme, load, loadCampaign, writeCampaigns, flushSave, saveNow, ensureStateShape, ensureCharShape,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
     woundTrackerLabel, ensureWoundTracker, MADNESS_MAX, madnessTrackerLabel, ensureMadnessTracker,
     save, activeChar
