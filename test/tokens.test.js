@@ -160,7 +160,7 @@ test('tokens: "From combat" places a linked token with a matching icon; it shows
   tokenEl(env, t).dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, clientX: 10, clientY: 10 }));
   const pop = window.document.querySelector('.comp-pop');
   assert.ok(pop, 'a linked token opens a popup');
-  assert.match(pop.textContent, /^Goblin.*enemy[\s\S]*HP 2 \/ 6[\s\S]*AC 13/);
+  assert.match(pop.textContent, /^Goblin.*enemy[\s\S]*AC 13[\s\S]*HP 2 \/ 6/);
   assert.ok($('#token-card').hidden);
   T.closeAllCompPops();
   window.close();
