@@ -216,6 +216,48 @@ test('tokens: the bar edits label, size, color, and link; with no link the name 
   window.close();
 });
 
+test('tokens: a right-click on a token changes its color, links and unlinks it, or deletes it', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  T.createCharacter('# Brannoc\nHP 7/7');
+  T.addMonsterEntry({ name: 'Goblin', hd: '1', hp: 6, attacks: [], source: 'shadowdark' });
+  const t = T.addToken(sc, { iconId: 'lorc/werewolf', x: 125, y: 125 });
+  T.addToken(sc, { iconId: 'lorc/werewolf', x: 325, y: 125 });
+  const menuOn = tok => tokenEl(env, tok).dispatchEvent(new window.MouseEvent('contextmenu', { clientX: 40, clientY: 40, button: 2, bubbles: true, cancelable: true }));
+  menuOn(t);
+  assert.strictEqual($('#map-menu').hidden, false);
+  assert.deepEqual(T.selectedTokenIds(sc), [t.id], 'the token is selected');
+  assert.match($('#map-menu .ctx-head').textContent, /Werewolf/);
+  assert.strictEqual($('#map-menu [data-act="unlink"]'), null, 'no Unlink while not linked');
+  click($('#map-menu [data-color="#6fcf6f"]'));
+  assert.strictEqual(t.color, '#6fcf6f');
+  assert.strictEqual($('#map-menu').hidden, true);
+
+  menuOn(t);
+  const goblin = T.state.combat.entries[0];
+  click($('#map-menu [data-link="combat:' + goblin.id + '"]'));
+  assert.deepEqual(t.link, { kind: 'combat', entryId: goblin.id });
+  assert.strictEqual(T.tokenName(t), 'Goblin');
+  menuOn(t);
+  assert.ok($('#map-menu [data-link="combat:' + goblin.id + '"]').classList.contains('is-on'), 'the link has a check');
+  click($('#map-menu [data-link="character:' + T.state.characters[0].id + '"]'));
+  assert.strictEqual(T.tokenName(t), 'Brannoc');
+  menuOn(t);
+  click($('#map-menu [data-act="unlink"]'));
+  assert.strictEqual(t.link, null);
+  assert.strictEqual(T.tokenName(t), 'Brannoc', 'it keeps the name it showed');
+
+  menuOn(t);
+  env.document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  assert.strictEqual($('#map-menu').hidden, true, 'Escape closes it');
+  menuOn(t);
+  click($('#map-menu [data-act="delete"]'));
+  assert.strictEqual(sc.tokens.length, 1);
+  T.undoScene(sc);
+  assert.strictEqual(sc.tokens.length, 2, 'undo brings it back');
+  window.close();
+});
+
 test('tokens: Delete removes the selection; Backspace typed in the label field does not', async () => {
   const env = await setup();
   const { T, window, $, sc } = env;

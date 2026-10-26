@@ -11,8 +11,9 @@
  * and searched here, without the network. Use: the icon's SVG is fetched from
  * the game-icons GitHub repository through jsDelivr (ICON_URL), checked, and
  * kept in the campaign (state.customIcons), so it syncs with the campaign.
- * This fetch, made only when the user clicks a search result, is the app's
- * second network use after Dropbox (see AGENTS.md "What this is").
+ * This fetch, made only when the user clicks a search result, and the
+ * results' preview images (an <img> each, while the results show) are the
+ * app's second network use after Dropbox (see AGENTS.md "What this is").
  */
 (function (root) {
   'use strict';
@@ -113,6 +114,14 @@
   const { $, escapeHtml } = OSR;
   let lastResults = [];
 
+  // A result's preview: the stored icon drawn here, or else the icon's SVG
+  // as an <img> from ICON_URL (an <img> runs no script of the file).
+  function previewImg(entry) {
+    const have = allIcons().find(i => i.id === entry.id);
+    if (have) return '<svg class="icon-preview" viewBox="0 0 512 512" aria-hidden="true">' + have.paths.map(d => '<path d="' + escapeHtml(d) + '"/>').join('') + '</svg>';
+    return '<img class="icon-preview" src="' + escapeHtml(ICON_URL + entry.id + '.svg') + '" alt="" loading="lazy" referrerpolicy="no-referrer" />';
+  }
+
   async function renderIconSearch() {
     const q = $('#icon-search').value;
     const out = $('#icon-results');
@@ -124,7 +133,7 @@
     lastResults = searchIcons(list, q, 40);
     out.innerHTML = lastResults.length
       ? lastResults.map((i, n) => '<button type="button" class="btn icon-result" data-n="' + n + '" title="' + escapeHtml(i.id) + '">' +
-        escapeHtml(i.name) + ' <span class="icon-author">' + escapeHtml(i.author) + '</span></button>').join('')
+        previewImg(i) + '<span>' + escapeHtml(i.name) + ' <span class="icon-author">' + escapeHtml(i.author) + '</span></span></button>').join('')
       : '<span class="hint">No icon matches “' + escapeHtml(q) + '”.</span>';
   }
 

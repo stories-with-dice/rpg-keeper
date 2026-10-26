@@ -80,6 +80,7 @@ test('dice custom form: a valid formula rolls, an invalid one only shows "Invali
 });
 
 test('apply-damage button: hidden until a Dice Roller roll, then applies to the selected combatant', () => {
+  tab('combat');
   const apply = $('#dice-apply');
   assert.equal(apply.hidden, true);
 
@@ -92,6 +93,11 @@ test('apply-damage button: hidden until a Dice Roller roll, then applies to the 
   assert.equal(apply.hidden, false);
   assert.equal(apply.disabled, false);
   assert.match(apply.textContent, /Troll/);
+
+  tab('character');
+  assert.equal(apply.hidden, true, 'only on the Combat tab');
+  tab('combat');
+  assert.equal(apply.hidden, false);
 
   click(apply);
   assert.equal(T.entryHp(T.state.combat.entries[0]), 20);

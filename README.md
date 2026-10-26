@@ -27,7 +27,7 @@ Everything is stored in your browser's **IndexedDB** (database `osr_store`). It 
 and browser restarts, but it is per-browser and per-machine. (Older versions used `localStorage`;
 the first start of this version moves that data into a campaign named "Default".)
 
-**Campaigns.** The selector next to the title switches between campaigns. Its last option,
+**Campaigns.** The selector at the top right, next to the Dropbox and Export buttons, switches between campaigns. Its last option,
 **+ New campaign…**, creates one. Each campaign has its own characters, Journal, log, trackers,
 combat, Bestiary, Compendium, and settings (theme and System too). A new campaign starts with the
 default Bestiary and Compendium of every system, and no example characters. Settings → **Campaign**
@@ -198,8 +198,9 @@ Preset buttons: `d20`, `Adv` (2d20 keep-highest), `Dis` (2d20 keep-lowest), `d4`
 Formula grammar: `NdM` (e.g. `3d6`), `+`/`-` chains (`2d6+3`, `1d8-1`), keep/drop
 (`kh`/`kl`/`dh`/`dl` + number, e.g. `4d6kh3`), and `d%`. Typing a bare number/modifier rolls a d20.
 
-After a roll, an **Apply damage** button appears — it subtracts the result from the **currently
-selected combatant** (HP, or HD/HP under Scarlet Heroes rules — see Settings).
+After a roll, on the Combat tab, an **Apply damage** button appears — it subtracts the result from
+the **currently selected combatant** (HP, or HD/HP under Scarlet Heroes rules — see Settings). On
+the other tabs the button does not show.
 
 ---
 
@@ -356,8 +357,16 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
     and syncs with Dropbox.
   - Some websites do not allow a download from another site. Then the scene shows the image from
     its address, with a warning: that image is not saved, and it is gone if the address stops working.
-- **Scenes.** The selector switches scenes. **Rename**, **Duplicate** (the copy shares the image), and
-  **Delete** work on the open scene.
+- **Scenes.** The selector at the right of the toolbar switches scenes. **Rename**, **Duplicate**
+  (the copy shares the image), and **Delete** work on the open scene.
+- **Hotkeys.** Alt plus a key chooses a toolbar button: Alt+1 to Alt+5 the hand, ruler, grid, pin,
+  and hexcrawl tools; Alt+6 to Alt+0, Alt+- and Alt+= the drawing tools; Alt+S sticky mode; Alt+F
+  show the whole map; Alt+O pop out; Alt+G the Grid menu; Alt+K the Tokens menu. Hover a button to
+  see its key.
+- **Sticky mode** (the <i>thumbtack</i> button, on by default). On: a tool stays chosen after you
+  use it. Off: after one drawing, text, measure, pin, or grid drag, the hand tool comes back.
+- **Grid** and **Tokens** are menus at the end of the toolbar. They open over the map, so the map
+  does not move.
 - **Move and zoom.** With the hand tool, drag to move the view. The mouse wheel zooms around the
   pointer. The middle mouse button, or Space held, moves the view with any tool. The
   <i>expand</i> button shows the whole map again.
@@ -374,8 +383,9 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 - **Tokens.** Open **Tokens** and click an icon: a token appears in the middle of the view, on the
   grid. Choose its **Size** (cells across; on hexes, rings) and **Color** first.
   - **More icons**: type in the search box under the icons (for example "dragon", "door", "cart").
-    The list has every icon of game-icons.net. Click a result: the app downloads that icon (this
-    needs the internet), puts a token with it on the map, and keeps the icon in the campaign.
+    The list has every icon of game-icons.net, each with a preview image (the previews need the
+    internet). Click a result: the app downloads that icon, puts a token with it on the map, and
+    keeps the icon in the campaign.
   - **From combat** lists the combatants (Combat tab) that have no token on this scene. Click one
     for a token linked to it: it shows the combatant's name, side (green ally, red enemy, gray
     neutral), HP as a ring, and a dashed ring on whose turn it is. Hover a token for its HP, AC,
@@ -385,19 +395,23 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
     box; the selection moves together.
   - The bar over the map edits the selected token: label, size, color, and **Link** (a combatant or
     a character). **Delete** (or the Delete key) removes it.
+  - Right-click a token for a menu: its color, a link to a combatant or a character, **Unlink**, and
+    **Delete token**.
   - When a combatant leaves combat, its token stays with the combatant's name. A character's token
     stays linked to the character.
   - Alt+click on the map shows a short ping at that point (it is not saved).
 
 - **Drawing.** The second group of tools draws on the map: pen, line, rectangle, ellipse, polygon,
-  text, and eraser. The bar under the tools sets the color, the line width, Fill (for shapes), and
-  the opacity.
+  text, and eraser. The bar at the top of the map sets the color, the line width, Fill (for shapes),
+  and the opacity.
   - Polygon: click each corner; click the first corner, double-click, or press Enter to finish.
     Escape cancels.
-  - Text: click where it goes and type it.
+  - Text: click where it goes, type it in the box on the map, and press Enter (or click elsewhere).
+    Escape cancels.
   - Eraser: click or drag over drawings to remove them.
   - With the hand tool, click a drawing to select it, drag it to move it, and press Delete to
     remove it. **Clear drawings** removes them all.
+  - Right-click a drawing to change its color or thickness (a text's size), or to delete it.
 - **Pop out.** The <i>window</i> button opens the map in a window of its own, for example on a
   second screen for the players. Both windows show the same campaign: a token moved or a line drawn
   in one shows in the other at once, and Ctrl+Z in either undoes the last map change. Keep the main

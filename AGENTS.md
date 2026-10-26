@@ -20,8 +20,9 @@ dependencies, or CDN `<script>`/`<link>` tags. Everything third-party is **vendo
 
 **A second network use: icon downloads** (`js/icons.js`). When the user clicks a result of the
 Maps tab's icon search, the app fetches that one SVG from jsDelivr (`ICON_URL`, the game-icons
-GitHub repository). Nothing else in the app loads from another host, and the search itself runs on
-the bundled `data/game-icons-index.json`.
+GitHub repository). While search results show, each result not stored yet has a preview `<img>`
+from the same address (`loading="lazy"`; an `<img>` runs no script of the SVG). Nothing else in the
+app loads from another host, and the search itself runs on the bundled `data/game-icons-index.json`.
 
 **One opt-in exception: Dropbox sync** (`js/dropbox.js`, see "Dropbox sync" below).
 When the user turns it on, the app calls the Dropbox HTTP API (`api.dropboxapi.com`,
@@ -987,11 +988,20 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   text's `size` come from the draw bar's px times the zoom at the time. The draw tools hand pointer
   events to `drawPointerDown/Move/Up`: pen (simplified on release with `simplifyLine`, Ramer–
   Douglas–Peucker, ε = 1.5 screen px), line, rect, ellipse (drag), polygon (click corners; the first
-  corner, a double-click — `detail` 2 — or Enter closes; Escape cancels), text (`prompt()`), eraser
+  corner, a double-click — `detail` 2 — or Enter closes; Escape cancels), text (the box
+  `#map-text-input`, absolute in `#map-wrap` at the click: Enter, a blur, another text click, or a
+  tool change writes it; Escape cancels; the focus is set after a 0 ms timeout and the blur is
+  checked after one, so the click that opens a new box keeps it), eraser
   (deletes the drawing under the pointer on down and on each move). With the hand tool, tokens come
   first, then `drawSelectDown` selects and drags a drawing; Delete removes it. **Clear drawings**
   asks, and is one undo step. The draw bar (`#map-draw-bar`) shows for the draw tools but not the
-  eraser; its style is in memory.
+  eraser; its style is in memory. It and `#token-edit` are in `.map-float-top`, over the map's top
+  edge, so they never move the map. A right-click on a drawing (`drawingMenu()`) or a token
+  (`tokenMenu()`, js/tokens.js) opens `#map-menu` through `OSR.openMapMenu(x, y, html, onPick)`
+  (js/maps.js): its items have `data-act`, and `onPick(el)` returns true to close it. Drawing:
+  color, thickness (a text's size) in screen px at the current zoom, delete. Token: color, link to a
+  combat entry or character, unlink (keeps the name as `label`), delete. Each change is one
+  `saveScene()` step. A pointerdown outside the menu, the wheel, or Escape closes it.
 - **Pins** (`js/pins.js`) are in `scene.pins`: `{ id, x, y, compendiumId }`. The pin tool
   (`addPin()`) makes a pin and a Compendium entry `{ category: 'Journal', source: 'Maps', system:
   currentSystem() }` named "<scene> — Location N" (or "— Hex 0412" in hexcrawl mode, where the
@@ -1037,6 +1047,19 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   cells and sets the grid from it (`MapGrid.gridFromRect()`); then arrow keys on the focused
   `#map-wrap` move the offset by 1 px (Shift: 10). `grid.locked` blocks both and disables the grid
   fields. The grid fields (`#map-grid-panel`) change the grid by hand.
+- **Toolbar layout**: tools, sticky, undo, redo, fit, pop out, then the **Grid** and **Tokens**
+  menus (`<details class="map-drop">`; the body is absolute to `.map-toolbar`, over the map, one
+  open at a time), then the scene controls (`.map-scene-controls`, `margin-left: auto`).
+  `#map-status` floats over the map's bottom-right corner (hidden when empty). Nothing that opens
+  or closes moves the map.
+- **Sticky mode** (`#map-sticky`, `sticky`, `localStorage` key `osr_map_sticky`, on by default):
+  `setTool()` changes the tool; `toolUsed()` (`OSR.mapToolUsed`) is called after one use of a tool
+  (a drawing, a text, a closed polygon, an erase drag, a measure, a calibrate drag, a pin, an
+  explore click) and, with sticky off, goes back to `pan` and keeps the status.
+- **Hotkeys** (`onHotkey`, on `document`, Maps tab only, never in a text field or with a modal
+  open): Alt + `KeyboardEvent.code` (a Mac's Alt+1 types "¡"; with no `code`, the key is used).
+  `Digit1`…`Digit0`, `Minus`, `Equal` click the `.map-tool` with that `data-key`; `KeyS` sticky,
+  `KeyF` fit, `KeyO` pop out, `KeyG`/`KeyK` toggle the Grid/Tokens menu. The titles show the keys.
 
 ## The Tables tab (`js/tables.js`)
 

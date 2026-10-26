@@ -130,19 +130,125 @@ test('drawings: a polygon closes on its first corner, on a double-click, or with
   window.close();
 });
 
-test('drawings: text goes where you click; its name is escaped', async () => {
+test('drawings: text goes where you click, typed in a box on the map; its name is escaped', async () => {
   const env = await setup();
   const { window, $, sc } = env;
+  window.prompt = () => { throw new Error('no prompt()'); };
   useTool(env, 'text');
-  window.prompt = () => '<b>Secret door</b>';
   clickAt(env, 300, 200);
+  const input = $('#map-text-input');
+  assert.strictEqual(input.hidden, false, 'the text box shows');
+  input.value = '<b>Secret door</b>';
+  key(env, input, 'Enter');
+  assert.strictEqual(input.hidden, true);
   const t = sc.drawings[0];
   assert.deepEqual([t.kind, t.text, Math.round(t.x), Math.round(t.y)], ['text', '<b>Secret door</b>', 300, 200]);
   assert.strictEqual($('#map-svg text.map-drawing').textContent, '<b>Secret door</b>');
   assert.strictEqual($('#map-svg b'), null);
-  window.prompt = () => '';
+
   clickAt(env, 400, 200);
+  key(env, input, 'Enter');
   assert.strictEqual(sc.drawings.length, 1, 'no text: nothing');
+
+  clickAt(env, 400, 200);
+  input.value = 'Gone';
+  key(env, input, 'Escape');
+  assert.strictEqual(sc.drawings.length, 1, 'Escape writes nothing');
+
+  clickAt(env, 400, 200);
+  input.value = 'First';
+  clickAt(env, 500, 300);             // a second click writes the first text
+  assert.deepEqual(sc.drawings.map(d => d.text), ['<b>Secret door</b>', 'First']);
+  assert.strictEqual(input.hidden, false, 'and opens a new box');
+  input.value = 'Kept';
+  useTool(env, 'pan');                // another tool writes it too
+  assert.deepEqual(sc.drawings.map(d => d.text), ['<b>Secret door</b>', 'First', 'Kept']);
+  window.close();
+});
+
+test('drawings: sticky mode keeps the tool; off, the hand tool comes back after one use', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  assert.strictEqual(T.mapsState().sticky, true, 'on by default');
+  assert.ok($('#map-sticky').classList.contains('is-active'));
+  useTool(env, 'rect');
+  stroke(env, [[100, 100], [200, 200]]);
+  assert.strictEqual(T.mapsState().tool, 'rect');
+
+  click($('#map-sticky'));
+  assert.strictEqual(T.mapsState().sticky, false);
+  assert.ok(!$('#map-sticky').classList.contains('is-active'));
+  assert.strictEqual(window.localStorage.getItem('osr_map_sticky'), 'off', 'kept in this browser');
+  stroke(env, [[300, 300], [400, 400]]);
+  assert.strictEqual(sc.drawings.length, 2);
+  assert.strictEqual(T.mapsState().tool, 'pan', 'back to the hand');
+
+  useTool(env, 'measure');
+  stroke(env, [[0, 0], [200, 0]]);
+  assert.strictEqual(T.mapsState().tool, 'pan');
+  assert.match($('#map-status').textContent, /cells/, 'the measure stays in the status');
+
+  useTool(env, 'text');
+  clickAt(env, 100, 100);
+  $('#map-text-input').value = 'Hi';
+  key(env, $('#map-text-input'), 'Enter');
+  assert.strictEqual(T.mapsState().tool, 'pan');
+  T.setMapSticky(true);
+  window.close();
+});
+
+test('drawings: Alt + a number chooses a tool; Alt+S toggles sticky mode; never in a text field', async () => {
+  const env = await setup();
+  const { T, window, document, $ } = env;
+  const alt = (code, target) => key(env, target || document.body, '', { code, altKey: true });
+  alt('Digit6');
+  assert.strictEqual(T.mapsState().tool, 'pen');
+  alt('Digit2');
+  assert.strictEqual(T.mapsState().tool, 'measure');
+  alt('Equal');
+  assert.strictEqual(T.mapsState().tool, 'eraser');
+  alt('Digit5');
+  assert.strictEqual(T.mapsState().tool, 'eraser', 'the hidden explore tool is not chosen');
+  alt('Digit1', $('#grid-size'));
+  assert.strictEqual(T.mapsState().tool, 'eraser', 'not from a field');
+  alt('Digit1');
+  assert.strictEqual(T.mapsState().tool, 'pan');
+  assert.match($('.map-tool[data-tool="pen"]').title, /Alt\+6/, 'the key shows on hover');
+  alt('KeyS');
+  assert.strictEqual(T.mapsState().sticky, false);
+  alt('KeyS');
+  assert.strictEqual(T.mapsState().sticky, true);
+  alt('KeyG');
+  assert.strictEqual($('#map-grid-panel').open, true);
+  alt('KeyK');
+  window.close();
+});
+
+test('drawings: a right-click on a drawing changes its color and thickness, or deletes it', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  const d = T.addDrawing(sc, { kind: 'line', points: [[100, 100], [300, 100]], stroke: '#e05252', width: 2 });
+  const stroke1 = T.mapView(sc).w / RECT.width;
+  const menuOn = id => $('#map-svg [data-drawing="' + id + '"]').dispatchEvent(new window.MouseEvent('contextmenu', { clientX: 50, clientY: 50, button: 2, bubbles: true, cancelable: true }));
+  menuOn(d.id);
+  assert.strictEqual($('#map-menu').hidden, false);
+  click($('#map-menu [data-color="#6ea8fe"]'));
+  assert.strictEqual(sc.drawings[0].stroke, '#6ea8fe');
+  assert.strictEqual($('#map-menu').hidden, true, 'a choice closes the menu');
+  menuOn(d.id);
+  click($('#map-menu [data-act="size"][data-n="16"]'));
+  assert.ok(near(sc.drawings[0].width, 16 * stroke1), '16 screen px at this zoom');
+  T.undoScene(sc);
+  assert.strictEqual(sc.drawings[0].width, 2, 'one undo step');
+  menuOn(d.id);
+  click($('#map-menu [data-act="delete"]'));
+  assert.strictEqual(sc.drawings.length, 0);
+
+  const t = T.addDrawing(sc, { kind: 'text', x: 100, y: 100, text: 'Hi', size: 16, stroke: '#e05252' });
+  menuOn(t.id);
+  assert.match($('#map-menu').textContent, /Size/);
+  click($('#map-menu [data-act="size"][data-n="32"]'));
+  assert.ok(near(sc.drawings[0].size, 32 * stroke1));
   window.close();
 });
 
