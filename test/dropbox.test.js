@@ -757,3 +757,40 @@ test('Dropbox sync: a pull that the browser storage refuses is not recorded, so 
   assert.deepEqual(names(T), ['Aria', 'Corvin']);
   window.close();
 });
+
+/* ---- Map images (js/maps.js) ---- */
+
+test('Dropbox sync: a map image is uploaded once to the campaign\'s maps folder; another device downloads it when it shows the scene', async () => {
+  const shared = newDropbox();
+  const a = await setup({ dbx: shared });
+  a.T.decodeImage = async blob => ({ blob: new a.window.Blob([await blob.arrayBuffer()], { type: 'image/webp' }), width: 300, height: 200 });
+  await connect(a);
+  const { scene } = await a.T.createScene({ name: 'Shared Map', file: new a.window.File([new Uint8Array([9, 8, 7, 6])], 'm.png', { type: 'image/png' }) });
+  await a.T.dropboxFlush();
+  await settle();
+  const cid = a.T.campaignId;
+  const path = '/campaigns/' + cid + '/maps/' + scene.imageBlobId + '.webp';
+  const f = shared.file(path);
+  assert.ok(f, 'uploaded');
+  assert.deepEqual(Array.from(f.content), [9, 8, 7, 6]);
+  assert.deepEqual(shared.json(docPath(cid, 'osr')).scenes.map(s => s.name), ['Shared Map']);
+  const uploads = shared.writes().filter(w => w.includes('/maps/')).length;
+  a.T.createCharacter('# Later');
+  await a.T.dropboxFlush();
+  assert.strictEqual(shared.writes().filter(w => w.includes('/maps/')).length, uploads, 'not uploaded again');
+  a.window.close();
+
+  const b = await setup({ dbx: shared });
+  b.T.mapRect = () => ({ left: 0, top: 0, width: 1000, height: 700 });
+  await connect(b);
+  click(b.$('#dbx-use-remote'));
+  await settle();
+  assert.strictEqual(await b.T.store.getBlob(scene.imageBlobId), undefined, 'not downloaded before it is needed');
+  click(b.$('#tabs .tab-btn[data-tab="maps"]'));
+  await settle();
+  const rec = await b.T.store.getBlob(scene.imageBlobId);
+  assert.deepEqual(Array.from(new Uint8Array(rec.bytes)), [9, 8, 7, 6]);
+  assert.ok(b.$('#map-svg image'), 'shown');
+  await settle();
+  b.window.close();
+});

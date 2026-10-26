@@ -28,6 +28,7 @@
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
     monsters: [], monstersSeeded: false, brpMonstersSeeded: false, slMonstersSeeded: false, conditions: [],
     compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, slCompendiumSeeded: false,
+    scenes: [], activeSceneIds: {},
     settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
@@ -174,6 +175,9 @@
     state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
     if (!Array.isArray(state.combat.entries)) state.combat.entries = [];
     if (OSR.linkSeeds && OSR.seeds && Object.keys(OSR.seeds).length) OSR.linkSeeds(state); // js/seeds.js
+    if (!Array.isArray(state.scenes)) state.scenes = [];
+    if (!state.activeSceneIds || typeof state.activeSceneIds !== 'object') state.activeSceneIds = {};
+    if (OSR.ensureSceneShape) state.scenes.forEach(OSR.ensureSceneShape); // js/maps.js
     state.combat.entries.forEach(e => {
       if (!e.id) e.id = uid();
       if (e.side !== 'ally' && e.side !== 'enemy' && e.side !== 'neutral') {

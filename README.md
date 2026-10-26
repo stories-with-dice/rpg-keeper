@@ -35,7 +35,9 @@ renames or deletes the current campaign. Export, Import, and Dropbox sync work o
 campaign.
 
 - **Export** (top bar) downloads a single `osr-manager-YYYYMMDD.json` with *all* your data —
-  characters, notes, consumables, the monster library, the current encounter, settings and the log.
+  characters, notes, consumables, the monster library, the current encounter, map scenes, settings
+  and the log. When the campaign has map images, Export asks first: with **Include map images**,
+  you get `osr-manager-YYYYMMDD.zip` with the same data and every map image. Import reads both.
 - **Import** offers **Replace all** or **Merge** (adds the file's characters + monsters to what you have).
   A **content pack** (a file with a `pack` header, such as the Unknown Armies catalog below) is only
   ever added: Import asks once, skips entries you already have, and switches **System** to the
@@ -51,7 +53,8 @@ has the same data. It is off until you click **Connect**.
 - Your Dropbox app folder (**Apps/&lt;app name&gt;/**) holds a **campaigns** folder: the list of
   campaigns, and one folder for each campaign with one file for the shared data (**shared.json**)
   and one for each system (**osr.json**, **ua3e.json**, **brp.json**, **sl.json**). A change uploads
-  only the file it changed. The **seeds** folder holds the default Bestiary and Compendium of each
+  only the file it changed. Map images are in the campaign's **maps** folder; another browser
+  downloads an image when it first shows its scene. The **seeds** folder holds the default Bestiary and Compendium of each
   system, with any content pack you imported. The app can see only its own folder in your Dropbox,
   nothing else.
 - Every browser where you connect sees every campaign. A campaign made in another browser is
@@ -339,6 +342,36 @@ In the sheet editor, the Journal, and the Compendium entry editor, typing `[` fo
 characters** pops a search of Compendium entry names. **↑ / ↓** to move, **Enter / Tab** or click to
 insert `[Name]`, **Esc** to dismiss. With text selected, pressing `[` or `]` in any of those editors
 wraps the selection in `[ ]` instead of replacing it.
+
+---
+
+## Maps tab
+
+Battle maps and world maps, one **scene** at a time. Each scene belongs to the current **System**.
+
+- **New scene.** Choose **+ New scene…** in the scene selector. Give it a name, and choose an image
+  file or enter the address of an image. You can also paste an image (Ctrl/Cmd+V) on the Maps tab,
+  or drop an image file on the map. With no image, the scene is a blank map.
+  - The app keeps its own copy of the image (scaled to at most 8192 px), so the map works offline
+    and syncs with Dropbox.
+  - Some websites do not allow a download from another site. Then the scene shows the image from
+    its address, with a warning: that image is not saved, and it is gone if the address stops working.
+- **Scenes.** The selector switches scenes. **Rename**, **Duplicate** (the copy shares the image), and
+  **Delete** work on the open scene.
+- **Move and zoom.** With the hand tool, drag to move the view. The mouse wheel zooms around the
+  pointer. The middle mouse button, or Space held, moves the view with any tool. The
+  <i>expand</i> button shows the whole map again.
+- **Grid.** Open **Grid** to choose squares or hexes (flat-top or pointy-top), the cell size in
+  image pixels, the offset, and what one cell is (for example 5 ft, or 6 miles for a hexcrawl).
+  - To match the map's own grid, choose the crop tool and drag over one cell, from corner to corner.
+    For more precision, drag over several cells and enter how many in **Drag covers**. For hexes,
+    drag across a row of hexes.
+  - Then the arrow keys move the grid by 1 px (Shift: 10 px).
+  - **Lock grid** keeps the grid from changing.
+- **Measure.** With the ruler tool, drag from one point to another. The app shows the distance in
+  cells and in your unit, for example "3 cells · 15 ft". A diagonal step on squares counts as one cell.
+
+Tokens, drawing, and hexcrawl notes come in later versions.
 
 ---
 

@@ -9,9 +9,10 @@
  *                                     character owns, and the order of
  *                                     characters and trackers
  *            '<campaignId>/<system>'  that system's characters, monsters,
- *                                     Compendium entries, and the HP/Wounds/
- *                                     Madness trackers of its characters
- *   blobs  binary data (map images, token icons — used from the Maps PRs on)
+ *                                     Compendium entries, map scenes, and the
+ *                                     HP/Wounds/Madness trackers of its characters
+ *   blobs  binary data by blob id: { bytes: ArrayBuffer, type, width, height }
+ *          (map images; token icons from PR 9 on)
  *   meta   per-device values: 'campaigns' ([{ id, name, createdAt, primary }])
  *          and 'activeCampaignId'
  *
@@ -123,12 +124,13 @@
   // Every system gets a document, even an empty one.
   function splitState(state) {
     const docs = {};
-    OSR.SYSTEMS.forEach(s => { docs[s] = { characters: [], monsters: [], compendium: [], consumables: [] }; });
+    OSR.SYSTEMS.forEach(s => { docs[s] = { characters: [], monsters: [], compendium: [], consumables: [], scenes: [] }; });
     const sysOf = x => (OSR.SYSTEMS.indexOf(x) === -1 ? 'osr' : x);
     const characters = state.characters || [];
     characters.forEach(ch => docs[sysOf(OSR.charSystemKey(ch))].characters.push(ch));
     (state.monsters || []).forEach(m => docs[sysOf(m.system)].monsters.push(m));
     (state.compendium || []).forEach(e => docs[sysOf(e.system)].compendium.push(e));
+    (state.scenes || []).forEach(sc => docs[sysOf(sc.system)].scenes.push(sc));
     const owners = trackerOwners(characters);
     const shared = [];
     (state.consumables || []).forEach(c => {
@@ -136,7 +138,7 @@
       if (sys) docs[sysOf(sys)].consumables.push(c); else shared.push(c);
     });
     const campaign = Object.assign({}, state);
-    delete campaign.characters; delete campaign.monsters; delete campaign.compendium;
+    delete campaign.characters; delete campaign.monsters; delete campaign.compendium; delete campaign.scenes;
     campaign.consumables = shared;
     campaign.order = {
       characters: characters.map(c => c.id),
@@ -165,6 +167,7 @@
     state.characters = byOrder(all('characters'), order.characters);
     state.monsters = all('monsters');
     state.compendium = all('compendium');
+    state.scenes = all('scenes');
     state.consumables = byOrder((campaign.consumables || []).concat(all('consumables')), order.consumables);
     return state;
   }
@@ -183,6 +186,10 @@
     return docs;
   }
 
-  OSR.store = { open, getMeta, setMeta, getDocs, putDocs, deleteDocs };
+  const getBlob = id => tx('blobs', 'readonly', s => s.get(id));
+  const putBlob = (id, value) => tx('blobs', 'readwrite', s => s.put(value, id));
+  const deleteBlob = id => tx('blobs', 'readwrite', s => s.delete(id));
+
+  OSR.store = { open, getMeta, setMeta, getDocs, putDocs, deleteDocs, getBlob, putBlob, deleteBlob };
   Object.assign(OSR, { splitState, joinState, serializeState: serialize, parseDocs });
 })(window.OSR = window.OSR || {});

@@ -22,6 +22,7 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const SCRIPTS = [
   'js/marked.min.js',
   'js/fuse.min.js',
+  'vendor/fflate/fflate.min.js',
   'js/monsters.js',
   'js/ua-statblock.js',
   'js/core.js',
@@ -39,6 +40,8 @@ const SCRIPTS = [
   'js/monster-modals.js',
   'js/monster-browser.js',
   'js/combat-populate.js',
+  'js/grid.js',
+  'js/maps.js',
   'js/compendium.js',
   'js/compendium-popups.js',
   'js/tables.js',

@@ -1,0 +1,560 @@
+/* js/maps.js — the Maps tab: scenes (a map image with a grid), one SVG view
+ * with pan and zoom, the measure tool, and grid calibration.
+ *
+ * A scene lives in OSR.state.scenes (split by system into the system
+ * documents, js/store.js) and is shown only under its own System:
+ *   { id, name, system, imageBlobId, imageType, imageUrl, width, height,
+ *     grid: { type, orient, size, offsetX, offsetY, unitsPerCell, unit, show, locked },
+ *     hexcrawl: { on, explored, coords }, tokens: [], drawings: [], pins: [] }
+ * state.activeSceneIds[system] is the open scene of each system. The image
+ * itself is a blob in IndexedDB (OSR.store.putBlob, `imageBlobId`), synced to
+ * Dropbox by js/dropbox.js; an image that could not be downloaded keeps only
+ * its address (`imageUrl`). Grid geometry is js/grid.js (window.MapGrid).
+ *
+ * The SVG has these layers, in order: image, grid, drawings, pins, tokens,
+ * overlay (tool feedback). The view (viewBox) of each scene is kept in memory
+ * only. Map coordinates are the image's own pixels.
+ */
+(function (OSR) {
+  'use strict';
+  const { $, $$, escapeHtml, uid } = OSR;
+  const G = window.MapGrid;
+
+  const NEW = '__new';
+  const MAX_SIDE = 8192;                     // images are scaled down to this
+  const BLANK = { width: 2000, height: 1500 }; // a scene with no image
+  const MAX_GRID_CELLS = 4000;               // more visible cells than this: the grid is not drawn
+  const GRID_DEFAULTS = { type: 'square', orient: 'flat', size: 50, offsetX: 0, offsetY: 0, unitsPerCell: 5, unit: 'ft', show: true, locked: false };
+
+  let tool = 'pan';
+  const views = Object.create(null);  // scene id -> { x, y, w, h }
+  const images = new Map();           // blob id -> object URL | 'loading' | 'missing'
+  let drag = null;                    // the pointer drag in progress
+  let overlay = null;                 // { kind: 'measure' | 'calibrate', a, b }
+  let status = '';
+  let pendingImage = null;            // a pasted image waiting in the New scene dialog
+  const calibrateSpan = () => Math.max(1, Math.round(Number(($('#grid-span') || {}).value) || 1));
+
+  function ensureSceneShape(sc) {
+    if (!sc.id) sc.id = uid();
+    sc.name = sc.name == null || String(sc.name).trim() === '' ? 'Scene' : String(sc.name);
+    sc.system = OSR.SYSTEMS.indexOf(sc.system) === -1 ? 'osr' : sc.system;
+    sc.width = Number(sc.width) > 0 ? Number(sc.width) : BLANK.width;
+    sc.height = Number(sc.height) > 0 ? Number(sc.height) : BLANK.height;
+    sc.grid = Object.assign({}, GRID_DEFAULTS, sc.grid || {});
+    if (sc.grid.type !== 'hex') sc.grid.type = 'square';
+    if (sc.grid.orient !== 'pointy') sc.grid.orient = 'flat';
+    sc.grid.size = Number(sc.grid.size) >= 4 ? Number(sc.grid.size) : GRID_DEFAULTS.size;
+    ['offsetX', 'offsetY'].forEach(k => { sc.grid[k] = Number(sc.grid[k]) || 0; });
+    sc.grid.unitsPerCell = Number(sc.grid.unitsPerCell) >= 0 ? Number(sc.grid.unitsPerCell) : GRID_DEFAULTS.unitsPerCell;
+    sc.hexcrawl = Object.assign({ on: false, explored: [], coords: false }, sc.hexcrawl || {});
+    ['tokens', 'drawings', 'pins'].forEach(k => { if (!Array.isArray(sc[k])) sc[k] = []; });
+    return sc;
+  }
+
+  const scenesForSystem = () => OSR.state.scenes.filter(sc => sc.system === OSR.currentSystem());
+  function activeScene() {
+    const list = scenesForSystem();
+    const id = OSR.state.activeSceneIds[OSR.currentSystem()];
+    return list.find(sc => sc.id === id) || list[0] || null;
+  }
+  function setActiveScene(id) {
+    OSR.state.activeSceneIds = Object.assign({}, OSR.state.activeSceneIds, { [OSR.currentSystem()]: id });
+    overlay = null;
+    OSR.save();
+    renderMaps();
+  }
+
+  /* ---- Images ---- */
+
+  // Browser: decodes the image, scales it to MAX_SIDE, and encodes it as WebP
+  // (PNG where the browser cannot encode WebP). Tests replace OSR.decodeImage
+  // (jsdom has no canvas).
+  async function decodeImage(blob) {
+    const bmp = await createImageBitmap(blob);
+    const scale = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
+    const width = Math.round(bmp.width * scale), height = Math.round(bmp.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    canvas.getContext('2d').drawImage(bmp, 0, 0, width, height);
+    const out = await new Promise(r => canvas.toBlob(r, 'image/webp', 0.9));
+    return { blob: out || blob, width, height };
+  }
+
+  // The size of an image by its address (a scene that keeps only imageUrl).
+  // Tests replace it.
+  function measureImageUrl(url) {
+    return new Promise(resolve => {
+      const img = new Image();
+      const done = v => { clearTimeout(t); resolve(v); };
+      const t = setTimeout(() => done(null), 15000);
+      img.onload = () => done({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = () => done(null);
+      img.src = url;
+    });
+  }
+
+  // Stores an image blob in IndexedDB. Resolves to { blobId, type, width, height }.
+  async function storeImage(blob) {
+    if (!blob || !/^image\//.test(blob.type || '')) throw new Error('That file is not an image.');
+    const d = await OSR.decodeImage(blob);
+    const id = uid();
+    const type = d.blob.type || blob.type;
+    await OSR.store.putBlob(id, { bytes: await d.blob.arrayBuffer(), type, width: d.width, height: d.height });
+    return { blobId: id, type, width: d.width, height: d.height };
+  }
+
+  // Creates a scene in the current system from a file/blob, an address, or
+  // nothing (a blank map), and opens it. Resolves to { scene, warning }.
+  async function createScene(opts) {
+    const o = opts || {};
+    const sc = { id: uid(), name: String(o.name || '').trim() || 'Scene', system: OSR.currentSystem() };
+    let warning = '';
+    if (o.file) {
+      const img = await storeImage(o.file);
+      Object.assign(sc, { imageBlobId: img.blobId, imageType: img.type, width: img.width, height: img.height });
+    } else if (o.url) {
+      try {
+        const res = await fetch(o.url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const img = await storeImage(await res.blob());
+        Object.assign(sc, { imageBlobId: img.blobId, imageType: img.type, width: img.width, height: img.height });
+      } catch (e) {
+        // CORS or a dead address: show it from the address, but it is not saved.
+        const size = await OSR.measureImageUrl(o.url);
+        Object.assign(sc, { imageUrl: o.url }, size || BLANK);
+        warning = 'The image could not be downloaded (' + e.message + '), so it is shown from its address. It is not saved in this browser or in Dropbox, and it is gone if the address stops working.';
+      }
+    }
+    ensureSceneShape(sc);
+    OSR.state.scenes.push(sc);
+    OSR.pushNote('Maps', 'New scene “' + sc.name + '”');
+    setActiveScene(sc.id);
+    if (warning) setStatus(warning);
+    return { scene: sc, warning };
+  }
+
+  // The object URL of a scene's image, or null while it loads (renderScene
+  // runs again when it is ready) or when it is missing.
+  function imageHref(sc) {
+    if (!sc.imageBlobId) return sc.imageUrl || null;
+    const v = images.get(sc.imageBlobId);
+    if (v && v !== 'loading' && v !== 'missing') return v;
+    if (!v) loadImage(sc);
+    return null;
+  }
+  async function loadImage(sc) {
+    const id = sc.imageBlobId;
+    images.set(id, 'loading');
+    let rec = null;
+    try { rec = await OSR.store.getBlob(id); } catch (e) { /* treated as missing */ }
+    if (!rec && OSR.dropboxFetchBlob) {
+      try { rec = await OSR.dropboxFetchBlob(id, sc.imageType); } catch (e) { rec = null; }
+    }
+    images.set(id, rec ? URL.createObjectURL(new Blob([rec.bytes], { type: rec.type })) : 'missing');
+    const cur = activeScene();
+    if (cur && cur.imageBlobId === id) renderScene();
+  }
+
+  /* ---- View ---- */
+
+  // The SVG element's box on screen. Tests replace OSR.mapRect (jsdom has no layout).
+  function mapRect() {
+    const r = $('#map-svg').getBoundingClientRect();
+    return r.width && r.height ? r : { left: r.left, top: r.top, width: 1000, height: 700 };
+  }
+
+  // Map point under a screen point. The viewBox always has the element's
+  // aspect ratio (preserveAspectRatio="none"), so x and y scale alike.
+  function screenToMap(clientX, clientY, rect, v) {
+    return { x: v.x + (clientX - rect.left) * v.w / rect.width, y: v.y + (clientY - rect.top) * v.h / rect.height };
+  }
+
+  function fitView(sc, rect) {
+    const aspect = rect.width / rect.height;
+    const margin = 1.05;
+    let w = sc.width * margin, h = sc.height * margin;
+    if (w / h < aspect) w = h * aspect; else h = w / aspect;
+    return { x: (sc.width - w) / 2, y: (sc.height - h) / 2, w, h };
+  }
+
+  // The scene's view, made to match the element's current aspect ratio.
+  function viewOf(sc) {
+    const rect = OSR.mapRect();
+    let v = views[sc.id];
+    if (!v) v = views[sc.id] = fitView(sc, rect);
+    const h = v.w * rect.height / rect.width;
+    if (Math.abs(h - v.h) > 1e-6) { v.y += (v.h - h) / 2; v.h = h; }
+    return v;
+  }
+
+  const zoomLimits = sc => ({ min: 20, max: Math.max(sc.width, sc.height) * 6 });
+
+  // Zooms by `factor` (< 1 = closer) around the map point (cx, cy).
+  function zoomAt(sc, factor, cx, cy) {
+    const v = viewOf(sc), lim = zoomLimits(sc);
+    const w = Math.min(lim.max, Math.max(lim.min, v.w * factor));
+    const f = w / v.w;
+    views[sc.id] = { x: cx - (cx - v.x) * f, y: cy - (cy - v.y) * f, w, h: v.h * f };
+    renderScene();
+  }
+
+  /* ---- Render ---- */
+
+  function setStatus(text) {
+    status = text || '';
+    const el = $('#map-status');
+    if (el) el.textContent = status;
+  }
+
+  function renderMaps() {
+    const sel = $('#map-scene');
+    if (!sel) return;
+    const list = scenesForSystem();
+    const cur = activeScene();
+    sel.innerHTML = list.map(sc => '<option value="' + escapeHtml(sc.id) + '">' + escapeHtml(sc.name) + '</option>').join('') +
+      '<option value="' + NEW + '">+ New scene…</option>';
+    sel.value = cur ? cur.id : NEW;
+    ['#map-rename', '#map-duplicate', '#map-delete', '#map-fit'].forEach(s => { $(s).disabled = !cur; });
+    $$('#map-tools .map-tool').forEach(b => {
+      b.classList.toggle('is-active', b.dataset.tool === tool);
+      b.disabled = !cur;
+    });
+    $('#map-empty').hidden = !!cur;
+    $('#map-svg').hidden = !cur;
+    renderGridPanel(cur);
+    renderScene();
+    setStatus(status);
+  }
+
+  function renderGridPanel(sc) {
+    const g = sc ? sc.grid : GRID_DEFAULTS;
+    const set = (sel, v) => { const el = $(sel); if (el && document.activeElement !== el) el.value = v; };
+    set('#grid-type', g.type);
+    set('#grid-orient', g.orient);
+    set('#grid-size', +g.size.toFixed(2));
+    set('#grid-ox', +g.offsetX.toFixed(2));
+    set('#grid-oy', +g.offsetY.toFixed(2));
+    set('#grid-units', g.unitsPerCell);
+    set('#grid-unit', g.unit);
+    $('#grid-show').checked = !!g.show;
+    $('#grid-lock').checked = !!g.locked;
+    $('#grid-orient-label').hidden = g.type !== 'hex';
+    ['#grid-type', '#grid-orient', '#grid-size', '#grid-ox', '#grid-oy'].forEach(s => { $(s).disabled = !sc || g.locked; });
+    ['#grid-units', '#grid-unit', '#grid-show', '#grid-lock'].forEach(s => { $(s).disabled = !sc; });
+  }
+
+  const num = n => +n.toFixed(2);
+
+  function gridMarkup(sc, v, stroke) {
+    const g = sc.grid;
+    if (!g.show) return '';
+    if (g.type === 'square') {
+      const s = g.size;
+      return '<defs><pattern id="map-grid-pat" patternUnits="userSpaceOnUse" x="' + num(g.offsetX) + '" y="' + num(g.offsetY) +
+        '" width="' + num(s) + '" height="' + num(s) + '"><path d="M ' + num(s) + ' 0 L 0 0 0 ' + num(s) +
+        '" fill="none" class="map-grid-line" stroke-width="' + num(stroke) + '"/></pattern></defs>' +
+        '<rect class="map-grid" x="0" y="0" width="' + sc.width + '" height="' + sc.height + '" fill="url(#map-grid-pat)"/>';
+    }
+    const cells = G.cellsIn({ x: v.x, y: v.y, w: v.w, h: v.h }, g, MAX_GRID_CELLS);
+    if (!cells) return '';
+    const d = cells.map(c => {
+      const p = G.cellCorners(c, g);
+      return 'M' + p.map(q => num(q.x) + ' ' + num(q.y)).join('L') + 'Z';
+    }).join('');
+    return '<defs><clipPath id="map-clip"><rect x="0" y="0" width="' + sc.width + '" height="' + sc.height + '"/></clipPath></defs>' +
+      '<path class="map-grid map-grid-line" clip-path="url(#map-clip)" fill="none" stroke-width="' + num(stroke) + '" d="' + d + '"/>';
+  }
+
+  function overlayMarkup(sc, stroke) {
+    if (!overlay || overlay.sceneId !== sc.id) return '';
+    const a = overlay.a, b = overlay.b;
+    if (overlay.kind === 'calibrate') {
+      const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y), w = Math.abs(b.x - a.x), h = Math.abs(b.y - a.y);
+      return '<rect class="map-calibrate" x="' + num(x) + '" y="' + num(y) + '" width="' + num(w) + '" height="' + num(h) + '" stroke-width="' + num(stroke * 2) + '"/>';
+    }
+    const fs = stroke * 16;
+    return '<line class="map-measure" x1="' + num(a.x) + '" y1="' + num(a.y) + '" x2="' + num(b.x) + '" y2="' + num(b.y) + '" stroke-width="' + num(stroke * 3) + '"/>' +
+      '<text class="map-measure-label" x="' + num(b.x + fs / 2) + '" y="' + num(b.y - fs / 2) + '" font-size="' + num(fs) + '">' + escapeHtml(measureText(sc, a, b)) + '</text>';
+  }
+
+  // "4 cells · 20 ft" between two map points.
+  function measureText(sc, a, b) {
+    const g = sc.grid;
+    const n = G.distance(G.cellAt(a.x, a.y, g), G.cellAt(b.x, b.y, g), g);
+    const units = g.unitsPerCell ? ' · ' + num(n * g.unitsPerCell) + (g.unit ? ' ' + g.unit : '') : '';
+    return n + (n === 1 ? ' cell' : ' cells') + units;
+  }
+
+  // Draws only while the Maps tab shows (its tab click draws it): a hidden
+  // SVG has no size, and a scene's image is downloaded only when it shows.
+  function renderScene() {
+    const svg = $('#map-svg');
+    const sc = activeScene();
+    if (!svg || !sc) { if (svg) svg.innerHTML = ''; return; }
+    if (!mapsTabActive()) return;
+    const v = viewOf(sc);
+    const rect = OSR.mapRect();
+    const stroke = v.w / rect.width; // one screen pixel, in map units
+    svg.setAttribute('viewBox', [v.x, v.y, v.w, v.h].map(num).join(' '));
+    const href = imageHref(sc);
+    let image = '<rect class="map-backdrop" x="0" y="0" width="' + sc.width + '" height="' + sc.height + '"/>';
+    if (href) image += '<image href="' + escapeHtml(href) + '" x="0" y="0" width="' + sc.width + '" height="' + sc.height + '" preserveAspectRatio="none"/>';
+    else if (sc.imageBlobId && images.get(sc.imageBlobId) === 'missing') {
+      image += '<text class="map-missing" x="' + sc.width / 2 + '" y="' + sc.height / 2 + '" font-size="' + num(stroke * 18) + '">The image of this scene is not in this browser.</text>';
+    }
+    svg.innerHTML =
+      '<g class="map-layer-image">' + image + '</g>' +
+      '<g class="map-layer-grid">' + gridMarkup(sc, v, stroke) + '</g>' +
+      '<g class="map-layer-drawings"></g><g class="map-layer-pins"></g><g class="map-layer-tokens"></g>' +
+      '<g class="map-layer-overlay">' + overlayMarkup(sc, stroke) + '</g>';
+  }
+
+  /* ---- Scene list ---- */
+
+  function renameScene() {
+    const sc = activeScene();
+    if (!sc) return;
+    const name = prompt('New name for the scene:', sc.name);
+    if (name == null || !name.trim() || name.trim() === sc.name) return;
+    sc.name = name.trim();
+    OSR.save();
+    renderMaps();
+  }
+
+  function duplicateScene() {
+    const sc = activeScene();
+    if (!sc) return null;
+    const copy = JSON.parse(JSON.stringify(sc));
+    copy.id = uid();
+    copy.name = sc.name + ' (copy)';
+    OSR.state.scenes.splice(OSR.state.scenes.indexOf(sc) + 1, 0, copy); // shares the image blob
+    setActiveScene(copy.id);
+    return copy;
+  }
+
+  async function deleteScene() {
+    const sc = activeScene();
+    if (!sc || !confirm('Delete the scene “' + sc.name + '”? Its tokens and drawings are deleted too.')) return false;
+    const list = scenesForSystem();
+    const next = list[list.indexOf(sc) + 1] || list[list.indexOf(sc) - 1] || null;
+    OSR.state.scenes = OSR.state.scenes.filter(x => x !== sc);
+    delete views[sc.id];
+    // The image goes too, unless another scene (a duplicate) still shows it.
+    if (sc.imageBlobId && !OSR.state.scenes.some(x => x.imageBlobId === sc.imageBlobId)) {
+      try { await OSR.store.deleteBlob(sc.imageBlobId); } catch (e) { /* stays as an orphan */ }
+      const url = images.get(sc.imageBlobId);
+      if (url && url.startsWith && url.startsWith('blob:')) URL.revokeObjectURL(url);
+      images.delete(sc.imageBlobId);
+    }
+    OSR.pushNote('Maps', 'Deleted scene “' + sc.name + '”');
+    setActiveScene(next ? next.id : null);
+    return true;
+  }
+
+  /* ---- New scene dialog ---- */
+
+  function openSceneModal(image) {
+    pendingImage = image || null;
+    $('#scene-name').value = '';
+    $('#scene-file').value = '';
+    $('#scene-url').value = '';
+    $('#scene-error').hidden = true;
+    $('#scene-modal').hidden = false;
+    $('#scene-name').focus();
+    renderMaps(); // the selector goes back from "+ New scene…"
+  }
+  function closeSceneModal() { const m = $('#scene-modal'); if (m) m.hidden = true; pendingImage = null; }
+
+  async function submitSceneModal() {
+    const file = ($('#scene-file').files && $('#scene-file').files[0]) || pendingImage;
+    const url = $('#scene-url').value.trim();
+    const name = $('#scene-name').value.trim() || (file && file.name ? file.name.replace(/\.[^.]+$/, '') : '') || 'Scene';
+    try {
+      await createScene({ name, file, url: file ? '' : url });
+      closeSceneModal();
+    } catch (e) {
+      $('#scene-error').textContent = e.message;
+      $('#scene-error').hidden = false;
+    }
+  }
+
+  /* ---- Pointer tools ---- */
+
+  function onPointerDown(e) {
+    const sc = activeScene();
+    if (!sc || e.button > 1) return;
+    const rect = OSR.mapRect();
+    const v = viewOf(sc);
+    const p = screenToMap(e.clientX, e.clientY, rect, v);
+    const kind = e.button === 1 || spaceDown ? 'pan' : tool;
+    if (kind === 'calibrate' && sc.grid.locked) { setStatus('The grid is locked. Untick Lock grid to set it.'); return; }
+    drag = { kind, sceneId: sc.id, startClient: { x: e.clientX, y: e.clientY }, startView: Object.assign({}, v), a: p };
+    if (kind === 'measure' || kind === 'calibrate') overlay = { kind, sceneId: sc.id, a: p, b: p };
+    if (e.preventDefault) e.preventDefault();
+    const wrap = $('#map-wrap');
+    if (wrap && wrap.focus) wrap.focus();
+    renderScene();
+  }
+
+  function onPointerMove(e) {
+    if (!drag) return;
+    const sc = activeScene();
+    if (!sc || sc.id !== drag.sceneId) { drag = null; return; }
+    const rect = OSR.mapRect();
+    if (drag.kind === 'pan') {
+      const v = drag.startView;
+      views[sc.id] = Object.assign({}, v, {
+        x: v.x - (e.clientX - drag.startClient.x) * v.w / rect.width,
+        y: v.y - (e.clientY - drag.startClient.y) * v.h / rect.height
+      });
+    } else {
+      overlay.b = screenToMap(e.clientX, e.clientY, rect, viewOf(sc));
+      if (drag.kind === 'measure') setStatus(measureText(sc, overlay.a, overlay.b));
+    }
+    renderScene();
+  }
+
+  function onPointerUp(e) {
+    if (!drag) return;
+    if (e && e.clientX != null) onPointerMove(e); // the last position counts
+    const d = drag;
+    drag = null;
+    const sc = activeScene();
+    if (!sc || d.kind !== 'calibrate') return;
+    const a = overlay.a, b = overlay.b;
+    overlay = null;
+    if (Math.abs(b.x - a.x) < 4 || Math.abs(b.y - a.y) < 4) { setStatus('Drag over a whole cell to set the grid.'); renderScene(); return; }
+    sc.grid = Object.assign(sc.grid, G.gridFromRect({ x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y }, sc.grid, calibrateSpan()));
+    OSR.save();
+    setStatus('Grid set: ' + num(sc.grid.size) + ' px per cell. Arrow keys move it by 1 px.');
+    renderMaps();
+  }
+
+  function onWheel(e) {
+    const sc = activeScene();
+    if (!sc) return;
+    e.preventDefault();
+    const p = screenToMap(e.clientX, e.clientY, OSR.mapRect(), viewOf(sc));
+    // By the wheel's distance: one mouse notch (about 100 px) is about 16%,
+    // and a trackpad's many small steps add up the same way. deltaMode 1 =
+    // lines (Firefox), 2 = pages.
+    const px = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 600 : 1);
+    zoomAt(sc, Math.pow(1.0015, Math.max(-600, Math.min(600, px))), p.x, p.y);
+  }
+
+  let spaceDown = false;
+  function onMapKey(e) {
+    const sc = activeScene();
+    if (!sc) return;
+    if (e.key === ' ') { spaceDown = e.type === 'keydown'; if (e.type === 'keydown') e.preventDefault(); return; }
+    if (e.type !== 'keydown') return;
+    const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    if (arrows[e.key] && tool === 'calibrate') {
+      if (sc.grid.locked) { setStatus('The grid is locked.'); return; }
+      const step = e.shiftKey ? 10 : 1;
+      sc.grid.offsetX += arrows[e.key][0] * step;
+      sc.grid.offsetY += arrows[e.key][1] * step;
+      e.preventDefault();
+      OSR.save();
+      renderMaps();
+    } else if (e.key === 'Escape' && overlay) { overlay = null; setStatus(''); renderScene(); }
+  }
+
+  /* ---- Paste and drop ---- */
+
+  const mapsTabActive = () => { const t = $('#tab-maps'); return !!t && t.classList.contains('is-active'); };
+  const isTextField = el => !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+
+  function imageFrom(list) {
+    return Array.from(list || []).map(x => (x.getAsFile ? (x.kind === 'file' ? x.getAsFile() : null) : x))
+      .find(f => f && /^image\//.test(f.type || '')) || null;
+  }
+
+  // Ctrl/Cmd+V of an image on the Maps tab: a new scene (or, with the New
+  // scene dialog open, the dialog's image).
+  function onPaste(e) {
+    const modalOpen = !$('#scene-modal').hidden;
+    if (!modalOpen && (!mapsTabActive() || isTextField(e.target))) return;
+    const cd = e.clipboardData;
+    const img = cd && (imageFrom(cd.files) || imageFrom(cd.items));
+    if (!img) return;
+    e.preventDefault();
+    if (modalOpen) { pendingImage = img; $('#scene-error').textContent = 'Pasted image ready. Click Create.'; $('#scene-error').hidden = false; return; }
+    return createScene({ name: 'Pasted map', file: img }).catch(err => setStatus(err.message));
+  }
+
+  function onDrop(e) {
+    const img = e.dataTransfer && imageFrom(e.dataTransfer.files);
+    if (!img) return;
+    e.preventDefault();
+    return createScene({ name: (img.name || 'Map').replace(/\.[^.]+$/, ''), file: img }).catch(err => setStatus(err.message));
+  }
+
+  /* ---- Grid fields ---- */
+
+  function onGridField(e) {
+    const sc = activeScene();
+    if (!sc) return;
+    const g = sc.grid;
+    const v = e.target.value;
+    switch (e.target.id) {
+      case 'grid-type': g.type = v === 'hex' ? 'hex' : 'square'; break;
+      case 'grid-orient': g.orient = v === 'pointy' ? 'pointy' : 'flat'; break;
+      case 'grid-size': if (Number(v) >= 4) g.size = Number(v); break;
+      case 'grid-ox': g.offsetX = Number(v) || 0; break;
+      case 'grid-oy': g.offsetY = Number(v) || 0; break;
+      case 'grid-units': g.unitsPerCell = Math.max(0, Number(v) || 0); break;
+      case 'grid-unit': g.unit = String(v).trim().slice(0, 12); break;
+      case 'grid-show': g.show = e.target.checked; break;
+      case 'grid-lock': g.locked = e.target.checked; break;
+      default: return;
+    }
+    OSR.save();
+    renderMaps();
+  }
+
+  function wireMaps() {
+    $('#map-scene').addEventListener('change', e => {
+      if (e.target.value === NEW) openSceneModal();
+      else setActiveScene(e.target.value);
+    });
+    $('#map-rename').addEventListener('click', renameScene);
+    $('#map-duplicate').addEventListener('click', duplicateScene);
+    $('#map-delete').addEventListener('click', deleteScene);
+    $('#map-fit').addEventListener('click', () => { const sc = activeScene(); if (sc) { delete views[sc.id]; renderScene(); } });
+    $('#map-tools').addEventListener('click', e => {
+      const b = e.target.closest('.map-tool');
+      if (!b || b.disabled) return;
+      tool = b.dataset.tool;
+      overlay = null;
+      setStatus(tool === 'calibrate' ? 'Drag over one cell of the map to set the grid.' : tool === 'measure' ? 'Drag to measure.' : '');
+      renderMaps();
+    });
+    $('#map-grid-panel').addEventListener('change', onGridField);
+    $('#scene-create').addEventListener('click', submitSceneModal);
+    $('#scene-cancel').addEventListener('click', closeSceneModal);
+    $('#scene-modal').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'file') submitSceneModal(); });
+    const svg = $('#map-svg');
+    svg.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    const wrap = $('#map-wrap');
+    wrap.addEventListener('keydown', onMapKey);
+    wrap.addEventListener('keyup', onMapKey);
+    wrap.addEventListener('dragover', e => { if (e.dataTransfer) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+    wrap.addEventListener('drop', onDrop);
+    document.addEventListener('paste', onPaste);
+    window.addEventListener('resize', () => { if (mapsTabActive()) renderScene(); });
+  }
+
+  // Test-only view of the in-memory map state.
+  const mapsState = () => ({ tool, views: JSON.parse(JSON.stringify(views)), overlay, status, images: new Map(images) });
+
+  Object.assign(OSR, {
+    ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
+    mapRect, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
+    openSceneModal, closeSceneModal, renderMaps, renderScene, wireMaps, mapsState
+  });
+})(window.OSR = window.OSR || {});

@@ -76,6 +76,10 @@ js/sl-seed.js           seedSlMonsters()/seedSlCompendium() — same mechanism a
                        system 'sl', from OSR.data.seeds.sl; called from js/main.js's init()
 js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
+js/grid.js              pure map grid geometry (window.MapGrid / module.exports): squares and flat/pointy
+                       hexes — cellAt, cellCenter, cellCorners, distance, cellsCovered, cellsIn, gridFromRect
+js/maps.js              the Maps tab: scenes (state.scenes), the SVG view (pan, zoom), images in IndexedDB
+                       blobs, grid settings and calibration, the measure tool — see "The Maps tab"
 js/tables.js            the Tables tab: tag filter + name search over OSR.data.tables, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
@@ -93,6 +97,8 @@ js/main.js              composition root: wire() calls every subsystem's wireX()
 js/monsters.js          pure stat-block parser (no DOM, no storage); UMD-ish
 js/marked.min.js        vendored Markdown parser
 js/fuse.min.js          vendored Fuse.js 7 (UMD → window.Fuse) — fuzzy search for the Compendium
+vendor/fflate/           vendored fflate 0.8.2 (UMD → window.fflate; MIT, LICENSE next to it) — the .zip
+                       Export/Import with map images (js/io.js)
 vendor/easymde/         vendored EasyMDE 2.18 (js bundles CodeMirror+marked; css) — Compendium editor
 data/monsters.json     GENERATED: the OSR bestiary (scripts/convert-bestiary.js)
 data/bestiary_data.json  source data for the converter (Shadowdark core bestiary)
@@ -114,6 +120,9 @@ scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> dat
 scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json (see "Tables tab" below
                        for the table shape and the per-file tag mapping)
 test/monsters.test.js  node:test suite for the parser + converter
+test/grid.test.js      node:test suite for js/grid.js (pure)
+test/maps.test.js      node:test suite for js/maps.js and the .zip Export/Import: scenes, images (file,
+                       paste, address, drop), grid, calibration, measure, pan/zoom
 test/tables.test.js    node:test suite for scripts/convert-tables.js (CSV parsing, range parsing,
                        every table's coverage of its die, 1..N)
 test/logic.test.js     node:test unit tests for the app's internals (dice engine, Scarlet Heroes,
@@ -630,8 +639,13 @@ edit the source data or the converter, run it, and commit the result.
   add a new field to `state`, add its default there (and to `STATE_DEFAULTS`) so old saves and
   imported files get backfilled. Per-entry backfills (e.g. `entry.statuses = []`) also go here.
 - **Export is automatic.** `exportData()` serialises the whole `state`, so any field you add to
-  `state` is included in Export/Import with no extra code — and in the Dropbox file. So never
+  `state` is included in Export/Import with no extra code — and in the Dropbox files. So never
   put per-device or secret data in `state` (the Dropbox sync keeps its own keys, see below).
+  When the campaign has map images, Export first asks (`#export-modal`): with **Include map
+  images**, `exportZip()` writes a .zip (vendor/fflate) with that JSON as `campaign.json` and each
+  image as `maps/<blobId>.<ext>`; without, it is the plain .json. Import of a .zip
+  (`importZip()`) stores the images under their own blob ids first, then imports `campaign.json`
+  like a .json file. A Merge import adds the file's scenes with new ids.
 - `save()` also calls `OSR.dropboxNoteSave()` (`js/dropbox.js` — a no-op unless Dropbox sync is on).
   **Replace-all** loads — Import → Replace all and a pull from Dropbox — go through
   `OSR.replaceState(data)` (`js/io.js`), which shares `finishLoad()` (migrate, save, re-render every
@@ -874,6 +888,41 @@ entry, parses it, then attaches the entry's `actions` as `abilities` and Title-c
 buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shadowdark entries),
 `--out`, `--js-out`.
 
+## The Maps tab (`js/maps.js`, `js/grid.js`)
+
+- **Scenes** are `state.scenes` (`ensureSceneShape()` from `ensureStateShape()`):
+  `{ id, name, system, imageBlobId, imageType, imageUrl, width, height, grid, hexcrawl, tokens,
+  drawings, pins }`, where `grid` is `{ type: 'square'|'hex', orient: 'flat'|'pointy', size,
+  offsetX, offsetY, unitsPerCell, unit, show, locked }`. Each belongs to one system
+  (`splitState` puts it in that system's document) and shows only under that System;
+  `state.activeSceneIds[system]` is the open one. `tokens`, `drawings`, `pins`, and `hexcrawl` are
+  for the later Maps PRs (docs/maps-plan.md).
+- **Images** are blobs in IndexedDB (`OSR.store.putBlob(id, { bytes, type, width, height })`,
+  `bytes` an ArrayBuffer — fake-indexeddb cannot store a jsdom Blob). `storeImage()` runs
+  `OSR.decodeImage()` first (canvas: scaled to `MAX_SIDE` 8192 px, encoded as WebP, or PNG where the
+  browser cannot). A scene is made from a file (`#scene-modal`), a paste (Ctrl/Cmd+V on the Maps
+  tab, not in a text field), a drop on `#map-wrap`, or an address: `fetch()` it, and if that fails
+  (CORS, a dead link) keep only `imageUrl` with a warning in `#map-status` — that image is in no
+  storage. Duplicate shares the blob; Delete removes it with the last scene that shows it.
+  `imageHref()` makes one object URL per blob (`images` map); a blob missing here is fetched with
+  `OSR.dropboxFetchBlob()` (`js/dropbox.js`).
+- **Rendering** is one `<svg id="map-svg" preserveAspectRatio="none">`, rebuilt by `renderScene()`
+  only while the tab shows (a hidden SVG has no size, and an image downloads only when it shows):
+  layers image, grid, drawings, pins, tokens, overlay. The grid is a `<pattern>` for squares, and a
+  path of `MapGrid.cellsIn()` (the visible hexes, at most `MAX_GRID_CELLS`) clipped to the image for
+  hexes. Line widths are one screen pixel in map units (`viewBox` width / box width).
+- **View**: `views[sceneId]` (memory only) = the viewBox, kept at the box's aspect ratio
+  (`viewOf()`), so `screenToMap(clientX, clientY, rect, view)` is a plain scale. `OSR.mapRect()` is
+  the SVG's box (tests replace it: jsdom has no layout). Pan: drag with the hand tool, the middle
+  button, or Space held. Zoom: the wheel, by its distance (`Math.pow(1.0015, deltaY)`), around the
+  pointer, between 20 map px and 6 × the image (`zoomLimits()`). **Fit** forgets the view.
+- **Tools** (`#map-tools`, `tool`): pointer events on the SVG, moves and ups on `window`.
+  `measure` draws a line and puts `measureText()` ("3 cells · 15 ft", `MapGrid.distance`: a square
+  diagonal counts 1) in `#map-status`. `calibrate` drags a rectangle over `#grid-span` × `#grid-span`
+  cells and sets the grid from it (`MapGrid.gridFromRect()`); then arrow keys on the focused
+  `#map-wrap` move the offset by 1 px (Shift: 10). `grid.locked` blocks both and disables the grid
+  fields. The grid fields (`#map-grid-panel`) change the grid by hand.
+
 ## The Tables tab (`js/tables.js`)
 
 Read-only, filterable browser over a static random-table library — no `state` field, no CRUD, unlike
@@ -1019,6 +1068,7 @@ only a one-hour token with no refresh. There is no backend, so:
   - `/campaigns/index.json` — the campaign list, `[{ id, name, createdAt, primary }]` (`indexText()`).
   - `/campaigns/<id>/shared.json` — the campaign's `campaign` document; `/campaigns/<id>/<system>.json`
     — one for each of `OSR.SYSTEMS` (`docPath()`; the documents of `js/store.js`'s `splitState`).
+  - `/campaigns/<id>/maps/<blobId>.<ext>` — the map images of the campaign's scenes (`blobPath()`).
   - `/seeds/<system>.json` — the seed store of `js/seeds.js` (`seedPath()`); none for a system whose
     seed is empty.
   - Older versions: `/Character Keeper campaign.json` (`LEGACY_FILE`, the whole primary campaign) and
@@ -1057,6 +1107,10 @@ only a one-hour token with no refresh. There is no backend, so:
      only recorded. Pulled documents replace their part of `OSR.state` together (`applyDocs()` →
      `withDocs()` → `OSR.replaceState()`), unless the document changed during the download: then it
      is a `conflict`. Conflicts of all documents go to one question for the campaign.
+  5. `syncBlobs()` — uploads each map image of the campaign's scenes that the
+     listing lacks, as `/campaigns/<id>/maps/<blobId>.<ext>` (`blobPath()`, `uploadBytes()`: mode
+     `add`, no record — an image never changes). A missing local image is downloaded by
+     `dropboxFetchBlob()` when its scene shows, not in the pass.
 
   A pull records the hash of the document *after* `ensureStateShape`, so a migrated copy isn't
   uploaded back (it can upload once, for example the HP tracker `ensureStateShape` adds for a pulled

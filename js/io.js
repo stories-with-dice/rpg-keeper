@@ -1,4 +1,5 @@
-/* js/io.js — the "paste sheet as text" modal, and whole-state export/import. */
+/* js/io.js — the "paste sheet as text" modal, and whole-state export/import
+ * (.json, or a .zip with the map images: see exportData / importZip). */
 (function (OSR) {
   'use strict';
   const $ = OSR.$;
@@ -22,18 +23,60 @@
   }
 
   /* ---- Export / import ---- */
-  function exportData() {
-    const blob = new Blob([JSON.stringify(OSR.state, null, 2)], { type: 'application/json' });
+  // Export: a .json of OSR.state, or, when the campaign has map images and
+  // "Include map images" is on, a .zip (vendor/fflate) with that JSON as
+  // campaign.json and each image as maps/<blobId>.<ext>.
+  const IMAGE_EXT = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif' };
+  const IMAGE_TYPE = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif' };
+
+  function sceneImages() {
+    const seen = new Map();
+    (OSR.state.scenes || []).forEach(sc => { if (sc.imageBlobId && !seen.has(sc.imageBlobId)) seen.set(sc.imageBlobId, sc.imageType); });
+    return seen;
+  }
+
+  function download(blob, name) {
     const url = URL.createObjectURL(blob);
-    const d = new Date();
-    const stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'osr-manager-' + stamp + '.json';
+    a.download = name;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }
+  function stamp() {
+    const d = new Date();
+    return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  }
+
+  function exportData() {
+    if (sceneImages().size) { $('#export-modal').hidden = false; return; }
+    exportJson();
+  }
+  function closeExportModal() { const m = $('#export-modal'); if (m) m.hidden = true; }
+
+  function exportJson() {
+    download(new Blob([JSON.stringify(OSR.state, null, 2)], { type: 'application/json' }), 'osr-manager-' + stamp() + '.json');
+  }
+
+  // Resolves to the zip's bytes (tests read them back).
+  async function exportZip() {
+    const files = { 'campaign.json': [fflate.strToU8(JSON.stringify(OSR.state, null, 2)), { level: 6 }] };
+    for (const [id, type] of sceneImages()) {
+      const rec = await OSR.store.getBlob(id);
+      // Images are compressed already: stored as they are.
+      if (rec) files['maps/' + id + '.' + (IMAGE_EXT[rec.type || type] || 'bin')] = [new Uint8Array(rec.bytes), { level: 0 }];
+    }
+    const zip = fflate.zipSync(files);
+    download(new Blob([zip], { type: 'application/zip' }), 'osr-manager-' + stamp() + '.zip');
+    return zip;
+  }
+
+  async function submitExport() {
+    const withImages = $('#export-images').checked;
+    closeExportModal();
+    if (withImages) await exportZip(); else exportJson();
   }
 
   // Merge helpers, shared by a plain merge and a content pack. An entry or a
@@ -130,12 +173,31 @@
   // Resolves once the file is read and handled (tests await it; the file
   // input ignores it). FileReader finishes after an unknown delay.
   function importData(file) {
+    if (/\.zip$/i.test(file.name || '') || /zip/.test(file.type || '')) return importZip(file);
     return new Promise(resolve => {
       const reader = new FileReader();
       reader.onload = () => { handleImport(reader.result).catch(e => console.warn('import failed', e)).finally(resolve); };
       reader.onerror = () => { alert('Import failed: the file could not be read.'); resolve(); };
       reader.readAsText(file);
     });
+  }
+
+  // A .zip from Export: its map images go into IndexedDB first (under their
+  // own blob ids), then campaign.json is imported like a .json file.
+  async function importZip(file) {
+    let files;
+    try { files = fflate.unzipSync(new Uint8Array(await file.arrayBuffer())); }
+    catch (e) { alert('Import failed: the file is not a valid .zip.'); return; }
+    if (!files['campaign.json']) { alert('Import failed: the .zip has no campaign.json.'); return; }
+    for (const name of Object.keys(files)) {
+      const m = /^maps\/([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(name);
+      if (!m) continue;
+      const u8 = files[name];
+      try {
+        await OSR.store.putBlob(m[1], { bytes: u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength), type: IMAGE_TYPE[m[2]] || 'application/octet-stream' });
+      } catch (e) { alert(STORAGE_FULL_MSG); return; }
+    }
+    await handleImport(fflate.strFromU8(files['campaign.json']));
   }
 
   async function handleImport(text) {
@@ -157,6 +219,12 @@
       });
       if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
       if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
+      if (Array.isArray(data.scenes)) data.scenes.forEach(sc => {
+        if (!sc) return;
+        sc.id = OSR.uid();
+        sc.system = validSystem(sc.system, 'osr');
+        state.scenes.push(OSR.ensureSceneShape(sc));
+      });
       if (typeof data.notes === 'string' && data.notes.trim()) {
         state.notes = (state.notes ? state.notes + '\n\n' : '') + data.notes.trim();
       }
@@ -189,6 +257,7 @@
     OSR.renderCombat();
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
+    OSR.renderMaps();
     OSR.renderSettings();
     return ok;
   }
@@ -203,6 +272,8 @@
     $('#paste-modal').addEventListener('click', e => { if (e.target === $('#paste-modal')) closePasteModal(); });
 
     $('#btn-export').addEventListener('click', exportData);
+    $('#export-go').addEventListener('click', submitExport);
+    $('#export-cancel').addEventListener('click', closeExportModal);
     $('#btn-import').addEventListener('click', () => $('#file-import').click());
     $('#file-import').addEventListener('change', e => {
       const f = e.target.files[0];
@@ -211,5 +282,5 @@
     });
   }
 
-  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, mergeCompendium, mergeMonsters, importPack, importData, replaceState, wireIO });
+  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, exportJson, exportZip, closeExportModal, mergeCompendium, mergeMonsters, importPack, importData, replaceState, wireIO });
 })(window.OSR = window.OSR || {});

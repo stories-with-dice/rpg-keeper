@@ -18,6 +18,7 @@
       if (b.dataset.tab === 'bestiary') OSR.renderMonsterBrowser();
       if (b.dataset.tab === 'compendium') OSR.renderCompendium();
       if (b.dataset.tab === 'tables') OSR.renderTables();
+      if (b.dataset.tab === 'maps') OSR.renderMaps(); // the SVG has a size only while its tab shows
       if (b.dataset.tab === 'settings') OSR.renderSettings(); // counts change elsewhere (seeding, new characters)
       if (b.dataset.tab === 'character' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
     });
@@ -29,7 +30,7 @@
         OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
         OSR.closePopulateHdModal(); OSR.closeDropboxModal();
-        OSR.closeCompEntry(); OSR.closeAllCompPops();
+        OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal();
       }
     });
 
@@ -48,6 +49,7 @@
     OSR.wireSettings();
     OSR.wireDropbox();
     OSR.wireCampaigns();
+    OSR.wireMaps();
     OSR.wireSeeds();
     OSR.wireRollPopup();
   }
@@ -113,6 +115,7 @@
     OSR.renderAll = function () {
       OSR.refreshCharUI(); OSR.renderCombat(); OSR.renderMonsterBrowser(); OSR.renderCompendium();
       OSR.renderTables(); OSR.renderSettings(); OSR.renderLog(); OSR.renderConsumables(); OSR.renderCampaigns();
+      OSR.renderMaps();
     };
 
     // Wipe to an already-migrated empty state (no async seeding) and clear the

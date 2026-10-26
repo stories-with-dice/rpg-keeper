@@ -47,6 +47,7 @@
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderTables();
+    OSR.renderMaps();
     OSR.renderSettings();
     renderCampaigns();
   }

@@ -56,8 +56,11 @@ function fakeDropbox(window, shared) {
     ok: status >= 200 && status < 300, status,
     headers: { get: k => headers[k.toLowerCase()] || null },
     json: async () => (typeof body === 'string' ? JSON.parse(body) : body),
-    text: async () => (typeof body === 'string' ? body : JSON.stringify(body))
+    text: async () => (typeof body === 'string' ? body : Buffer.isBuffer(body) ? body.toString('utf8') : JSON.stringify(body)),
+    arrayBuffer: async () => { const b = Buffer.isBuffer(body) ? body : Buffer.from(String(body)); return b.buffer.slice(b.byteOffset, b.byteOffset + b.length); }
   });
+  // A text body stays a string; a binary one (a map image) becomes a Buffer.
+  const bodyOf = b => (typeof b === 'string' ? b : Buffer.from(b instanceof ArrayBuffer || (b && b.byteLength != null && !b.buffer) ? new Uint8Array(b) : b));
   const err = summary => res(409, { error_summary: summary + '/..', error: {} });
   const meta = f => ({ '.tag': 'file', id: f.id, name: f.path.split('/').pop(), path_lower: f.path.toLowerCase(), path_display: f.path,
     rev: f.rev, content_hash: contentHash(f.content), server_modified: f.modified, size: f.content.length });
@@ -119,8 +122,9 @@ function fakeDropbox(window, shared) {
       return res(200, { metadata: meta(f) });
     }
     if (endpoint === 'files/download') {
-      const rev = /^rev:(.+)$/.exec(arg.path)[1];
-      const f = [...dbx.files.values()].find(x => rev in x.revs);
+      const m = /^rev:(.+)$/.exec(arg.path);
+      const f = m ? [...dbx.files.values()].find(x => m[1] in x.revs) : dbx.file(arg.path);
+      const rev = f && (m ? m[1] : f.rev);
       if (!f) return err('path/not_found');
       const content = f.revs[rev];
       if (dbx.onDownload) dbx.onDownload(f);
@@ -131,12 +135,12 @@ function fakeDropbox(window, shared) {
       const f = byPath(arg.path);
       if (arg.mode === 'add') {
         if (f) return err('path/conflict/file');
-        const id = dbx.put(opts.body, arg.path);
+        const id = dbx.put(bodyOf(opts.body), arg.path);
         return res(200, meta(dbx.files.get(id)));
       }
       if (!f) return err('path/not_found');
       if (f.rev !== arg.mode.update) return err('path/conflict/file');
-      dbx.bump(f, opts.body);
+      dbx.bump(f, bodyOf(opts.body));
       return res(200, meta(f));
     }
     return res(500, { error_summary: 'fake Dropbox: unhandled ' + url });

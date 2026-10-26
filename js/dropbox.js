@@ -5,6 +5,7 @@
  *   /campaigns/index.json            the campaign list [{ id, name, createdAt, primary }]
  *   /campaigns/<id>/shared.json      a campaign's 'campaign' document (js/store.js)
  *   /campaigns/<id>/<system>.json    its document for each system
+ *   /campaigns/<id>/maps/<blob>.<ext>  a map image (js/maps.js); never changes
  *   /seeds/<system>.json             the seed of each system (js/seeds.js)
  * Every save() (js/core.js calls OSR.dropboxNoteSave) uploads the changed
  * files a few seconds later. Each file is synced on its own, by its
@@ -121,6 +122,8 @@
   const campaignDir = id => '/campaigns/' + id;
   const docPath = (id, key) => campaignDir(id) + '/' + (key === 'campaign' ? 'shared' : key) + '.json';
   const seedPath = sys => '/seeds/' + sys + '.json';
+  const IMAGE_EXT = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif' };
+  const blobPath = (id, blobId, type) => campaignDir(id) + '/maps/' + blobId + '.' + (IMAGE_EXT[type] || 'bin');
   // The old whole-campaign file of a campaign, and where the split moves it.
   const legacyPath = c => (c.primary ? LEGACY_FILE : campaignDir(c.id) + '/campaign.json');
   const backupPath = c => (c.primary ? '/Character Keeper campaign (before split).json' : campaignDir(c.id) + '/campaign (before split).json');
@@ -310,6 +313,21 @@
     })).text();
   }
 
+  // Binary files (map images) are written once and never change: no rev, no record.
+  async function uploadBytes(path, bytes) {
+    try {
+      await dbxFetch(CONTENT_API + '/files/upload', {
+        headers: { 'Content-Type': 'application/octet-stream', 'Dropbox-API-Arg': headerJson({ path, mode: 'add', autorename: false, mute: true }) },
+        body: bytes
+      });
+    } catch (e) { if (!/conflict/.test(e.summary)) throw e; } // already there
+  }
+  async function downloadBytes(path) {
+    return (await dbxFetch(CONTENT_API + '/files/download', {
+      headers: { 'Dropbox-API-Arg': headerJson({ path }) }
+    })).arrayBuffer();
+  }
+
   // Creates the file at `path`, or replaces it only if it is still at
   // `remote.rev`: Dropbox refuses (409 conflict) when another device wrote in between.
   async function uploadText(path, text, remote) {
@@ -476,6 +494,21 @@
     return 'conflict';
   }
 
+  // Step 5: the map images of the current campaign's scenes that Dropbox lacks
+  // are uploaded. A missing local image is downloaded when its scene shows
+  // (dropboxFetchBlob), not here.
+  async function syncBlobs(c, listing) {
+    const done = new Set();
+    for (const sc of OSR.state.scenes || []) {
+      if (!sc.imageBlobId || done.has(sc.imageBlobId)) continue;
+      done.add(sc.imageBlobId);
+      const path = blobPath(c.id, sc.imageBlobId, sc.imageType);
+      if (listing.has(path.toLowerCase())) continue;
+      const rec = await OSR.store.getBlob(sc.imageBlobId);
+      if (rec) await uploadBytes(path, rec.bytes);
+    }
+  }
+
   // OSR.state with the given Dropbox documents in place of this browser's.
   function withDocs(files) {
     const docs = OSR.splitState(OSR.state);
@@ -512,6 +545,7 @@
       await syncSeeds(listing);
       // The index step may have given the current campaign a new id.
       if ((await syncDocs(OSR.currentCampaign(), listing)) === 'conflict') { setStatus('conflict'); openDropboxModal(); return; }
+      await syncBlobs(OSR.currentCampaign(), listing);
       setStatus('synced');
     } catch (e) {
       if (e.status === 401) setStatus('signed-out');
@@ -863,6 +897,22 @@
     saveMeta();
   }
 
+  // A map image this browser lacks (js/maps.js shows a scene from another
+  // device): downloads it from the current campaign's folder into IndexedDB.
+  // Resolves to the stored record, or null.
+  async function dropboxFetchBlob(blobId, type) {
+    if (!meta.enabled || !hasToken() || !OSR.currentCampaign()) return null;
+    try {
+      const bytes = await downloadBytes(blobPath(OSR.currentCampaign().id, blobId, type));
+      const rec = { bytes, type: type || 'application/octet-stream' };
+      await OSR.store.putBlob(blobId, rec);
+      return rec;
+    } catch (e) {
+      console.warn('dropbox: could not download the map image', e);
+      return null;
+    }
+  }
+
   // A campaign this browser has no documents for (one another device made):
   // downloads its files into IndexedDB before js/campaigns.js opens it.
   // Resolves to true when it found any.
@@ -892,7 +942,8 @@
     hashText, decideSync, pkcePair, dropboxNoteSave, dropboxFlush, dropboxSyncNow: syncNow,
     dropboxConnect: connect, dropboxConnectWithCode: connectWithCode, dropboxFinishConnect: finishConnect,
     dropboxFinishRedirect: finishRedirect, DROPBOX_PENDING_KEY: PENDING_KEY,
-    dropboxBeforeCampaignSwitch, dropboxCampaignChanged, dropboxForgetCampaign, dropboxFetchCampaign,
+    dropboxBeforeCampaignSwitch, dropboxCampaignChanged, dropboxForgetCampaign, dropboxFetchCampaign, dropboxFetchBlob,
+    dropboxBlobPath: blobPath,
     DROPBOX_INDEX_PATH: INDEX_PATH, dropboxDocPath: docPath, dropboxSeedPath: seedPath,
     // Leaves the app for Dropbox's consent page. Tests replace it.
     dropboxRedirect: url => location.assign(url), dropboxDisconnect: disconnect,

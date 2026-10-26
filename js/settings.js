@@ -53,6 +53,7 @@
     OSR.refreshCharUI(); // Character dropdown only lists the active system's characters
     OSR.renderMonsterBrowser(); // ditto the Bestiary tab
     OSR.renderCombat(); // ditto Combat's "+ Add character…"/"+ Add monster…"
+    OSR.renderMaps(); // scenes belong to one system too
     renderSettings();
     OSR.pushNote('Settings', 'System → ' + (OSR.SYSTEM_LABELS[s] || s));
   }
