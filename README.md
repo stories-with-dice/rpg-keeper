@@ -18,6 +18,7 @@ HTML/CSS/JS — no build step, no backend, no account, nothing leaves your brows
 - **Local:** serve the folder with any static web server, for example `python3 -m http.server`,
   then open `http://localhost:8000/`. Opening `index.html` as a file (`file://`) does not work: the
   app loads its data files over http.
+- A reload opens the tab that was open last (stored in this browser only).
 
 ---
 
@@ -237,6 +238,8 @@ Opens a menu with:
 - A scrollable list of **status conditions** — click to add/remove. Hover a tag on the row to see
   its description and an **✕** to clear it. Comes prepopulated with the common OSR set (Blinded,
   Charmed, Frightened, Grappled, Paralyzed, Poisoned, Prone, Stunned, Unconscious, …).
+- **More ▸** — the conditions you added yourself that this combatant does not have. A condition
+  you added moves up to the main list while the combatant has it.
 - **New condition…** — name + description; added to the library and applied.
 
 All status add/removes are logged with the round they happened.
@@ -369,7 +372,7 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 - **Right-click pan** (the <i>mouse</i> button next to sticky mode, off by default). On: drag with
   the right mouse button on the map to move the view, and the browser's menu does not open. Off: a
   right-click on the map opens a menu to add a pin there or, in hexcrawl mode, to mark the hex
-  explored. A right-click on a token or a drawing always opens its own menu.
+  explored. A right-click on a token, a drawing, or a pin always opens its own menu.
 - **Grid**, **Tokens**, and **?** (the hotkeys) are menus at the end of the toolbar. They open over
   the map, so the map does not move. A click on the map closes them.
 - **Move and zoom.** With the hand tool, drag to move the view. The mouse wheel zooms around the
@@ -393,8 +396,11 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
     keeps the icon in the campaign.
   - **From combat** lists the combatants (Combat tab) that have no token on this scene. Click one
     for a token linked to it: it shows the combatant's name, side (green ally, red enemy, gray
-    neutral), HP as a ring, and a dashed ring on whose turn it is. Hover a token for its HP, AC,
-    side, and statuses.
+    neutral), HP as a ring, and a dashed ring on whose turn it is.
+  - **Hover** a linked token for a popup like a Compendium popup: HP, AC, side, the combatant's
+    stat block (or the character's sheet), and its statuses from Combat. Hover a status and click
+    its **✕** to remove it. The **📌 pin** keeps the popup open, and a pinned popup follows changes
+    in Combat. A token linked to a character shows the statuses of that character in Combat.
   - With the hand tool, drag a token to move it; it snaps to the grid (hold Alt to place it
     freely). Shift+click adds a token to the selection, and Shift+drag on the map selects with a
     box; the selection moves together.
@@ -431,8 +437,10 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   System and works like any Compendium entry: search it, or link it with `[name]` in a sheet. The
   note starts with the map's name and, on a hex grid, the hex number. The app writes them once: a
   later rename of the scene or move of the pin does not change them. With
-  the hand tool, click a pin to read its note, double-click to edit it, or drag the pin. The bar
-  at the bottom of the map edits the note or deletes the pin (with or without its note).
+  the hand tool, hover a pin to read its note (the popup's **📌 pin** keeps it open), click a pin
+  to open the note pinned, double-click to edit it, or drag the pin. Right-click a pin for a menu:
+  **Edit journal entry**, **Delete pin and journal entry**, or **Delete pin, keep journal entry**.
+  The bar at the bottom of the map does the same.
 - **Hexcrawl.** On a hex grid, tick **Hexcrawl** under **Grid**. Hexes you have not explored are
   shaded; the binoculars tool marks a hex explored (click again to undo). **Hex numbers** shows
   each hex's column and row, for example 0412. In hexcrawl mode, a pin sits in the middle of its
