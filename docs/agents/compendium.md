@@ -21,7 +21,7 @@
   all-caps tags). A `mouseover` on a ref calls `openCompPop(name, anchor)`.
 - A popup is at most `min(280px, 60vh)` high: the header stays and `.cpop-body` scrolls.
 - Each popup is its own `.comp-pop` node on `<body>`, tracked in `compPops`
-  (`{ el, name, matches, idx, pinned, parentEl, anchor, hideT, tab, source? }`). Links inside a popup
+  (`{ el, name, matches, idx, pinned, parentEl, anchor, hideT, tab, scene, source? }`). Links inside a popup
   open more popups; the chain stays while the pointer is in any of them
   (`cancelHideAllPops`/`scheduleHideAllPops`, 180 ms grace).
 - The 📌 button (`setPopPinned(pop, on)`) keeps a popup open and makes its `.cpop-head` a drag
@@ -32,8 +32,14 @@
 - `pop.tab` is the tab of the `.tab-panel` that holds the anchor (`anchorTab()`), or the parent
   popup's tab; null outside the tab panels (the side rail). The tab click handler in `js/main.js`
   calls `syncCompPopsToTab(tab)`, which sets `hidden` on every popup whose `tab` is another tab.
-  `closeUnpinnedCompPops(exceptName)`, `closeAllCompPops()` (Escape). A `mousedown` outside popups
-  and refs closes the unpinned ones.
+  `closeUnpinnedCompPops(exceptName)`, `closeAllCompPops(all)` (Escape: only the popups that show;
+  `all` true: the hidden ones too, `hideCompPopNow()`). A `mousedown` outside popups and refs closes the unpinned ones.
+- `pop.scene` (Maps tab only) is the active scene's id when the popup opens, or the parent's.
+  `syncCompPopsToTab()` hides it on other scenes. Pinned map popups are saved in
+  `localStorage['osr_map_pops']` (`saveMapPops()`, on pin, close, nav, drag end, resize end) as
+  `{ scene, key, source, idx, left, top, width?, height? }`. `showScenePops(sceneId)` (from
+  `renderMaps()`) restores a scene's rows once per page (`restoreMapPop()`; a source popup comes from
+  `OSR.actorPopSourceFor(sc, key)`, `js/tokens.js`). Rows of scenes not yet restored stay as they are.
 - Several matches: `‹ ›` buttons, or ↑/↓ over the popup. `refreshCompPop()` re-resolves after an edit.
 - Popup bodies are `marked` + `annotate()` with the active character's variables; dice roll.
 - **Source popups** (`openSourcePop(key, anchor, source)`) are not Compendium entries. `source` is

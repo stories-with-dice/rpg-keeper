@@ -13,7 +13,9 @@
  *
  * The SVG has these layers, in order: image, grid, drawings, pins, tokens,
  * overlay (tool feedback). The view (viewBox) of each scene is kept in memory
- * only. Map coordinates are the image's own pixels.
+ * and, as its center and zoom, in this browser (localStorage osr_map_views),
+ * so a reload or a scene switch shows the same place. Map coordinates are the
+ * image's own pixels.
  *
  * Pop out (#map-popout) opens index.html?view=map in a window of its own. That
  * window loads the app's scripts but no campaign: attachToMain() points its
@@ -58,6 +60,10 @@
     pin: 'Click where the note goes.', explore: 'Click a hex to mark it explored, or not.'
   };
   const views = Object.create(null);  // scene id -> { x, y, w, h }
+  // The last view of each scene, kept in this browser (not in state: it
+  // depends on the screen): scene id -> { cx, cy, s } — the map point at the
+  // center and the map px per screen px. Shared by the pop-out windows.
+  const VIEWS_KEY = 'osr_map_views';
   const images = new Map();           // blob id -> object URL | 'loading' | 'missing'
   let drag = null;                    // the pointer drag in progress
   let overlay = null;                 // { kind: 'measure' | 'calibrate', a, b }
@@ -221,11 +227,33 @@
     return { x: (sc.width - w) / 2, y: (sc.height - h) / 2, w, h };
   }
 
+  function readViews() {
+    try { const o = JSON.parse(localStorage.getItem(VIEWS_KEY)); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; }
+  }
+  function writeView(id, saved) {
+    const all = readViews(); // read again: a pop-out window writes here too
+    if (JSON.stringify(all[id]) === JSON.stringify(saved)) return;
+    if (saved) all[id] = saved; else delete all[id];
+    try { localStorage.setItem(VIEWS_KEY, JSON.stringify(all)); } catch (e) { /* kept for this page only */ }
+  }
+  function rememberView(sc, v, rect) {
+    if (!(rect.width > 0)) return;
+    writeView(sc.id, { cx: num(v.x + v.w / 2), cy: num(v.y + v.h / 2), s: +(v.w / rect.width).toPrecision(6) });
+  }
+  // The saved view of a scene at the element's current size, or null.
+  function savedView(sc, rect) {
+    const o = readViews()[sc.id];
+    if (!o || !(o.s > 0) || !isFinite(o.cx) || !isFinite(o.cy) || !(rect.width > 0)) return null;
+    const w = o.s * rect.width, h = o.s * rect.height;
+    return { x: o.cx - w / 2, y: o.cy - h / 2, w, h };
+  }
+  function fitScene(sc) { views[sc.id] = fitView(sc, OSR.mapRect()); }
+
   // The scene's view, made to match the element's current aspect ratio.
   function viewOf(sc) {
     const rect = OSR.mapRect();
     let v = views[sc.id];
-    if (!v) v = views[sc.id] = fitView(sc, rect);
+    if (!v) v = views[sc.id] = savedView(sc, rect) || fitView(sc, rect);
     const h = v.w * rect.height / rect.width;
     if (Math.abs(h - v.h) > 1e-6) { v.y += (v.h - h) / 2; v.h = h; }
     return v;
@@ -475,6 +503,8 @@
     renderScene();
     OSR.renderTokenPanel();
     setStatus(status);
+    OSR.showScenePops(cur ? cur.id : null); // the scene's pinned popups (js/compendium-popups.js)
+    OSR.updateApplyButton(); // its target can be the selected token (js/combat.js)
   }
 
   function renderGridPanel(sc) {
@@ -550,6 +580,7 @@
     const v = viewOf(sc);
     const rect = OSR.mapRect();
     const stroke = v.w / rect.width; // one screen pixel, in map units
+    rememberView(sc, v, rect);
     svg.setAttribute('viewBox', [v.x, v.y, v.w, v.h].map(num).join(' '));
     const href = imageHref(sc);
     let image = '<rect class="map-backdrop" x="0" y="0" width="' + sc.width + '" height="' + sc.height + '"/>';
@@ -597,6 +628,7 @@
     const next = list[list.indexOf(sc) + 1] || list[list.indexOf(sc) - 1] || null;
     OSR.state.scenes = OSR.state.scenes.filter(x => x !== sc);
     delete views[sc.id];
+    writeView(sc.id, null);
     // The image goes too, unless another scene (a duplicate) still shows it.
     if (sc.imageBlobId && !OSR.state.scenes.some(x => x.imageBlobId === sc.imageBlobId)) {
       try { await OSR.store.deleteBlob(sc.imageBlobId); } catch (e) { /* stays as an orphan */ }
@@ -855,7 +887,7 @@
     $('#map-rename').addEventListener('click', renameScene);
     $('#map-duplicate').addEventListener('click', duplicateScene);
     $('#map-delete').addEventListener('click', deleteScene);
-    $('#map-fit').addEventListener('click', () => { const sc = activeScene(); if (sc) { delete views[sc.id]; renderScene(); } });
+    $('#map-fit').addEventListener('click', () => { const sc = activeScene(); if (sc) { fitScene(sc); renderScene(); } });
     $('#map-popout').addEventListener('click', popOut);
     // Closing this window ends what the pop-outs show: tell them.
     if (!isMapPopout()) {

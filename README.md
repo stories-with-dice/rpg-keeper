@@ -200,8 +200,10 @@ Formula grammar: `NdM` (e.g. `3d6`), `+`/`-` chains (`2d6+3`, `1d8-1`), keep/dro
 (`kh`/`kl`/`dh`/`dl` + number, e.g. `4d6kh3`), and `d%`. Typing a bare number/modifier rolls a d20.
 
 After a roll, on the Combat tab, an **Apply damage** button appears — it subtracts the result from
-the **currently selected combatant** (HP, or HD/HP under Scarlet Heroes rules — see Settings). On
-the other tabs the button does not show.
+the **currently selected combatant** (HP, or HD/HP under Scarlet Heroes rules — see Settings). The
+button also shows on the Maps tab: there it applies the damage to the combatant of the one selected
+token, or to the selected combatant when no token in combat is selected. On the other tabs the
+button does not show.
 
 ---
 
@@ -342,7 +344,10 @@ mouse is anywhere in it. Each popup has a **📌 pin** (keeps it open after the 
 **×**. **Esc** closes every popup; clicking elsewhere closes the unpinned ones. A **pinned** popup
 can be **dragged by its header** to reposition it. Drag the **corner grip** (bottom right) to
 resize a popup; a resized popup stays pinned. A popup shows only on the tab you opened it from, even
-when pinned: it hides when you change tabs and comes back when you return to that tab.
+when pinned: it hides when you change tabs and comes back when you return to that tab. On the Maps
+tab, a popup also belongs to the scene you opened it on, and it hides on other scenes. This browser
+keeps the pinned popups of each scene (place and size too), so they come back after a reload. **Esc**
+closes only the popups that show.
 
 ### `[` autocomplete
 In the sheet editor, the Journal, and the Compendium entry editor, typing `[` followed by **2+
@@ -380,7 +385,8 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   the map, so the map does not move. A click on the map closes them.
 - **Move and zoom.** With the hand tool, drag to move the view. The mouse wheel zooms around the
   pointer. The middle mouse button, or Space held, moves the view with any tool. The
-  <i>expand</i> button shows the whole map again.
+  <i>expand</i> button shows the whole map again. This browser keeps the view (center and zoom) of
+  each scene, so a reload or a switch to another scene and back shows the same place.
 - **Grid.** A new scene has hexes. Open **Grid** to choose squares or hexes (flat-top or pointy-top), the cell size in
   image pixels, the offset, and what one cell is (for example 5 ft, or 6 miles for a hexcrawl).
   - To match the map's own grid, choose the crop tool and drag over one cell, from corner to corner.

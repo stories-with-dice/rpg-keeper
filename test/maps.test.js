@@ -341,6 +341,51 @@ test('Maps: dragging with the hand tool pans; the wheel zooms around the pointer
   window.close();
 });
 
+test('Maps: the view of each scene (center and zoom) is kept in this browser: a scene switch and a reload show it again; Fit and Delete forget it', async () => {
+  const env = await setup();
+  const { T, window, $ } = env;
+  await T.createScene({ name: 'One', file: env.png() });
+  const one = T.activeScene();
+  const fit = viewBox(env);
+  dragOn(env, [500, 350], [400, 300]);
+  $('#map-svg').dispatchEvent(new window.WheelEvent('wheel', { deltaY: -100, clientX: 300, clientY: 200, bubbles: true, cancelable: true }));
+  const moved = viewBox(env);
+  assert.notDeepEqual(moved, fit);
+  const saved = JSON.parse(window.localStorage.getItem('osr_map_views'))[one.id];
+  assert.ok(Math.abs(saved.cx - (moved[0] + moved[2] / 2)) < 0.01 && Math.abs(saved.s - moved[2] / 1000) < 1e-4, 'center and map px per screen px');
+
+  await T.createScene({ name: 'Two', file: env.png() });
+  assert.deepEqual(viewBox(env), fit, 'a new scene starts fitted');
+  setValue($('#map-scene'), one.id);
+  assert.deepEqual(viewBox(env), moved, 'back on the first scene: its view');
+  await T.flushSave();
+  const storage = { osr_map_views: window.localStorage.getItem('osr_map_views') };
+  const idb = env.indexedDB;
+  window.close();
+
+  const again = await setup({ indexedDB: idb, extraStorage: storage });
+  assert.strictEqual(again.T.activeScene().id, one.id);
+  viewBox(again).forEach((n, i) => assert.ok(Math.abs(n - moved[i]) < 0.02, 'after a reload: the same view'));
+  // A wider box: the same center and zoom, more of the map on the sides.
+  const wide = { left: 0, top: 0, width: 1400, height: 700 };
+  const fresh = await boot({ indexedDB: idb, extraStorage: storage });
+  fresh.T.mapRect = () => wide;
+  click(fresh.document.querySelector('#tabs .tab-btn[data-tab="maps"]'));
+  const w = fresh.document.querySelector('#map-svg').getAttribute('viewBox').split(' ').map(Number);
+  assert.ok(Math.abs(w[0] + w[2] / 2 - (moved[0] + moved[2] / 2)) < 0.02 && Math.abs(w[2] / 1400 - moved[2] / 1000) < 1e-4);
+  await fresh.T.mapsIdle();
+  fresh.window.close();
+
+  click(again.$('#map-fit'));
+  assert.deepEqual(viewBox(again), fit, 'Fit');
+  assert.ok(Math.abs(JSON.parse(again.window.localStorage.getItem('osr_map_views'))[one.id].s - fit[2] / 1000) < 1e-4, 'Fit is saved too');
+  again.window.confirm = () => true;
+  click(again.$('#map-delete'));
+  await settle();
+  assert.strictEqual(JSON.parse(again.window.localStorage.getItem('osr_map_views'))[one.id], undefined, 'a deleted scene forgets its view');
+  again.window.close();
+});
+
 test('Maps: scene names are escaped', async () => {
   const env = await setup();
   const { T, window, $ } = env;

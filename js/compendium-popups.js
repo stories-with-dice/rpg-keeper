@@ -13,8 +13,10 @@
   // its title, badges, and body (openSourcePop — the map's actor tokens).
   // `tab` is the tab the popup was opened from (or its parent popup's tab):
   // it shows only while that tab is open (syncCompPopsToTab). Null outside a
-  // tab panel (the side rail), so it shows on every tab.
-  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, tab, source? }]
+  // tab panel (the side rail), so it shows on every tab. A popup opened on the
+  // Maps tab also has the `scene` it was opened on: it shows only with that
+  // scene, and a pinned one is saved in this browser (MAP_POPS_KEY).
+  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, tab, scene, source? }]
   let compPopActive = null;  // popup the mouse is over — target for ↑/↓ match nav
 
   function popByName(name) { return compPops.find(p => p.name === name) || null; }
@@ -24,6 +26,11 @@
   function anchorTab(anchor) {
     const panel = anchor && anchor.closest ? anchor.closest('.tab-panel') : null;
     return panel ? panel.id.replace(/^tab-/, '') : null;
+  }
+  // The open scene's id for a popup opened on the Maps tab, else null.
+  function tabScene(tab) {
+    const sc = tab === 'maps' && OSR.activeScene ? OSR.activeScene() : null;
+    return sc ? sc.id : null;
   }
 
   function popHeadHtml(pop, title, badges) {
@@ -100,9 +107,10 @@
     document.body.appendChild(el);
     const r = OSR.compResolve(name);
     const parent = parentEl ? popByEl(parentEl) : null;
+    const tab = parent ? parent.tab : anchorTab(anchor);
     pop = { el: el, name: name, matches: r.items, fuzzy: r.fuzzy, scores: r.scores,
       idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null,
-      tab: parent ? parent.tab : anchorTab(anchor) };
+      tab: tab, scene: parent ? parent.scene : tabScene(tab) };
     compPops.push(pop);
     renderPop(pop);
     positionPop(pop, anchor);
@@ -119,8 +127,9 @@
     const el = document.createElement('div');
     el.className = 'comp-pop';
     document.body.appendChild(el);
+    const tab = anchorTab(anchor);
     pop = { el: el, name: key, matches: [], fuzzy: false, scores: null,
-      idx: 0, pinned: false, parentEl: null, anchor: anchor, hideT: null, tab: anchorTab(anchor), source: source };
+      idx: 0, pinned: false, parentEl: null, anchor: anchor, hideT: null, tab: tab, scene: tabScene(tab), source: source };
     compPops.push(pop);
     renderPop(pop);
     positionPop(pop, anchor);
@@ -132,6 +141,7 @@
     const b = pop.el.querySelector('[data-act="pin"]');
     if (b) b.setAttribute('aria-pressed', pop.pinned ? 'true' : 'false');
     if (pop.pinned) clearTimeout(pop.hideT); else scheduleHidePop(pop);
+    saveMapPops();
   }
   function closePop(pop, cascade) {
     if (!pop) return;
@@ -144,6 +154,7 @@
         if (c.parentEl === pop.el) { if (c.pinned) c.parentEl = null; else closePop(c, true); }
       });
     }
+    if (pop.pinned && pop.scene) saveMapPops();
   }
   function scheduleHidePop(pop) {
     if (!pop || pop.pinned) return;
@@ -155,16 +166,20 @@
   // unpinned ones after a short grace.
   function cancelHideAllPops() { compPops.forEach(p => clearTimeout(p.hideT)); }
   function scheduleHideAllPops() { compPops.forEach(scheduleHidePop); }
-  function closeAllCompPops() {
-    compPops.slice().forEach(p => { clearTimeout(p.hideT); if (p.el.parentNode) p.el.parentNode.removeChild(p.el); });
-    compPops = [];
-    compPopActive = null;
+  // Escape: the popups that show. `all`: the hidden ones (other tabs and
+  // scenes) too.
+  function closeAllCompPops(all) {
+    const gone = compPops.filter(p => all === true || !p.el.hidden);
+    gone.forEach(p => { clearTimeout(p.hideT); if (p.el.parentNode) p.el.parentNode.removeChild(p.el); });
+    compPops = compPops.filter(p => gone.indexOf(p) === -1);
+    if (gone.indexOf(compPopActive) !== -1) compPopActive = null;
+    saveMapPops();
   }
   function closeUnpinnedCompPops(exceptName) {
     compPops.slice().forEach(p => { if (!p.pinned && p.name !== exceptName) closePop(p, false); });
   }
   // Kept under the old names used elsewhere (Escape handler, Settings, edits).
-  function hideCompPopNow() { closeAllCompPops(); }
+  function hideCompPopNow() { closeAllCompPops(true); }
   function refreshCompPop() {
     compPops.slice().forEach(pop => {
       if (pop.source) { renderPop(pop); return; }
@@ -175,9 +190,79 @@
     });
   }
 
-  // Hide each popup while another tab is open; show it again on its own tab.
+  // Hide each popup while another tab (or, on the Maps tab, another scene) is
+  // open; show it again on its own tab and scene.
   function syncCompPopsToTab(tab) {
-    compPops.forEach(pop => { if (pop.tab) pop.el.hidden = pop.tab !== tab; });
+    const scene = tabScene(tab);
+    compPops.forEach(pop => { if (pop.tab) pop.el.hidden = pop.tab !== tab || (!!pop.scene && pop.scene !== scene); });
+  }
+  function currentTab() {
+    const panel = $('.tab-panel.is-active');
+    return panel ? panel.id.replace(/^tab-/, '') : null;
+  }
+
+  /* ---- pinned map popups, kept in this browser ---- */
+  // localStorage[MAP_POPS_KEY]: [{ scene, key, source, idx, left, top, width?,
+  // height? }], one per pinned popup opened on a scene. `key` is the
+  // Compendium name, or the source key ('actor:…', js/tokens.js) when
+  // `source` is true. A scene's popups come back the first time this page
+  // shows it (showScenePops); until then its saved rows stay as they are.
+  const MAP_POPS_KEY = 'osr_map_pops';
+  const restoredScenes = new Set();
+
+  function readMapPops() {
+    try { const a = JSON.parse(localStorage.getItem(MAP_POPS_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function mapPopRow(pop) {
+    const px = v => Math.round(parseFloat(v) || 0);
+    const row = { scene: pop.scene, key: pop.name, source: !!pop.source, idx: pop.idx,
+      left: px(pop.el.style.left), top: px(pop.el.style.top) };
+    if (pop.el.classList.contains('is-sized')) { row.width = px(pop.el.style.width); row.height = px(pop.el.style.height); }
+    return row;
+  }
+  function saveMapPops() {
+    const rows = readMapPops().filter(r => !restoredScenes.has(r.scene))
+      .concat(compPops.filter(p => p.pinned && p.scene && restoredScenes.has(p.scene)).map(mapPopRow));
+    try { localStorage.setItem(MAP_POPS_KEY, JSON.stringify(rows)); } catch (e) { /* kept for this page only */ }
+  }
+  // One saved row as a pinned popup, hidden until syncCompPopsToTab. Null when
+  // its Compendium entry or token is gone.
+  function restoreMapPop(row) {
+    let pop = { name: row.key, matches: [], fuzzy: false, scores: null, idx: 0, pinned: true,
+      parentEl: null, anchor: null, hideT: null, tab: 'maps', scene: row.scene };
+    if (row.source) {
+      const sc = OSR.state.scenes.find(x => x.id === row.scene);
+      pop.source = sc && OSR.actorPopSourceFor ? OSR.actorPopSourceFor(sc, row.key) : null;
+      if (!pop.source) return null;
+    } else {
+      const r = OSR.compResolve(row.key);
+      if (!r.items.length) return null;
+      Object.assign(pop, { matches: r.items, fuzzy: r.fuzzy, scores: r.scores, idx: Math.min(Number(row.idx) || 0, r.items.length - 1) });
+    }
+    if (popByName(row.key)) return null;
+    pop.el = document.createElement('div');
+    pop.el.className = 'comp-pop';
+    pop.el.hidden = true;
+    document.body.appendChild(pop.el);
+    compPops.push(pop);
+    renderPop(pop);
+    if (row.width > 0 && row.height > 0) {
+      pop.el.style.width = Math.max(POP_MIN_W, row.width) + 'px';
+      pop.el.style.height = Math.max(POP_MIN_H, row.height) + 'px';
+      pop.el.classList.add('is-sized');
+    }
+    pop.el.style.left = Math.max(4, Math.min(Number(row.left) || 0, window.innerWidth - POP_MIN_W)) + 'px';
+    pop.el.style.top = Math.max(4, Math.min(Number(row.top) || 0, window.innerHeight - POP_MIN_H)) + 'px';
+    return pop;
+  }
+  // The Maps tab shows `sceneId` (js/maps.js renderMaps): bring back its
+  // saved popups once, then show only the popups of the open tab and scene.
+  function showScenePops(sceneId) {
+    if (sceneId && !restoredScenes.has(sceneId)) {
+      restoredScenes.add(sceneId);
+      readMapPops().filter(r => r.scene === sceneId).forEach(restoreMapPop);
+    }
+    syncCompPopsToTab(currentTab());
   }
 
   // Only the popups with a source (the map's actors), after a combat change.
@@ -403,6 +488,7 @@
         const n = pop.matches.length;
         pop.idx = (pop.idx + (Number(navb.dataset.nav) || 1) + n) % n;
         renderPop(pop);
+        if (pop.pinned && pop.scene) saveMapPops();
         return;
       }
       const act = e.target.closest('[data-act]');
@@ -467,6 +553,7 @@
     document.addEventListener('mouseup', () => {
       if (!dragPop) return;
       dragPop.el.classList.remove('is-dragging');
+      if (dragPop.scene) saveMapPops();
       dragPop = null;
     });
 
@@ -496,6 +583,7 @@
     document.addEventListener('mouseup', () => {
       if (!sizePop) return;
       sizePop.el.classList.remove('is-dragging');
+      if (sizePop.scene) saveMapPops();
       sizePop = null;
     });
 
@@ -533,7 +621,7 @@
 
   Object.assign(OSR, {
     openCompPop, openSourcePop, setPopPinned, closePop, scheduleHidePop, cancelHideAllPops, scheduleHideAllPops,
-    closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop, refreshSourcePops, syncCompPopsToTab,
+    closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop, refreshSourcePops, syncCompPopsToTab, showScenePops,
     acSearch, acSearchVars, closeAC, acFromTextarea, acFromFormulaInput, acFromCM,
     wireCompendiumPopups
   });

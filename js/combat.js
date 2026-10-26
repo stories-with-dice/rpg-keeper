@@ -16,19 +16,26 @@
     return 4;
   }
 
-  // The apply buttons show only on the Combat tab, where the target is chosen.
-  const combatTabActive = () => { const t = $('#tab-combat'); return !!t && t.classList.contains('is-active'); };
+  // The apply buttons show only on the Combat and Maps tabs, where the target is chosen.
+  const tabActive = name => { const t = $('#tab-' + name); return !!t && t.classList.contains('is-active'); };
+  const applyTabActive = () => tabActive('combat') || tabActive('maps');
+  // The damage target: on the Maps tab, the combat entry of the one selected
+  // token (js/tokens.js selectedTokenEntry); else the selected combatant.
+  function damageTarget() {
+    const fromMap = tabActive('maps') && OSR.selectedTokenEntry ? OSR.selectedTokenEntry() : null;
+    return fromMap || selectedEntry();
+  }
 
   function updateApplyButton() {
     const btn = $('#dice-apply');
     if (!btn) return;
     renderUaDamage();
-    if (!OSR.lastRoll || !combatTabActive()) { btn.hidden = true; return; }
+    if (!OSR.lastRoll || !applyTabActive()) { btn.hidden = true; return; }
     btn.hidden = false;
-    const ent = selectedEntry();
+    const ent = damageTarget();
     const sh = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
     if (!ent) {
-      btn.textContent = 'Apply damage — select a combatant';
+      btn.textContent = tabActive('maps') ? 'Apply damage — select a token in combat' : 'Apply damage — select a combatant';
       btn.disabled = true;
       return;
     }
@@ -62,7 +69,7 @@
   }
 
   function applyDamageToSelected() {
-    const ent = selectedEntry();
+    const ent = damageTarget();
     if (!ent || !OSR.lastRoll) return;
     const lastRoll = OSR.lastRoll;
     // Unknown Armies: damage is wounds taken, counting up (no HP, no HD).
@@ -353,7 +360,7 @@
     return chip('Wounds', entryWounds(e) + ' / ' + (t || '—')) + uaStateChip(e);
   }
   function applyWoundsToSelected(amount, how) {
-    const ent = selectedEntry();
+    const ent = damageTarget();
     if (!ent || !isUaEntry(ent)) return;
     amount = Math.max(0, Math.round(Number(amount) || 0));
     const before = entryWounds(ent);
@@ -380,8 +387,8 @@
     const box = $('#dice-apply-ua');
     if (!box) return;
     const p = OSR.lastPercent;
-    const ent = selectedEntry();
-    if (!p || !ent || !isUaEntry(ent) || !combatTabActive()) { box.hidden = true; box.innerHTML = ''; return; }
+    const ent = damageTarget();
+    if (!p || !ent || !isUaEntry(ent) || !applyTabActive()) { box.hidden = true; box.innerHTML = ''; return; }
     box.hidden = false;
     box.innerHTML = '<div class="dau-head">' + escapeHtml(p.source) + ' rolled <b>' + p.roll + '</b> (' + escapeHtml(p.verdict) +
         ') → wounds to <b>' + escapeHtml(ent.name) + '</b></div>' +
