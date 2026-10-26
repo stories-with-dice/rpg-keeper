@@ -28,7 +28,7 @@
   let selected = new Set();   // token ids selected in the open scene
   let selectedScene = null;
 
-  const icons = () => OSR.data.tokenIcons || [];
+  const icons = () => OSR.allIcons(); // presets + this campaign's downloads (js/icons.js)
   const iconOf = id => icons().find(i => i.id === id) || icons()[0] || { id: '', name: 'Token', paths: [] };
 
   function ensureTokenShape(t) {
@@ -224,7 +224,7 @@
     panel.hidden = !sc;
     if (!sc) return;
     const pal = $('#token-palette');
-    if (!pal.children.length) {
+    if (pal.children.length !== icons().length) {
       pal.innerHTML = icons().map(i =>
         '<button class="token-icon-btn" type="button" data-icon="' + escapeHtml(i.id) + '" title="' + escapeHtml(i.name + ' — ' + i.author) + '" aria-label="' + escapeHtml(i.name) + '">' +
         '<svg viewBox="0 0 512 512" aria-hidden="true">' + i.paths.map(d => '<path d="' + escapeHtml(d) + '"/>').join('') + '</svg></button>').join('');
@@ -387,16 +387,20 @@
       if (t) showCard(t, e.clientX, e.clientY);
     });
     svg.addEventListener('mouseout', e => { if (e.target.closest && e.target.closest('[data-token]')) hideCard(); });
+    renderTokenCredits();
+  }
+
+  // Settings: the authors of every icon this campaign can use.
+  function renderTokenCredits() {
     const credits = $('#set-token-credits');
-    if (credits) {
-      const authors = Array.from(new Set(icons().map(i => i.author))).sort();
-      credits.textContent = 'Map token icons: ' + authors.join(', ') + ', from game-icons.net (CC BY 3.0).';
-    }
+    if (!credits) return;
+    const authors = Array.from(new Set(icons().map(i => i.author))).sort();
+    credits.textContent = 'Map token icons: ' + authors.join(', ') + ', from game-icons.net (CC BY 3.0).';
   }
 
   Object.assign(OSR, {
     ensureTokenShape, tokenRadius, snapTokenPoint: snapPoint, tokenName, tokenInfo, tokenIconFor: iconFor,
     addToken, addTokenForEntry, deleteTokens, unlinkTokens, selectTokens: selectOnly, selectedTokenIds: selectedIds,
-    tokensMarkup, renderTokenPanel, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, wireTokens
+    tokensMarkup, renderTokenPanel, renderTokenCredits, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, wireTokens
   });
 })(window.OSR = window.OSR || {});

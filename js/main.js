@@ -28,6 +28,7 @@
     OSR.wireCompendiumPopups();
     OSR.wireMaps();
     OSR.wireTokens();
+    OSR.wireIcons();
     OSR.wireDrawings();
     OSR.wirePins();
     OSR.wireHistory();
@@ -68,6 +69,7 @@
     OSR.wireCampaigns();
     OSR.wireMaps();
     OSR.wireTokens();
+    OSR.wireIcons();
     OSR.wireDrawings();
     OSR.wirePins();
     OSR.wireHistory();

@@ -20,26 +20,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// The authors' names as game-icons.net credits them (license.txt).
-const AUTHORS = {
-  lorc: 'Lorc', delapouite: 'Delapouite', skoll: 'Skoll', darkzaitzev: 'DarkZaitzev',
-  cathelineau: 'Cathelineau', faithtoken: 'Faithtoken', 'caro-asercion': 'Caro Asercion'
-};
-const BACKGROUND = 'M0 0h512v512H0z';
-
-function iconFromSvg(text, file) {
-  if (!/viewBox="0 0 512 512"/.test(text)) throw new Error(file + ': not a 512 × 512 game-icons.net SVG');
-  const tags = text.match(/<\/?([a-zA-Z]+)/g).map(t => t.replace(/[</]/g, ''));
-  const odd = tags.filter(t => t !== 'svg' && t !== 'path');
-  if (odd.length) throw new Error(file + ': has <' + odd[0] + '>; only <path> is allowed');
-  if (/transform=/.test(text)) throw new Error(file + ': has a transform');
-  const paths = [...text.matchAll(/<path\b[^>]*\bd="([^"]+)"/g)].map(m => m[1]).filter(d => d !== BACKGROUND);
-  if (!paths.length) throw new Error(file + ': no icon path');
-  paths.forEach(d => { if (!/^[MmLlHhVvCcSsQqTtAaZz0-9.,\s-]+$/.test(d)) throw new Error(file + ': odd path data'); });
-  return paths;
-}
-
-const titleCase = s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+const { iconFromSvg, titleCase } = require('../js/icons.js');
+const { AUTHORS } = require('./icon-authors.js');
 
 function main() {
   const dir = process.argv[2];
@@ -54,7 +36,7 @@ function main() {
         id: author + '/' + name,
         name: titleCase(name),
         author: AUTHORS[author] || titleCase(author),
-        paths: iconFromSvg(fs.readFileSync(path.join(sub, f), 'utf8'), author + '/' + f)
+        paths: iconFromSvg(fs.readFileSync(path.join(sub, f), 'utf8'), author + '/' + f, true)
       });
     });
   });
@@ -63,5 +45,4 @@ function main() {
   console.log('Wrote ' + out.length + ' icons to ' + path.relative(process.cwd(), target));
 }
 
-module.exports = { iconFromSvg, titleCase };
 if (require.main === module) main();

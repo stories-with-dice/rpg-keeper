@@ -40,6 +40,7 @@
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
     OSR.renderSeedNotice();
+    if (OSR.renderTokenCredits) OSR.renderTokenCredits();
     OSR.renderDropbox();
   }
   // Settings → System, and an imported pack of another system (js/io.js):

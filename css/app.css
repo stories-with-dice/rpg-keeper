@@ -1440,3 +1440,7 @@ button, input, textarea, select {
   gap: 12px; padding: 24px; text-align: center; background: color-mix(in srgb, var(--bg) 94%, transparent);
 }
 .map-popout-closed[hidden] { display: none; }
+.icon-search { margin-top: 10px; }
+.icon-search input { width: min(420px, 100%); background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; color: var(--text); }
+.icon-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-height: 180px; overflow: auto; }
+.icon-author { color: var(--text-dim); font-size: 11px; }

@@ -18,6 +18,11 @@ dependencies, or CDN `<script>`/`<link>` tags. Everything third-party is **vendo
 
 `.github/workflows/test.yml` runs `npm test` on every push and pull request.
 
+**A second network use: icon downloads** (`js/icons.js`). When the user clicks a result of the
+Maps tab's icon search, the app fetches that one SVG from jsDelivr (`ICON_URL`, the game-icons
+GitHub repository). Nothing else in the app loads from another host, and the search itself runs on
+the bundled `data/game-icons-index.json`.
+
 **One opt-in exception: Dropbox sync** (`js/dropbox.js`, see "Dropbox sync" below).
 When the user turns it on, the app calls the Dropbox HTTP API (`api.dropboxapi.com`,
 `content.dropboxapi.com`) with `fetch`. It loads no third-party script. Nothing goes to the network
@@ -89,6 +94,8 @@ js/drawings.js          drawing on a scene: pen (RDP-simplified), line, rect, el
 js/pins.js              location pins (notes = Compendium 'Journal' entries) and hexcrawl mode (explored
                        hexes, hex numbers) on a scene
 js/history.js           undo/redo of scene changes (OSR.saveScene records before/after); Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y
+js/icons.js             game-icons.net icons (UMD-ish; Node requires it too): iconFromSvg (path data only),
+                       and in the app the icon search and download into state.customIcons
 js/tables.js            the Tables tab: tag filter + name search over OSR.data.tables, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
@@ -118,6 +125,8 @@ data/tables/*.csv      source data for the random tables (one file per table, "r
 data/tables.json       GENERATED: the random tables (scripts/convert-tables.js)
 data/token-icons.json  the 30 preset map tokens: [{ id: '<author>/<name>', name, author, paths: [d…] }], made
                        by scripts/build-token-icons.js from game-icons.net SVGs (CC BY 3.0)
+data/game-icons-index.json  GENERATED: [{ id, name, author }] for every game-icons.net icon (the search list;
+                       fetched on the first search), by scripts/build-icon-index.js
 data/seed-osr.json     hand-maintained Shadowdark core gear: { system, version, compendium }
 data/seed-brp.json     hand-maintained BRP seed: { system, version, compendium, monsters } — Chapter 11
                        creatures/NPCs and the Powers/Equipment of Chapters 4 and 8
@@ -130,6 +139,8 @@ scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> dat
                        { name, category:"Spells", body } entries js/data.js folds into the OSR seed
 scripts/build-token-icons.js  CLI: a folder of game-icons.net <author>/<name>.svg files -> data/token-icons.json
                        (path data only; refuses any other element, a transform, or another viewBox)
+scripts/build-icon-index.js   CLI: the jsDelivr listing of game-icons/icons -> data/game-icons-index.json
+scripts/icon-authors.js       game-icons.net folder -> credited author name (both icon scripts)
 scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json (see "Tables tab" below
                        for the table shape and the per-file tag mapping)
 test/monsters.test.js  node:test suite for the parser + converter
@@ -140,6 +151,8 @@ test/pins.test.js      node:test suite for js/pins.js: hexcrawl toggle, explored
                        and their Journal notes (popup, editor, move, delete)
 test/popout.test.js    node:test suite for the pop-out map window: two jsdom windows, the second booted at
                        ?view=map with boot's `opener` option (no reset(): its state is the first's)
+test/icons.test.js     node:test suite for js/icons.js and scripts/build-icon-index.js: the SVG check, the
+                       search, and a download through a fake jsDelivr
 test/tokens.test.js    node:test suite for js/tokens.js: icons, snapping, moving and selecting, combat
                        links and unlinking, the bar, Delete, pings
 test/maps.test.js      node:test suite for js/maps.js and the .zip Export/Import: scenes, images (file,
@@ -951,6 +964,16 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   (`selectedTokenIds()`). `#token-edit` sits over the map (absolute), so showing it on
   pointer-down does not move the map under the pointer; the map's key handler ignores keys from
   its fields. Delete/Backspace on `#map-wrap` deletes the selection.
+- **More icons** (`js/icons.js`): the search box (`#icon-search`) loads
+  `data/game-icons-index.json` on first use and ranks matches with `searchIcons()` (every word in
+  name, id, or author; a name that starts with the query first; at most 40). A click on a result
+  (`useIcon()`) fetches `ICON_URL + id + '.svg'`, keeps only its path data with
+  `iconFromSvg(text, id, false)` (other elements and attributes dropped; a transform, another
+  viewBox, or odd path data refused with a message), stores `{ id, name, author, paths }` in
+  `state.customIcons` (the campaign document, so it syncs), and adds a token. `OSR.allIcons()` =
+  presets + custom icons is what tokens, the palette, and the Settings credits use;
+  `ensureCustomIcons()` drops malformed entries from imports. A preset or an icon already stored
+  is never fetched.
 - **Linked tokens** show the entry's name, side (ring color), HP (`.map-token-hp`, a dashed
   circle), turn (`.map-token-turn`), and down state, read live from `state.combat` with the combat
   helpers (`entryHp`, `entryMaxHp`, `entryDown`, `acDisplay`, `charQuickAC`). A character token's

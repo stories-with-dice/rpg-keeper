@@ -179,6 +179,7 @@
     if (!Array.isArray(state.scenes)) state.scenes = [];
     if (!state.activeSceneIds || typeof state.activeSceneIds !== 'object') state.activeSceneIds = {};
     if (OSR.ensureSceneShape) state.scenes.forEach(OSR.ensureSceneShape); // js/maps.js
+    if (OSR.ensureCustomIcons) OSR.ensureCustomIcons(state); // js/icons.js
     state.combat.entries.forEach(e => {
       if (!e.id) e.id = uid();
       if (e.side !== 'ally' && e.side !== 'enemy' && e.side !== 'neutral') {

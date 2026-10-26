@@ -373,6 +373,9 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 
 - **Tokens.** Open **Tokens** and click an icon: a token appears in the middle of the view, on the
   grid. Choose its **Size** (cells across; on hexes, rings) and **Color** first.
+  - **More icons**: type in the search box under the icons (for example "dragon", "door", "cart").
+    The list has every icon of game-icons.net. Click a result: the app downloads that icon (this
+    needs the internet), puts a token with it on the map, and keeps the icon in the campaign.
   - **From combat** lists the combatants (Combat tab) that have no token on this scene. Click one
     for a token linked to it: it shows the combatant's name, side (green ally, red enemy, gray
     neutral), HP as a ring, and a dashed ring on whose turn it is. Hover a token for its HP, AC,
@@ -556,8 +559,9 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
 - Silent Legions stats and rules summaries: **Silent Legions** by Kevin Crawford (© Sine Nomine
   Publishing) — see `data/seed-sl.json`.
 - Map token icons: [game-icons.net](https://game-icons.net) by Lorc, Delapouite, Skoll,
-  DarkZaitzev, Cathelineau, Faithtoken, and Caro Asercion, under
-  [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — see `data/token-icons.json`.
+  DarkZaitzev, Cathelineau, Faithtoken, Caro Asercion, and the other artists of icons you
+  download, under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (some CC0) — see
+  `data/token-icons.json`. Settings lists the authors of the icons your campaign uses.
 - Bundled libraries (no CDN): [marked](https://marked.js.org/) for Markdown,
   [Font Awesome Free 6.5.2](https://fontawesome.com/) for icons.
 
