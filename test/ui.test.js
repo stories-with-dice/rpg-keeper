@@ -1641,3 +1641,27 @@ test('export: clicking Export builds a JSON object URL and an <a download>', () 
     window.URL.createObjectURL = realCreate;
   }
 });
+
+test('Combat right-click: a custom condition the combatant does not have goes under "More"; an applied one stays in the main list', async () => {
+  T.addMonsterEntry({ name: 'Goblin', hd: '1', hp: 6, attacks: [], source: 'shadowdark' });
+  const id = T.state.combat.entries[0].id;
+  T.defineCondition('Hexed', 'A witch\'s curse.');
+  T.defineCondition('Soaked', '');
+  T.toggleStatus(id, 'Soaked');
+  T.openCtxMenu(10, 10, id);
+  const main = $$('#ctx-menu .ctx-list .ctx-item').map(b => b.dataset.name);
+  const more = $$('#ctx-menu .ctx-submenu .ctx-item').map(b => b.dataset.name);
+  assert.ok(main.includes('Prone') && main.includes('Soaked'), 'seeded conditions and an applied custom one stay');
+  assert.ok(!main.includes('Hexed'));
+  assert.deepEqual(more, ['Hexed']);
+  click($('#ctx-menu .ctx-more-btn'));
+  assert.ok($('#ctx-menu .ctx-more').classList.contains('is-open'), 'a click on More opens it');
+  assert.ok(!$('#ctx-menu').hidden, 'and keeps the menu open');
+  click($('#ctx-menu .ctx-submenu .ctx-item[data-name="Hexed"]'));
+  assert.deepEqual(T.state.combat.entries[0].statuses.map(s => s.name), ['Soaked', 'Hexed']);
+  assert.ok($('#ctx-menu').hidden);
+
+  T.openCtxMenu(10, 10, id);
+  assert.strictEqual($('#ctx-menu .ctx-more'), null, 'no "More" when every custom condition is applied');
+  T.closeCtxMenu();
+});

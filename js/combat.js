@@ -606,17 +606,21 @@
     if (!e) return;
     ctxEntryId = entryId;
     const active = new Set((e.statuses || []).map(s => s.name.toLowerCase()));
-    const items = OSR.state.conditions
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(c => {
-        const on = active.has(c.name.toLowerCase());
-        return '<button class="ctx-item' + (on ? ' is-on' : '') + '" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(c.desc) + '">' +
-          '<i class="fa-solid ' + escapeHtml(c.icon || OSR.DEFAULT_STATUS_ICON) + '"></i>' +
-          '<span>' + escapeHtml(c.name) + '</span>' +
-          (on ? '<i class="fa-solid fa-check ctx-check"></i>' : '') +
-          '</button>';
-      }).join('');
+    // A condition the user added (not in CONDITION_SEED) that this entry
+    // does not have goes under "More", so the main list stays short.
+    const seeded = new Set(OSR.CONDITION_SEED.map(c => c.name.toLowerCase()));
+    const item = c => {
+      const on = active.has(c.name.toLowerCase());
+      return '<button class="ctx-item' + (on ? ' is-on' : '') + '" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(c.desc) + '">' +
+        '<i class="fa-solid ' + escapeHtml(c.icon || OSR.DEFAULT_STATUS_ICON) + '"></i>' +
+        '<span>' + escapeHtml(c.name) + '</span>' +
+        (on ? '<i class="fa-solid fa-check ctx-check"></i>' : '') +
+        '</button>';
+    };
+    const sorted = OSR.state.conditions.slice().sort((a, b) => a.name.localeCompare(b.name));
+    const isMore = c => !seeded.has(c.name.toLowerCase()) && !active.has(c.name.toLowerCase());
+    const items = sorted.filter(c => !isMore(c)).map(item).join('');
+    const more = sorted.filter(isMore).map(item).join('');
     const other = e.side === 'ally' ? 'enemy' : 'ally';
     const m = $('#ctx-menu');
     m.innerHTML =
@@ -626,6 +630,9 @@
         '<span>Change side &rarr; ' + other + '</span></button>' +
       '<div class="ctx-sub">Status</div>' +
       '<div class="ctx-list">' + items + '</div>' +
+      (more ? '<div class="ctx-more"><button class="ctx-item ctx-more-btn" type="button" aria-haspopup="true">' +
+        '<i class="fa-solid fa-ellipsis"></i><span>More</span><i class="fa-solid fa-chevron-right ctx-check"></i></button>' +
+        '<div class="ctx-submenu">' + more + '</div></div>' : '') +
       '<button class="ctx-item ctx-new"><i class="fa-solid fa-plus"></i><span>New condition&hellip;</span></button>';
     m.hidden = false;
     // position within viewport
@@ -634,10 +641,21 @@
     const py = Math.min(y, window.innerHeight - mh - 8);
     m.style.left = Math.max(8, px) + 'px';
     m.style.top = Math.max(8, py) + 'px';
+    // "More" opens to the left, or upward, when there is no room.
+    const sub = m.querySelector('.ctx-submenu');
+    m.classList.remove('ctx-flip', 'ctx-up');
+    if (sub) {
+      sub.style.display = 'block';
+      const r = sub.getBoundingClientRect();
+      sub.style.display = '';
+      m.classList.toggle('ctx-flip', r.right > window.innerWidth - 8);
+      m.classList.toggle('ctx-up', r.bottom > window.innerHeight - 8);
+    }
   }
   function onCtxMenuClick(e) {
     const item = e.target.closest('.ctx-item');
     if (!item || ctxEntryId == null) return;
+    if (item.classList.contains('ctx-more-btn')) { item.parentNode.classList.toggle('is-open'); return; }
     if (item.classList.contains('ctx-side')) {
       toggleSide(ctxEntryId);
       closeCtxMenu();
