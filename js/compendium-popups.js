@@ -9,7 +9,9 @@
   /* ---- hover popups on [bracketed] references (stackable, pinnable) ---- */
   // Each popup is its own DOM node so links inside one can spawn another and
   // the whole chain stays open. A pinned popup ignores mouse-leave.
-  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT }]
+  // A popup with a `source` is not a Compendium entry: source.render() gives
+  // its title, badges, and body (openSourcePop — the map's actor tokens).
+  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, source? }]
   let compPopActive = null;  // popup the mouse is over — target for ↑/↓ match nav
 
   function popByName(name) { return compPops.find(p => p.name === name) || null; }
@@ -29,6 +31,11 @@
       '</span></div>';
   }
   function compPopBodyHtml(pop) {
+    if (pop.source) {
+      const r = pop.source.render();
+      if (!r) return popHeadHtml(pop, escapeHtml(pop.source.title || '')) + '<p class="cpop-none">Not found.</p>';
+      return popHeadHtml(pop, escapeHtml(r.title), r.badges) + '<div class="cpop-body">' + r.html + '</div>';
+    }
     if (!pop.matches.length) {
       return popHeadHtml(pop, escapeHtml(pop.name)) +
         '<p class="cpop-none">No Compendium entry found for this item.</p>' +
@@ -55,7 +62,10 @@
     pop.el.innerHTML = compPopBodyHtml(pop);
     pop.el.classList.toggle('is-pinned', !!pop.pinned);
     const body = pop.el.querySelector('.cpop-body');
-    if (body) OSR.annotate(body, { vars: OSR.charVars(OSR.activeChar()) });
+    if (body) OSR.annotate(body, { vars: popVars(pop) });
+  }
+  function popVars(pop) {
+    return pop.source && pop.source.vars ? pop.source.vars() : OSR.charVars(OSR.activeChar());
   }
   function positionPop(pop, anchor) {
     const el = pop.el;
@@ -86,6 +96,31 @@
     positionPop(pop, anchor);
     return pop;
   }
+  // A popup whose content comes from `source`: { render() → { title, badges,
+  // html } | null, vars?() → $variables for its rolls, rollSource?() → the
+  // log's name, onClick?(e, pop) → true when it handled the click }. `key`
+  // names it, so a second hover on the same thing reuses it.
+  function openSourcePop(key, anchor, source) {
+    cancelHideAllPops();
+    let pop = popByName(key);
+    if (pop) { pop.anchor = anchor; pop.source = source; renderPop(pop); return pop; }
+    const el = document.createElement('div');
+    el.className = 'comp-pop';
+    document.body.appendChild(el);
+    pop = { el: el, name: key, matches: [], fuzzy: false, scores: null,
+      idx: 0, pinned: false, parentEl: null, anchor: anchor, hideT: null, source: source };
+    compPops.push(pop);
+    renderPop(pop);
+    positionPop(pop, anchor);
+    return pop;
+  }
+  function setPopPinned(pop, on) {
+    pop.pinned = !!on;
+    pop.el.classList.toggle('is-pinned', pop.pinned);
+    const b = pop.el.querySelector('[data-act="pin"]');
+    if (b) b.setAttribute('aria-pressed', pop.pinned ? 'true' : 'false');
+    if (pop.pinned) clearTimeout(pop.hideT); else scheduleHidePop(pop);
+  }
   function closePop(pop, cascade) {
     if (!pop) return;
     clearTimeout(pop.hideT);
@@ -113,19 +148,23 @@
     compPops = [];
     compPopActive = null;
   }
-  function closeUnpinnedCompPops() {
-    compPops.slice().forEach(p => { if (!p.pinned) closePop(p, false); });
+  function closeUnpinnedCompPops(exceptName) {
+    compPops.slice().forEach(p => { if (!p.pinned && p.name !== exceptName) closePop(p, false); });
   }
   // Kept under the old names used elsewhere (Escape handler, Settings, edits).
   function hideCompPopNow() { closeAllCompPops(); }
   function refreshCompPop() {
     compPops.slice().forEach(pop => {
+      if (pop.source) { renderPop(pop); return; }
       const r = OSR.compResolve(pop.name);
       pop.matches = r.items; pop.fuzzy = r.fuzzy; pop.scores = r.scores;
       if (pop.idx >= pop.matches.length) pop.idx = 0;
       renderPop(pop);
     });
   }
+
+  // Only the popups with a source (the map's actors), after a combat change.
+  function refreshSourcePops() { compPops.forEach(pop => { if (pop.source) renderPop(pop); }); }
 
   /* ---- "[" / "$" autocomplete across editing surfaces ---- */
   // "[" (compAC.mode 'comp') fires in the character-sheet editor, the
@@ -330,11 +369,13 @@
       if (!popEl) return;
       const pop = popByEl(popEl);
       if (!pop) return;
+      if (pop.source && pop.source.onClick && pop.source.onClick(e, pop)) return;
       const roll = e.target.closest('.roll');
       if (roll) {
         cancelHideAllPops();
         const en = pop.matches[pop.idx];
-        OSR.doRoll(roll.dataset.formula, en ? en.name : (pop.name || 'Compendium'));
+        const src = pop.source ? (pop.source.rollSource ? pop.source.rollSource() : '') : (en ? en.name : '');
+        OSR.doRoll(roll.dataset.formula, src || pop.name || 'Compendium', pop.source ? popVars(pop) : undefined);
         return;
       }
       const navb = e.target.closest('[data-nav]');
@@ -347,10 +388,7 @@
       const act = e.target.closest('[data-act]');
       if (!act) return;
       if (act.dataset.act === 'pin') {
-        pop.pinned = !pop.pinned;
-        pop.el.classList.toggle('is-pinned', pop.pinned);
-        act.setAttribute('aria-pressed', pop.pinned ? 'true' : 'false');
-        if (pop.pinned) clearTimeout(pop.hideT); else scheduleHidePop(pop);
+        setPopPinned(pop, !pop.pinned);
       } else if (act.dataset.act === 'close') {
         closePop(pop, true);
       } else if (act.dataset.act === 'edit' && pop.matches[pop.idx]) {
@@ -445,8 +483,8 @@
   }
 
   Object.assign(OSR, {
-    openCompPop, closePop, scheduleHidePop, cancelHideAllPops, scheduleHideAllPops,
-    closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop,
+    openCompPop, openSourcePop, setPopPinned, closePop, scheduleHidePop, cancelHideAllPops, scheduleHideAllPops,
+    closeAllCompPops, closeUnpinnedCompPops, hideCompPopNow, refreshCompPop, refreshSourcePops,
     acSearch, acSearchVars, closeAC, acFromTextarea, acFromFormulaInput, acFromCM,
     wireCompendiumPopups
   });

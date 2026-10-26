@@ -5,8 +5,9 @@
  * is an ordinary Compendium entry (js/compendium.js) of category 'Journal'
  * in the current system, so the Compendium lists, searches, and links it like
  * any entry. The pin tool makes both and opens the entry's editor. With the
- * hand tool, a click on a pin opens the note's popup (js/compendium-popups.js),
- * a double-click its editor, and a drag moves it.
+ * hand tool, a hover on a pin opens the note's popup (js/compendium-popups.js),
+ * a click pins it open, a double-click opens its editor, a drag moves it, and
+ * a right-click opens pinMenu() (delete the pin, with or without the note).
  *
  * Hexcrawl mode (`scene.hexcrawl`, hex grids only): { on, explored: ['q,r', …],
  * coords }. The explore tool marks a hex explored or not; unexplored hexes
@@ -85,7 +86,7 @@
       ' A' + num(s * 0.7) + ' ' + num(s * 0.7) + ' 0 1 1 ' + num(s * 0.7) + ' ' + num(-s * 1.4) +
       ' C' + num(s * 0.7) + ' ' + num(-s * 0.9) + ' ' + num(s * 0.15) + ' ' + num(-s * 0.6) + ' 0 0Z" stroke-width="' + num(stroke * 1.5) + '"/>' +
       '<circle cy="' + num(-s * 1.4) + '" r="' + num(s * 0.28) + '"/>' +
-      '<title>' + escapeHtml(note ? note.name : 'Note deleted') + '</title></g>';
+      (note ? '' : '<title>Note deleted</title>') + '</g>'; // a note shows its popup on hover
   }
   function pinsMarkup(sc, stroke) { return sc.pins.map(p => pinMarkup(sc, p, stroke)).join(''); }
 
@@ -146,12 +147,43 @@
     return true;
   }
 
+  // A click: the note's popup, pinned so it stays when the pointer leaves.
   function openNote(pin, anchor) {
     const note = noteOf(pin);
     if (!note) { OSR.setMapStatus('The note of this pin was deleted from the Compendium.'); return null; }
     const pop = OSR.openCompPop(note.name, anchor);
-    if (pop) pop.pinned = true; // stays open when the pointer leaves the pin
+    if (pop) OSR.setPopPinned(pop, true);
     return pop;
+  }
+  // A hover: the same popup, not pinned (its pin button pins it).
+  function hoverNote(pin, anchor) {
+    const note = noteOf(pin);
+    if (!note) return null;
+    OSR.closeUnpinnedCompPops(note.name);
+    return OSR.openCompPop(note.name, anchor);
+  }
+
+  // A right-click on a pin: edit the note, or delete the pin with or without
+  // its Journal entry.
+  function pinMenu(sc, id, x, y) {
+    const pin = sc.pins.find(p => p.id === id);
+    if (!pin) return;
+    selectedPin = id;
+    OSR.closeUnpinnedCompPops();
+    OSR.renderMaps();
+    const note = noteOf(pin);
+    OSR.openMapMenu(x, y,
+      '<div class="ctx-head">' + escapeHtml(note ? note.name : 'Note deleted') + '</div>' +
+      (note ? '<button class="ctx-item" type="button" data-act="edit"><i class="fa-solid fa-pen"></i><span>Edit journal entry</span></button>' : '') +
+      (note ? '<button class="ctx-item ctx-delete" type="button" data-act="delete-note"><i class="fa-solid fa-trash"></i><span>Delete pin and journal entry</span></button>' : '') +
+      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-location-dot"></i><span>Delete pin' + (note ? ', keep journal entry' : '') + '</span></button>',
+      el => {
+        const act = el.dataset.act;
+        if (act === 'edit') { const n = noteOf(pin); if (n) OSR.openCompEntry(n.id); return true; }
+        if (act === 'delete-note') { deletePin(sc, id, true); return true; }
+        if (act === 'delete') { deletePin(sc, id, false); return true; }
+        return false;
+      });
   }
 
   /* ---- Pointer (hand tool, called by js/maps.js) ---- */
@@ -218,11 +250,24 @@
     });
     $('#pin-delete').addEventListener('click', () => { const sc = OSR.activeScene(); if (sc && selectedPin) deletePin(sc, selectedPin, false); });
     $('#pin-delete-note').addEventListener('click', () => { const sc = OSR.activeScene(); if (sc && selectedPin) deletePin(sc, selectedPin, true); });
+    const svg = $('#map-svg');
+    svg.addEventListener('mouseover', e => {
+      const hit = e.target.closest && e.target.closest('[data-pin]');
+      const sc = OSR.activeScene();
+      if (!hit || !sc || e.buttons || !$('#map-menu').hidden) return; // not during a drag or over the menu
+      const pin = sc.pins.find(p => p.id === hit.getAttribute('data-pin'));
+      if (pin) hoverNote(pin, hit);
+    });
+    svg.addEventListener('mouseout', e => {
+      if (!(e.target.closest && e.target.closest('[data-pin]'))) return;
+      const to = e.relatedTarget;
+      if (!(to && to.closest && to.closest('.comp-pop'))) OSR.scheduleHideAllPops();
+    });
   }
 
   Object.assign(OSR, {
     hexcrawlOn, toggleExplored, hexcrawlMarkup, ensurePinShape, pinsMarkup, addPin, deletePin, openPinNote: openNote,
-    pinPointerDown, pinPointerMove, pinPointerUp, pinKey, renderPinBar, wirePins,
+    pinPointerDown, pinPointerMove, pinPointerUp, pinKey, pinMenu, renderPinBar, wirePins,
     selectedPinId: () => selectedPin
   });
 })(window.OSR = window.OSR || {});

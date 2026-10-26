@@ -258,9 +258,10 @@ test('map right-click: on the map itself a menu adds a pin or marks a hex; with 
   click($('#map-menu [data-act="explore"]'));
   assert.deepEqual(sc.hexcrawl.explored, []);
 
-  // A pin keeps the browser's menu.
-  assert.ok(!menuAt(ctr.x, ctr.y, $('#map-svg [data-pin]')).defaultPrevented);
-  assert.strictEqual($('#map-menu').hidden, true);
+  // A pin opens its own menu.
+  assert.ok(menuAt(ctr.x, ctr.y, $('#map-svg [data-pin]')).defaultPrevented);
+  assert.ok($('#map-menu [data-act="delete-note"]'));
+  T.closeMapMenu();
 
   // On: no menu; a right-button drag on the map pans.
   click($('#map-rclick-pan'));
@@ -277,5 +278,62 @@ test('map right-click: on the map itself a menu adds a pin or marks a hex; with 
   assert.strictEqual(sc.pins.length, 1, 'the pan added nothing');
   click($('#map-rclick-pan'));
   assert.strictEqual(window.localStorage.getItem('osr_map_rclick_pan'), 'off');
+  window.close();
+});
+
+test('pins: a hover opens the note\'s popup (not pinned); the popup\'s pin button pins it; a click pins it', async () => {
+  const env = await setup();
+  const { T, window, document, $, sc } = env;
+  const pin = T.addPin(sc, { x: 300, y: 300 }, false);
+  T.state.compendium.find(e => e.id === pin.compendiumId).body = 'A **ruined** chapel.';
+  const el = () => $('#map-svg [data-pin="' + pin.id + '"]');
+  assert.strictEqual(el().querySelector('title'), null, 'no browser tooltip over the popup');
+  el().dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true }));
+  const pop = document.querySelector('.comp-pop');
+  assert.match(pop.textContent, /Wilds — Location 1[\s\S]*ruined chapel/);
+  assert.ok(!pop.classList.contains('is-pinned'));
+  click(pop.querySelector('[data-act="pin"]'));
+  assert.ok(pop.classList.contains('is-pinned'));
+  assert.strictEqual(pop.querySelector('[data-act="pin"]').getAttribute('aria-pressed'), 'true');
+  T.closeAllCompPops();
+
+  el().dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true, buttons: 1 }));
+  assert.strictEqual(document.querySelector('.comp-pop'), null, 'no popup while a button is down');
+  clickAt(env, 300, 295, el());
+  assert.ok(document.querySelector('.comp-pop').classList.contains('is-pinned'), 'a click opens it pinned');
+  assert.strictEqual(document.querySelector('.comp-pop [data-act="pin"]').getAttribute('aria-pressed'), 'true');
+  window.close();
+});
+
+test('pins: the right-click menu deletes the pin and its journal entry, or only the pin', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  const menuOn = pin => {
+    const ev = new window.MouseEvent('contextmenu', { clientX: 10, clientY: 10, button: 2, bubbles: true, cancelable: true });
+    $('#map-svg [data-pin="' + pin.id + '"]').dispatchEvent(ev);
+    return ev;
+  };
+  const p1 = T.addPin(sc, { x: 100, y: 100 }, false);
+  assert.ok(menuOn(p1).defaultPrevented);
+  assert.match($('#map-menu').textContent, /Wilds — Location 1[\s\S]*Delete pin and journal entry[\s\S]*Delete pin, keep journal entry/);
+  click($('#map-menu [data-act="delete"]'));
+  assert.deepEqual(sc.pins, []);
+  assert.ok(T.state.compendium.some(e => e.id === p1.compendiumId), 'the journal entry stays');
+  assert.ok($('#map-menu').hidden);
+
+  const p2 = T.addPin(sc, { x: 200, y: 100 }, false);
+  window.confirm = () => true;
+  menuOn(p2);
+  click($('#map-menu [data-act="delete-note"]'));
+  assert.deepEqual(sc.pins, []);
+  assert.ok(!T.state.compendium.some(e => e.id === p2.compendiumId), 'the journal entry goes too');
+
+  const p3 = T.addPin(sc, { x: 300, y: 100 }, false);
+  T.state.compendium = T.state.compendium.filter(e => e.id !== p3.compendiumId);
+  T.renderMaps();
+  menuOn(p3);
+  assert.strictEqual($('#map-menu [data-act="delete-note"]'), null, 'a pin whose note is gone: only "Delete pin"');
+  click($('#map-menu [data-act="delete"]'));
+  assert.deepEqual(sc.pins, []);
   window.close();
 });
