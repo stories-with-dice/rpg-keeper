@@ -21,11 +21,17 @@
   all-caps tags). A `mouseover` on a ref calls `openCompPop(name, anchor)`.
 - A popup is at most `min(280px, 60vh)` high: the header stays and `.cpop-body` scrolls.
 - Each popup is its own `.comp-pop` node on `<body>`, tracked in `compPops`
-  (`{ el, name, matches, idx, pinned, parentEl, anchor, hideT, source? }`). Links inside a popup
+  (`{ el, name, matches, idx, pinned, parentEl, anchor, hideT, combat, source? }`). Links inside a popup
   open more popups; the chain stays while the pointer is in any of them
   (`cancelHideAllPops`/`scheduleHideAllPops`, 180 ms grace).
 - The 📌 button (`setPopPinned(pop, on)`) keeps a popup open and makes its `.cpop-head` a drag
   handle. `closePop(pop, cascade)` drops a popup and its unpinned children.
+- `renderPop()` adds a `.cpop-resize` grip in the corner. A drag on it sets inline `width`/`height`
+  (minimum 200 × 100, inside the window), adds `.is-sized` (no `max-height`; the body fills), and
+  pins the popup.
+- `pop.combat` is set when the anchor is in `#tab-combat` (or the parent popup has it). The tab
+  click handler in `js/main.js` calls `syncCompPopsToTab(tab)`, which sets `hidden` on those popups
+  on every other tab.
   `closeUnpinnedCompPops(exceptName)`, `closeAllCompPops()` (Escape). A `mousedown` outside popups
   and refs closes the unpinned ones.
 - Several matches: `‹ ›` buttons, or ↑/↓ over the popup. `refreshCompPop()` re-resolves after an edit.

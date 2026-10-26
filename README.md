@@ -340,7 +340,9 @@ has that text replaced with `[Entry Name]`, so it becomes a live link.
 Popups **stack** — hovering a link inside a popup opens another, and the whole chain stays while the
 mouse is anywhere in it. Each popup has a **📌 pin** (keeps it open after the mouse leaves) and an
 **×**. **Esc** closes every popup; clicking elsewhere closes the unpinned ones. A **pinned** popup
-can be **dragged by its header** to reposition it.
+can be **dragged by its header** to reposition it. Drag the **corner grip** (bottom right) to
+resize a popup; a resized popup stays pinned. A pinned popup opened in the **Combat** tab shows only
+while the Combat tab is open, and comes back when you return to it.
 
 ### `[` autocomplete
 In the sheet editor, the Journal, and the Compendium entry editor, typing `[` followed by **2+

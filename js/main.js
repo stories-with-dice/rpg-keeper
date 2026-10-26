@@ -53,6 +53,7 @@
       $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
       OSR.updateApplyButton(); // "Apply damage" shows only on the Combat tab
+      OSR.syncCompPopsToTab(b.dataset.tab); // so do the popups opened from it
       if (b.dataset.tab === 'combat') OSR.renderCombat();
       if (b.dataset.tab === 'bestiary') OSR.renderMonsterBrowser();
       if (b.dataset.tab === 'compendium') OSR.renderCompendium();
