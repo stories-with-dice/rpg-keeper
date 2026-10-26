@@ -341,8 +341,8 @@ Popups **stack** — hovering a link inside a popup opens another, and the whole
 mouse is anywhere in it. Each popup has a **📌 pin** (keeps it open after the mouse leaves) and an
 **×**. **Esc** closes every popup; clicking elsewhere closes the unpinned ones. A **pinned** popup
 can be **dragged by its header** to reposition it. Drag the **corner grip** (bottom right) to
-resize a popup; a resized popup stays pinned. A pinned popup opened in the **Combat** tab shows only
-while the Combat tab is open, and comes back when you return to it.
+resize a popup; a resized popup stays pinned. A popup shows only on the tab you opened it from, even
+when pinned: it hides when you change tabs and comes back when you return to that tab.
 
 ### `[` autocomplete
 In the sheet editor, the Journal, and the Compendium entry editor, typing `[` followed by **2+

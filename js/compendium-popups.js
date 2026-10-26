@@ -11,13 +11,20 @@
   // the whole chain stays open. A pinned popup ignores mouse-leave.
   // A popup with a `source` is not a Compendium entry: source.render() gives
   // its title, badges, and body (openSourcePop — the map's actor tokens).
-  // A popup opened from the Combat tab (or from a popup that was) has `combat`
-  // set: it shows only while the Combat tab is open (syncCompPopsToTab).
-  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, combat, source? }]
+  // `tab` is the tab the popup was opened from (or its parent popup's tab):
+  // it shows only while that tab is open (syncCompPopsToTab). Null outside a
+  // tab panel (the side rail), so it shows on every tab.
+  let compPops = [];         // [{ el, name, matches, idx, pinned, parentEl, anchor, hideT, tab, source? }]
   let compPopActive = null;  // popup the mouse is over — target for ↑/↓ match nav
 
   function popByName(name) { return compPops.find(p => p.name === name) || null; }
   function popByEl(el) { return compPops.find(p => p.el === el) || null; }
+
+  // The tab name ('combat', 'maps', …) of the tab panel that holds `anchor`.
+  function anchorTab(anchor) {
+    const panel = anchor && anchor.closest ? anchor.closest('.tab-panel') : null;
+    return panel ? panel.id.replace(/^tab-/, '') : null;
+  }
 
   function popHeadHtml(pop, title, badges) {
     const nav = pop.matches.length > 1
@@ -93,9 +100,9 @@
     document.body.appendChild(el);
     const r = OSR.compResolve(name);
     const parent = parentEl ? popByEl(parentEl) : null;
-    const combat = parent ? !!parent.combat : !!(anchor.closest && anchor.closest('#tab-combat'));
     pop = { el: el, name: name, matches: r.items, fuzzy: r.fuzzy, scores: r.scores,
-      idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null, combat: combat };
+      idx: 0, pinned: false, parentEl: parentEl, anchor: anchor, hideT: null,
+      tab: parent ? parent.tab : anchorTab(anchor) };
     compPops.push(pop);
     renderPop(pop);
     positionPop(pop, anchor);
@@ -113,7 +120,7 @@
     el.className = 'comp-pop';
     document.body.appendChild(el);
     pop = { el: el, name: key, matches: [], fuzzy: false, scores: null,
-      idx: 0, pinned: false, parentEl: null, anchor: anchor, hideT: null, source: source };
+      idx: 0, pinned: false, parentEl: null, anchor: anchor, hideT: null, tab: anchorTab(anchor), source: source };
     compPops.push(pop);
     renderPop(pop);
     positionPop(pop, anchor);
@@ -168,9 +175,9 @@
     });
   }
 
-  // Hide the Combat popups while another tab is open; show them again on Combat.
+  // Hide each popup while another tab is open; show it again on its own tab.
   function syncCompPopsToTab(tab) {
-    compPops.forEach(pop => { if (pop.combat) pop.el.hidden = tab !== 'combat'; });
+    compPops.forEach(pop => { if (pop.tab) pop.el.hidden = pop.tab !== tab; });
   }
 
   // Only the popups with a source (the map's actors), after a combat change.

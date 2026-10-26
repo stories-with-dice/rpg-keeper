@@ -1688,30 +1688,33 @@ test('a reload opens the tab that was open last (localStorage, per device)', asy
   tab('character');
 });
 
-test('Compendium popups: a pinned popup from the Combat tab shows only on the Combat tab', () => {
+test('Compendium popups: a pinned popup shows only on the tab it was opened from', () => {
+  // Open and pin a popup on a ref placed in `host`.
+  const openPinned = (host, name) => {
+    const ref = document.createElement('span');
+    ref.className = 'comp-ref'; ref.dataset.name = name;
+    host.appendChild(ref);
+    fire(ref, 'mouseover');
+    const pop = $$('.comp-pop').pop();
+    click(pop.querySelector('[data-act="pin"]'));
+    ref.remove();
+    return pop;
+  };
   tab('combat');
-  const ref = document.createElement('span');
-  ref.className = 'comp-ref'; ref.dataset.name = 'Sleep';
-  $('#tab-combat').appendChild(ref);
-  fire(ref, 'mouseover');
-  const pop = $('.comp-pop');
-  assert.ok(pop && !pop.hidden, 'the popup opens');
-  click(pop.querySelector('[data-act="pin"]'));
+  const combat = openPinned($('#tab-combat'), 'Sleep');
+  const rail = openPinned(document.body, 'Light'); // outside every tab panel
   tab('character');
-  assert.ok(pop.isConnected, 'a pinned popup stays open');
-  assert.strictEqual(pop.hidden, true, 'and hides on another tab');
-  // A popup from another tab is not tied to Combat.
-  const other = document.createElement('span');
-  other.className = 'comp-ref'; other.dataset.name = 'Light';
-  $('#tab-character').appendChild(other);
-  fire(other, 'mouseover');
-  const pop2 = $$('.comp-pop').find(p => p !== pop);
-  click(pop2.querySelector('[data-act="pin"]'));
+  assert.ok(combat.isConnected, 'a pinned popup stays open');
+  assert.strictEqual(combat.hidden, true, 'and hides on another tab');
+  assert.strictEqual(rail.hidden, false, 'a popup from outside the tabs shows on every tab');
+  const sheet = openPinned($('#tab-character'), 'Charm Person');
   tab('combat');
-  assert.strictEqual(pop.hidden, false, 'it shows again on Combat');
-  assert.strictEqual(pop2.hidden, false, 'a popup from the Characters tab still shows');
+  assert.strictEqual(combat.hidden, false, 'it shows again on its own tab');
+  assert.strictEqual(sheet.hidden, true, 'the Characters popup hides on Combat');
+  tab('character');
+  assert.strictEqual(combat.hidden, true);
+  assert.strictEqual(sheet.hidden, false);
   T.closeAllCompPops();
-  ref.remove(); other.remove();
 });
 
 test('Compendium popups: the corner grip resizes a popup and pins it', () => {
