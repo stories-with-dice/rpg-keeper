@@ -19,6 +19,7 @@
 
 - `annotate()` wraps `[bracketed]` text in `<span class="comp-ref" data-name>` (not short
   all-caps tags). A `mouseover` on a ref calls `openCompPop(name, anchor)`.
+- A popup is at most `min(280px, 60vh)` high: the header stays and `.cpop-body` scrolls.
 - Each popup is its own `.comp-pop` node on `<body>`, tracked in `compPops`
   (`{ el, name, matches, idx, pinned, parentEl, anchor, hideT, source? }`). Links inside a popup
   open more popups; the chain stays while the pointer is in any of them
