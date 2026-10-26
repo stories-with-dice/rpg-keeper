@@ -225,6 +225,8 @@ test('Maps: squares draw as a pattern; hexes as a path that changes with the ori
   const env = await setup();
   const { T, window, $ } = env;
   await T.createScene({ name: 'Grid', file: env.png() });
+  assert.strictEqual(T.activeScene().grid.type, 'hex', 'a new scene has hexes');
+  setValue($('#grid-type'), 'square');
   const pat = $('#map-grid-pat');
   assert.ok(pat);
   assert.deepEqual(['x', 'y', 'width'].map(a => pat.getAttribute(a)), ['0', '0', '50']);
@@ -245,6 +247,7 @@ test('Maps: dragging with the grid tool sets the grid; arrow keys move it; the f
   const env = await setup();
   const { T, window, $ } = env;
   await T.createScene({ name: 'Calibrate', file: env.png() });
+  setValue($('#grid-type'), 'square');
   click($('.map-tool[data-tool="calibrate"]'));
   // One 60 px cell of the image, from (130, 140) to (190, 200).
   dragOn(env, toScreen(env, 130, 140), toScreen(env, 190, 200));
@@ -298,8 +301,9 @@ test('Maps: the measure tool shows the distance in cells and units', async () =>
   const env = await setup();
   const { T, window, $ } = env;
   await T.createScene({ name: 'Measure', file: env.png() });
+  setValue($('#grid-type'), 'square');
   click($('.map-tool[data-tool="measure"]'));
-  // Default grid: 50 px squares at 0,0, 5 ft per cell. From cell 0,0 to cell 3,1.
+  // 50 px squares at 0,0, 5 ft per cell. From cell 0,0 to cell 3,1.
   dragOn(env, toScreen(env, 25, 25), toScreen(env, 175, 75));
   assert.strictEqual($('#map-status').textContent, '3 cells · 15 ft');
   assert.ok($('#map-svg line.map-measure'));
@@ -423,5 +427,26 @@ test('Import: a broken .zip, or one without campaign.json, is refused', async ()
   await T.importData(new window.File([fflate.zipSync({ 'other.txt': fflate.strToU8('x') })], 'empty.zip', { type: 'application/zip' }));
   assert.match(alerts[0], /not a valid \.zip/);
   assert.match(alerts[1], /no campaign\.json/);
+  window.close();
+});
+
+test('Maps: a click on the map closes the Grid, Tokens, and hotkeys menus; the hotkeys menu names Alt and Option', async () => {
+  const env = await setup();
+  const { T, window, $ } = env;
+  await T.createScene({ name: 'Menus', file: env.png() });
+  const map = $('#map-svg');
+  const down = () => {
+    map.dispatchEvent(new window.MouseEvent('pointerdown', { clientX: 500, clientY: 300, button: 0, bubbles: true, cancelable: true }));
+    window.dispatchEvent(new window.MouseEvent('pointerup', { clientX: 500, clientY: 300, button: 0, bubbles: true, cancelable: true }));
+  };
+  ['#map-grid-panel', '#map-token-panel', '#map-help-panel'].forEach(sel => {
+    $(sel).open = true;
+    down();
+    assert.strictEqual($(sel).open, false, sel + ' closes');
+  });
+  const help = $('#map-help-panel').textContent;
+  assert.match(help, /Alt key on Windows/);
+  assert.match(help, /Option \(⌥\) key on Mac/);
+  ['Alt+1', 'Alt+5', 'Alt+6', 'Alt+0', 'Alt+-', 'Alt+=', 'Alt+S', 'Alt+F', 'Alt+O', 'Alt+G', 'Alt+K'].forEach(k => assert.ok(help.includes(k), k));
   window.close();
 });

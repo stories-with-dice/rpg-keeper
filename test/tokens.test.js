@@ -25,6 +25,10 @@ async function setup() {
   click(env.$('#tabs .tab-btn[data-tab="maps"]'));
   // A blank 2000 × 1500 scene with a 50 px square grid at 0,0.
   const { scene } = await T.createScene({ name: 'Arena' });
+  // A square grid (a new scene has hexes), with no undo step for it.
+  setValue(env.$('#grid-type'), 'square');
+  T.resetHistories();
+  T.renderMaps();
   env.sc = scene;
   const close = window.close.bind(window);
   window.close = () => { T.mapsIdle().then(() => setTimeout(close, 0)); };
@@ -299,5 +303,46 @@ test('tokens: names are escaped in the label and the hover card; tokens are save
   assert.strictEqual($('#token-card img'), null);
   await T.flushSave();
   assert.deepEqual(T.splitState(T.state).osr.scenes[0].tokens.map(x => x.id), [t.id]);
+  window.close();
+});
+
+test('tokens: a right-click edits the label: Enter, a change, or closing the menu saves it; Escape drops it; the default color is black', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  const t = T.addToken(sc, { iconId: 'lorc/werewolf', x: 125, y: 125 });
+  assert.strictEqual(t.color, '#000000');
+  assert.strictEqual($('#token-color').value, '#000000');
+  const menuOn = () => tokenEl(env, t).dispatchEvent(new window.MouseEvent('contextmenu', { clientX: 40, clientY: 40, button: 2, bubbles: true, cancelable: true }));
+  const key = (target, k) => target.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+  const field = () => $('#map-menu input[data-act="label"]');
+
+  menuOn();
+  assert.strictEqual(field().value, '');
+  assert.strictEqual(field().placeholder, 'Werewolf');
+  field().value = 'Alpha';
+  key(field(), 'Enter');
+  assert.strictEqual(t.label, 'Alpha');
+  assert.strictEqual($('#map-menu').hidden, true, 'Enter closes the menu');
+  assert.strictEqual(T.tokenName(t), 'Alpha');
+
+  menuOn();
+  assert.strictEqual(field().value, 'Alpha');
+  field().value = 'Beta';
+  field().dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.strictEqual(t.label, 'Beta');
+  assert.strictEqual($('#map-menu').hidden, false, 'a change keeps the menu open');
+  field().value = 'Gamma';
+  pointer(window, $('#map-svg'), 'pointerdown', 900, 600);
+  pointer(window, window, 'pointerup', 900, 600);
+  assert.strictEqual($('#map-menu').hidden, true);
+  assert.strictEqual(t.label, 'Gamma', 'a click outside the menu saves it');
+
+  menuOn();
+  field().value = 'Delta';
+  key(field(), 'Escape');
+  assert.strictEqual($('#map-menu').hidden, true);
+  assert.strictEqual(t.label, 'Gamma', 'Escape drops the change');
+  T.undoScene(sc);
+  assert.strictEqual(T.activeScene().tokens[0].label, 'Beta', 'each save is one undo step');
   window.close();
 });

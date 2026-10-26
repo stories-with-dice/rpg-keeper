@@ -1321,6 +1321,17 @@ button, input, textarea, select {
 .map-tools { display: inline-flex; gap: 4px; }
 .map-tool.is-active { border-color: var(--accent); color: var(--accent); }
 #map-sticky:not(.is-active) { color: var(--text-dim); }
+#map-rclick-pan:not(.is-active) { color: var(--text-dim); }
+#map-rclick-pan.is-active { border-color: var(--accent); color: var(--accent); }
+.map-help { width: min(520px, 100%); font-size: 13px; }
+.map-help ul { margin: 4px 0 8px; padding-left: 18px; }
+.map-help li { margin: 3px 0; }
+.map-help kbd {
+  padding: 0 4px; border: 1px solid var(--border); border-radius: 3px;
+  background: var(--bg-3); font: 12px var(--font-mono, monospace);
+}
+.ctx-label { padding: 4px 8px; }
+.ctx-label input { width: 100%; box-sizing: border-box; }
 .map-scene-controls { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
 /* Grid and Tokens: a button in the toolbar; the menu floats over the map,
    placed by the toolbar (position: relative), so it never runs off the page. */

@@ -99,20 +99,24 @@
   }
 
   // The pin tool: a pin at `p` (a hex center in hexcrawl mode), a Journal
-  // entry for it, and that entry's editor. Returns the pin.
+  // entry for it, and that entry's editor. Returns the pin. The entry's body
+  // starts with the map's name and, on a hex grid, the hex's number. They
+  // are written once: a rename of the scene or a move of the pin does not
+  // change them.
   function addPin(sc, p, openEditor) {
     let at = p, where;
+    const hex = sc.grid.type === 'hex' ? G.hexLabel(G.cellAt(p.x, p.y, sc.grid), sc.grid, G.labelOrigin(sc.grid, sc.width, sc.height)) : '';
     if (hexcrawlOn(sc)) {
-      const c = G.cellAt(p.x, p.y, sc.grid);
-      at = G.cellCenter(c, sc.grid);
-      where = 'Hex ' + G.hexLabel(c, sc.grid, G.labelOrigin(sc.grid, sc.width, sc.height));
+      at = G.cellCenter(G.cellAt(p.x, p.y, sc.grid), sc.grid);
+      where = 'Hex ' + hex;
     } else {
       where = 'Location ' + (sc.pins.length + 1);
     }
     const now = Date.now();
+    const body = '**Map:** ' + sc.name + (hex ? '\n**Hex:** ' + hex : '') + '\n\n';
     const entry = {
       id: uid(), name: uniqueNoteName(sc.name + ' — ' + where), category: 'Journal', source: 'Maps',
-      system: OSR.currentSystem(), body: '', createdAt: now, updatedAt: now
+      system: OSR.currentSystem(), body, createdAt: now, updatedAt: now
     };
     OSR.state.compendium.push(entry);
     const pin = ensurePinShape({ id: uid(), x: at.x, y: at.y, compendiumId: entry.id });

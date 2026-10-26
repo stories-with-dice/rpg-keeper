@@ -29,6 +29,9 @@ async function setupPair() {
   const main = prep(await boot());
   click(main.$('#tabs .tab-btn[data-tab="maps"]'));
   const { scene } = await main.T.createScene({ name: 'Shared Map' });
+  scene.grid.type = 'square'; // a new scene has hexes
+  main.T.resetHistories();
+  main.T.renderMaps();
   main.T.addToken(scene, { iconId: 'lorc/ghost', x: 125, y: 125 });
   const pop = prep(await boot({ url: 'https://osr.test/?view=map', opener: main.window }));
   pop.T.renderMaps();

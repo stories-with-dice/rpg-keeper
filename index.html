@@ -193,6 +193,7 @@
             <button class="btn map-tool" data-tool="eraser" data-key="=" title="Erase drawings (Alt+=)" aria-label="Erase drawings"><i class="fa-solid fa-eraser"></i></button>
           </span>
           <button id="map-sticky" class="btn is-active" type="button" aria-pressed="true" title="Sticky mode (Alt+S): on, a tool stays chosen after you use it. Off, the hand tool comes back." aria-label="Sticky mode"><i class="fa-solid fa-thumbtack"></i></button>
+          <button id="map-rclick-pan" class="btn" type="button" aria-pressed="false" title="Right-click pan: on, a right-button drag on the map moves the view, and the browser's menu does not open. Off, a right-click on the map opens a menu to add a pin or mark a hex explored." aria-label="Right-click pan"><i class="fa-solid fa-computer-mouse"></i></button>
           <button id="map-undo" class="btn" title="Undo (Ctrl+Z)" aria-label="Undo"><i class="fa-solid fa-rotate-left"></i></button>
           <button id="map-redo" class="btn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><i class="fa-solid fa-rotate-right"></i></button>
           <button id="map-fit" class="btn" title="Show the whole map (Alt+F)" aria-label="Show the whole map"><i class="fa-solid fa-expand"></i></button>
@@ -221,7 +222,7 @@
             <div class="map-drop-body">
               <div class="token-add">
                 <label>Size <select id="token-size" class="btn"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-                <label>Color <input type="color" id="token-color" value="#5b4a33" /></label>
+                <label>Color <input type="color" id="token-color" value="#000000" /></label>
                 <span class="hint">Click an icon to put a token in the middle of the view.</span>
               </div>
               <div class="token-palette" id="token-palette"></div>
@@ -230,7 +231,26 @@
                 <div class="icon-results" id="icon-results"></div>
               </div>
               <div class="token-from-combat" id="token-from-combat"></div>
-              <p class="hint">With the hand tool: drag a token to move it (Alt: no snap). Shift+click adds a token to the selection; Shift+drag selects with a box. Delete removes the selection. Right-click a token to change its color or link, or to delete it. Alt+click on the map pings a point.</p>
+              <p class="hint">With the hand tool: drag a token to move it (Alt: no snap). Shift+click adds a token to the selection; Shift+drag selects with a box. Delete removes the selection. Right-click a token to change its label, color, or link, or to delete it. Alt+click on the map pings a point.</p>
+            </div>
+          </details>
+          <details class="map-drop map-help-panel" id="map-help-panel">
+            <summary class="btn" title="Map hotkeys" aria-label="Map hotkeys"><i class="fa-solid fa-circle-question"></i></summary>
+            <div class="map-drop-body map-help">
+              <p><b>Hotkeys.</b> Alt is the Alt key on Windows and the Option (⌥) key on Mac.</p>
+              <ul>
+                <li><kbd>Alt+1</kbd> to <kbd>Alt+5</kbd>: hand, ruler, grid, pin, and hexcrawl tools.</li>
+                <li><kbd>Alt+6</kbd> to <kbd>Alt+0</kbd>, then <kbd>Alt+-</kbd> and <kbd>Alt+=</kbd>: the seven drawing tools (pen, line, rectangle, ellipse, polygon, text, eraser). There are 12 tools and only 10 digits, so the last two drawing tools use - and =.</li>
+                <li><kbd>Alt+S</kbd>: sticky mode. <kbd>Alt+F</kbd>: show the whole map. <kbd>Alt+O</kbd>: pop out.</li>
+                <li><kbd>Alt+G</kbd> and <kbd>Alt+K</kbd>: open the Grid and Tokens menus.</li>
+              </ul>
+              <p><b>Other keys.</b></p>
+              <ul>
+                <li><kbd>Delete</kbd> or <kbd>Backspace</kbd>: delete the selected tokens, drawing, or pin.</li>
+                <li><kbd>Space</kbd> + drag, or a middle-button drag: move the view. With right-click pan on, a right-button drag also moves it.</li>
+                <li><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> (<kbd>Cmd</kbd> on Mac): undo and redo.</li>
+                <li><kbd>Escape</kbd>: cancel the measure or the polygon, or close a menu.</li>
+              </ul>
             </div>
           </details>
           <span class="map-scene-controls">
