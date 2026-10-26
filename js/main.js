@@ -34,11 +34,22 @@
     OSR.wireHistory();
   }
 
+  // The open tab is per device (localStorage, not state), so a reload opens it again.
+  const TAB_KEY = 'osr_last_tab';
+
+  function restoreTab() {
+    let name = null;
+    try { name = localStorage.getItem(TAB_KEY); } catch (e) { /* blocked storage: the first tab */ }
+    const b = name && $$('.tab-btn').find(x => x.dataset.tab === name);
+    if (b && !b.classList.contains('is-active')) b.click();
+  }
+
   function wire() {
     // Tabs
     $('#tabs').addEventListener('click', e => {
       const b = e.target.closest('.tab-btn');
       if (!b) return;
+      try { localStorage.setItem(TAB_KEY, b.dataset.tab); } catch (err) { /* kept for this page only */ }
       $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
       $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
       OSR.updateApplyButton(); // "Apply damage" shows only on the Combat tab
@@ -132,6 +143,7 @@
     OSR.renderMonsterBrowser();
     OSR.renderCompendium();
     OSR.renderCombat();
+    restoreTab();
     OSR.initDropbox(); // last: syncs the seeded state, if Dropbox sync is on
   }
 
