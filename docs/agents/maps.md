@@ -25,7 +25,14 @@ Files: `js/maps.js` (scenes, view, tools, menus), `js/grid.js` (pure geometry, `
 - `views[sceneId]` (memory) is the viewBox at the box's aspect ratio (`viewOf()`).
   `screenToMap(x, y, rect, view)`. `OSR.mapRect()` is the SVG box (tests replace it). Pan: hand
   tool, middle button, Space, or (option) right button. Zoom: wheel around the pointer, limited by
-  `zoomLimits()`. Fit forgets the view.
+  `zoomLimits()`. Fit (`fitScene()`) fits the view again.
+- `renderScene()` saves the view (`rememberView()`) in `localStorage['osr_map_views']`: scene id →
+  `{ cx, cy, s }`, the map point at the center and map px per screen px, so another window size
+  keeps the zoom. `viewOf()` starts from it (`savedView()`), else `fitView()`. `writeView()` reads
+  the key again before it writes (pop-outs share it). Delete scene removes the row.
+- `renderMaps()` ends with `OSR.showScenePops(id)` (the scene's pinned popups, compendium.md) and
+  `OSR.updateApplyButton()`: on the Maps tab, "Apply damage" hits `OSR.selectedTokenEntry()` (the
+  one selected token's `actorEntry`), else the selected combatant (`damageTarget()`, `js/combat.js`).
 
 ## Tokens (`js/tokens.js`)
 

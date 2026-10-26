@@ -93,7 +93,7 @@ npm run convert-tables       # data/tables/*.csv → data/tables.json
 - **State**: a new persisted field goes in `STATE_DEFAULTS` and gets a backfill in
   `ensureStateShape()`. Entries made at runtime (`addCharEntry`, `addMonsterEntry`) must have every
   field `ensureStateShape` expects. Everything in `state` is exported and synced: per-device or
-  secret data goes in `localStorage` (`osr_map_sticky`, `osr_map_rclick_pan`, `osr_last_tab`,
+  secret data goes in `localStorage` (`osr_map_sticky`, `osr_map_rclick_pan`, `osr_map_views`, `osr_map_pops`, `osr_last_tab`,
   `osr_dropbox_*`).
 - **System scoping**: lists of characters, monsters, Compendium entries, and trackers go through
   the per-system helpers (`charactersForSystem`, `monstersForSystem`, `compendiumForSystem`,

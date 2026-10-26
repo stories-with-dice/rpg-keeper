@@ -394,3 +394,32 @@ test('tokens: the popup of a linked token shows the stat block and combat status
   assert.match($('#token-card').textContent, /not linked/);
   window.close();
 });
+
+test('tokens: on the Maps tab, the Dice Roller\'s "Apply damage" hits the selected token\'s combat entry', async () => {
+  const env = await setup();
+  const { T, window, $, sc } = env;
+  T.addMonsterEntry({ name: 'Goblin', hd: '1', hp: 6, ac: { asc: 13 }, attacks: [], source: 'shadowdark' });
+  T.addMonsterEntry({ name: 'Orc', hd: '1', hp: 9, ac: { asc: 13 }, attacks: [], source: 'shadowdark' });
+  const [gob, orc] = T.state.combat.entries;
+  T.setSelected(orc.id);
+  const tg = T.addTokenForEntry(sc, gob.id, { x: 125, y: 125 });
+  T.selectTokens(sc, []);
+  T.renderMaps();
+  const apply = $('#dice-apply');
+  T.lastRoll = null;
+  T.updateApplyButton();
+  assert.ok(apply.hidden, 'no roll yet');
+  window.Math.random = () => 0.5; // 1d4 → 3
+  setValue($('#custom-formula'), '1d4');
+  $('#dice-custom').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  assert.ok(!apply.hidden, 'shows on the Maps tab');
+  assert.match(apply.textContent, /Orc/, 'no token selected: the selected combatant');
+  T.selectTokens(sc, [tg.id]);
+  T.renderMaps();
+  assert.match(apply.textContent, /Apply damage to Goblin/);
+  click(apply);
+  assert.strictEqual(T.entryHp(gob), 3);
+  assert.strictEqual(T.entryHp(orc), 9);
+  window.close();
+});
+

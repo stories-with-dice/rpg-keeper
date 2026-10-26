@@ -188,6 +188,14 @@
   function selectOnly(sc, ids) { syncSelection(sc); selected = new Set(ids); selectedScene = sc.id; }
   function toggleSelect(sc, id) { syncSelection(sc); if (selected.has(id)) selected.delete(id); else selected.add(id); }
   const selectedIds = sc => { syncSelection(sc); return Array.from(selected); };
+  // The combat entry of the one selected token in the open scene, or null:
+  // the target of the Dice Roller's "Apply damage" on the Maps tab.
+  function selectedEntry() {
+    const sc = OSR.activeScene();
+    const ids = sc ? selectedIds(sc) : [];
+    const t = ids.length === 1 ? sc.tokens.find(x => x.id === ids[0]) : null;
+    return t ? actorEntry(t) : null;
+  }
 
   /* ---- Render ---- */
 
@@ -317,6 +325,12 @@
   function openActorPop(sc, t, anchor) {
     OSR.closeUnpinnedCompPops(popKey(t)); // another token's popup goes
     return OSR.openSourcePop(popKey(t), anchor, actorPopSource(sc, t.id));
+  }
+  // The popup source for a saved popup key (OSR.restoreMapPops), or null when
+  // no token of the scene has that actor any more.
+  function actorPopSourceFor(sc, key) {
+    const t = sc.tokens.find(x => x.link && popKey(x) === key);
+    return t ? actorPopSource(sc, t.id) : null;
   }
 
   // An unlinked token: a small card with its name.
@@ -521,7 +535,7 @@
 
   Object.assign(OSR, {
     ensureTokenShape, tokenRadius, snapTokenPoint: snapPoint, tokenName, tokenInfo, tokenIconFor: iconFor,
-    addToken, addTokenForEntry, deleteTokens, unlinkTokens, tokenMenu, selectTokens: selectOnly, selectedTokenIds: selectedIds,
-    tokensMarkup, renderTokenPanel, renderTokenCredits, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, openActorPop, wireTokens
+    addToken, addTokenForEntry, deleteTokens, unlinkTokens, tokenMenu, selectTokens: selectOnly, selectedTokenIds: selectedIds, selectedTokenEntry: selectedEntry,
+    tokensMarkup, renderTokenPanel, renderTokenCredits, tokenPointerDown, tokenPointerMove, tokenPointerUp, tokenPing: ping, hideTokenCard: hideCard, openActorPop, actorPopSourceFor, wireTokens
   });
 })(window.OSR = window.OSR || {});

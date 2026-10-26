@@ -305,6 +305,46 @@ test('pins: a hover opens the note\'s popup (not pinned); the popup\'s pin butto
   window.close();
 });
 
+test('pins: a pinned popup belongs to its scene: it hides on another scene, and comes back (place and size too) after a reload', async () => {
+  const env = await setup();
+  const { T, window, document, $, sc } = env;
+  const pin = T.addPin(sc, { x: 300, y: 300 }, false);
+  const note = T.state.compendium.find(e => e.id === pin.compendiumId);
+  clickAt(env, 300, 295, $('#map-svg [data-pin="' + pin.id + '"]'));
+  const pop = document.querySelector('.comp-pop');
+  assert.ok(pop.classList.contains('is-pinned'));
+  Object.assign(pop.style, { left: '120px', top: '80px', width: '320px', height: '240px' });
+  pop.classList.add('is-sized');
+  pop.querySelector('.cpop-head').dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true, button: 0 }));
+  document.dispatchEvent(new window.MouseEvent('mouseup', { bubbles: true }));
+  assert.deepEqual(JSON.parse(window.localStorage.getItem('osr_map_pops')),
+    [{ scene: sc.id, key: note.name, source: false, idx: 0, left: 120, top: 80, width: 320, height: 240 }]);
+
+  const { scene: other } = await T.createScene({ name: 'Town' });
+  assert.ok(pop.hidden, 'another scene: hidden, not closed');
+  window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.ok(pop.isConnected, 'Escape closes only the popups that show');
+  setValue($('#map-scene'), sc.id);
+  assert.ok(!pop.hidden, 'its own scene: it shows');
+  assert.ok(other.id);
+  await T.flushSave();
+  const storage = { osr_map_pops: window.localStorage.getItem('osr_map_pops') };
+  const idb = env.indexedDB;
+  window.close();
+
+  const again = await boot({ indexedDB: idb, extraStorage: storage });
+  again.T.mapRect = () => RECT;
+  const back = () => again.document.querySelector('.comp-pop');
+  assert.ok(!back() || back().hidden, 'not on the Character tab');
+  click(again.document.querySelector('#tabs .tab-btn[data-tab="maps"]'));
+  assert.ok(back() && !back().hidden && back().classList.contains('is-pinned'));
+  assert.match(back().textContent, /Wilds — Location 1/);
+  assert.deepEqual([back().style.left, back().style.top, back().style.width, back().style.height], ['120px', '80px', '320px', '240px']);
+  click(back().querySelector('[data-act="close"]'));
+  assert.deepEqual(JSON.parse(again.window.localStorage.getItem('osr_map_pops')), [], 'closed: forgotten');
+  again.window.close();
+});
+
 test('pins: the right-click menu deletes the pin and its journal entry, or only the pin', async () => {
   const env = await setup();
   const { T, window, $, sc } = env;
