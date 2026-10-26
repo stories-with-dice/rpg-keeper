@@ -79,10 +79,3 @@ test('data/tables.json matches a fresh conversion of data/tables/*.csv', () => {
   assert.deepEqual(seed.slice().sort((a, b) => a.id.localeCompare(b.id)), fresh,
     'data/tables.json is stale — run `npm run convert-tables` and commit the result');
 });
-
-test('js/tables-data.js: <script>-loadable copy matches data/tables.json (for file://)', () => {
-  const jsonSeed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'tables.json'), 'utf8'));
-  const jsSeed = require('../js/tables-data.js');
-  assert.equal(jsSeed.length, jsonSeed.length);
-  assert.deepEqual(jsSeed.map(t => t.id), jsonSeed.map(t => t.id));
-});

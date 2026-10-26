@@ -1,0 +1,3356 @@
+{
+  "system": "sl",
+  "version": 1,
+  "compendium": [
+    {
+      "name": "Bending the Heart of the King",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nUses up an arcane connection to make a human target feel real friendship toward a subject the caster picks. It lasts until the subject offends the target, and it can’t override real hatred."
+    },
+    {
+      "name": "The Circle of Inward Eyes",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nDetects whether an item or a place is enchanted. On Wis/Occult vs 7 the caster also learns whether a human placed the magic; vs 8, its rough power; vs 10, a three-word hint of what it does."
+    },
+    {
+      "name": "Distant Seal of Alarm",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nDraws a hidden eye on a surface. When anything bigger than a cat comes within 10 m, the caster sees through it for a round, or up to 5 minutes per Occult level, and can’t act meanwhile. Works once."
+    },
+    {
+      "name": "The Red Expurgation of the Sword",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nHeals one subject per 10 minutes of chanting. Gentle form: 1d6+1 HP per subject level after a night’s rest, for 2 Madness. Harsh form: 2d6+2 HP per caster Occult level at once, for 1d4+1 Madness. No effect on poison or disease."
+    },
+    {
+      "name": "Rite of Censing the Crooked Road",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nSmoke from a flame drifts to every gate or dimensional anomaly within 30 m, even hidden or dormant ones. It shows nothing about how to open or close them."
+    },
+    {
+      "name": "The Safe-Kept Quintessence of Flesh",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nAn hour’s ritual turns a willing ally’s blood into a dose of dust. Thrown over that ally later (one action), it heals 1d8 HP plus 2 per Occult level of its maker, and gives 1 Madness."
+    },
+    {
+      "name": "Sigil of the Righteous Threshold",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nA clay amulet set over a door, window, or container makes it impassable to everyone except the caster and chosen allies. Breaking the portal by force destroys the amulet."
+    },
+    {
+      "name": "The Silvered Blade of Sacrifice",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nEnchants a ritual knife. Taking 1d4 HP of blood from a willing or helpless human lets the wielder reroll one failed hit roll, Physical Effect save, or physical skill check within the hour, for 1 Madness. Works once."
+    },
+    {
+      "name": "The Walker Beneath the Moon",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nThe caster and up to six allies see in total darkness until sunrise, and a group moving quietly uses its best Stealth result. Direct sunlight ends it."
+    },
+    {
+      "name": "Whispers of the Scribe",
+      "category": "Spells",
+      "source": "Spell Level 1",
+      "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness — see [Casting Spells]\n\nWhile the caster keeps calm and focused, she learns one document’s language, age, magical power, and topic each round. It shows whether a grimoire holds spells, but not which ones."
+    },
+    {
+      "name": "Converse With the Ancestors",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nAsk a skull one question per Occult level; each answer is three words at most. For each question the GM rolls 1d10: if the roll is at most the years since death, hostile powers twist that answer and every later one."
+    },
+    {
+      "name": "Dust of Scouring False Seeming",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nPowder thrown at a target within 3 m: on a failed Magic save it shows its true form (its least human one) and can’t hide it for half an hour. Each witness sure of its disguise gives it +1 on the save."
+    },
+    {
+      "name": "Friendship of the Ones Behind",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nDone in perfect darkness: unseen powers bring a small, unguarded object whose location the caster knows before the next sunrise. If light gets in, the spell fails and everyone present takes 1d8 Madness."
+    },
+    {
+      "name": "The Merciful Rack of Ibn Baraka",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nA torment rite on a restrained subject. If the victim or the caster makes a Mental Effect save, possession or mind control ends (unless an outer god’s servant caused it). The victim takes 1d8 Madness; the caster takes 1d8 if it fails."
+    },
+    {
+      "name": "The Messengers of the Air",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nWith an arcane connection, a two-way telepathic talk of up to 10 minutes that the target can’t shut out. Using up the connection can instead compel the target to travel to the ritual site (Mental Effect save resists)."
+    },
+    {
+      "name": "The Seal of the Drowned Kings",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nMarks on the throats of up to five allies let them breathe, see, and move normally underwater for 24 hours, safe from cold and pressure. Erasing a mark ends it for that person."
+    },
+    {
+      "name": "Truths Written in Red",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nSoaking a human-made text in the caster’s blood lets her read it, codes included. A short text costs 1d4 HP; a long tome costs half her maximum HP, which won’t heal until she stops studying it."
+    },
+    {
+      "name": "Unsealing the Vault of Wisdom",
+      "category": "Spells",
+      "source": "Spell Level 2",
+      "body": "**Level** 2 · **Cost** 1 Expertise or 2 Madness — see [Casting Spells]\n\nBreaks wards, magical traps, and curses tied to one door or container, including [Sigil of the Righteous Threshold]. If a seal is too strong, it shows the best way to undo it. It doesn’t open mundane locks."
+    },
+    {
+      "name": "Binding the Crimson Sword",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nBinds a melee or thrown weapon to a wielder who gives 1d6 HP of blood. It never breaks while they live, they always sense where it is, and it counts as magical for Slaughter against unnatural creatures (each such Slaughter costs the wielder 1d4 HP). It fails anyone else in a real fight."
+    },
+    {
+      "name": "Binding Shut the Way",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nSeals a gate into another realm. Only long rituals and sacrifices can reopen it, but the caster can always undo his own seal."
+    },
+    {
+      "name": "The Black Lamp",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nMakes a lamp whose invisible light, seen only by those who took part in the rite, outlines enchanted objects and bewitched people. It lasts until put out or out of fuel."
+    },
+    {
+      "name": "Cleansing Light of the Dawn",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nCleanses one building or site. Hostile magic ends unless an artifact or entity sustains it, curses break unless an outer god’s envoy laid them, and cult rites fail there for one month per Occult level. The curse’s author glimpses the caster."
+    },
+    {
+      "name": "The Seal of the Yellowed Fang",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nA decorated claw or fang shown to natural animals (up to six of one kind) makes them docile and obedient for one hour per Occult level. Works once."
+    },
+    {
+      "name": "The Sign of the King",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nDestroying an arcane connection compels its source, at any distance, to do one act not wholly against their nature. An out-of-character act allows a Mental Effect save."
+    },
+    {
+      "name": "The Staff of Turning Back the Way",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nA charged rod draws an invisible line up to 20 m long that supernatural entities can’t cross or see past until nightfall, unless they spend 1d6+2 rounds breaking it. Works once."
+    },
+    {
+      "name": "The Walker Beneath the Earth",
+      "category": "Spells",
+      "source": "Spell Level 3",
+      "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness — see [Casting Spells]\n\nThe caster and up to six allies move through solid matter at normal speed. Mundane weapons can’t hurt them, but magic and fire can. Each round intangible costs 1d4 Madness; ending the spell while someone is inside matter kills them."
+    },
+    {
+      "name": "Eyes of the Distant Mind",
+      "category": "Spells",
+      "source": "Spell Level 4",
+      "body": "**Level** 4 · **Cost** 1 Expertise or 4 Madness — see [Casting Spells]\n\nWith earth or a fragment taken from a place, scry anywhere within 200 m of where it came from. The caster is unaware of her own surroundings. Each half hour past the first 30 minutes in a week: Magic save or 1d4 Madness."
+    },
+    {
+      "name": "Incantation of the Thrice-Shared Eye",
+      "category": "Spells",
+      "source": "Spell Level 4",
+      "body": "**Level** 4 · **Cost** 1 Expertise or 4 Madness — see [Casting Spells]\n\nLinks up to seven allies: telepathy at any range and a sense of each other’s location, health, and mood. They are surprised only if all are, and all use the best initiative roll. Counts against the caster’s lasting tokens."
+    },
+    {
+      "name": "Kill the Weakness of the Soul",
+      "category": "Spells",
+      "source": "Spell Level 4",
+      "body": "**Level** 4 · **Cost** 1 Expertise or 4 Madness — see [Casting Spells]\n\nUntil dawn, a willing subject (not the caster) feels no fear or mercy, gains no Bloodshed Madness, obeys the caster short of suicide, and fails every social check. Afterward they forget that whole time."
+    },
+    {
+      "name": "The Mists of Unveiled Knowing",
+      "category": "Spells",
+      "source": "Spell Level 4",
+      "body": "**Level** 4 · **Cost** 1 Expertise or 4 Madness — see [Casting Spells]\n\nThe caster’s blood (1d4 HP per 3 m of radius, which can kill her) becomes a silent red mist that replays the area’s most emotional recent event, or one she chooses, for as long as she chants."
+    },
+    {
+      "name": "The Scourging Seal of Solomon",
+      "category": "Spells",
+      "source": "Spell Level 4",
+      "body": "**Level** 4 · **Cost** 1 Expertise or 4 Madness — see [Casting Spells]\n\nA clay disc, activated with 1d4 HP of blood. One side up: supernatural creatures can’t come within 10 m without a Magic save (once per hour), and take 2d6 per Occult level of its maker when they break through. Other side up: that damage hits the first one to enter."
+    },
+    {
+      "name": "The Vermilion Mark of Sanctity",
+      "category": "Spells",
+      "source": "Spell Level 4",
+      "body": "**Level** 4 · **Cost** 1 Expertise or 4 Madness — see [Casting Spells]\n\nAn amulet that makes its wearer immune to possession and telepathic reading. The wearer also can’t use telepathy or mind-affecting magic. Removing it ends the effect."
+    },
+    {
+      "name": "Band of Unhindered Escape",
+      "category": "Spells",
+      "source": "Spell Level 5",
+      "body": "**Level** 5 · **Cost** 1 Expertise or 5 Madness — see [Casting Spells]\n\nBreaking a woven ring stops time for 1d4+1 rounds for the user and allies within 10 m. Handling a time-frozen object costs 1d8 Madness; living creatures can’t be affected. Everyone takes 1d4 Madness when time resumes."
+    },
+    {
+      "name": "The Little House Without Windows",
+      "category": "Spells",
+      "source": "Spell Level 5",
+      "body": "**Level** 5 · **Cost** 1 Expertise or 5 Madness — see [Casting Spells]\n\nA token opens (one action) a hidden portal to an endless maze of gray rooms that seals once the caster enters. No hunger, thirst, or fatigue inside; wounds heal normally. 1 Madness per day after the first. Anything left inside is lost."
+    },
+    {
+      "name": "The Pandect of Light",
+      "category": "Spells",
+      "source": "Spell Level 5",
+      "body": "**Level** 5 · **Cost** 1 Expertise or 5 Madness — see [Casting Spells]\n\nAn hour of drawing wards a mansion-sized building or a 30 m circle against every supernatural entity and physically altered human, and gives the caster a Magic save to dispel hostile magic sent in. Lowering it costs 5d6 damage (Magic save for half; no save if the sigils are defaced)."
+    },
+    {
+      "name": "The Ravenous Worms of Hazai",
+      "category": "Spells",
+      "source": "Spell Level 5",
+      "body": "**Level** 5 · **Cost** 1 Expertise or 5 Madness — see [Casting Spells]\n\nBreaking a clay figure fills 3 m with worms that devour corpses at once and deal 3d6 per round to the living; humans also take 1d6 Madness in the first round. The maker takes 1d6 per round to contain them; if they fall, the area grows 20 m per round for 1d4 rounds."
+    },
+    {
+      "name": "Rite of the Wetted Knife",
+      "category": "Spells",
+      "source": "Spell Level 5",
+      "body": "**Level** 5 · **Cost** 1 Expertise or 5 Madness — see [Casting Spells]\n\nA weapon that has struck a type of creature before can harm and Slaughter that type even when it normally can’t, and rolls its Slaughter die twice, keeping the higher. Lasts until the caster ends it; one creature type per weapon."
+    },
+    {
+      "name": "Stealing the Road to Hell",
+      "category": "Spells",
+      "source": "Spell Level 5",
+      "body": "**Level** 5 · **Cost** 1 Expertise or 5 Madness — see [Casting Spells]\n\nOpens a path through a nightmare realm for the caster and up to twelve allies, at most once a week. Int/Occult vs 6 to reach a prepared site, 10 a visited one, 14 one only heard of. Failure lands them somewhere very dangerous."
+    },
+    {
+      "name": "Enlightened Hand",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Supernatural martial arts focused on bodily control and toughness. See [Using Disciplines].\n\n- **Level-0**: Unarmed attacks do a base 1d6, and striking harmful flesh doesn’t hurt the adept.\n- **Level-1**: Base AC 3 for the next hour.\n- **Level-2**: Can stabilize after a mortal wound, or fake death while staying aware.\n- **Level-3**: Unarmed base damage 2d6; counts as magical for hitting and Slaughter.\n- **Level-4**: Keep acting at 0 HP for up to 3 rounds, paying 5 Madness per extra round."
+    },
+    {
+      "name": "Precognition",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Glimpses of the most likely future. Visions are clear but incomplete. See [Using Disciplines].\n\n- **Level-0**: A few seconds’ warning before an ambush or trap; can trigger on its own if the PC pays.\n- **Level-1**: Predict the result of a simple random event, such as a game of chance.\n- **Level-2**: See the most likely way the user will be badly harmed in body or mind within a week.\n- **Level-3**: Foretell the likely result, within an hour, of a course of action; once per hour.\n- **Level-4**: A one-word answer to a simple question about a future event; once per week per event."
+    },
+    {
+      "name": "Pyrokinesis",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Fire powers; also a model for other attack disciplines. See [Using Disciplines].\n\n- **Level-0**: A candle flame on the body: ignore 2 fire damage per round, and fire can’t Slaughter the user.\n- **Level-1**: A torch flame on the body adds 1d6 fire damage to unarmed attacks; ignore 5 fire damage per round.\n- **Level-2**: Ignite an easily flammable object in sight (not one worn or carried).\n- **Level-3**: A visible creature bursts into flame: 2d6 damage with a 1d8 Slaughter die; an Evasion save avoids it.\n- **Level-4**: Flames do 2d8 with a 1d10 Slaughter die; immune to heat and smoke and can see through them."
+    },
+    {
+      "name": "Sacred Blade",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "A bond with one melee or thrown weapon (never a firearm or bow). A bound thrown weapon returns to the hand. See [Using Disciplines].\n\n- **Level-0**: A day of bonding gives +1 to hit and damage with the weapon, and a sense of its direction and distance.\n- **Level-1**: Eyes and cameras overlook the bonded weapon until it is drawn, unless magic searches for it.\n- **Level-2**: Counts as magical for hitting and Slaughter; the bonus becomes +2.\n- **Level-3**: Its Slaughter die grows one step (1d6 to 1d8, and so on, to 1d12).\n- **Level-4**: The bonus becomes +3, and no non-magical force can break the weapon."
+    },
+    {
+      "name": "Telekinesis",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Move objects with the mind. It can’t lift the user or unwilling targets, or pull items from an alert target. See [Using Disciplines].\n\n- **Level-0**: Handle objects up to 100 g as deftly as with two hands.\n- **Level-1**: Handle objects up to 5 kg.\n- **Level-2**: Handle several objects up to 100 kg.\n- **Level-3**: Strike a visible target for 1d8 damage with a 1d6 Slaughter die (not magical against supernatural foes).\n- **Level-4**: The blow does 2d6 with a 1d8 Slaughter die; weight limit 200 kg."
+    },
+    {
+      "name": "Telepathy",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Mind reading within sight. Supernatural entities are immune, and a target who makes its Mental Effect save is immune for 24 hours. See [Using Disciplines].\n\n- **Level-0**: Wis/Telepathy vs 8 to sense emotions and strong surface thoughts; after a successful Mental Effect save, know that something tried to affect the mind.\n- **Level-1**: Contact a willing person the user has met within 1 km; read surface thoughts of a target in sight (Mental Effect save resists).\n- **Level-2**: Contact range 20 km; ask one question of a target’s memory for a one-sentence answer on a failed save.\n- **Level-3**: Contact range 300 km; question a target in detail on one topic on a failed save.\n- **Level-4**: Global contact range; search a target’s whole memory on a failed save."
+    },
+    {
+      "name": "Warding",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Quick, invisible wards that affect only supernatural entities. See [Using Disciplines].\n\n- **Level-0**: After failing a save against magic, delay its effect by one round.\n- **Level-1**: Ward a doorway or a line; supernatural foes need one round per Warding level to break it. One ward at a time; usable every other round.\n- **Level-2**: Keep supernatural foes 5 m away and block their powers on the user, for one round per level; once per minute.\n- **Level-3**: Seal the user or others: reroll failed saves against magic, at 1 Madness per hour.\n- **Level-4**: A 5 m zone that moves with the warder hides the group from supernatural foes unless they engage or make noise; 30 minutes, once per hour."
+    },
+    {
+      "name": "Witchfinding",
+      "category": "Powers",
+      "source": "Discipline",
+      "body": "Real techniques for detecting sorcerers and their magic. See [Using Disciplines].\n\n- **Level-0**: Know when a magical effect targets the user (no details).\n- **Level-1**: Tell whether magic was used in an area in the past week; Wis/Occult vs 6 + 1 per day since for a two-word impression.\n- **Level-2**: By skin contact, learn whether a person has ever cast a spell or joined a ritual (Mental Effect save resists; then immune for 10 minutes).\n- **Level-3**: After a round studying a person within 10 m, tell whether magic affects them; Wis/Occult vs 9 for who cast it and two words on each spell.\n- **Level-4**: Track a studied supernatural or enchanted creature for a day, or gain +2 on a Magic or sorcerous Mental Effect save, even after rolling."
+    },
+    {
+      "name": "Casting Spells",
+      "category": "Rules",
+      "source": "Sorcery",
+      "body": "A spell takes 10 minutes of ritual per level unless it says otherwise, and needs small ritual tools. Injury or disruption ruins it, and the cost is still paid.\n\n**Cost:** spend 1 Expertise, or gain Madness equal to the spell level.\n\n**Above your skill:** if the spell level is higher than your Occult skill, also roll Int/Occult vs 6 + level. On a failure, let it fizzle, or take more Madness equal to its level to force it (Expertise can’t pay this).\n\n**Learning:** needs Occult-0 and one week per level with a book or teacher, then Int/Occult vs 6 + level (a teacher adds their Occult skill). Every attempt costs 1 Madness; success adds Madness equal to the level.\n\n**Lasting tokens:** a sorcerer can keep at most Scholar level + Int modifier + Occult skill ritual items active."
+    },
+    {
+      "name": "Using Disciplines",
+      "category": "Rules",
+      "source": "Sorcery",
+      "body": "Activating a discipline is a free action: spend 1 Expertise, or gain Madness equal to the discipline level + 1. Every known level then works for 15 minutes. Pay separately for each discipline.\n\n**Learning:** a tutor with level-2, one month, 1 skill point, and 5 Madness for level-0. Raise it later like a class skill, up to level-4.\n\n**Mastery:** a month’s effort, 1 permanent Expertise, and 10 Madness make level-0 free to use; each later level costs 5 more Madness."
+    },
+    {
+      "name": "Slaughter Die",
+      "category": "Rules",
+      "source": "Combat",
+      "body": "Roll a weapon’s Slaughter die with its damage. On 6 or more, the damage is tripled. Most monsters use 1d6. Many abominations and all undead ignore Slaughter from mundane weapons. Hit rolls are 1d20 + attribute modifier + combat skill + attack bonus + the target’s AC; 20 or more hits."
+    },
+    {
+      "name": "Burst and Suppressive Fire",
+      "category": "Rules",
+      "source": "Combat",
+      "body": "**Burst fire** (weapons marked burst): spend 3 rounds of ammo for +2 to hit, damage, and the Slaughter roll.\n\n**Suppressive fire** (heavy machine gun): fire double ammo; everyone in the arc within normal range takes half damage, with the normal Slaughter chance, unless they make the better of a Luck or Evasion save or are behind hard cover.\n\n**Spray and pray** (burst weapons with at least half a magazine): empties the magazine for one hit roll against each target in front, up to the rounds left; anyone hit gets the better of a Luck or Evasion save to avoid it."
+    },
+    {
+      "name": "Vehicles",
+      "category": "Rules",
+      "source": "Vehicle",
+      "body": "In a chase, the other vehicle’s Speed is a penalty to Vehicle skill checks. Armor is subtracted from weapon damage, except from Gunnery weapons. A stationary vehicle within 10 m is hit automatically; otherwise attack AC 9 minus its Speed (and minus your own vehicle’s Speed if you are moving). At half HP its Speed halves; at 0 HP everyone aboard makes a Luck save or takes its maximum HP in damage (half on a success)."
+    },
+    {
+      "name": "Unarmed Attack",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 1d2 + skill · **Slaughter** special · **Attribute** Str/Dex · **Cost** N/A\n\nAdds the Combat/Unarmed level to damage. Slaughter die by that skill: untrained none, level-0 1d6, level-1 1d8, level-2 1d10, level-3+ 1d12. Can deal subdual damage."
+    },
+    {
+      "name": "Knife",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 1d4 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Range** 6/9 m · **Cost** Cheap\n\nCan be thrown."
+    },
+    {
+      "name": "Club",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 1d4 · **Slaughter** none · **Attribute** Str · **Range** 6/9 m · **Cost** N/A\n\nCan be thrown."
+    },
+    {
+      "name": "Sword or 1H Melee",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 1d8 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Cost** Common"
+    },
+    {
+      "name": "Spear",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 1d6 · **Slaughter** 1d6 · **Attribute** Str · **Range** 10/20 m · **Cost** Cheap\n\nCan be thrown."
+    },
+    {
+      "name": "Great Weapon",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 2d6 · **Slaughter** 1d10 · **Attribute** Str · **Cost** Common\n\nCovers any proper two-handed melee weapon."
+    },
+    {
+      "name": "Taser",
+      "category": "Items",
+      "source": "Weapon (Melee)",
+      "body": "**Damage** 1d8 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Magazine** 1 · **Cost** Common\n\nDeals subdual damage."
+    },
+    {
+      "name": "Bow",
+      "category": "Items",
+      "source": "Weapon (Ranged)",
+      "body": "**Damage** 1d6 · **Slaughter** 1d6 · **Attribute** Dex · **Range** 100/150 m · **Magazine** 1 · **Cost** Common"
+    },
+    {
+      "name": "Crossbow",
+      "category": "Items",
+      "source": "Weapon (Ranged)",
+      "body": "**Damage** 1d8 · **Slaughter** 1d6 · **Attribute** Dex · **Range** 100/150 m · **Magazine** 1 · **Cost** Common\n\nReloading takes an extra action."
+    },
+    {
+      "name": "Frag Grenade",
+      "category": "Items",
+      "source": "Weapon (Ranged)",
+      "body": "**Damage** 2d6 · **Slaughter** 1d8 · **Attribute** Dex · **Range** 10/30 m · **Cost** Common\n\nAlways attacks AC 9; a miss lands 1d10 m away in a random direction. Hits everyone within 5 m (Luck save for half), minus 1 damage per point of AC below 6."
+    },
+    {
+      "name": "Revolver",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 1d8 · **Slaughter** 1d6 · **Attribute** Dex · **Range** 30/100 m · **Magazine** 6 · **Cost** Common"
+    },
+    {
+      "name": "Semi-auto Pistol",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 1d6+1 · **Slaughter** 1d6 · **Attribute** Dex · **Range** 30/100 m · **Magazine** 12 · **Cost** Common"
+    },
+    {
+      "name": "Rifle",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 1d10+2 · **Slaughter** 1d8 · **Attribute** Dex · **Range** 200/400 m · **Magazine** 6 · **Cost** Common"
+    },
+    {
+      "name": "Shotgun, Break",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 3d4 · **Slaughter** 1d10 · **Attribute** Dex · **Range** 10/30 m · **Magazine** 2 · **Cost** Common"
+    },
+    {
+      "name": "Shotgun, Pump",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 3d4 · **Slaughter** 1d10 · **Attribute** Dex · **Range** 10/30 m · **Magazine** 6 · **Cost** Common"
+    },
+    {
+      "name": "Submachine Gun",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 1d8 · **Slaughter** 1d6 · **Attribute** Dex · **Range** 30/100 m · **Magazine** 20 · **Cost** Expensive\n\nBurst fire capable — see [Burst and Suppressive Fire]."
+    },
+    {
+      "name": "Combat Rifle",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 1d12 · **Slaughter** 1d8 · **Attribute** Dex · **Range** 100/300 m · **Magazine** 30 · **Cost** Expensive\n\nBurst fire capable — see [Burst and Suppressive Fire]."
+    },
+    {
+      "name": "Combat Shotgun",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 3d4 · **Slaughter** 1d10 · **Attribute** Dex · **Range** 10/30 m · **Magazine** 12 · **Cost** Expensive\n\nBurst fire capable — see [Burst and Suppressive Fire]."
+    },
+    {
+      "name": "Sniper Rifle",
+      "category": "Items",
+      "source": "Weapon (Firearm)",
+      "body": "**Damage** 2d8 · **Slaughter** 1d12 · **Attribute** Dex · **Range** 1,000/2,000 m · **Magazine** 1 · **Cost** Expensive\n\nAfter a full round aiming from a steady rest at an unaware target, a hit forces a Physical Effect save, minus the sniper’s Combat/Projectile skill; failure kills anything not immune to Slaughter."
+    },
+    {
+      "name": "Heavy Machine Gun",
+      "category": "Items",
+      "source": "Weapon (Heavy)",
+      "body": "**Damage** 3d6 · **Slaughter** 1d12 · **Attribute** Dex · **Range** 500/2,000 m · **Magazine** 10 · **Cost** Extravagant\n\nCan lay suppressive fire — see [Burst and Suppressive Fire]. A full ammo load counts as three items."
+    },
+    {
+      "name": "Rocket Launcher",
+      "category": "Items",
+      "source": "Weapon (Heavy)",
+      "body": "**Damage** 3d10 · **Slaughter** 1d20 · **Attribute** Dex · **Range** 1,000/2,000 m · **Magazine** 1 · **Cost** Extravagant\n\nReloading takes an extra action."
+    },
+    {
+      "name": "Leather Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 7 · **Enc** 1 · **Cost** Common\n\nOld-style armor; racing gear and protective clothing can stand in. Gives no protection against firearms or explosives. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Mail Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 5 · **Enc** 2 · **Cost** Expensive\n\nOnly a few artisans make real mail. Gives no protection against firearms or explosives. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Plate Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 3 · **Enc** 3 · **Cost** Extravagant\n\nOnly a few artisans make real plate. Gives no protection against firearms or explosives. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Shield",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 1 better · **Enc** 1 · **Cost** Common\n\nUsually a riot shield. Gives no protection against firearms or explosives. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Armored Longcoat",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 7 · **Enc** 1 · **Cost** Expensive\n\nA reinforced coat or duster that passes for normal clothing at a glance, but not under close inspection. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Armored Undersuit",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 7 · **Enc** 1 · **Cost** Expensive\n\nTight ballistic underclothing. Gives no protection against melee weapons or fists. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Ballistic Vest",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 6 · **Enc** 2 · **Cost** Expensive\n\nPlainly armor; wearing it openly draws police interest. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Military Body Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AC** 4 · **Enc** 3 · **Cost** Extravagant\n\nPlates, pads, and joint protection; plainly armor. Your AC is the armor’s AC minus your Dex modifier, and never worse than 9."
+    },
+    {
+      "name": "Ammunition (20 rounds or 1 magazine)",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common\n\nThree can be bundled as one item (an extra turn to unpack)."
+    },
+    {
+      "name": "Backpack with internal frame",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common"
+    },
+    {
+      "name": "Body Bag",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Cheap\n\nThree can be bundled as one item (an extra turn to unpack)."
+    },
+    {
+      "name": "Electronics Kit",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common"
+    },
+    {
+      "name": "Emergency First Aid Kit",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common"
+    },
+    {
+      "name": "Fake ID, Excellent",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** — · **Cost** Expensive\n\nToo small to track unless carried in bulk."
+    },
+    {
+      "name": "Fake ID, Poor",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** — · **Cost** Common\n\nToo small to track unless carried in bulk."
+    },
+    {
+      "name": "Gas Mask",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common"
+    },
+    {
+      "name": "Geiger Counter",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common"
+    },
+    {
+      "name": "Hazmat Suit, Level A",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 4 · **Cost** Expensive"
+    },
+    {
+      "name": "Holster, Custom",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common\n\nIncludes tailoring; a pistol-sized weapon in it counts as Readied. A normal concealed-carry holster leaves it Stowed."
+    },
+    {
+      "name": "Laptop Computer",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Common"
+    },
+    {
+      "name": "Mechanic’s Field Kit",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 3 · **Cost** Common"
+    },
+    {
+      "name": "Rations, 1 day",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Cheap\n\nThree can be bundled as one item (an extra turn to unpack)."
+    },
+    {
+      "name": "Rope, nylon, 20 m",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Cheap"
+    },
+    {
+      "name": "Satellite Phone",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 1 · **Cost** Expensive"
+    },
+    {
+      "name": "Smartphone",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** — · **Cost** Common\n\nToo small to track unless carried in bulk."
+    },
+    {
+      "name": "Two-man Tent",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 3 · **Cost** Common"
+    },
+    {
+      "name": "Water Bladder, 1 day",
+      "category": "Items",
+      "source": "Gear",
+      "body": "**Enc** 2 · **Cost** Cheap"
+    },
+    {
+      "name": "Car",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 0 · **Armor** 6 · **HP** 30 · **Crew** 5 · **Cost** Expensive\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Motorcycle",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 1 · **Armor** 4 · **HP** 10 · **Crew** 2 · **Cost** Expensive\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Helicopter, Small",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 2 · **Armor** 5 · **HP** 15 · **Crew** 2 · **Cost** Expensive\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Helicopter, Large",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 3 · **Armor** 6 · **HP** 20 · **Crew** 6 · **Cost** Extravagant\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Plane, Prop",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 2 · **Armor** 5 · **HP** 20 · **Crew** 6 · **Cost** Expensive\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Plane, Jet",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 4 · **Armor** 8 · **HP** 25 · **Crew** 20 · **Cost** Extravagant\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Sailboat",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 0 · **Armor** 6 · **HP** 30 · **Crew** 6 · **Cost** Expensive\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Powerboat",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 1 · **Armor** 6 · **HP** 30 · **Crew** 6 · **Cost** Extravagant\n\nSee [Vehicles]."
+    },
+    {
+      "name": "Tank",
+      "category": "Items",
+      "source": "Vehicle",
+      "body": "**Speed** 1 · **Armor** 20 · **HP** 50 · **Crew** 3 · **Cost** N/A\n\nSee [Vehicles]."
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Common Human (Weak)",
+      "desc": "An ordinary person with no special talent. Weak suits children and the frail; Strong suits veterans and hardened criminals.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "0",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": -1,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 0,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-common-human-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 0,
+      "hp": 1,
+      "align": "",
+      "xp": null,
+      "moraleML": 6,
+      "atkBonus": -1,
+      "attacksText": "weapon -1 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Common Human (Weak)\nAn ordinary person with no special talent. Weak suits children and the frail; Strong suits veterans and hardened criminals.\nAC 9, HD 1 hp (1hp), Atk weapon -1 (by weapon), Move 30', ML 6, Skill +0, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Common Human (Average)",
+      "desc": "An ordinary person with no special talent. Weak suits children and the frail; Strong suits veterans and hardened criminals.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "½",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 0,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-common-human-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 0.5,
+      "hp": 2,
+      "align": "",
+      "xp": null,
+      "moraleML": 7,
+      "atkBonus": 0,
+      "attacksText": "weapon +0 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Common Human (Average)\nAn ordinary person with no special talent. Weak suits children and the frail; Strong suits veterans and hardened criminals.\nAC 9, HD 1d4 hp (2hp), Atk weapon +0 (by weapon), Move 30', ML 7, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Common Human (Strong)",
+      "desc": "An ordinary person with no special talent. Weak suits children and the frail; Strong suits veterans and hardened criminals.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 1,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-common-human-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 1,
+      "attacksText": "weapon +1 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Common Human (Strong)\nAn ordinary person with no special talent. Weak suits children and the frail; Strong suits veterans and hardened criminals.\nAC 8, HD 1 (4hp), Atk weapon +1 (by weapon), Move 30', ML 8, Skill +2, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Skilled Human (Weak)",
+      "desc": "An exceptional person: a cult lieutenant, a leader, or a top expert. Weak suits minor lieutenants; Strong suits serious cult leaders.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 1,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-skilled-human-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 1,
+      "attacksText": "weapon +1 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Skilled Human (Weak)\nAn exceptional person: a cult lieutenant, a leader, or a top expert. Weak suits minor lieutenants; Strong suits serious cult leaders.\nAC 8, HD 1 (4hp), Atk weapon +1 (by weapon), Move 30', ML 8, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Skilled Human (Average)",
+      "desc": "An exceptional person: a cult lieutenant, a leader, or a top expert. Weak suits minor lieutenants; Strong suits serious cult leaders.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 3,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-skilled-human-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 3,
+      "attacksText": "weapon +3 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Skilled Human (Average)\nAn exceptional person: a cult lieutenant, a leader, or a top expert. Weak suits minor lieutenants; Strong suits serious cult leaders.\nAC 8, HD 3 (13hp), Atk weapon +3 (by weapon), Move 30', ML 9, Skill +2, Madness None, Slaughter 1d6, Save 14+"
+    },
+    {
+      "name": "Skilled Human (Strong)",
+      "desc": "An exceptional person: a cult lieutenant, a leader, or a top expert. Weak suits minor lieutenants; Strong suits serious cult leaders.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 6,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 4,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-skilled-human-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 6,
+      "attacksText": "weapon +6 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Skilled Human (Strong)\nAn exceptional person: a cult lieutenant, a leader, or a top expert. Weak suits minor lieutenants; Strong suits serious cult leaders.\nAC 7, HD 6 (27hp), Atk weapon +6 (by weapon), Move 30', ML 10, Skill +4, Madness None, Slaughter 1d6, Save 12+"
+    },
+    {
+      "name": "Verminous Beast (Weak)",
+      "desc": "Small, vicious creatures in packs or swarms; one stat line can stand for a whole small group. Weak suits rats and other mundane pests.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "0",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 0,
+          "damage": "",
+          "note": "1 damage",
+          "raw": ""
+        }
+      ],
+      "move": "10'",
+      "skill": 1,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-verminous-beast-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 0,
+      "hp": 1,
+      "align": "",
+      "xp": null,
+      "moraleML": 6,
+      "atkBonus": 0,
+      "attacksText": "bite +0 (1 damage)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Verminous Beast (Weak)\nSmall, vicious creatures in packs or swarms; one stat line can stand for a whole small group. Weak suits rats and other mundane pests.\nAC 8, HD 1 hp (1hp), Atk bite +0 (1 damage), Move 10', ML 6, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Verminous Beast (Average)",
+      "desc": "Small, vicious creatures in packs or swarms; one stat line can stand for a whole small group. Weak suits rats and other mundane pests.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "½",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 1,
+          "damage": "1d4",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "20'",
+      "skill": 2,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-verminous-beast-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 0.5,
+      "hp": 2,
+      "align": "",
+      "xp": null,
+      "moraleML": 6,
+      "atkBonus": 1,
+      "attacksText": "bite +1 (1d4)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Verminous Beast (Average)\nSmall, vicious creatures in packs or swarms; one stat line can stand for a whole small group. Weak suits rats and other mundane pests.\nAC 7, HD 1d4 hp (2hp), Atk bite +1 (1d4), Move 20', ML 6, Skill +2, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Verminous Beast (Strong)",
+      "desc": "Small, vicious creatures in packs or swarms; one stat line can stand for a whole small group. Weak suits rats and other mundane pests.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 2,
+          "toHit": 2,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "1",
+      "abilities": [],
+      "id": "sl-verminous-beast-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 7,
+      "atkBonus": 2,
+      "attacksText": "2 bite +2 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Verminous Beast (Strong)\nSmall, vicious creatures in packs or swarms; one stat line can stand for a whole small group. Weak suits rats and other mundane pests.\nAC 6, HD 1 (4hp), Atk 2 bite +2 (1d6), Move 30', ML 7, Skill +3, Madness 1, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Large Predator (Weak)",
+      "desc": "A lone hunter such as a tiger or a shark; Weak also suits pack wolves. The stronger lines suit supernatural beasts. Mundane animals inflict no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "2",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 2,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-large-predator-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 2,
+      "hp": 9,
+      "align": "",
+      "xp": null,
+      "moraleML": 7,
+      "atkBonus": 2,
+      "attacksText": "bite +2 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Large Predator (Weak)\nA lone hunter such as a tiger or a shark; Weak also suits pack wolves. The stronger lines suit supernatural beasts. Mundane animals inflict no Madness.\nAC 9, HD 2 (9hp), Atk bite +2 (1d6), Move 30', ML 7, Skill +2, Madness None, Slaughter 1d6, Save 14+"
+    },
+    {
+      "name": "Large Predator (Average)",
+      "desc": "A lone hunter such as a tiger or a shark; Weak also suits pack wolves. The stronger lines suit supernatural beasts. Mundane animals inflict no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 4,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 3,
+      "madness": "None",
+      "abilities": [],
+      "id": "sl-large-predator-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 4,
+      "attacksText": "bite +4 (1d8) + 2 claw +4 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Large Predator (Average)\nA lone hunter such as a tiger or a shark; Weak also suits pack wolves. The stronger lines suit supernatural beasts. Mundane animals inflict no Madness.\nAC 7, HD 4 (18hp), Atk bite +4 (1d8) + 2 claw +4 (1d6), Move 40', ML 8, Skill +3, Madness None, Slaughter 1d6, Save 13+"
+    },
+    {
+      "name": "Large Predator (Strong)",
+      "desc": "A lone hunter such as a tiger or a shark; Weak also suits pack wolves. The stronger lines suit supernatural beasts. Mundane animals inflict no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 6,
+          "damage": "1d10",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 4,
+      "madness": "1",
+      "abilities": [],
+      "id": "sl-large-predator-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 6,
+      "attacksText": "bite +6 (1d10) + 2 claw +6 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Large Predator (Strong)\nA lone hunter such as a tiger or a shark; Weak also suits pack wolves. The stronger lines suit supernatural beasts. Mundane animals inflict no Madness.\nAC 5, HD 6 (27hp), Atk bite +6 (1d10) + 2 claw +6 (1d8), Move 40', ML 9, Skill +4, Madness 1, Slaughter 1d6, Save 12+"
+    },
+    {
+      "name": "Undead Humanoid (Weak)",
+      "desc": "Zombies, skeletons, ghouls, and other solid risen dead.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 2,
+          "damage": "1d4",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 0,
+      "madness": "1",
+      "abilities": [
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-undead-humanoid-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 2,
+      "attacksText": "bite +2 (1d4)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Undead Humanoid (Weak)\nZombies, skeletons, ghouls, and other solid risen dead.\nAC 8, HD 1 (4hp), Atk bite +2 (1d4), Move 30', ML 12, Skill +0, Madness 1, Slaughter 1d6, Save 15+\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+    },
+    {
+      "name": "Undead Humanoid (Average)",
+      "desc": "Zombies, skeletons, ghouls, and other solid risen dead.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d4",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 4,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "1d4",
+      "abilities": [
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-undead-humanoid-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 4,
+      "attacksText": "bite +4 (1d4) + 2 claw +4 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Undead Humanoid (Average)\nZombies, skeletons, ghouls, and other solid risen dead.\nAC 6, HD 3 (13hp), Atk bite +4 (1d4) + 2 claw +4 (1d6), Move 30', ML 12, Skill +1, Madness 1d4, Slaughter 1d6, Save 14+\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+    },
+    {
+      "name": "Undead Humanoid (Strong)",
+      "desc": "Zombies, skeletons, ghouls, and other solid risen dead.",
+      "ac": {
+        "asc": null,
+        "desc": 4,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 6,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "1d8",
+      "abilities": [
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-undead-humanoid-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 6,
+      "attacksText": "bite +6 (1d8) + 2 claw +6 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Undead Humanoid (Strong)\nZombies, skeletons, ghouls, and other solid risen dead.\nAC 4, HD 6 (27hp), Atk bite +6 (1d8) + 2 claw +6 (1d6), Move 30', ML 12, Skill +3, Madness 1d8, Slaughter 1d6, Save 12+\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+    },
+    {
+      "name": "Amorphous Terror (Weak)",
+      "desc": "A shapeless, pliable horror; the stronger tiers are bigger masses.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "tendril",
+          "count": 1,
+          "toHit": 3,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "20'",
+      "skill": 2,
+      "madness": "1d6",
+      "abilities": [
+        {
+          "name": "Formless",
+          "text": "Usually immune to Slaughter from mundane weapons, and can flow through tiny gaps."
+        }
+      ],
+      "id": "sl-amorphous-terror-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 3,
+      "attacksText": "tendril +3 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Amorphous Terror (Weak)\nA shapeless, pliable horror; the stronger tiers are bigger masses.\nAC 6, HD 3 (13hp), Atk tendril +3 (1d8), Move 20', ML 9, Skill +2, Madness 1d6, Slaughter 1d6, Save 14+\nFormless. Usually immune to Slaughter from mundane weapons, and can flow through tiny gaps."
+    },
+    {
+      "name": "Amorphous Terror (Average)",
+      "desc": "A shapeless, pliable horror; the stronger tiers are bigger masses.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "hd": "5",
+      "attacks": [
+        {
+          "label": "tendril",
+          "count": 2,
+          "toHit": 5,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "1d8",
+      "abilities": [
+        {
+          "name": "Formless",
+          "text": "Usually immune to Slaughter from mundane weapons, and can flow through tiny gaps."
+        }
+      ],
+      "id": "sl-amorphous-terror-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 5,
+      "hp": 22,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 5,
+      "attacksText": "2 tendril +5 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Amorphous Terror (Average)\nA shapeless, pliable horror; the stronger tiers are bigger masses.\nAC 5, HD 5 (22hp), Atk 2 tendril +5 (1d8), Move 30', ML 10, Skill +2, Madness 1d8, Slaughter 1d6, Save 13+\nFormless. Usually immune to Slaughter from mundane weapons, and can flow through tiny gaps."
+    },
+    {
+      "name": "Amorphous Terror (Strong)",
+      "desc": "A shapeless, pliable horror; the stronger tiers are bigger masses.",
+      "ac": {
+        "asc": null,
+        "desc": 4,
+        "thac0": null
+      },
+      "hd": "7",
+      "attacks": [
+        {
+          "label": "tendril",
+          "count": 4,
+          "toHit": 7,
+          "damage": "1d10",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 2,
+      "madness": "1d10",
+      "abilities": [
+        {
+          "name": "Formless",
+          "text": "Usually immune to Slaughter from mundane weapons, and can flow through tiny gaps."
+        }
+      ],
+      "id": "sl-amorphous-terror-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 7,
+      "hp": 31,
+      "align": "",
+      "xp": null,
+      "moraleML": 11,
+      "atkBonus": 7,
+      "attacksText": "4 tendril +7 (1d10)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Amorphous Terror (Strong)\nA shapeless, pliable horror; the stronger tiers are bigger masses.\nAC 4, HD 7 (31hp), Atk 4 tendril +7 (1d10), Move 40', ML 11, Skill +2, Madness 1d10, Slaughter 1d6, Save 12+\nFormless. Usually immune to Slaughter from mundane weapons, and can flow through tiny gaps."
+    },
+    {
+      "name": "Stalking Hunter (Weak)",
+      "desc": "A solitary ambusher that strikes from cover and avoids fair fights. Mundane stalking animals inflict no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "2",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 3,
+      "madness": "1d4",
+      "abilities": [],
+      "id": "sl-stalking-hunter-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 2,
+      "hp": 9,
+      "align": "",
+      "xp": null,
+      "moraleML": 7,
+      "atkBonus": 4,
+      "attacksText": "bite +4 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Stalking Hunter (Weak)\nA solitary ambusher that strikes from cover and avoids fair fights. Mundane stalking animals inflict no Madness.\nAC 7, HD 2 (9hp), Atk bite +4 (1d8), Move 40', ML 7, Skill +3, Madness 1d4, Slaughter 1d6, Save 14+"
+    },
+    {
+      "name": "Stalking Hunter (Average)",
+      "desc": "A solitary ambusher that strikes from cover and avoids fair fights. Mundane stalking animals inflict no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 6,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 4,
+      "madness": "1d6",
+      "abilities": [],
+      "id": "sl-stalking-hunter-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 6,
+      "attacksText": "bite +6 (1d8) + 2 claw +6 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Stalking Hunter (Average)\nA solitary ambusher that strikes from cover and avoids fair fights. Mundane stalking animals inflict no Madness.\nAC 6, HD 3 (13hp), Atk bite +6 (1d8) + 2 claw +6 (1d6), Move 40', ML 8, Skill +4, Madness 1d6, Slaughter 1d6, Save 14+"
+    },
+    {
+      "name": "Stalking Hunter (Strong)",
+      "desc": "A solitary ambusher that strikes from cover and avoids fair fights. Mundane stalking animals inflict no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 8,
+          "damage": "1d10",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 8,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "50'",
+      "skill": 5,
+      "madness": "1d10",
+      "abilities": [],
+      "id": "sl-stalking-hunter-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 8,
+      "attacksText": "bite +8 (1d10) + 2 claw +8 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Stalking Hunter (Strong)\nA solitary ambusher that strikes from cover and avoids fair fights. Mundane stalking animals inflict no Madness.\nAC 5, HD 4 (18hp), Atk bite +8 (1d10) + 2 claw +8 (1d8), Move 50', ML 9, Skill +5, Madness 1d10, Slaughter 1d6, Save 13+"
+    },
+    {
+      "name": "Hulking Brute (Weak)",
+      "desc": "A giant or another huge creature: easy to hit, hard to bring down. A mundane big animal inflicts no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "1d6",
+      "abilities": [],
+      "id": "sl-hulking-brute-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 4,
+      "attacksText": "smash +4 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Hulking Brute (Weak)\nA giant or another huge creature: easy to hit, hard to bring down. A mundane big animal inflicts no Madness.\nAC 8, HD 4 (18hp), Atk smash +4 (1d8), Move 30', ML 8, Skill +1, Madness 1d6, Slaughter 1d6, Save 13+"
+    },
+    {
+      "name": "Hulking Brute (Average)",
+      "desc": "A giant or another huge creature: easy to hit, hard to bring down. A mundane big animal inflicts no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 2,
+          "toHit": 5,
+          "damage": "1d10",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "1d8",
+      "abilities": [],
+      "id": "sl-hulking-brute-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 5,
+      "attacksText": "2 smash +5 (1d10)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Hulking Brute (Average)\nA giant or another huge creature: easy to hit, hard to bring down. A mundane big animal inflicts no Madness.\nAC 7, HD 6 (27hp), Atk 2 smash +5 (1d10), Move 30', ML 9, Skill +2, Madness 1d8, Slaughter 1d6, Save 12+"
+    },
+    {
+      "name": "Hulking Brute (Strong)",
+      "desc": "A giant or another huge creature: easy to hit, hard to bring down. A mundane big animal inflicts no Madness.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 3,
+          "toHit": 6,
+          "damage": "1d10",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 3,
+      "madness": "1d10",
+      "abilities": [],
+      "id": "sl-hulking-brute-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 6,
+      "attacksText": "3 smash +6 (1d10)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 11
+      },
+      "savesText": "11+",
+      "slaughterDie": "1d6",
+      "raw": "Hulking Brute (Strong)\nA giant or another huge creature: easy to hit, hard to bring down. A mundane big animal inflicts no Madness.\nAC 6, HD 8 (36hp), Atk 3 smash +6 (1d10), Move 40', ML 10, Skill +3, Madness 1d10, Slaughter 1d6, Save 11+"
+    },
+    {
+      "name": "Humanoid Thing (Weak)",
+      "desc": "A mostly human creature touched by the outer dark: a humanoid alien, an occult construct, or an altered person. Uses a weapon as well as its bite.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 1,
+          "damage": "1d4",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 1,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "1d4",
+      "abilities": [],
+      "id": "sl-humanoid-thing-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 7,
+      "atkBonus": 1,
+      "attacksText": "bite +1 (1d4) + weapon +1 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Humanoid Thing (Weak)\nA mostly human creature touched by the outer dark: a humanoid alien, an occult construct, or an altered person. Uses a weapon as well as its bite.\nAC 9, HD 1 (4hp), Atk bite +1 (1d4) + weapon +1 (by weapon), Move 30', ML 7, Skill +1, Madness 1d4, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Humanoid Thing (Average)",
+      "desc": "A mostly human creature touched by the outer dark: a humanoid alien, an occult construct, or an altered person. Uses a weapon as well as its bite.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "2",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 2,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 2,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "1d6",
+      "abilities": [],
+      "id": "sl-humanoid-thing-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 2,
+      "hp": 9,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 2,
+      "attacksText": "bite +2 (1d6) + weapon +2 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Humanoid Thing (Average)\nA mostly human creature touched by the outer dark: a humanoid alien, an occult construct, or an altered person. Uses a weapon as well as its bite.\nAC 8, HD 2 (9hp), Atk bite +2 (1d6) + weapon +2 (by weapon), Move 30', ML 8, Skill +2, Madness 1d6, Slaughter 1d6, Save 14+"
+    },
+    {
+      "name": "Humanoid Thing (Strong)",
+      "desc": "A mostly human creature touched by the outer dark: a humanoid alien, an occult construct, or an altered person. Uses a weapon as well as its bite.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 2,
+          "toHit": 4,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 4,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 3,
+      "madness": "1d8",
+      "abilities": [],
+      "id": "sl-humanoid-thing-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 4,
+      "attacksText": "2 bite +4 (1d6) + weapon +4 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Humanoid Thing (Strong)\nA mostly human creature touched by the outer dark: a humanoid alien, an occult construct, or an altered person. Uses a weapon as well as its bite.\nAC 6, HD 4 (18hp), Atk 2 bite +4 (1d6) + weapon +4 (by weapon), Move 40', ML 9, Skill +3, Madness 1d8, Slaughter 1d6, Save 13+"
+    },
+    {
+      "name": "Armored Abomination (Weak)",
+      "desc": "A golem-like thing made of tougher stuff than flesh; it relies on resilience more than bulk.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "hd": "2",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 1,
+          "toHit": 2,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "20'",
+      "skill": 1,
+      "madness": "1d4",
+      "abilities": [
+        {
+          "name": "Tough",
+          "text": "Usually immune to Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-armored-abomination-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 2,
+      "hp": 9,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 2,
+      "attacksText": "smash +2 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Armored Abomination (Weak)\nA golem-like thing made of tougher stuff than flesh; it relies on resilience more than bulk.\nAC 5, HD 2 (9hp), Atk smash +2 (1d6), Move 20', ML 8, Skill +1, Madness 1d4, Slaughter 1d6, Save 14+\nTough. Usually immune to Slaughter from mundane weapons."
+    },
+    {
+      "name": "Armored Abomination (Average)",
+      "desc": "A golem-like thing made of tougher stuff than flesh; it relies on resilience more than bulk.",
+      "ac": {
+        "asc": null,
+        "desc": 4,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "1d6",
+      "abilities": [
+        {
+          "name": "Tough",
+          "text": "Usually immune to Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-armored-abomination-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 4,
+      "attacksText": "smash +4 (1d6) + bite +4 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Armored Abomination (Average)\nA golem-like thing made of tougher stuff than flesh; it relies on resilience more than bulk.\nAC 4, HD 4 (18hp), Atk smash +4 (1d6) + bite +4 (1d6), Move 30', ML 9, Skill +2, Madness 1d6, Slaughter 1d6, Save 13+\nTough. Usually immune to Slaughter from mundane weapons."
+    },
+    {
+      "name": "Armored Abomination (Strong)",
+      "desc": "A golem-like thing made of tougher stuff than flesh; it relies on resilience more than bulk.",
+      "ac": {
+        "asc": null,
+        "desc": 3,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 2,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "1d8",
+      "abilities": [
+        {
+          "name": "Tough",
+          "text": "Usually immune to Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-armored-abomination-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 6,
+      "attacksText": "2 smash +6 (1d8) + bite +6 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Armored Abomination (Strong)\nA golem-like thing made of tougher stuff than flesh; it relies on resilience more than bulk.\nAC 3, HD 6 (27hp), Atk 2 smash +6 (1d8) + bite +6 (1d8), Move 30', ML 10, Skill +3, Madness 1d8, Slaughter 1d6, Save 12+\nTough. Usually immune to Slaughter from mundane weapons."
+    },
+    {
+      "name": "Outer Entity (Weak)",
+      "desc": "An avatar or lieutenant of the Mythos gods. Even the Weak tier can terrorize a low-level party.",
+      "ac": {
+        "asc": null,
+        "desc": 4,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "tentacle",
+          "count": 2,
+          "toHit": 4,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 4,
+      "madness": "1d8",
+      "abilities": [
+        {
+          "name": "Otherworldly",
+          "text": "Usually immune to non-magical weapons."
+        }
+      ],
+      "id": "sl-outer-entity-weak",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 4,
+      "attacksText": "2 tentacle +4 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Outer Entity (Weak)\nAn avatar or lieutenant of the Mythos gods. Even the Weak tier can terrorize a low-level party.\nAC 4, HD 4 (18hp), Atk 2 tentacle +4 (1d6), Move 30', ML 12, Skill +4, Madness 1d8, Slaughter 1d6, Save 13+\nOtherworldly. Usually immune to non-magical weapons."
+    },
+    {
+      "name": "Outer Entity (Average)",
+      "desc": "An avatar or lieutenant of the Mythos gods. Even the Weak tier can terrorize a low-level party.",
+      "ac": {
+        "asc": null,
+        "desc": 3,
+        "thac0": null
+      },
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "tentacle",
+          "count": 4,
+          "toHit": 8,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 5,
+      "madness": "1d10",
+      "abilities": [
+        {
+          "name": "Otherworldly",
+          "text": "Usually immune to non-magical weapons."
+        }
+      ],
+      "id": "sl-outer-entity-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 8,
+      "attacksText": "4 tentacle +8 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 11
+      },
+      "savesText": "11+",
+      "slaughterDie": "1d6",
+      "raw": "Outer Entity (Average)\nAn avatar or lieutenant of the Mythos gods. Even the Weak tier can terrorize a low-level party.\nAC 3, HD 8 (36hp), Atk 4 tentacle +8 (1d8), Move 40', ML 12, Skill +5, Madness 1d10, Slaughter 1d6, Save 11+\nOtherworldly. Usually immune to non-magical weapons."
+    },
+    {
+      "name": "Outer Entity (Strong)",
+      "desc": "An avatar or lieutenant of the Mythos gods. Even the Weak tier can terrorize a low-level party.",
+      "ac": {
+        "asc": null,
+        "desc": 2,
+        "thac0": null
+      },
+      "hd": "12",
+      "attacks": [
+        {
+          "label": "tentacle",
+          "count": 6,
+          "toHit": 12,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "50'",
+      "skill": 6,
+      "madness": "1d12",
+      "abilities": [
+        {
+          "name": "Otherworldly",
+          "text": "Usually immune to non-magical weapons."
+        }
+      ],
+      "id": "sl-outer-entity-strong",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 12,
+      "hp": 54,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 12,
+      "attacksText": "6 tentacle +12 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 9
+      },
+      "savesText": "9+",
+      "slaughterDie": "1d6",
+      "raw": "Outer Entity (Strong)\nAn avatar or lieutenant of the Mythos gods. Even the Weak tier can terrorize a low-level party.\nAC 2, HD 12 (54hp), Atk 6 tentacle +12 (1d8), Move 50', ML 12, Skill +6, Madness 1d12, Slaughter 1d6, Save 9+\nOtherworldly. Usually immune to non-magical weapons."
+    },
+    {
+      "name": "Ordinary Human",
+      "desc": "Shopkeepers, bystanders, and petty hooligans. Rarely good at violence and quick to flee; more trouble through the authority of their jobs.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "½",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": -1,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "None",
+      "id": "sl-ordinary-human",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 0.5,
+      "hp": 2,
+      "align": "",
+      "xp": null,
+      "moraleML": 6,
+      "atkBonus": -1,
+      "attacksText": "weapon -1 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Ordinary Human\nShopkeepers, bystanders, and petty hooligans. Rarely good at violence and quick to flee; more trouble through the authority of their jobs.\nAC 9, HD 1d4 hp (2hp), Atk weapon -1 (by weapon), Move 30', ML 6, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Human Heavy",
+      "desc": "A cop, a soldier, or a veteran thug: someone used to violence and willing to hurt people.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 1,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "None",
+      "id": "sl-human-heavy",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 1,
+      "attacksText": "weapon +1 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Human Heavy\nA cop, a soldier, or a veteran thug: someone used to violence and willing to hurt people.\nAC 9, HD 1 (4hp), Atk weapon +1 (by weapon), Move 30', ML 8, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Human Expert",
+      "desc": "A professional with real talent in a non-combat field, such as a scientist or an archaeologist.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 0,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None",
+      "id": "sl-human-expert",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 7,
+      "atkBonus": 0,
+      "attacksText": "weapon +0 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Human Expert\nA professional with real talent in a non-combat field, such as a scientist or an archaeologist.\nAC 9, HD 1 (4hp), Atk weapon +0 (by weapon), Move 30', ML 7, Skill +3, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Human Leader",
+      "desc": "A police sergeant, a gang boss, or another smart, tough person who can lead and fight.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 4,
+          "damage": "",
+          "note": "weapon dmg +1",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "None",
+      "id": "sl-human-leader",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 4,
+      "attacksText": "weapon +4 (weapon dmg +1)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Human Leader\nA police sergeant, a gang boss, or another smart, tough person who can lead and fight.\nAC 8, HD 4 (18hp), Atk weapon +4 (weapon dmg +1), Move 30', ML 9, Skill +2, Madness None, Slaughter 1d6, Save 13+"
+    },
+    {
+      "name": "Cultist",
+      "desc": "A rank-and-file member: an ordinary person made stubborn by indoctrination. Often more dangerous through mundane jobs and connections.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "½",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 0,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 1,
+      "madness": "None",
+      "id": "sl-cultist",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 0.5,
+      "hp": 2,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 0,
+      "attacksText": "weapon +0 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Cultist\nA rank-and-file member: an ordinary person made stubborn by indoctrination. Often more dangerous through mundane jobs and connections.\nAC 9, HD 1d4 hp (2hp), Atk weapon +0 (by weapon), Move 30', ML 9, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+    },
+    {
+      "name": "Cult Enforcer",
+      "desc": "The cult’s muscle and lieutenants, who keep ordinary members obedient and silent.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 3,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "None",
+      "id": "sl-cult-enforcer",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 11,
+      "atkBonus": 3,
+      "attacksText": "weapon +3 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Cult Enforcer\nThe cult’s muscle and lieutenants, who keep ordinary members obedient and silent.\nAC 8, HD 3 (13hp), Atk weapon +3 (by weapon), Move 30', ML 11, Skill +2, Madness None, Slaughter 1d6, Save 14+"
+    },
+    {
+      "name": "Cult High Priest",
+      "desc": "The leader of a local cult of modest power, usually a sorcerer. Use the Nemesis rules or an inhuman template for priests of greater faiths.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 4,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None",
+      "abilities": [
+        {
+          "name": "Sorcerer",
+          "text": "Usually knows spells, and may carry physical changes from the power it serves."
+        }
+      ],
+      "id": "sl-cult-high-priest",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 4,
+      "attacksText": "weapon +4 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Cult High Priest\nThe leader of a local cult of modest power, usually a sorcerer. Use the Nemesis rules or an inhuman template for priests of greater faiths.\nAC 8, HD 6 (27hp), Atk weapon +4 (by weapon), Move 30', ML 12, Skill +3, Madness None, Slaughter 1d6, Save 12+\nSorcerer. Usually knows spells, and may carry physical changes from the power it serves."
+    },
+    {
+      "name": "Serial Killer",
+      "desc": "A cunning, fully human murderer who slips the police and is very hard to put down.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "5",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 2,
+          "toHit": 5,
+          "damage": "",
+          "note": "weapon dmg +1",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None / 1",
+      "id": "sl-serial-killer",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 5,
+      "hp": 22,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 5,
+      "attacksText": "2 weapon +5 (weapon dmg +1)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "abilities": [],
+      "raw": "Serial Killer\nA cunning, fully human murderer who slips the police and is very hard to put down.\nAC 8, HD 5 (22hp), Atk 2 weapon +5 (weapon dmg +1), Move 30', ML 9, Skill +3, Madness None / 1, Slaughter 1d6, Save 13+"
+    },
+    {
+      "name": "Slasher",
+      "desc": "A killer changed by the outer night who haunts places from its old life and stalks lone victims.",
+      "ac": {
+        "asc": null,
+        "desc": 4,
+        "thac0": null
+      },
+      "mundaneImmune": true,
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "slash",
+          "count": 1,
+          "toHit": null,
+          "damage": "1d4",
+          "note": "grows each hit",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 5,
+      "madness": "1d6",
+      "slaughterDie": "None",
+      "abilities": [
+        {
+          "name": "AC*",
+          "text": "Resists ordinary harm: usually only a magical artifact or sorcery can hurt it."
+        },
+        {
+          "name": "Never misses",
+          "text": "Its attacks always hit. The first hit in a fight does 1d4; each later hit steps the die up (1d6, 1d8, 1d10, 1d12, 1d20). Its hits never Slaughter."
+        },
+        {
+          "name": "Unkillable",
+          "text": "Only sorcery, magical weapons, or harm from the environment (falls, fire, suffocation) can damage it."
+        }
+      ],
+      "id": "sl-slasher",
+      "source": "sl",
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 0,
+      "attacksText": "slash (1d4 grows each hit)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 10
+      },
+      "savesText": "10+",
+      "raw": "Slasher\nA killer changed by the outer night who haunts places from its old life and stalks lone victims.\nAC 4*, HD 6 (27hp), Atk slash (1d4 grows each hit), Move 40', ML 12, Skill +5, Madness 1d6, Slaughter None, Save 10+\nAC*. Resists ordinary harm: usually only a magical artifact or sorcery can hurt it.\nNever misses. Its attacks always hit. The first hit in a fight does 1d4; each later hit steps the die up (1d6, 1d8, 1d10, 1d12, 1d20). Its hits never Slaughter.\nUnkillable. Only sorcery, magical weapons, or harm from the environment (falls, fire, suffocation) can damage it."
+    },
+    {
+      "name": "Mad Scientist",
+      "desc": "A sorcerer in a lab coat who explains impossible things with demented science and always needs fresh materials.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "6",
+      "attacks": [
+        {
+          "label": "device",
+          "count": 1,
+          "toHit": 6,
+          "damage": "",
+          "note": "by device",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 5,
+      "madness": "None / 1d4",
+      "abilities": [
+        {
+          "name": "Devices",
+          "text": "Carries gadgets that copy 1d4+1 spells useful to it; only the scientist can make them work."
+        }
+      ],
+      "id": "sl-mad-scientist",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 6,
+      "hp": 27,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 6,
+      "attacksText": "device +6 (by device)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Mad Scientist\nA sorcerer in a lab coat who explains impossible things with demented science and always needs fresh materials.\nAC 8, HD 6 (27hp), Atk device +6 (by device), Move 30', ML 8, Skill +5, Madness None / 1d4, Slaughter 1d6, Save 12+\nDevices. Carries gadgets that copy 1d4+1 spells useful to it; only the scientist can make them work."
+    },
+    {
+      "name": "Zombie",
+      "desc": "An animated corpse with arrested decay and little or no mind.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "2",
+      "attacks": [
+        {
+          "label": "rend",
+          "count": 1,
+          "toHit": 1,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "20'",
+      "skill": 0,
+      "madness": "1d6",
+      "abilities": [
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        },
+        {
+          "name": "Shatter",
+          "text": "Only breaking its skeleton stops it: shotguns and two-handed melee weapons Slaughter it on every hit."
+        }
+      ],
+      "id": "sl-zombie",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 2,
+      "hp": 9,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 1,
+      "attacksText": "rend +1 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Zombie\nAn animated corpse with arrested decay and little or no mind.\nAC 7, HD 2 (9hp), Atk rend +1 (1d6), Move 20', ML 12, Skill +0, Madness 1d6, Slaughter 1d6, Save 14+\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons.\nShatter. Only breaking its skeleton stops it: shotguns and two-handed melee weapons Slaughter it on every hit."
+    },
+    {
+      "name": "Ghoul",
+      "desc": "A faster, smarter zombie, often in groups of 2–4, that craves human flesh. Well-fed ghouls can pass for living people and sometimes run cannibal cults.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 3,
+          "damage": "1d4",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 1,
+      "madness": "None / 1d6",
+      "abilities": [
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        }
+      ],
+      "id": "sl-ghoul",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 8,
+      "atkBonus": 3,
+      "attacksText": "2 claw +3 (1d4)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Ghoul\nA faster, smarter zombie, often in groups of 2–4, that craves human flesh. Well-fed ghouls can pass for living people and sometimes run cannibal cults.\nAC 7, HD 3 (13hp), Atk 2 claw +3 (1d4), Move 40', ML 8, Skill +1, Madness None / 1d6, Slaughter 1d6, Save 14+\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+    },
+    {
+      "name": "Ghost",
+      "desc": "A dead soul bound to a place by a task it can no longer finish.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "mundaneImmune": true,
+      "hd": "4",
+      "attacks": [
+        {
+          "label": "touch",
+          "count": 1,
+          "toHit": 4,
+          "damage": "1d4",
+          "note": "+1d6 Madness",
+          "raw": ""
+        }
+      ],
+      "move": "30' insubstantial",
+      "skill": 1,
+      "madness": "1d6",
+      "slaughterDie": "None",
+      "abilities": [
+        {
+          "name": "AC*",
+          "text": "Resists ordinary harm: usually only a magical artifact or sorcery can hurt it."
+        },
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        },
+        {
+          "name": "Chilling touch",
+          "text": "Never Slaughters. Each touch also inflicts 1d6 Madness. Objects important to its life or death can drive it back."
+        }
+      ],
+      "id": "sl-ghost",
+      "source": "sl",
+      "hdNum": 4,
+      "hp": 18,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 4,
+      "attacksText": "touch +4 (1d4 +1d6 Madness)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "raw": "Ghost\nA dead soul bound to a place by a task it can no longer finish.\nAC 9*, HD 4 (18hp), Atk touch +4 (1d4 +1d6 Madness), Move 30' insubstantial, ML 12, Skill +1, Madness 1d6, Slaughter None, Save 13+\nAC*. Resists ordinary harm: usually only a magical artifact or sorcery can hurt it.\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons.\nChilling touch. Never Slaughters. Each touch also inflicts 1d6 Madness. Objects important to its life or death can drive it back."
+    },
+    {
+      "name": "Vampire",
+      "desc": "The classic blood-drinking undead, each with its own set of weaknesses.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "mundaneImmune": true,
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "strike",
+          "count": 2,
+          "toHit": 8,
+          "damage": "1d6+2",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None / 1d4",
+      "abilities": [
+        {
+          "name": "AC*",
+          "text": "Resists ordinary harm: usually only a magical artifact or sorcery can hurt it."
+        },
+        {
+          "name": "Undead",
+          "text": "Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons."
+        },
+        {
+          "name": "Personal weaknesses",
+          "text": "Usually harmed only by magic weapons, fire, or sorcery; some also fear holy water, stakes, or limb-severing blades. An occultist who knows its true name and origin can roll Int/Occult (difficulty 9) to find a weakness, with one more roll for each new fact about its life."
+        }
+      ],
+      "id": "sl-vampire",
+      "source": "sl",
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 8,
+      "attacksText": "2 strike +8 (1d6+2)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Vampire\nThe classic blood-drinking undead, each with its own set of weaknesses.\nAC 6*, HD 8 (36hp), Atk 2 strike +8 (1d6+2), Move 30', ML 10, Skill +3, Madness None / 1d4, Slaughter 1d6, Save 12+\nAC*. Resists ordinary harm: usually only a magical artifact or sorcery can hurt it.\nUndead. Immune to poison, disease, suffocation, hunger, and Slaughter from mundane weapons.\nPersonal weaknesses. Usually harmed only by magic weapons, fire, or sorcery; some also fear holy water, stakes, or limb-severing blades. An occultist who knows its true name and origin can roll Int/Occult (difficulty 9) to find a weakness, with one more roll for each new fact about its life."
+    },
+    {
+      "name": "Blistered Priest",
+      "desc": "A thing posing as a cleric or a therapist. It feeds on its flock’s anguish, keeps their lives miserable, and teaches them ever worse self-mortification.",
+      "ac": {
+        "asc": null,
+        "desc": 8,
+        "thac0": null
+      },
+      "hd": "7",
+      "attacks": [
+        {
+          "label": "smash",
+          "count": 1,
+          "toHit": 5,
+          "damage": "1d8",
+          "note": "+1d6 Madness",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None / 1d4",
+      "abilities": [
+        {
+          "name": "Bursting boils",
+          "text": "Its hits also inflict 1d6 Madness. Anyone who hits it in melee takes its smash damage too, with no Slaughter."
+        }
+      ],
+      "id": "sl-blistered-priest",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 7,
+      "hp": 31,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 5,
+      "attacksText": "smash +5 (1d8 +1d6 Madness)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Blistered Priest\nA thing posing as a cleric or a therapist. It feeds on its flock’s anguish, keeps their lives miserable, and teaches them ever worse self-mortification.\nAC 8, HD 7 (31hp), Atk smash +5 (1d8 +1d6 Madness), Move 30', ML 10, Skill +3, Madness None / 1d4, Slaughter 1d6, Save 12+\nBursting boils. Its hits also inflict 1d6 Madness. Anyone who hits it in melee takes its smash damage too, with no Slaughter."
+    },
+    {
+      "name": "Cancer Man",
+      "desc": "A survivor of early radiation experiments whose body is a mass of tumors. Looks normal, if thin, at a glance.",
+      "ac": {
+        "asc": null,
+        "desc": 9,
+        "thac0": null
+      },
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 6,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 4,
+      "madness": "None / 1d6",
+      "abilities": [
+        {
+          "name": "Infectious touch",
+          "text": "Its touch gives a fast, incurable mystical cancer (no save) that kills in one week per point of CON. It can sense through the tumors and, late in the illness, puppet the victim. Only its death cures the victims."
+        },
+        {
+          "name": "Regenerates",
+          "text": "Heals to full at the start of each round while above 0 HP, unless dosed with heavy chemotherapy drugs."
+        }
+      ],
+      "id": "sl-cancer-man",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 11,
+      "atkBonus": 6,
+      "attacksText": "weapon +6 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Cancer Man\nA survivor of early radiation experiments whose body is a mass of tumors. Looks normal, if thin, at a glance.\nAC 9, HD 8 (36hp), Atk weapon +6 (by weapon), Move 30', ML 11, Skill +4, Madness None / 1d6, Slaughter 1d6, Save 12+\nInfectious touch. Its touch gives a fast, incurable mystical cancer (no save) that kills in one week per point of CON. It can sense through the tumors and, late in the illness, puppet the victim. Only its death cures the victims.\nRegenerates. Heals to full at the start of each round while above 0 HP, unless dosed with heavy chemotherapy drugs."
+    },
+    {
+      "name": "Drowned King",
+      "desc": "A sorcerer-monarch from a sunken realm. It folds a city’s passages into a hidden palace and drives its court to bloodshed and excess to taste their passions.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "12",
+      "attacks": [
+        {
+          "label": "smite",
+          "count": 1,
+          "toHit": 10,
+          "damage": "1d12",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 4,
+      "madness": "1d10",
+      "abilities": [
+        {
+          "name": "Compulsion",
+          "text": "Creatures of 1 HD or less must obey it; others make a Mental Effect save every round. Showing physical proof of legitimate authority over the place makes the bearer immune."
+        },
+        {
+          "name": "Sorcerer",
+          "text": "Knows a wide range of blasphemous spells."
+        }
+      ],
+      "id": "sl-drowned-king",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 12,
+      "hp": 54,
+      "align": "",
+      "xp": null,
+      "moraleML": 11,
+      "atkBonus": 10,
+      "attacksText": "smite +10 (1d12)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 9
+      },
+      "savesText": "9+",
+      "slaughterDie": "1d6",
+      "raw": "Drowned King\nA sorcerer-monarch from a sunken realm. It folds a city’s passages into a hidden palace and drives its court to bloodshed and excess to taste their passions.\nAC 6, HD 12 (54hp), Atk smite +10 (1d12), Move 30', ML 11, Skill +4, Madness 1d10, Slaughter 1d6, Save 9+\nCompulsion. Creatures of 1 HD or less must obey it; others make a Mental Effect save every round. Showing physical proof of legitimate authority over the place makes the bearer immune.\nSorcerer. Knows a wide range of blasphemous spells."
+    },
+    {
+      "name": "Fetch",
+      "desc": "A silent, car-sized spider-thing with spiked carapace, sent by a sorcerer after one victim. Killing it sends a new Fetch after the summoner.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "claw",
+          "count": 3,
+          "toHit": 8,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 3,
+      "madness": "1d10",
+      "slaughterDie": "1d8",
+      "abilities": [
+        {
+          "name": "Unseen hunter",
+          "text": "Only its prey can see it, unless someone sincerely believes in it; cameras never show it. It shows itself to the prey seven times, closer each time."
+        },
+        {
+          "name": "Impale",
+          "text": "A victim brought to 0 HP is impaled alive on its spikes instead of dying, and takes 1d12 Madness each round while pinned."
+        }
+      ],
+      "id": "sl-fetch",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 8,
+      "attacksText": "3 claw +8 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 11
+      },
+      "savesText": "11+",
+      "raw": "Fetch\nA silent, car-sized spider-thing with spiked carapace, sent by a sorcerer after one victim. Killing it sends a new Fetch after the summoner.\nAC 5, HD 8 (36hp), Atk 3 claw +8 (1d6), Move 40', ML 12, Skill +3, Madness 1d10, Slaughter 1d8, Save 11+\nUnseen hunter. Only its prey can see it, unless someone sincerely believes in it; cameras never show it. It shows itself to the prey seven times, closer each time.\nImpale. A victim brought to 0 HP is impaled alive on its spikes instead of dying, and takes 1d12 Madness each round while pinned."
+    },
+    {
+      "name": "Gray Waif",
+      "desc": "A scavenger entity that poses as a helpless young person in need of rescue, and steers its protectors into disaster.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "mundaneImmune": true,
+      "hd": "7",
+      "attacks": [
+        {
+          "label": "tentacle",
+          "count": 4,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None / 1d10",
+      "abilities": [
+        {
+          "name": "AC*",
+          "text": "Resists ordinary harm: usually only a magical artifact or sorcery can hurt it."
+        },
+        {
+          "name": "Illusion",
+          "text": "Its human seeming fools sorcery and close inspection. Even in that form, mundane harm leaves only bruises and scratches."
+        },
+        {
+          "name": "Troublemaker",
+          "text": "Its presence makes innocent words and acts look like threats or insults, which provokes its “rescuers” into needless fights."
+        }
+      ],
+      "id": "sl-gray-waif",
+      "source": "sl",
+      "hdNum": 7,
+      "hp": 31,
+      "align": "",
+      "xp": null,
+      "moraleML": 9,
+      "atkBonus": 6,
+      "attacksText": "4 tentacle +6 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "slaughterDie": "1d6",
+      "raw": "Gray Waif\nA scavenger entity that poses as a helpless young person in need of rescue, and steers its protectors into disaster.\nAC 5*, HD 7 (31hp), Atk 4 tentacle +6 (1d8), Move 30', ML 9, Skill +3, Madness None / 1d10, Slaughter 1d6, Save 12+\nAC*. Resists ordinary harm: usually only a magical artifact or sorcery can hurt it.\nIllusion. Its human seeming fools sorcery and close inspection. Even in that form, mundane harm leaves only bruises and scratches.\nTroublemaker. Its presence makes innocent words and acts look like threats or insults, which provokes its “rescuers” into needless fights."
+    },
+    {
+      "name": "Harbinger",
+      "desc": "A person gripped by a syndrome that shapes events toward a coming disaster and blocks every attempt to prepare for it.",
+      "ac": {
+        "asc": null,
+        "desc": 2,
+        "thac0": null
+      },
+      "hd": "5",
+      "attacks": [
+        {
+          "label": "weapon",
+          "count": 1,
+          "toHit": 5,
+          "damage": "",
+          "note": "by weapon",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 3,
+      "madness": "None / 1d6",
+      "abilities": [
+        {
+          "name": "Foresight",
+          "text": "Can be harmed only by magical artifacts or sorcery."
+        },
+        {
+          "name": "Doppelgangers",
+          "text": "When someone fails to play their part in the disaster, a perfect duplicate appears to do it instead."
+        },
+        {
+          "name": "Cure",
+          "text": "Preventing the disaster completely ends the syndrome."
+        }
+      ],
+      "id": "sl-harbinger",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 5,
+      "hp": 22,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 5,
+      "attacksText": "weapon +5 (by weapon)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 13
+      },
+      "savesText": "13+",
+      "slaughterDie": "1d6",
+      "raw": "Harbinger\nA person gripped by a syndrome that shapes events toward a coming disaster and blocks every attempt to prepare for it.\nAC 2, HD 5 (22hp), Atk weapon +5 (by weapon), Move 30', ML 10, Skill +3, Madness None / 1d6, Slaughter 1d6, Save 13+\nForesight. Can be harmed only by magical artifacts or sorcery.\nDoppelgangers. When someone fails to play their part in the disaster, a perfect duplicate appears to do it instead.\nCure. Preventing the disaster completely ends the syndrome."
+    },
+    {
+      "name": "Lycanthrope",
+      "desc": "A person infested by an alien predator parasite, able to become a beast or a hybrid at will.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "mundaneImmune": true,
+      "hd": "7",
+      "attacks": [
+        {
+          "label": "bite",
+          "count": 1,
+          "toHit": 8,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        },
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": 8,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "40'",
+      "skill": 3,
+      "madness": "1d8",
+      "slaughterDie": "1d8",
+      "abilities": [
+        {
+          "name": "AC*",
+          "text": "Resists ordinary harm: usually only a magical artifact or sorcery can hurt it."
+        },
+        {
+          "name": "Silver",
+          "text": "In beast or hybrid form only magic weapons, spells, or silver harm it; in human form it needs one of those to go below 1 HP. Changing shape takes one round."
+        },
+        {
+          "name": "Spawn",
+          "text": "A badly hurt survivor can become a new host within a month unless the progenitor is killed."
+        }
+      ],
+      "id": "sl-lycanthrope",
+      "source": "sl",
+      "hdNum": 7,
+      "hp": 31,
+      "align": "",
+      "xp": null,
+      "moraleML": 11,
+      "atkBonus": 8,
+      "attacksText": "bite +8 (1d6) + 2 claw +8 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 12
+      },
+      "savesText": "12+",
+      "raw": "Lycanthrope\nA person infested by an alien predator parasite, able to become a beast or a hybrid at will.\nAC 7*, HD 7 (31hp), Atk bite +8 (1d6) + 2 claw +8 (1d6), Move 40', ML 11, Skill +3, Madness 1d8, Slaughter 1d8, Save 12+\nAC*. Resists ordinary harm: usually only a magical artifact or sorcery can hurt it.\nSilver. In beast or hybrid form only magic weapons, spells, or silver harm it; in human form it needs one of those to go below 1 HP. Changing shape takes one round.\nSpawn. A badly hurt survivor can become a new host within a month unless the progenitor is killed."
+    },
+    {
+      "name": "Macguffin Servant (Medium)",
+      "desc": "Animated clothing or furniture that the Macguffin (an entity that copies a desired object, then corrupts its owner’s things) raises to defend itself.",
+      "ac": {
+        "asc": null,
+        "desc": 6,
+        "thac0": null
+      },
+      "hd": "1",
+      "attacks": [
+        {
+          "label": "batter",
+          "count": 1,
+          "toHit": 0,
+          "damage": "1d6",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "20'",
+      "skill": 0,
+      "madness": "1",
+      "abilities": [
+        {
+          "name": "Inanimate",
+          "text": "An animated object, not a living thing."
+        }
+      ],
+      "id": "sl-macguffin-servant-medium",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 1,
+      "hp": 4,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 0,
+      "attacksText": "batter +0 (1d6)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 15
+      },
+      "savesText": "15+",
+      "slaughterDie": "1d6",
+      "raw": "Macguffin Servant (Medium)\nAnimated clothing or furniture that the Macguffin (an entity that copies a desired object, then corrupts its owner’s things) raises to defend itself.\nAC 6, HD 1 (4hp), Atk batter +0 (1d6), Move 20', ML 12, Skill +0, Madness 1, Slaughter 1d6, Save 15+\nInanimate. An animated object, not a living thing."
+    },
+    {
+      "name": "Shibboleth (Average)",
+      "desc": "An alien intruder, usually insect- or octopus-like, that settles in isolated towns whose people cannot speak of it.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "3",
+      "attacks": [
+        {
+          "label": "tentacle",
+          "count": 2,
+          "toHit": 3,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "move": "30'",
+      "skill": 2,
+      "madness": "1d8",
+      "abilities": [
+        {
+          "name": "Unnameable",
+          "text": "Witnesses can’t speak, write, or hint about them. Fighting one needs a Mental Effect save, rerolled each round. Pushing through the silence costs 1d10 Madness and lasts one week."
+        },
+        {
+          "name": "Alien tech",
+          "text": "Their devices crumble to powder when taken from their owners."
+        }
+      ],
+      "id": "sl-shibboleth-average",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 3,
+      "hp": 13,
+      "align": "",
+      "xp": null,
+      "moraleML": 10,
+      "atkBonus": 3,
+      "attacksText": "2 tentacle +3 (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 14
+      },
+      "savesText": "14+",
+      "slaughterDie": "1d6",
+      "raw": "Shibboleth (Average)\nAn alien intruder, usually insect- or octopus-like, that settles in isolated towns whose people cannot speak of it.\nAC 7, HD 3 (13hp), Atk 2 tentacle +3 (1d8), Move 30', ML 10, Skill +2, Madness 1d8, Slaughter 1d6, Save 14+\nUnnameable. Witnesses can’t speak, write, or hint about them. Fighting one needs a Mental Effect save, rerolled each round. Pushing through the silence costs 1d10 Madness and lasts one week.\nAlien tech. Their devices crumble to powder when taken from their owners."
+    },
+    {
+      "name": "Spoken One",
+      "desc": "A bull-sized mass of slimy tissue that grows stronger as fragments of its name are repeated, and buds human-seeming servants.",
+      "ac": {
+        "asc": null,
+        "desc": 7,
+        "thac0": null
+      },
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "tendril",
+          "count": 4,
+          "toHit": 6,
+          "damage": "1d8",
+          "note": "+1d6 acid next round",
+          "raw": ""
+        }
+      ],
+      "move": "20'",
+      "skill": 2,
+      "madness": "1d10",
+      "slaughterDie": "1d6",
+      "abilities": [
+        {
+          "name": "Hardy",
+          "text": "Immune to Slaughter. Bullets do minimum damage, but shotguns do normal damage."
+        },
+        {
+          "name": "Acidic",
+          "text": "A melee attacker takes 1d6 each time they hit it. Its tendril hits do another 1d6 the following round."
+        }
+      ],
+      "id": "sl-spoken-one",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "atkBonus": 6,
+      "attacksText": "4 tendril +6 (1d8 +1d6 acid next round)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 11
+      },
+      "savesText": "11+",
+      "raw": "Spoken One\nA bull-sized mass of slimy tissue that grows stronger as fragments of its name are repeated, and buds human-seeming servants.\nAC 7, HD 8 (36hp), Atk 4 tendril +6 (1d8 +1d6 acid next round), Move 20', ML 12, Skill +2, Madness 1d10, Slaughter 1d6, Save 11+\nHardy. Immune to Slaughter. Bullets do minimum damage, but shotguns do normal damage.\nAcidic. A melee attacker takes 1d6 each time they hit it. Its tendril hits do another 1d6 the following round."
+    },
+    {
+      "name": "Walker Between",
+      "desc": "A ragged, faceless thing from the spaces between realms that wants to break every boundary, and opens gates for cults at a terrible price.",
+      "ac": {
+        "asc": null,
+        "desc": 5,
+        "thac0": null
+      },
+      "hd": "8",
+      "attacks": [
+        {
+          "label": "claw",
+          "count": 2,
+          "toHit": null,
+          "damage": "1d8",
+          "note": "",
+          "raw": ""
+        }
+      ],
+      "atkBonus": 8,
+      "move": "100' teleport",
+      "skill": 2,
+      "madness": "1d8",
+      "slaughterDie": "1d12",
+      "abilities": [
+        {
+          "name": "Distortion",
+          "text": "Immune to all attacks and targeted spells from beyond melee range, and to Slaughter from mundane weapons."
+        },
+        {
+          "name": "Hit bonus",
+          "text": "The book prints none for its claws; +8 (equal to its HD) is assumed here."
+        }
+      ],
+      "id": "sl-walker-between",
+      "source": "sl",
+      "mundaneImmune": false,
+      "hdNum": 8,
+      "hp": 36,
+      "align": "",
+      "xp": null,
+      "moraleML": 12,
+      "attacksText": "2 claw (1d8)",
+      "stats": null,
+      "saveTargets": {
+        "Save": 11
+      },
+      "savesText": "11+",
+      "raw": "Walker Between\nA ragged, faceless thing from the spaces between realms that wants to break every boundary, and opens gates for cults at a terrible price.\nAC 5, HD 8 (36hp), Atk 2 claw (1d8), Move 100' teleport, ML 12, Skill +2, Madness 1d8, Slaughter 1d12, Save 11+\nDistortion. Immune to all attacks and targeted spells from beyond melee range, and to Slaughter from mundane weapons.\nHit bonus. The book prints none for its claws; +8 (equal to its HD) is assumed here."
+    }
+  ]
+}

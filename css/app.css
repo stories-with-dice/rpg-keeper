@@ -191,6 +191,8 @@ button, input, textarea, select {
 .btn-primary { background: var(--primary-bg); border-color: var(--primary-border); }
 .btn-primary:hover { background: var(--primary-bg-hover); }
 .btn-danger { background: var(--danger-bg); border-color: var(--danger-border); }
+/* A button that reads as a link inside running text. */
+.btn.btn-link { background: none; border: 0; padding: 0; color: var(--accent-2); text-decoration: underline; font: inherit; }
 .btn-danger:hover { background: var(--danger-bg-hover); }
 
 /* ---------- Layout ---------- */
@@ -208,6 +210,16 @@ button, input, textarea, select {
   border-radius: var(--radius);
   padding: 16px;
 }
+/* Shown by js/main.js's showLoadError() when the data files fail to load. */
+.load-error {
+  flex: 1;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  line-height: 1.5;
+}
+.load-error[hidden] { display: none; }
 
 .tab-panel { display: none; }
 .tab-panel.is-active { display: block; }
@@ -1294,5 +1306,6 @@ button, input, textarea, select {
 .dbx-compare li { margin: 4px 0; }
 #dbx-modal .modal-actions { flex-wrap: wrap; }
 .dbx-code-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+.dbx-code-row[hidden] { display: none; }
 .dbx-code-row input { flex: 1 1 200px; min-width: 0; }
 .dbx-code-row a.btn { text-decoration: none; }

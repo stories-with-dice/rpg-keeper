@@ -183,18 +183,9 @@
   }
 
   /* ---- default seed ---- */
-  // Lives in its own file, js/compendium-seed.js (loaded before this one). It
-  // exposes window.COMPENDIUM_SEED (array of { name, category, body }),
-  // window.COMPENDIUM_SEED_VERSION, and window.COMPENDIUM_SEED_READY — a
-  // promise that resolves once compendium-seed.js's attempt to fetch + fold
-  // in the optional data/spells.json has settled (COMPENDIUM_SEED is the
-  // same array either way, so nothing here needs to change to pick up the
-  // extra entries).
-  const COMPENDIUM_SEED = (typeof window !== 'undefined' && Array.isArray(window.COMPENDIUM_SEED))
-    ? window.COMPENDIUM_SEED : [];
-  const COMPENDIUM_SEED_VERSION = (typeof window !== 'undefined' && Number(window.COMPENDIUM_SEED_VERSION)) || 1;
-  const COMPENDIUM_SEED_READY = (typeof window !== 'undefined' && window.COMPENDIUM_SEED_READY &&
-    typeof window.COMPENDIUM_SEED_READY.then === 'function') ? window.COMPENDIUM_SEED_READY : Promise.resolve();
+  // OSR.data.seeds.osr (js/data.js): the gear from data/seed-osr.json plus
+  // the spells from data/spells.json, as { name, category, body }.
+  const osrSeed = () => OSR.data.seeds.osr;
 
   // Add every default entry not already present (matched by name, case-insensitive),
   // using each entry's own `category` (default "Items") and source "Shadowdark
@@ -203,7 +194,7 @@
   function seedCompendium() {
     const have = new Set(OSR.state.compendium.map(e => (e.name || '').toLowerCase()));
     let added = 0;
-    COMPENDIUM_SEED.forEach(e => {
+    osrSeed().compendium.forEach(e => {
       if (!e || !e.name || have.has(String(e.name).toLowerCase())) return;
       OSR.state.compendium.push({
         id: uid(), name: e.name,
@@ -214,7 +205,7 @@
       added++;
     });
     OSR.state.compendiumSeeded = true;
-    OSR.state.compendiumSeedVersion = COMPENDIUM_SEED_VERSION;
+    OSR.state.compendiumSeedVersion = osrSeed().version;
     OSR.save();
     renderCompendium();
     return added;
@@ -309,7 +300,7 @@
     compByExactName, compFuzzy, compResolve, compExcerpt, compListMatches,
     resetCompendiumFilters, renderCompendium,
     openCompEntry, closeCompEntry, saveCompEntry, deleteCompEntry,
-    COMPENDIUM_SEED, COMPENDIUM_SEED_VERSION, COMPENDIUM_SEED_READY, seedCompendium,
+    seedCompendium,
     wireCompendiumEntries
   });
 })(window.OSR = window.OSR || {});

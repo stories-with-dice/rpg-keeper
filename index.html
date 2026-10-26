@@ -29,6 +29,7 @@
   </header>
 
   <div class="layout">
+    <div class="load-error" id="load-error" role="alert" hidden></div>
     <main class="main">
       <!-- ===== Character tab ===== -->
       <section class="tab-panel is-active" id="tab-character">
@@ -244,9 +245,10 @@
               <ol class="hint dbx-steps">
                 <li>In the <a href="https://www.dropbox.com/developers/apps" target="_blank" rel="noopener">Dropbox App Console</a>, click <b>Create app</b>. Choose <b>Scoped access</b> and <b>App folder</b>, and give the app a name.</li>
                 <li>On the <b>Permissions</b> tab, tick <b>files.content.write</b> and <b>files.content.read</b>. Click <b>Submit</b>.</li>
-                <li>On the <b>Settings</b> tab, keep <b>Allow public clients (Implicit Grant &amp; PKCE)</b> on <b>Allow</b>. You do not need a redirect URI.</li>
+                <li>On the <b>Settings</b> tab, keep <b>Allow public clients (Implicit Grant &amp; PKCE)</b> on <b>Allow</b>. Under <b>Redirect URIs</b>, add <code id="dbx-redirect-uri"></code> and click <b>Add</b>. Add the address of each place where you open the app.</li>
                 <li>Copy the <b>App key</b> and paste it above. The app key is not a secret. Do not use the app secret.</li>
               </ol>
+              <p class="hint">If you cannot add a redirect URI, <button id="dbx-connect-code" class="btn btn-link" type="button">connect with a code</button>: Dropbox shows a code, and you paste it here.</p>
             </details>
           </span>
           <span class="setting-actions">
@@ -481,17 +483,10 @@
   <script src="vendor/easymde/easymde.min.js"></script>
   <script src="js/monsters.js"></script>
   <script src="js/ua-statblock.js"></script>
-  <script src="js/monsters-data.js"></script>
-  <script src="js/spells-data.js"></script>
-  <script src="js/tables-data.js"></script>
-  <script src="js/compendium-seed.js"></script>
-  <script src="js/brp-monsters-data.js"></script>
-  <script src="js/brp-compendium-seed.js"></script>
-  <script src="js/sl-monsters-data.js"></script>
-  <script src="js/sl-compendium-seed.js"></script>
   <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
        all attach to window.OSR, so load order only requires core.js first. -->
   <script src="js/core.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/dice.js"></script>
   <script src="js/annotate.js"></script>
   <script src="js/mde.js"></script>

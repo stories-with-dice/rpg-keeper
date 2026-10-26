@@ -1,6 +1,6 @@
 /* js/sl-seed.js — first-run seeding of the Silent Legions Compendium
- * (Spells/Disciplines/Rules/Equipment, js/sl-compendium-seed.js) and
- * Bestiary (js/sl-monsters-data.js). Same mechanism as js/brp-seed.js: each
+ * (Spells/Disciplines/Rules/Equipment) and Bestiary, both from
+ * data/seed-sl.json (OSR.data.seeds.sl, loaded by js/data.js). Same mechanism as js/brp-seed.js: each
  * entry keeps its own `category`/`source`, and everything is tagged
  * `system: 'sl'` — see AGENTS.md "Silent Legions (SL)".
  */
@@ -10,8 +10,7 @@
   // Reseeding only ever replaces the 'sl'-tagged slice of state.monsters —
   // other systems' monsters are preserved (same pattern as seedBrpMonsters()).
   function seedSlMonsters() {
-    const defs = (typeof window !== 'undefined' && Array.isArray(window.SL_MONSTER_LIBRARY))
-      ? JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY)) : [];
+    const defs = JSON.parse(JSON.stringify(OSR.data.seeds.sl.monsters));
     defs.forEach(d => { if (!d.id) d.id = OSR.uid(); d.system = 'sl'; });
     OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'osr') !== 'sl').concat(defs);
     OSR.state.slMonstersSeeded = true;
@@ -23,8 +22,7 @@
   // "Knife", "Shield", … also exist in other systems' seeds). Returns the
   // count added.
   function seedSlCompendium() {
-    const SEED = (typeof window !== 'undefined' && Array.isArray(window.SL_COMPENDIUM_SEED))
-      ? window.SL_COMPENDIUM_SEED : [];
+    const SEED = OSR.data.seeds.sl.compendium;
     const have = new Set(OSR.state.compendium.filter(e => e.system === 'sl').map(e => (e.name || '').toLowerCase()));
     let added = 0;
     SEED.forEach(e => {

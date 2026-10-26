@@ -53,7 +53,19 @@
   /* ------------------------------------------------------------------ */
   /* Init                                                               */
   /* ------------------------------------------------------------------ */
+  // The data files could not load: show why, and start nothing. Nothing runs
+  // load()/save(), so the saved campaign stays as it was.
+  function showLoadError(err) {
+    const box = $('#load-error');
+    box.innerHTML = '<b>Character Keeper could not start.</b> ' + OSR.escapeHtml(err.message) +
+      '<br>Check your connection and reload the page.';
+    box.hidden = false;
+    $('.main').hidden = true;
+  }
+
   async function init() {
+    try { await OSR.loadData(); }
+    catch (e) { showLoadError(e); return; }
     if (typeof marked !== 'undefined') {
       marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
     }
@@ -68,14 +80,11 @@
     OSR.renderTables();
     OSR.renderSettings();
     wire();
-    if (!had && !OSR.state.characters.length) await OSR.seed();
-    if (!OSR.state.monsters.length && !OSR.state.monstersSeeded) await OSR.seedMonsters();
+    if (!had && !OSR.state.characters.length) OSR.seed();
+    if (!OSR.state.monsters.length && !OSR.state.monstersSeeded) OSR.seedMonsters();
     if (!OSR.state.brpMonstersSeeded) OSR.seedBrpMonsters();
     if (!OSR.state.slMonstersSeeded) OSR.seedSlMonsters();
-    if ((OSR.state.compendiumSeedVersion || 0) < OSR.COMPENDIUM_SEED_VERSION) {
-      await OSR.COMPENDIUM_SEED_READY; // let the optional data/spells.json fetch settle first
-      OSR.seedCompendium();
-    }
+    if ((OSR.state.compendiumSeedVersion || 0) < OSR.data.seeds.osr.version) OSR.seedCompendium();
     if (!OSR.state.brpCompendiumSeeded) OSR.seedBrpCompendium();
     if (!OSR.state.slCompendiumSeeded) OSR.seedSlCompendium();
     OSR.renderMonsterBrowser();
@@ -114,7 +123,7 @@
       OSR.state.brpMonstersSeeded = true;
       OSR.state.slMonstersSeeded = true;
       OSR.state.compendiumSeeded = true;
-      OSR.state.compendiumSeedVersion = OSR.COMPENDIUM_SEED_VERSION;
+      OSR.state.compendiumSeedVersion = OSR.data.seeds.osr.version;
       OSR.state.brpCompendiumSeeded = true;
       OSR.state.slCompendiumSeeded = true;
       OSR.ensureStateShape();

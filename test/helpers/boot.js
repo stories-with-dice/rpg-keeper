@@ -23,15 +23,8 @@ const SCRIPTS = [
   'js/fuse.min.js',
   'js/monsters.js',
   'js/ua-statblock.js',
-  'js/monsters-data.js',
-  'js/spells-data.js',
-  'js/tables-data.js',
-  'js/compendium-seed.js',
-  'js/brp-monsters-data.js',
-  'js/brp-compendium-seed.js',
-  'js/sl-monsters-data.js',
-  'js/sl-compendium-seed.js',
   'js/core.js',
+  'js/data.js',
   'js/dice.js',
   'js/annotate.js',
   'js/mde.js',
@@ -57,6 +50,26 @@ const SCRIPTS = [
 ];
 
 const STORAGE_KEY = 'osr_manager_v1';
+const APP_ORIGIN = 'https://osr.test';
+
+// The app fetch()es data/*.json and data/*.txt at boot (js/data.js). Serve them
+// from disk, read once per test process. `missing` lists paths that answer 404.
+const fileCache = new Map();
+function serveDataFile(pathname, missing) {
+  const rel = pathname.replace(/^\//, '');
+  const res = (status, text) => ({
+    ok: status === 200, status,
+    headers: { get: () => null },
+    text: async () => text,
+    json: async () => JSON.parse(text),
+  });
+  if (missing && missing.includes(rel)) return res(404, 'Not Found');
+  if (!fileCache.has(rel)) {
+    try { fileCache.set(rel, read(rel)); } catch (e) { fileCache.set(rel, null); }
+  }
+  const text = fileCache.get(rel);
+  return text == null ? res(404, 'Not Found') : res(200, text);
+}
 
 // A minimal already-migrated save. With this present, init() does no async
 // seeding: load() returns had=true, monstersSeeded short-circuits seedMonsters(),
@@ -81,6 +94,14 @@ function blankSave() {
  * @param {object} [opts.extraStorage]  more localStorage keys to preload ({key: string}).
  * @param {function} [opts.beforeScripts]  called with `window` before the app's scripts
  *                                        run (e.g. to stub window.fetch for boot-time work).
+ *                                        Requests for the app's own data/ files never reach
+ *                                        that stub: boot() serves them from disk.
+ * @param {string}  [opts.url]           page URL (default https://osr.test/), e.g. with a
+ *                                        Dropbox ?code= reply.
+ * @param {object}  [opts.session]        sessionStorage keys to preload ({key: string}).
+ * @param {string[]} [opts.missingData]   data/ paths that answer 404 (load-error tests).
+ * @param {boolean} [opts.allowLoadError] return right after init(), with no reset(): for
+ *                                        tests of the load-error state.
  */
 async function boot(opts = {}) {
   const html = read('index.html')
@@ -93,7 +114,7 @@ async function boot(opts = {}) {
   virtualConsole.forwardTo(console, { jsdomErrors: 'none' });
 
   const dom = new JSDOM(html, {
-    url: 'https://osr.test/',
+    url: opts.url || APP_ORIGIN + '/',
     runScripts: 'dangerously',
     pretendToBeVisual: true,
     virtualConsole,
@@ -136,7 +157,19 @@ async function boot(opts = {}) {
   if (opts.storage != null) window.localStorage.setItem(STORAGE_KEY, opts.storage);
   else if (!opts.freshSeed) window.localStorage.setItem(STORAGE_KEY, blankSave());
   Object.entries(opts.extraStorage || {}).forEach(([k, v]) => window.localStorage.setItem(k, v));
+  Object.entries(opts.session || {}).forEach(([k, v]) => window.sessionStorage.setItem(k, v));
   if (opts.beforeScripts) opts.beforeScripts(window);
+  // jsdom has no fetch. Serve the app's data/ files, and hand anything else to
+  // the test's own stub (if any) — looked up per call, so a test may replace
+  // window.fetch later and still get data/ served.
+  const testFetch = window.fetch;
+  const appFetch = (url, init) => {
+    const u = new URL(url, window.location.href);
+    if (u.origin === APP_ORIGIN && u.pathname.startsWith('/data/')) return Promise.resolve(serveDataFile(u.pathname, opts.missingData));
+    if (typeof testFetch !== 'function') return Promise.reject(new TypeError('fetch: no stub for ' + u.href));
+    return testFetch(url, init);
+  };
+  window.fetch = appFetch;
 
   for (const src of SCRIPTS) {
     const el = document.createElement('script');
@@ -152,6 +185,7 @@ async function boot(opts = {}) {
   const T = window.__OSR_TEST__;
   if (!T) throw new Error('test seam missing — expected window.__OSR_TEST__ (see js/main.js installTestSeam)');
   await (T.ready || Promise.resolve());
+  if (opts.allowLoadError) return { dom, window, document, T, STORAGE_KEY };
 
   if (!opts.freshSeed && opts.storage == null) T.reset();
 

@@ -32,8 +32,8 @@
     const cn = OSR.compendiumForSystem().length;
     $('#set-comp-count').textContent = cn + ' entr' + (cn === 1 ? 'y' : 'ies') +
       ' in the ' + (OSR.SYSTEM_LABELS[OSR.currentSystem()] || OSR.currentSystem()) + ' Compendium' +
-      (OSR.currentSystem() === 'osr' ? ' (' + OSR.COMPENDIUM_SEED.length + ' in the default seed)' : '') + '.';
-    const total = OSR.SEED_FALLBACK.length;
+      (OSR.currentSystem() === 'osr' ? ' (' + OSR.data.seeds.osr.compendium.length + ' in the default seed)' : '') + '.';
+    const total = OSR.data.pregens.length;
     const missing = OSR.missingPregens();
     $('#set-pregen-count').textContent = (total - missing.length) + ' of ' + total +
       ' example characters (OSR, Unknown Armies, Silent Legions) are in this campaign' +
@@ -71,11 +71,11 @@
       OSR.updateApplyButton();
       OSR.pushNote('Settings', 'Scarlet Heroes damage resolution ' + (e.target.checked ? 'enabled' : 'disabled'));
     });
-    $('#set-reload-monsters').addEventListener('click', async () => {
+    $('#set-reload-monsters').addEventListener('click', () => {
       if (!confirm('Replace the bundled OSR monster library with the defaults? OSR monsters you added by pasting will be lost ' +
         '(Unknown Armies monsters and existing combat entries are unaffected).')) return;
       OSR.state.monstersSeeded = false;
-      await OSR.seedMonsters(); // only ever replaces the 'osr' portion of state.monsters — see js/seed.js
+      OSR.seedMonsters(); // only ever replaces the 'osr' portion of state.monsters — see js/seed.js
       renderSettings();
       OSR.renderMonsterBrowser();
       OSR.renderCombat();
@@ -89,8 +89,8 @@
         ? 'Added ' + added + ' default ' + (added === 1 ? 'entry' : 'entries') + '.'
         : 'Every default entry is already in the Compendium.');
     });
-    $('#set-add-pregens').addEventListener('click', async () => {
-      const added = await OSR.addMissingPregens();
+    $('#set-add-pregens').addEventListener('click', () => {
+      const added = OSR.addMissingPregens();
       renderSettings();
       OSR.renderCombat(); // Combat's "+ Add character…" picker lists characters too
       OSR.pushNote('Settings', 'Example characters — ' + added + ' added');

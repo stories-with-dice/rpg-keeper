@@ -1,9 +1,9 @@
 /* js/core.js — shared constants/DOM helpers, state model + persistence, theme.
  *
  * Creates window.OSR, the namespace every other app file attaches to (see
- * AGENTS.md "Layout" for why: no build step, no ES modules — file:// blocks
- * those — so cross-file calls are OSR.foo(...) / OSR.state.x instead of a
- * shared closure). Load this file first.
+ * AGENTS.md "Layout" for why: no build step, and no ES modules because the
+ * jsdom tests cannot run them — so cross-file calls are OSR.foo(...) /
+ * OSR.state.x instead of a shared closure). Load this file first.
  */
 (function (OSR) {
   'use strict';

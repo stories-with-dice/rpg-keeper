@@ -807,7 +807,7 @@ test('Bestiary: "Fill in fields" with Format = Silent Legions builds an OSR-shap
 
 test('Bestiary: editing a Silent Legions monster opens straight into "Fill in fields" and round-trips its SL fields', () => {
   T.state.settings.system = 'sl';
-  T.state.monsters = [JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY.find(d => d.name === 'Ghoul')))];
+  T.state.monsters = [JSON.parse(JSON.stringify(window.OSR.data.seeds.sl.monsters.find(d => d.name === 'Ghoul')))];
   T.state.monsters[0].system = 'sl';
   const id = T.state.monsters[0].id;
   tab('bestiary');
@@ -830,7 +830,7 @@ test('Bestiary: editing a Silent Legions monster opens straight into "Fill in fi
 });
 
 test('Combat: a Silent Legions monster shows its descending AC, Madness chip, and Skill / Slaughter / Madness rolls', () => {
-  T.addMonsterEntry(JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY.find(d => d.name === 'Vampire'))));
+  T.addMonsterEntry(JSON.parse(JSON.stringify(window.OSR.data.seeds.sl.monsters.find(d => d.name === 'Vampire'))));
   tab('combat');
   const row = $('#tracker-list .cbt-row');
   assert.match(row.textContent, /AC 6\*/);
@@ -1283,7 +1283,7 @@ test('Compendium editor: Enter (incl. in the body) saves; Shift+Enter in the bod
 
 test('Tables tab: lists every seeded table, with a tag filter (≤10 tags) and a name search', () => {
   tab('tables');
-  const total = window.TABLES_LIBRARY.length;
+  const total = window.OSR.data.tables.length;
   assert.ok(total >= 20, 'expected the bundled table library to be loaded');
   assert.equal($$('#tbl-list .tbl-row').length, total);
   assert.match($('#tbl-count').textContent, new RegExp(total + ' / ' + total));
@@ -1302,12 +1302,12 @@ test('Tables tab: unticking a tag hides its tables; right-clicking a tag isolate
   tab('tables');
   const wildernessCb = $('#tbl-tags input[data-tag="Wilderness"]');
   assert.ok(wildernessCb, 'expected a Wilderness tag checkbox');
-  const wildernessCount = window.TABLES_LIBRARY.filter(t => t.tag === 'Wilderness').length;
+  const wildernessCount = window.OSR.data.tables.filter(t => t.tag === 'Wilderness').length;
 
   wildernessCb.checked = false;
   wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
   assert.equal($$('#tbl-list .tbl-row[data-id="arctic"]').length, 0);
-  assert.equal($$('#tbl-list .tbl-row').length, window.TABLES_LIBRARY.length - wildernessCount);
+  assert.equal($$('#tbl-list .tbl-row').length, window.OSR.data.tables.length - wildernessCount);
 
   wildernessCb.checked = true;
   wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
@@ -1564,7 +1564,7 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   );
   T.state.monsters.push(
     { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
-    Object.assign(JSON.parse(JSON.stringify(window.SL_MONSTER_LIBRARY.find(d => d.name === 'Zombie'))), { system: 'sl' })
+    Object.assign(JSON.parse(JSON.stringify(window.OSR.data.seeds.sl.monsters.find(d => d.name === 'Zombie'))), { system: 'sl' })
   );
   T.renderAll();
 

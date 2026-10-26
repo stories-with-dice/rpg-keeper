@@ -6,28 +6,22 @@ User-facing docs are in [README.md](README.md).
 ## What this is
 
 A **static single-page app** — `index.html` + a few plain `.js`/`.css` files. **No build step, no
-framework, no bundler, no package to install.** You open `index.html` and it runs, including from
-`file://`. It is deployed as-is to GitHub Pages (`.github/workflows/static.yml` uploads the whole
-repo on push to `main`).
+framework, no bundler, no package to install.** It runs over http(s) only: GitHub Pages
+(`.github/workflows/static.yml` uploads the whole repo on push to `main`), or any static server for
+local work (`python3 -m http.server`, `npx serve`). Opening `index.html` from `file://` is **not
+supported**: the app `fetch()`es its data files at boot (see "Seeding" below), and `file://` blocks
+that. Do not add code paths or inline copies to make `file://` work.
 
 Keep it that way. Do not introduce a build tool, a framework, TypeScript, JSX, npm runtime
 dependencies, or CDN `<script>`/`<link>` tags. Everything third-party is **vendored** (`js/marked.min.js`,
-`vendor/fontawesome/`) so the app works fully offline.
+`vendor/fontawesome/`), so the app needs no host other than its own.
 
-**One opt-in exception:** `.github/workflows/release.yml` runs `npm test` then
-`scripts/bundle-standalone.js` on every push to `main`, and publishes the result as a GitHub
-Release — a single HTML file with every `<script src>`/`<link rel="stylesheet">` and the favicon
-inlined (CSS `url(...)` assets, e.g. the Font Awesome webfonts, go in too, as base64 data URIs), so
-the download needs no other files at all. This doesn't change normal usage (opening the repo's own
-`index.html` still works exactly the same) — it's a separate, purely additive convenience artifact.
-Versioning is a plain incrementing counter (`v1`, `v2`, …, no semver), computed each run from the
-highest existing release tag via `gh release list`. Run it locally with `npm run bundle-standalone`
-(writes `dist/index.html`, gitignored).
+`.github/workflows/test.yml` runs `npm test` on every push and pull request.
 
-**A second opt-in exception: Dropbox sync** (`js/dropbox.js`, see "Dropbox sync" below).
+**One opt-in exception: Dropbox sync** (`js/dropbox.js`, see "Dropbox sync" below).
 When the user turns it on, the app calls the Dropbox HTTP API (`api.dropboxapi.com`,
 `content.dropboxapi.com`) with `fetch`. It loads no third-party script. Nothing goes to the network
-until the user clicks **Connect**, and the app still works offline without it. Don't add other
+until the user clicks **Connect**, and the app works without it. Don't add other
 runtime network dependencies on the back of this one.
 
 ## Layout
@@ -39,6 +33,9 @@ css/app.css             all styles (one file, dark only; palette + fonts are CSS
                        style themes chosen in Settings, applied as data-theme on <html> by applyTheme())
 js/core.js              window.OSR = {} (created here) + constants, $/$$/escapeHtml/uid, the state
                        model + persistence (STATE_DEFAULTS, load/save/ensureStateShape), applyTheme
+js/data.js              OSR.loadData(): fetch()es every data/ file init() needs (monsters, spells,
+                       tables, the seed-<system>.json files, the pregen sheets) into OSR.data — see
+                       "Seeding" below
 js/dice.js              dice engine (evalFormula, rollTerm/rollDie) + $Name substitution + roll/session-log
 js/annotate.js          sheet-text -> clickable dice/$refs/[Compendium] spans (annotate, findMatches,
                        scanVariables, charVars) — see "Character-sheet variables" below
@@ -63,28 +60,20 @@ js/ua-statblock.js      pure parser for a Unknown Armies 3rd Edition character's
                        computed-ability formula, the Bestiary GMC statblock (parseUAMonster), and
                        UA Combat's pure rules (wound bands, initiative, damage by weapon) — no
                        DOM, UMD-ish like js/monsters.js
-js/brp-monsters-data.js hand-authored window.BRP_MONSTER_LIBRARY = [...73 BRP creatures/NPCs...] —
-                       Basic Roleplaying: Universal Game Engine, Chapter 11: Creatures
-js/brp-compendium-seed.js hand-authored window.BRP_COMPENDIUM_SEED — the Powers (Magic/Mutation/
-                       Psychic Ability/Sorcery/Superpower summaries) and Equipment (weapons/armor/
-                       shields/gear tables) from Chapters 4 and 8
 js/brp-seed.js          seedBrpMonsters()/seedBrpCompendium() — like js/seed.js's seedMonsters() and
-                       js/compendium.js's seedCompendium(), but for the BRP system (see "Basic
-                       Roleplaying (BRP)" below); called from js/main.js's init()
-js/sl-monsters-data.js  hand-authored window.SL_MONSTER_LIBRARY = [...58 Silent Legions defs...] —
-                       the 11 creature templates × Weak/Average/Strong plus the named Nefarious
-                       Entities, in the OSR def shape + SL fields (see "Silent Legions (SL)" below)
-js/sl-compendium-seed.js hand-authored window.SL_COMPENDIUM_SEED — Gray Path spells, Occult
-                       Disciplines, a few rules notes, and the weapon/armor/gear/vehicle tables
+                       js/compendium.js's seedCompendium(), but for the BRP system, from
+                       OSR.data.seeds.brp (see "Basic Roleplaying (BRP)" below); called from
+                       js/main.js's init()
 js/sl-seed.js           seedSlMonsters()/seedSlCompendium() — same mechanism as js/brp-seed.js, for
-                       system 'sl'; called from js/main.js's init()
+                       system 'sl', from OSR.data.seeds.sl; called from js/main.js's init()
 js/compendium.js        Compendium entry CRUD, category/source/system filters, the default seed, compResolve
 js/compendium-popups.js hover popups on [bracketed] refs, and "[" / "$" autocomplete
-js/tables.js            the Tables tab: tag filter + name search over window.TABLES_LIBRARY, expand a
+js/tables.js            the Tables tab: tag filter + name search over OSR.data.tables, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
-js/dropbox.js           optional Dropbox sync of the whole state (PKCE sign-in + Dropbox HTTP API via
-                       fetch); its Settings row, header status button, and conflict dialog — see
+js/dropbox.js           optional Dropbox sync of the whole state (PKCE sign-in with a redirect back to
+                       the app + Dropbox HTTP API via fetch); its Settings row, header status button,
+                       and conflict dialog — see
                        "Dropbox sync" below
 js/io.js                the "paste sheet as text" modal, whole-state export/import, and
                        content-pack import (see "State model")
@@ -94,44 +83,49 @@ js/seed.js              first-run seeding of example characters + the monster li
 js/main.js              composition root: wire() calls every subsystem's wireX(), init(), boot(),
                        and (test builds only) the test seam — loads LAST
 js/monsters.js          pure stat-block parser (no DOM, no storage); UMD-ish
-js/monsters-data.js     GENERATED: window.MONSTER_LIBRARY = [...245 monsters...]
-js/spells-data.js       GENERATED: window.SPELLS_LIBRARY = [...85 spells...] (for file:// — fetch is blocked there)
-js/tables-data.js       GENERATED: window.TABLES_LIBRARY = [...22 random tables...]
-js/compendium-seed.js   hand-maintained gear + window.COMPENDIUM_SEED / _VERSION; folds in SPELLS_LIBRARY
 js/marked.min.js        vendored Markdown parser
 js/fuse.min.js          vendored Fuse.js 7 (UMD → window.Fuse) — fuzzy search for the Compendium
 vendor/easymde/         vendored EasyMDE 2.18 (js bundles CodeMirror+marked; css) — Compendium editor
-data/monsters.json     GENERATED: same content as monsters-data.js (for http fetch / inspection)
+data/monsters.json     GENERATED: the OSR bestiary (scripts/convert-bestiary.js)
 data/bestiary_data.json  source data for the converter (Shadowdark core bestiary)
 data/spell_data.json   source data for the spell converter (Shadowdark core spells)
-data/spells.json       GENERATED: same content as spells-data.js (for http fetch / inspection)
+data/spells.json       GENERATED: the Shadowdark core spells, folded into the OSR Compendium seed by
+                       js/data.js
 data/tables/*.csv      source data for the random tables (one file per table, "range,Details" rows)
-data/tables.json       GENERATED: same content as tables-data.js (for http fetch / inspection)
+data/tables.json       GENERATED: the random tables (scripts/convert-tables.js)
+data/seed-osr.json     hand-maintained Shadowdark core gear: { system, version, compendium }
+data/seed-brp.json     hand-maintained BRP seed: { system, version, compendium, monsters } — Chapter 11
+                       creatures/NPCs and the Powers/Equipment of Chapters 4 and 8
+data/seed-sl.json      hand-maintained Silent Legions seed: { system, version, compendium, monsters } —
+                       the creature templates and Nefarious Entities, Gray Path spells, Disciplines,
+                       rules notes, and the weapon/armor/gear/vehicle tables
 data/*.txt             example character sheets (seeded on first run)
-scripts/convert-bestiary.js   CLI: bestiary_data.json -> monsters.json + monsters-data.js
-scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> data/spells.json +
-                       js/spells-data.js, { name, category:"Spells", body } entries compendium-seed.js reads
-scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json + js/tables-data.js (see
-                       "Tables tab" below for the table shape and the per-file tag mapping)
-scripts/bundle-standalone.js  CLI: index.html + every js/css/vendor/image asset it references ->
-                       one self-contained HTML file (dist/index.html) — see "What this is" above
+scripts/convert-bestiary.js   CLI: bestiary_data.json -> data/monsters.json
+scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> data/spells.json,
+                       { name, category:"Spells", body } entries js/data.js folds into the OSR seed
+scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json (see "Tables tab" below
+                       for the table shape and the per-file tag mapping)
 test/monsters.test.js  node:test suite for the parser + converter
 test/tables.test.js    node:test suite for scripts/convert-tables.js (CSV parsing, range parsing,
-                       every table's coverage of its die, 1..N) + the data/tables.json <-> tables-data.js
-                       sync check
+                       every table's coverage of its die, 1..N)
 test/logic.test.js     node:test unit tests for the app's internals (dice engine, Scarlet Heroes,
                        state migration, annotate, compendium resolve, combat, …)
 test/ui.test.js        node:test integration tests that drive the real DOM (index.html + the app's
                        js/*.js files) through the app's delegated listeners and assert on render + persistence
-test/dropbox.test.js   node:test suite for js/dropbox.js, against a fake window.open and a fake
-                       Dropbox API + token endpoint (window.fetch) — nothing talks to Dropbox
-test/helpers/boot.js   boots the app inside jsdom for the two suites above (EasyMDE omitted → the
-                       Journal / Compendium editors fall back to plain <textarea>s, as designed)
+test/data.test.js      node:test suite for js/data.js: the data/ files' shape, the seeds built from
+                       them, first-run seeding, and the load-error state
+test/dropbox.test.js   node:test suite for js/dropbox.js, against a fake window.open, a fake
+                       redirect (OSR.dropboxRedirect), and a fake Dropbox API + token endpoint
+                       (window.fetch) — nothing talks to Dropbox
+test/helpers/boot.js   boots the app inside jsdom for the suites above (EasyMDE omitted → the
+                       Journal / Compendium editors fall back to plain <textarea>s, as designed).
+                       jsdom has no fetch: boot() serves the app's data/ files from disk and hands
+                       every other request to the test's own window.fetch stub
 vendor/fontawesome/    icons, referenced by index.html via relative url()
 ```
 
-**No build step means no ES modules either** (`<script type="module">` is blocked by CORS on
-`file://`, same as `fetch()` — see "Seeding" below). So the app's own code is split across the
+**No ES modules either.** jsdom, which runs `test/ui.test.js` and the other DOM suites, does not
+run `<script type="module">`. So the app's own code is split across the
 `js/*.js` files above the vendored libraries in that list, each a small IIFE that attaches its
 pieces to one shared namespace object, `window.OSR` (created by `js/core.js`, which must load
 first — every other file just does `(function (OSR) {...})(window.OSR = window.OSR || {})`, so load
@@ -163,10 +157,10 @@ one to isolate it (unticks every other checkbox in that row, `#comp-cats` or `#c
 entry editor's `Enter` saves (same as clicking Save) and `Shift+Enter` inserts a newline in the body,
 via `onSubmit` on the EasyMDE `compMdeInstance()` plus a `#comp-modal` keydown fallback for the
 plain-textarea case; `Escape` cancels (the app-wide Escape handler already covers every modal). The
-default seed lives in its own file,
-`js/compendium-seed.js` (`window.COMPENDIUM_SEED` / `COMPENDIUM_SEED_VERSION`); `seedCompendium()`
-adds missing-by-name entries and stamps `state.compendiumSeedVersion`, so raising the version in the
-seed file re-seeds on next load. Settings → **Reseed defaults** calls `seedCompendium()` directly;
+default seed is `OSR.data.seeds.osr` (`js/data.js`): the gear in `data/seed-osr.json` plus the spells
+in `data/spells.json`. `seedCompendium()` adds missing-by-name entries and stamps
+`state.compendiumSeedVersion` with the seed's `version`, so raising `version` in `data/seed-osr.json`
+re-seeds on next load. Settings → **Reseed defaults** calls `seedCompendium()` directly;
 **Delete all** empties `state.compendium` (version left as-is, so it does not auto-return).
 `annotate()` also wraps bare `[bracketed]` text in `<span class="comp-ref">` (skipping short
 all-caps system tags). Hovering one calls `openCompPop(name, ref)`, which creates a **fresh
@@ -423,7 +417,7 @@ its own monster schema and Combat display (see below) — not visibility-only.
     keyed off STR+SIZ on a banded table (2–12 → −1D6 … 153–168 → +9D6, +1D6 per extra +16) — see
     p.20 of the rulebook if a new monster/NPC needs one computed from scratch.
   - Power Points = POW; Move (MOV) = 10 for an average human.
-- **The monster/NPC schema** (`js/brp-monsters-data.js`'s `window.BRP_MONSTER_LIBRARY`, 73 entries —
+- **The monster/NPC schema** (`data/seed-brp.json`'s `monsters`, 73 entries —
   Natural Animals, Fantasy Creatures, Summoned Creatures, Science Fiction Creatures, and the Nonplayer
   Character Digest, all from Chapter 11) extends the OSR `def` shape from `js/monsters.js` with BRP-only
   fields rather than replacing it, so generic code that reads `def.hp`/`def.move`/`def.abilities`
@@ -439,7 +433,7 @@ its own monster schema and Combat display (see below) — not visibility-only.
 - **Seeding** (`js/brp-seed.js`) mirrors `js/seed.js`/`js/compendium.js` but is a separate, always-on
   mechanism rather than reusing `seedMonsters()`/`seedCompendium()` — those two hardcode
   `source:'Shadowdark Core'`/`system:'osr'`, so they can't seed BRP's own per-entry `source`
-  (`js/brp-compendium-seed.js`'s `window.BRP_COMPENDIUM_SEED` uses `source` to mean *power type*
+  (`data/seed-brp.json`'s `compendium` uses `source` to mean *power type*
   (`Magic`/`Mutation`/`Psychic Ability`/`Sorcery`/`Superpower`) or *equipment type*
   (`Weapon (Primitive|Historic|Modern|Advanced)`/`Armor`/`Shield`/`Medical Gear`/`Other Gear`) — it
   doubles as the Compendium's per-system Source filter, same mechanism the OSR seed's `source` powers,
@@ -484,7 +478,7 @@ its own monster schema and Combat display (see below) — not visibility-only.
   BRP def's `attacksText` is shown: the Combat tracker row's attack chip, `renderCombatantDetail()`'s
   Attacks section (both `js/combat.js`), and the "Add monster" library hover preview
   (`monsterCardHtml()`, `js/monster-modals.js`) — **not** the Compendium's own generic weapon entries
-  (`js/brp-compendium-seed.js`), which keep `"+dm"` literal since a weapon's damage bonus depends on
+  (`data/seed-brp.json`), which keep `"+dm"` literal since a weapon's damage bonus depends on
   whoever wields it, not a fixed creature. `brpDbDiceTerm()` pulls the *first* signed dice term out of
   `damageBonus` (handling the sourcebook's Unicode minus sign, `−`, alongside ASCII `-`) — for the
   handful of creatures with a form-dependent compound value (Centaur, Werewolf, Giant — e.g.
@@ -515,7 +509,8 @@ and rule body is a short paraphrase — never paste the book's prose in.
   work unchanged. `source: 'sl'` adds four fields: `skill` (flat bonus to 2d6 checks), `madness` (the
   book's string — `'None'`, `'1'`, `'1d6'`, or `'None / 1d6'` for disguised / true form),
   `slaughterDie` (`'1d6'` default, `'None'` for attacks that never Slaughter), and `mundaneImmune`
-  (the book's AC asterisk; `js/sl-monsters-data.js` also prepends an `AC*` ability explaining it).
+  (the book's AC asterisk; each such def in `data/seed-sl.json` also starts with an `AC*` ability
+  explaining it).
   `ac.asc` stays `null` — `acDisplay()` shows the descending number (plus `*`) for SL, and the shared
   `monsterMetaLine()` (`js/monster-modals.js`, used by both library lists) does the same.
 - **Saves**: every SL monster saves on one target, `saveTargets: { Save: N }` / `savesText: 'N+'`.
@@ -524,8 +519,9 @@ and rule body is a short paraphrase — never paste the book's prose in.
   formula.
 - **HD/HP**: "1d4 hp" is stored as HD `'½'` (hp 2) and "1 hp" as `'0'` (hp 1) so `MonsterParse.hdNum`
   and Populate by HD treat them like other sub-1-HD monsters; otherwise `hp` is ⌊4.5 × HD⌋.
-  `js/sl-monsters-data.js` builds all of this (and `attacksText`/`raw`) from compact specs in its
-  final `forEach` — edit the specs, not the derived fields.
+  `data/seed-sl.json` stores every field expanded (it used to be built from compact specs in a
+  `.js` file). When you edit a def, keep `hdNum`, `hp`, `saveTargets`/`savesText`, `attacksText`, and
+  `raw` consistent with each other; the "SL data" logic test checks the main ones.
 - **Combat** (`js/combat.js`): `slHitNote()` appends "hits AC N or higher" (N = 20 − total, since SL
   hits on 1d20 + bonus + target AC ≥ 20; natural 1/20 override) to an SL monster's to-hit log line;
   `slDetailHtml()` adds **Skill** (`rollEntrySkill`, 2d6 + skill), **Slaughter** (`rollEntrySlaughter`,
@@ -543,7 +539,7 @@ and rule body is a short paraphrase — never paste the book's prose in.
   fence, holds the current value. It's created from `createCharacter`, `saveEdit`/`renameChar` (via
   `renameMadnessTracker`, which also covers a sheet that just gained the fence), and
   `ensureConsumablesShape` (old saves); `deleteChar` removes it.
-- **Compendium** (`js/sl-compendium-seed.js`): Spells (`source` `'Spell Level 1'`…`'5'`), Disciplines
+- **Compendium** (`data/seed-sl.json`'s `compendium`): Spells (`source` `'Spell Level 1'`…`'5'`), Disciplines
   (`'Powers'`/`'Discipline'`, one bullet per level), Rules (`'Sorcery'`/`'Combat'`/`'Vehicle'`), and
   Items (`'Weapon (Melee|Ranged|Firearm|Heavy)'`/`'Armor'`/`'Gear'`/`'Vehicle'`). Bodies link each
   other with `[Name]` refs; a logic test asserts every ref resolves to an SL entry.
@@ -570,25 +566,23 @@ re-renders. `charViewTarget(node)` maps a selection node to its character/column
 
 ```
 # run the app
-open index.html            # or serve the folder with any static server
+python3 -m http.server     # then open http://localhost:8000/ (file:// is not supported)
 
 # tests (Node's built-in runner; no deps)
 npm test                   # === node --test
 
 # rebuild the monster library after editing data/bestiary_data.json or the converter
-npm run convert-bestiary   # writes BOTH data/monsters.json and js/monsters-data.js
+npm run convert-bestiary   # writes data/monsters.json
 
 # rebuild the spell seed after editing data/spell_data.json or the converter
-npm run convert-spells     # writes BOTH data/spells.json and js/spells-data.js
+npm run convert-spells     # writes data/spells.json
 
 # rebuild the table library after adding/editing a data/tables/*.csv
-npm run convert-tables     # writes BOTH data/tables.json and js/tables-data.js
+npm run convert-tables     # writes data/tables.json
 ```
 
-`data/monsters.json` and `js/monsters-data.js` **must stay in sync** — a test asserts it. Always
-run the converter and commit both, never hand-edit either. Same relationship between
-`data/spells.json` and `js/spells-data.js` (no test asserts it yet, but treat it the same way), and
-between `data/tables.json` and `js/tables-data.js` (a test asserts this one too, in `test/tables.test.js`).
+Never hand-edit the generated files (`data/monsters.json`, `data/spells.json`, `data/tables.json`):
+edit the source data or the converter, run it, and commit the result.
 
 ## State model
 
@@ -834,7 +828,7 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
 ## The Tables tab (`js/tables.js`)
 
 Read-only, filterable browser over a static random-table library — no `state` field, no CRUD, unlike
-the Bestiary/Compendium above. `window.TABLES_LIBRARY` (`js/tables-data.js`, GENERATED from
+the Bestiary/Compendium above. `OSR.data.tables` (`data/tables.json`, GENERATED from
 `data/tables/*.csv` by `scripts/convert-tables.js` — see "The converter" pattern above) is read
 directly by `library()` in `js/tables.js`; there's nothing to seed into `state` and nothing to
 export/import. Each table def is `{id, name, tag, formula, entries:[{range, lo, hi, text}]}` — `id`
@@ -869,60 +863,76 @@ collapses a row the user left open. The Roll button only exists inside the expan
 `<summary>`), which sidesteps the alternative problem of a click on an in-summary button also
 toggling the `<details>` — no `stopPropagation()` needed.
 
-## Seeding & the `file://` constraint
+## Seeding
 
-`fetch()` is blocked on `file://`, so nothing load-bearing may depend on it — this is also *why* the
-app's own code can't be split into ES modules (see "Layout"), just plain `<script>`-per-file:
+`init()` (`js/main.js`) first awaits `OSR.loadData()` (`js/data.js`). It `fetch()`es every data file
+in parallel and fills `OSR.data`:
 
-- Monsters: `seedMonsters()` (`js/seed.js`) tries `window.MONSTER_LIBRARY` (from
-  `js/monsters-data.js`, a `<script>` tag — works on `file://`), then `fetch('data/monsters.json')`
-  (skipped on `file://`), then a tiny inline `MONSTER_SEED_TEXT` parsed on the fly.
-- Spells: `loadSpells()` in `js/compendium-seed.js` tries `window.SPELLS_LIBRARY` (from
-  `js/spells-data.js`, a `<script>` tag — works on `file://`), then `fetch('data/spells.json')`
-  (skipped on `file://`); either way its entries are folded into `COMPENDIUM_SEED` before
-  `seedCompendium()` (`js/compendium.js`) reads it.
-- Characters: `seed()` (`js/seed.js`) tries `fetch(SEED_FILES[i])` (skipped on `file://`), then the
-  inline `SEED_FALLBACK[i]` (same order). `SEED_WWN` / `SEED_SD` are the OSR examples; `SEED_KJ` /
-  `SEED_LA` (Kevin Johnson, Lucinda Adams, both from the UA3e "Karmic Ties and Fifth Wheels" starter
-  kit) are the Unknown Armies examples, each with a ```ua fence (see "Unknown Armies 3rd Edition"
-  above). Their starter-kit identities are swapped for the nearest book identities (Veteran, Caring,
-  Autodidact; Occultist, Troll), with each book identity's substitution and features and the kit's
-  ratings, so a "Book references" list after the fence can link them — the same layout as a sheet
-  from the UA3 data tools' generator. Those entries come from the private content pack (see "State
-  model"), so the logic test checks the link names against a fixed list (`UA_PREGEN_LINKS`);
-  `SEED_SL_DEE` / `SEED_SL_MIRIAM` / `SEED_SL_VIVIAN` / `SEED_SL_RAY` are the Silent Legions
-  pregens, one per class (Investigator, Scholar, Socialite, Tough), built by the book's level-1 rules
-  and linked into one Boston party by their Connections. Each has a ```sl fence, so it shows only
-  under System = sl, and Miriam's Affluent wealth starts her Madness tracker at 10. The UA and SL
-  inline constants **must** stay byte-for-byte identical to their `data/*-ua3e.txt` / `data/*-sl.txt`
-  files — a logic test ("seed fallbacks: …") asserts it, so edit the file, then regenerate the
-  constant (escape `` ` ``, `\`, and `${`). The two OSR constants have drifted from their files
-  (Garrick's inline copy is an older sheet; Gulzund's lacks the trailing newline) and aren't covered.
+- `OSR.data.monsters` ← `data/monsters.json` (the OSR bestiary).
+- `OSR.data.tables` ← `data/tables.json`.
+- `OSR.data.seeds.osr` ← `data/seed-osr.json` (gear) + every spell in `data/spells.json` whose name
+  the gear does not use, + `data/monsters.json`.
+- `OSR.data.seeds.brp` / `.sl` ← `data/seed-brp.json` / `data/seed-sl.json`.
+- `OSR.data.pregens` ← the sheets in `OSR.PREGEN_FILES` (`data/*.txt`), as `[{ file, text }]`.
+
+If any file fails, `loadData()` rejects with every failed file's name, and `showLoadError()` shows
+`#load-error` and hides `.main`. `init()` then stops: it never calls `load()` or `save()`, so the
+saved campaign is not touched. After a successful load, everything that seeds reads `OSR.data`
+synchronously:
+
+- Monsters: `seedMonsters()` (`js/seed.js`) deep-clones `OSR.data.monsters`.
+- Spells and gear: `seedCompendium()` (`js/compendium.js`) reads `OSR.data.seeds.osr`.
+- BRP and SL: `seedBrpMonsters()`/`seedBrpCompendium()` and `seedSlMonsters()`/`seedSlCompendium()`
+  read `OSR.data.seeds.brp` / `.sl`.
+- Characters: `seed()` (`js/seed.js`) creates one character for each `OSR.data.pregens` sheet.
+  Garrick and Gulzund are the OSR examples. Kevin Johnson and Lucinda Adams (both from the UA3e
+  "Karmic Ties and Fifth Wheels" starter kit) are the Unknown Armies examples, each with a ```ua fence
+  (see "Unknown Armies 3rd Edition" above). Their starter-kit identities are swapped for the nearest
+  book identities (Veteran, Caring, Autodidact; Occultist, Troll), with each book identity's
+  substitution and features and the kit's ratings, so a "Book references" list after the fence can
+  link them — the same layout as a sheet from the UA3 data tools' generator. Those entries come from
+  the private content pack (see "State model"), so the logic test checks the link names against a
+  fixed list (`UA_PREGEN_LINKS`). Dee Okafor, Miriam Castell, Vivian Sato, and Ray Kowalczyk are the
+  Silent Legions pregens, one per class (Investigator, Scholar, Socialite, Tough), built by the book's
+  level-1 rules and linked into one Boston party by their Connections. Each has a ```sl fence, so it
+  shows only under System = sl, and Miriam's Affluent wealth starts her Madness tracker at 10.
   `seed()` only runs on a fresh install (no characters yet). For existing saves, Settings → **Add
   missing pregens** (`#set-add-pregens`) calls `addMissingPregens()`: it adds every example whose
   name (`detectNameSystem`, case-insensitive) no character has yet, across all systems, and restores
   `activeId`/`activeIdB` afterwards so the user's selection doesn't jump to a new pregen. A renamed
-  pregen counts as missing and is added again. `missingPregens()` (names read from `SEED_FALLBACK`,
-  so it needs no fetch) drives the Settings hint and disables the button when nothing is missing;
-  both `seed()` and `addMissingPregens()` read the sheets through `loadSeedSheets()`. The Settings
+  pregen counts as missing and is added again. `missingPregens()` drives the Settings hint and
+  disables the button when nothing is missing. `seed()`, `missingPregens()`, and
+  `addMissingPregens()` all read the sheets through `loadSeedSheets()` (= `OSR.data.pregens` texts). The Settings
   tab re-renders when opened (`js/main.js`'s tab handler), so its counts stay current.
-- `window.MONSTER_LIBRARY` is a shared constant — `seedMonsters()` **deep-clones** it before putting
+- `OSR.data` is shared, read-only data — `seedMonsters()` **deep-clones** it before putting
   it in `state`. Any code that copies a seed/def into mutable state must clone.
 
 ## Dropbox sync (`js/dropbox.js`)
 
 Optional, off by default. It stores the whole `OSR.state` as one JSON file in the user's Dropbox and
 keeps it in sync. It replaced a Google Drive sync: Google gives a static app only a one-hour token
-with no refresh, and no sign-in from `file://`. There is no backend, so:
+with no refresh. There is no backend, so:
 
-- **Sign-in is OAuth 2 with PKCE and no redirect URI.** `connect()` opens a blank tab inside the
-  click (so pop-up blockers allow it), makes a verifier with `pkcePair()` (S256 with
-  `crypto.subtle`, else `plain`), and sends the tab to `/oauth2/authorize` with
-  `token_access_type=offline`. Dropbox shows a code. The user pastes it into `#dbx-code`, and
-  `finishConnect()` trades it at `/oauth2/token` for a 4-hour access token and a refresh token that
-  does not expire. `accessToken()` refreshes by itself (`grant_type=refresh_token`, app key only, no
-  secret; concurrent callers share one refresh). Because nothing redirects back, it works from
-  `file://` and from the single-file release. `#dbx-open` links the same URL when the tab was blocked.
+- **Sign-in is OAuth 2 with PKCE and a redirect back to the app.** `connect()` makes a verifier with
+  `pkcePair()` (S256 with `crypto.subtle`, else `plain`) and a random `state`, stores
+  `{ verifier, appKey, state, redirectUri }` in `sessionStorage['osr_dropbox_pending']` (this tab
+  only), and sends the tab to `/oauth2/authorize` with `token_access_type=offline` and
+  `redirect_uri` = `redirectUri()` (the app's URL without query or hash), through
+  `OSR.dropboxRedirect(url)` (tests replace it). Dropbox sends the browser back with `?code=&state=`
+  (or `?error=`). On that boot, `initDropbox()` calls `finishRedirect()`: it removes the reply from
+  the address bar (`history.replaceState`), reads and deletes the pending sign-in, ignores a reply
+  with no pending sign-in (a stale or copied link), refuses a wrong `state`, and calls
+  `finishConnect(code, pending)`. That trades the code at `/oauth2/token` (with the same
+  `redirect_uri`) for a 4-hour access token and a refresh token that does not expire.
+  `accessToken()` refreshes by itself (`grant_type=refresh_token`, app key only, no secret;
+  concurrent callers share one refresh). Each address where the app runs (the GitHub Pages URL,
+  `http://localhost:<port>/`) must be in the Dropbox app's **Redirect URIs**; Setup shows the current
+  one in `#dbx-redirect-uri`.
+- **Fallback: "Connect with a code"** (`#dbx-connect-code`, `connectWithCode()`) is the old flow, for
+  a copy of the app at an address that is not registered. It opens a blank tab inside the click (so
+  pop-up blockers allow it) and sends it to `/oauth2/authorize` with no `redirect_uri`. Dropbox shows
+  a code, the user pastes it into `#dbx-code`, and `finishConnect()` trades it. `#dbx-open` links the
+  same URL when the tab was blocked.
 - **The app is a Dropbox "App folder" app** with `files.content.read` and `files.content.write`. It
   sees only `Apps/<app name>/`. The file is `FILE_PATH` (`/Character Keeper campaign.json`).
   `findRemote()` first tries the file id it synced with, then the path, so a rename or move inside
@@ -936,7 +946,8 @@ with no refresh, and no sign-in from `file://`. There is no backend, so:
   matches the metadata. `files/upload` uses `mode: add` to create and `mode: update` with the rev
   to replace: Dropbox refuses (409 `path/conflict`) if another device wrote in between, and the
   next pass then sees the change. `Dropbox-API-Arg` is a header, so `headerJson()` escapes non-ASCII.
-- **Per-device data stays out of `state`**: `localStorage['osr_dropbox_v1']` (`enabled`, `appKey`,
+- **Per-device data stays out of `state`**: `sessionStorage['osr_dropbox_pending']` (above),
+  `localStorage['osr_dropbox_v1']` (`enabled`, `appKey`,
   `fileId`, `remoteHash`, `syncedHash`, `lastSync`) and `localStorage['osr_dropbox_token']`
   (`token`, `expiresAt`, `refresh`, `appKey`). So Export, Import, and the Dropbox file never carry a
   token or another device's file id. `initDropbox()` also removes the old `osr_gdrive_*` keys.
@@ -967,7 +978,9 @@ with no refresh, and no sign-in from `file://`. There is no backend, so:
   (Escape too). The header button and the Settings row's **Resolve** reopen it. **Disconnect**
   revokes the token (best effort) and forgets it.
 - **Tests** (`test/dropbox.test.js`) boot a fresh app per test, because the sync keys are
-  per-device `localStorage`. `fakeOpen` records the consent URL. `fakeDropbox` implements the token
+  per-device `localStorage`. `fakeOpen` records the consent URL of the code flow. The redirect tests
+  replace `T.dropboxRedirect`, then boot a second app at the reply URL with the first tab's
+  `sessionStorage` (boot's `url` and `session` options). `fakeDropbox` implements the token
   endpoint and the API calls above in memory, with revs and real `content_hash` values. jsdom has
   no `crypto.subtle`, so the flow runs with `plain`; `pkcePair` is tested with Node's S256 too.
   `T.dropboxFlush()` runs a debounced upload now. The boot helper's `extraStorage`/`beforeScripts`
@@ -986,7 +999,8 @@ with no refresh, and no sign-in from `file://`. There is no backend, so:
 7. New app logic or UI behaviour → add coverage in `test/logic.test.js` / `test/ui.test.js`. No
    separate test-seam export to update — `window.__OSR_TEST__` is `window.OSR` itself (see
    "Layout"), so a new function is visible to tests the moment it's attached to `OSR`.
-8. `npm test` must stay green. Manually sanity-check from `file://` (not just a served copy).
+8. `npm test` must stay green. Sanity-check by hand in a browser, served over http (for example
+   `python3 -m http.server`).
 
 ## Commit attribution
 

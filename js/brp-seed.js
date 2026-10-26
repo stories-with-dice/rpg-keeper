@@ -1,5 +1,6 @@
 /* js/brp-seed.js — first-run seeding of the BRP Compendium (Powers +
- * Equipment, js/brp-compendium-seed.js) and Bestiary (js/brp-monsters-data.js).
+ * Equipment) and Bestiary, both from data/seed-brp.json (OSR.data.seeds.brp,
+ * loaded by js/data.js).
  * Mirrors js/seed.js's seedMonsters()/js/compendium.js's seedCompendium(), but
  * unlike the OSR-only seedCompendium() (which hardcodes source/system to
  * "Shadowdark Core"/'osr'), these use each entry's own `category`/`source`
@@ -11,8 +12,7 @@
   // Reseeding only ever replaces the 'brp'-tagged slice of state.monsters —
   // other systems' monsters are preserved (same pattern as seedMonsters()).
   function seedBrpMonsters() {
-    const defs = (typeof window !== 'undefined' && Array.isArray(window.BRP_MONSTER_LIBRARY))
-      ? JSON.parse(JSON.stringify(window.BRP_MONSTER_LIBRARY)) : [];
+    const defs = JSON.parse(JSON.stringify(OSR.data.seeds.brp.monsters));
     defs.forEach(d => { if (!d.id) d.id = OSR.uid(); d.system = 'brp'; });
     OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'osr') !== 'brp').concat(defs);
     OSR.state.brpMonstersSeeded = true;
@@ -27,8 +27,7 @@
   // to compendiumForSystem() and would never see the OSR one anyway while
   // System = brp). Returns the count added.
   function seedBrpCompendium() {
-    const SEED = (typeof window !== 'undefined' && Array.isArray(window.BRP_COMPENDIUM_SEED))
-      ? window.BRP_COMPENDIUM_SEED : [];
+    const SEED = OSR.data.seeds.brp.compendium;
     const have = new Set(OSR.state.compendium.filter(e => e.system === 'brp').map(e => (e.name || '').toLowerCase()));
     let added = 0;
     SEED.forEach(e => {

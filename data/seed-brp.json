@@ -1,0 +1,3936 @@
+{
+  "system": "brp",
+  "version": 1,
+  "compendium": [
+    {
+      "name": "Blast",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level · **Range** 100m\n\nRanged attack: 1D6 points of magical damage per level. Non-magical armor absorbs the damage as normal, and it can be dodged or parried with a shield (which takes the damage). Countermagic can stop it; Protection and Resistance do not work against it."
+    },
+    {
+      "name": "Change",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level · **Range** 30m · **Duration** 15 minutes\n\nTransforms a willing target (or one whose POW is overcome in a resistance roll) into another creature/object of the same relative type (animal/vegetable/mineral). Each level affects 3 SIZ; characteristics remain unchanged, only outward form/abilities change."
+    },
+    {
+      "name": "Conjure (type) Elemental",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level per point of elemental POW · **Range** 12m · **Duration** 10 combat rounds\n\nSummons or dismisses one of the four elemental types (Air, Earth, Fire, Water). The elemental must be directed by the magician’s full attention for the duration."
+    },
+    {
+      "name": "Control",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level · **Range** 100m · **Duration** 10 combat rounds\n\nControls the thoughts/actions of one intelligent being per level (POW vs. POW resistance roll; cannot target unintelligent animals). The magician must concentrate, or the target stands idle."
+    },
+    {
+      "name": "Countermagic",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nReflects an incoming spell of equal or lower level back at its caster."
+    },
+    {
+      "name": "Dark",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nFills an area with darkness, 3 SIZ per level."
+    },
+    {
+      "name": "Diminish",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nReduces one of the target’s characteristics by 1 point per level (resistance roll if unwilling)."
+    },
+    {
+      "name": "Dispel",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nEliminates existing spell effects of equal or lower level; may banish supernatural beings."
+    },
+    {
+      "name": "Dull",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nReduces a weapon’s attack chance and damage."
+    },
+    {
+      "name": "Enhance",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nIncreases one of the target’s characteristics by 1 point per level."
+    },
+    {
+      "name": "Fire",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level · **Range** 100m\n\nRanged attack: 1D6 points of fire damage per level."
+    },
+    {
+      "name": "Frost",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level · **Range** 100m\n\nRanged attack: 1D6 points of frost damage per level."
+    },
+    {
+      "name": "Heal",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level\n\nHeals 1D6 points of damage per level."
+    },
+    {
+      "name": "Illusion",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nCreates a visual/audible illusion covering 3 SIZ per level."
+    },
+    {
+      "name": "Invisibility",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nMakes 3 SIZ points of an object or person invisible per level."
+    },
+    {
+      "name": "Lift",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nLifts and moves 3 SIZ points of an object or person per level."
+    },
+    {
+      "name": "Light",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nFills an area with light, 3 SIZ per level."
+    },
+    {
+      "name": "Lightning",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level · **Range** 100m\n\nRanged attack: 1D6 points of lightning damage per level."
+    },
+    {
+      "name": "Perception",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nAllows the magician to detect one specific thing within range."
+    },
+    {
+      "name": "Protection",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nAdds 1 point of armor value per level against physical attacks."
+    },
+    {
+      "name": "Resistance",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nReduces damage from heat and/or cold by 1 point per level."
+    },
+    {
+      "name": "Seal",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nJoins two inanimate objects together."
+    },
+    {
+      "name": "Sharpen",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nIncreases a weapon’s attack chance and damage."
+    },
+    {
+      "name": "Speak to Mind",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nAllows mental communication between the magician and a target."
+    },
+    {
+      "name": "Teleport",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nTeleports 3 SIZ points per level anywhere within range."
+    },
+    {
+      "name": "Unseal",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nSeparates two objects joined by Seal (or similar)."
+    },
+    {
+      "name": "Vision",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nAllows the magician to see what is happening elsewhere, or in the past."
+    },
+    {
+      "name": "Wall",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nCreates a barrier of 3 SIZ per level to protect the caster."
+    },
+    {
+      "name": "Ward",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 1 power point/level\n\nDefines an area automatically protected by Blast and Countermagic."
+    },
+    {
+      "name": "Wounding",
+      "category": "Powers",
+      "source": "Magic",
+      "body": "**Cost** 3 power points/level\n\nCauses 1D6 points of damage per level (touch attack)."
+    },
+    {
+      "name": "Adaptability",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 01-03\n\nInstantly adjusts to (or ignores) one chosen extreme condition; the relevant characteristic is doubled on a resistance roll against it."
+    },
+    {
+      "name": "Allergy (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 04-05\n\nHypersensitive to a chosen substance: minor gives −20% to all skills on contact and for 15 minutes after; major deals 1D6 damage per exposure (armor doesn’t help) plus −40% to all skills."
+    },
+    {
+      "name": "Biped (Quadruped) (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 06-09\n\nForces a four-legged stance instead of two-legged; minor can stand upright for CON rounds, major needs an Agility roll each round upright."
+    },
+    {
+      "name": "Camouflage",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 10-12\n\nUnnatural coloration or texture; +20% to Hide (minor) or +40% and can actively change to match surroundings (major)."
+    },
+    {
+      "name": "Coloration (Minor)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 13-15\n\nStrikingly unnatural skin/scale/fur coloration — cosmetic only."
+    },
+    {
+      "name": "Congenital Disease (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 16-19\n\nAn incurable non-contagious ailment reduces one characteristic (minor) or two (major) by 1D6 points each."
+    },
+    {
+      "name": "Decreased Characteristic (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 20-22\n\nReduces a randomly determined characteristic by 1D6 (minor) or 2D6 (major), never below 1."
+    },
+    {
+      "name": "Disease Carrier (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 23-25\n\nCarries (but is immune to) a disease of POT 2D10 (minor) or 4D10/two diseases (major); exposed targets resist CON vs. POT or contract it."
+    },
+    {
+      "name": "Group Intelligence",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 26-29\n\nPart of a hive mind sharing sensation (minor, CON meters range) or full telepathic communication at unlimited range (major)."
+    },
+    {
+      "name": "Hands",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 30\n\nExtra prehensile limb(s) — a tail, extra hands, or similar — usable as an additional limb in combat or tasks; may allow an extra action."
+    },
+    {
+      "name": "Hardy",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 31-33\n\nHalves damage from one chosen damage type (minor); major also lets the mutant keep acting below 0 HP down to a negative threshold."
+    },
+    {
+      "name": "Hybrid",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 34-35\n\nHas one animalistic trait (fur, tail, scales, etc.), cosmetic or minor mechanical benefit."
+    },
+    {
+      "name": "Imitation",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 36-37\n\nImitates an animal’s natural trait (a bird’s call, a chameleon’s color-change, etc.)."
+    },
+    {
+      "name": "Increased Characteristic",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 38-44\n\nIncreases a randomly determined characteristic by 1D6 (minor) or 2D6 (major)."
+    },
+    {
+      "name": "Keen Sense",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 45-48\n\nOne or more senses become extraordinarily sharp, granting a bonus to related perception skills."
+    },
+    {
+      "name": "Luminescence",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 49-50\n\nEmits light from the body, from a dim glow to enough to read by."
+    },
+    {
+      "name": "Metabolic Improvement",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 51-53\n\nAn unusual but beneficial metabolism — e.g. faster healing, reduced need for food/sleep."
+    },
+    {
+      "name": "Metabolic Weakness (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 54-57\n\nAn unusual, disadvantageous metabolism — e.g. must eat constantly, vulnerable to a common substance."
+    },
+    {
+      "name": "Natural Armor",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 58-60\n\nGrants natural armor (scales, horn, thick hide, etc.) — points of protection scaling with minor/major."
+    },
+    {
+      "name": "Natural Weaponry",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 61-65\n\nGrows a natural weapon (spine, claw, teeth, stinger) usable as a Brawl attack, dealing extra damage."
+    },
+    {
+      "name": "Pain Sensitivity (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 66-67\n\nUnusually low pain tolerance — actions become Difficult while injured (minor) or major wounds incapacitate automatically (major)."
+    },
+    {
+      "name": "Pheromone",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 68\n\nEmits chemicals that affect the emotional state or behavior of others nearby."
+    },
+    {
+      "name": "Reduced Sense (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 69-70\n\nA primary sense is impaired (minor) or missing entirely (major)."
+    },
+    {
+      "name": "Regeneration",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 71-72\n\nHeals lost hit points at an accelerated rate each combat round."
+    },
+    {
+      "name": "Sensitivity",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 73-74\n\nAn unusual physiological affinity — positive or negative — for a specific substance (blood, silver, sunlight, etc.)."
+    },
+    {
+      "name": "Speech (Mimicry)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 75-76\n\nCan imitate animal noises (minor) or speak clearly despite non-human anatomy (major)."
+    },
+    {
+      "name": "Structural Improvement",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 77-81\n\nAn unusual, beneficial body structure — e.g. extra load-bearing limbs, an armored carapace."
+    },
+    {
+      "name": "Structural Weakness (Adverse)",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 82-86\n\nAn unusual, disadvantageous body structure — e.g. brittle bones, a vulnerable exposed organ."
+    },
+    {
+      "name": "Venom",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 87-89\n\nSecretes a natural poison delivered by bite, sting, or touch (see Poisons, p.151)."
+    },
+    {
+      "name": "Wings",
+      "category": "Powers",
+      "source": "Mutation",
+      "body": "**Roll** 90\n\nGrows wings sufficient to glide (minor) or fly under its own power (major)."
+    },
+    {
+      "name": "Astral Projection",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Leave the physical body and travel in psychic form."
+    },
+    {
+      "name": "Aura Detection",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Perceive the aura emanated by a living being."
+    },
+    {
+      "name": "Clairvoyance",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Project awareness into another place."
+    },
+    {
+      "name": "Cryokinesis",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Create an area of intense cold on an area, object, or target."
+    },
+    {
+      "name": "Danger Sense",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Detect danger from other characters or a situation before it manifests."
+    },
+    {
+      "name": "Dead Calm",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Resist mental shock or delay the effects of sanity loss."
+    },
+    {
+      "name": "Divination",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Ask a higher power for guidance and insight."
+    },
+    {
+      "name": "Eidetic Memory",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Perfect and total recall of previous experiences."
+    },
+    {
+      "name": "Emotion Control",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Affect the emotional state of a target or targets."
+    },
+    {
+      "name": "Empathy",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Detect the inner feelings of a target or targets."
+    },
+    {
+      "name": "Intuition",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Detect a certain person or class of item."
+    },
+    {
+      "name": "Levitation",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Floating movement above the ground."
+    },
+    {
+      "name": "Mind Blast",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "A direct psychic attack against a target (power point vs. power point or POW vs. POW)."
+    },
+    {
+      "name": "Mind Control",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Control the physical body and will of a target (POW vs. POW resistance roll)."
+    },
+    {
+      "name": "Mind Shield",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Protection against psychic interference and attacks; each point spent resists power points used against the psychic."
+    },
+    {
+      "name": "Precognition",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "A brief, intuitive glimpse into the future — more power points spent reaches further ahead."
+    },
+    {
+      "name": "Psychometry",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "‘Read’ past emotions and events associated with an object or place by touch."
+    },
+    {
+      "name": "Pyrokinesis",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Heat an area, object, or target to extreme temperatures; 1D6 damage per 3 power points spent."
+    },
+    {
+      "name": "Sensitivity (Psychic Ability)",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Detect supernatural or spiritual emanations, or the recent use of psychic abilities, in an area."
+    },
+    {
+      "name": "Telekinesis",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Manipulate and move objects mentally at a distance."
+    },
+    {
+      "name": "Telepathy",
+      "category": "Powers",
+      "source": "Psychic Ability",
+      "body": "Read minds, or speak mind-to-mind with a target."
+    },
+    {
+      "name": "Cloak of Night",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4 · **Range** Touch/Sight\n\nAugmentation. Adds +20% per level to Hide, cumulative for the duration."
+    },
+    {
+      "name": "Leap (Sorcery)",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nAugmentation. Adds +20% per level to Jump."
+    },
+    {
+      "name": "Sureness",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nAugmentation. Adds +20% per level to Stealth."
+    },
+    {
+      "name": "Bolster the Soul",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to POW for the duration."
+    },
+    {
+      "name": "Inhuman Plasticity",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to SIZ for the duration."
+    },
+    {
+      "name": "Lightning Speed",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 1 point per level to MOV for the duration."
+    },
+    {
+      "name": "Relentless Vitality",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to CON for the duration."
+    },
+    {
+      "name": "Suppleness of the Serpent",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to DEX for the duration."
+    },
+    {
+      "name": "Titan’s Strength",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to STR for the duration."
+    },
+    {
+      "name": "Unearthly Beauty",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to CHA for the duration."
+    },
+    {
+      "name": "Wisdom of the Sage",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-3\n\nCharacteristic. Adds 3 points per level to INT for the duration."
+    },
+    {
+      "name": "Hammer of the Gods",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nCombat. Adds 1 point of damage per level to blunt weapons."
+    },
+    {
+      "name": "Hell’s Razor",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nCombat. Adds 1 point of damage per level to cutting weapons."
+    },
+    {
+      "name": "Sorcery’s Sharp Flame",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nCombat. Adds 1 point of damage per level to impaling weapons."
+    },
+    {
+      "name": "Sorcerous Armor",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nCombat. Adds 1 point of armor per level."
+    },
+    {
+      "name": "Talons of the Beast",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nCombat. Adds 1 point of damage per level to unarmed/Brawl attacks."
+    },
+    {
+      "name": "Unbreakable Bulwark",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nCombat. Adds 1 point of armor per level to shields."
+    },
+    {
+      "name": "Make Fast",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nEnhancement. Glues together two inanimate objects."
+    },
+    {
+      "name": "Make Whole",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 3\n\nEnhancement. Repairs a broken item."
+    },
+    {
+      "name": "Midnight",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nEnhancement. Creates an area of darkness."
+    },
+    {
+      "name": "Moonrise",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nEnhancement. Creates a floating globe of light."
+    },
+    {
+      "name": "Bounty of the Sea",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4\n\nElemental. Fills an area with water."
+    },
+    {
+      "name": "Fires of the Sun",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4 · **Range** Sight\n\nElemental. A floating, fueless mass of fire hangs in view, about 3m across, igniting adjacent materials for 1D6+2 fire damage/round. Must be known before fire elementals can be summoned. Negated by Wings of the Sky; dispelled by a 4-point Undo Sorcery."
+    },
+    {
+      "name": "Gift of the Earth",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4\n\nElemental. Fills an area with dirt."
+    },
+    {
+      "name": "Wings of the Sky",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4\n\nElemental. Fills an area with wind."
+    },
+    {
+      "name": "Curse of Sorcery",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4 · **Range** Touch\n\nManipulative. On a successful POW vs. POW roll, disfigures part of the target’s body with a gruesome/demonic quality (cosmetic; a second success gives it a monstrous shape). May cost 1D3 CHA if visible. Lasts until the caster dies; can’t be recast on the same target while active."
+    },
+    {
+      "name": "Fury",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1 · **Range** Touch\n\nManipulative. Induces a berserk rage (power point vs. power point if unwilling): the target fights unceasingly for the duration and gets one extra attack per round."
+    },
+    {
+      "name": "Inescapable Bonds",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 3\n\nManipulative. Immobilizes the target; resistance roll to resist."
+    },
+    {
+      "name": "Liken Shape",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4\n\nManipulative. Assume the image/appearance of another person."
+    },
+    {
+      "name": "Muddle",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nManipulative. Disorients the target."
+    },
+    {
+      "name": "Pox",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nManipulative. Reduces the target’s power points; resistance roll to resist."
+    },
+    {
+      "name": "Brazier of Power",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4\n\nOccult. Creates a reservoir of power points other sorcerers can draw from."
+    },
+    {
+      "name": "Chain of Being",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 4\n\nOccult. Creates a shared pool of power points."
+    },
+    {
+      "name": "Undo Sorcery",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nOccult. Cancels various sorcery spells of equal or lower level (unless protected by Refutation)."
+    },
+    {
+      "name": "Ward (Sorcery)",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 3\n\nOccult. Creates a magical alarm over an area."
+    },
+    {
+      "name": "Summon Demon",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nSummoning. Summons a demon (see Chapter 11: Creatures)."
+    },
+    {
+      "name": "Summon Elemental",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nSummoning. Summons an elemental (see Chapter 11: Creatures) — requires the matching elemental spell already known."
+    },
+    {
+      "name": "Bird’s Vision",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nUtility. Controls a bird and sees through its eyes."
+    },
+    {
+      "name": "Breath of Life",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nUtility. Provides breathable air underwater or in another hostile environment."
+    },
+    {
+      "name": "Farsight",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1 · **Range** Sight\n\nUtility. Doubles the closeness of anything seen; repeated castings while active cumulatively double it further."
+    },
+    {
+      "name": "Heal (Sorcery)",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 2\n\nUtility. Restores lost hit points."
+    },
+    {
+      "name": "Keen Ear",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nUtility. Carries spoken words across great distances."
+    },
+    {
+      "name": "Refutation",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Levels** 1-4\n\nUtility. Protects a spell against being cancelled by Undo Sorcery."
+    },
+    {
+      "name": "Vermin’s Vision",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 1\n\nUtility. Controls vermin and sees through their eyes."
+    },
+    {
+      "name": "Witch Sight",
+      "category": "Powers",
+      "source": "Sorcery",
+      "body": "**Level** 3\n\nUtility. Determines a target’s POW."
+    },
+    {
+      "name": "Absorption",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Absorb energy of a chosen type from an attack and turn it into power points; armor reduces the damage before Absorption applies."
+    },
+    {
+      "name": "Adaptation",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level allows comfortable survival in one hostile environment (cold, heat, vacuum, high pressure, radiation, etc.)."
+    },
+    {
+      "name": "Alternate Form",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level is an alternate body the character can switch into."
+    },
+    {
+      "name": "Armor (Superpower)",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level provides 1 point of protection against a specific chosen energy type."
+    },
+    {
+      "name": "Barrier",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level creates a 1-meter-square section of protective wall."
+    },
+    {
+      "name": "Defense",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Lowers the character’s chance to be hit by −1% per level."
+    },
+    {
+      "name": "Density Control",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level adds or subtracts 1 point of density (SIZ), without changing mass/volume proportionally."
+    },
+    {
+      "name": "Diminish/Enhance Characteristic",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Lowers or increases a target characteristic by 1D6 per level."
+    },
+    {
+      "name": "Drain",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level drains 1 hit point, power point, fatigue point, or sanity point from a target, usually transferred to the user."
+    },
+    {
+      "name": "Energy Control",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Allows creation of and control over a specific type of energy (fire, cold, electricity, etc.), aside from direct damage."
+    },
+    {
+      "name": "Energy Projection",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Allows projection of a focused, damaging beam of a specific energy type."
+    },
+    {
+      "name": "Extra Energy",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level provides +10 additional power points."
+    },
+    {
+      "name": "Extra Hit Points",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level provides +1 additional hit point."
+    },
+    {
+      "name": "Flight",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level allows self-powered flight for 1 SIZ point of the character."
+    },
+    {
+      "name": "Force Field",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level offers 1 point of protection against a specific type of energy, as an external field rather than worn armor."
+    },
+    {
+      "name": "Intangibility",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Allows the character to move through solid objects."
+    },
+    {
+      "name": "Invisibility (Superpower)",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level turns 1 SIZ point of the character (or another target) invisible."
+    },
+    {
+      "name": "Leap",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Adds to the character’s normal jumping distance, horizontally and vertically."
+    },
+    {
+      "name": "Protection (Superpower)",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level reduces the effective level/potency of an attacking energy type."
+    },
+    {
+      "name": "Regeneration (Superpower)",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level returns 1 lost hit point per combat round."
+    },
+    {
+      "name": "Resistance (Superpower)",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level resists 1 point of damage from a single specific energy type."
+    },
+    {
+      "name": "Sidekick",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "A loyal associated nonplayer character who accompanies and assists the hero."
+    },
+    {
+      "name": "Size Change",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level adds or subtracts 1 point of SIZ, proportionally affecting mass and reach."
+    },
+    {
+      "name": "Snare Projection",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level is 1 STR and/or SIZ of a projected net, web, rope, or other confining snare."
+    },
+    {
+      "name": "Stretching",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Stretch the body into different sizes and shapes, extending reach or squeezing through gaps."
+    },
+    {
+      "name": "Super Characteristic",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Extra points in STR, CON, SIZ, INT, POW, DEX, CHA, or EDU, purchased per point."
+    },
+    {
+      "name": "Super Movement",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each type grants a unique method of movement (wall-crawling, water-walking, burrowing, etc.)."
+    },
+    {
+      "name": "Super Sense",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each type improves an existing sense or adds an extraordinary aspect to it (dark vision, infrared vision, super hearing, etc.)."
+    },
+    {
+      "name": "Super Skill",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level adds +20% to one specific skill."
+    },
+    {
+      "name": "Super Speed",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level adds an additional action or movement each combat round."
+    },
+    {
+      "name": "Teleport (Superpower)",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level allows instantaneous teleportation of 1 SIZ point of an object or target (including the user)."
+    },
+    {
+      "name": "Transfer",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Each level allows transfer of 1 hit point, power point, fatigue point, or sanity point to a target."
+    },
+    {
+      "name": "Unarmed Combat",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Increases ability in unarmed combat — bonus damage, a skill bonus, and/or a chance to reduce an opponent’s hit chance."
+    },
+    {
+      "name": "Weather Control",
+      "category": "Powers",
+      "source": "Superpower",
+      "body": "Alters or creates weather conditions in an area."
+    },
+    {
+      "name": "Axe, Hand Axe",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Axe · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Short · **Hands** 1H · **HP** 12 · **Parry** Yes · **STR/DEX req** 7/9 · **Cost** Cheap · **Enc** 0.5"
+    },
+    {
+      "name": "Club, Heavy Club",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Club · **Damage** 1D8+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 2H · **HP** 22 · **Parry** Yes · **STR/DEX req** 9/7 · **Cost** Cheap · **Enc** 2"
+    },
+    {
+      "name": "Club, Light Club",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Club · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 7/7 · **Cost** Cheap · **Enc** 1"
+    },
+    {
+      "name": "Fist",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Brawl · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Hands** 1H · **Parry** No"
+    },
+    {
+      "name": "Grapple",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Brawl · **Damage** Special · **Attacks/round** 1 · **Special** Entangle · **Range** Short · **Hands** 2H · **Parry** No"
+    },
+    {
+      "name": "Head Butt",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Brawl · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Parry** No"
+    },
+    {
+      "name": "Kick",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Brawl · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Parry** No"
+    },
+    {
+      "name": "Knife (Primitive)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Dagger · **Damage** 1D3+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Short · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 4/4 · **Cost** Cheap · **Enc** 0.2"
+    },
+    {
+      "name": "Net",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Other · **Damage** Special · **Attacks/round** 1 · **Special** Entangling · **Range** Medium · **Hands** 1H or 2H · **HP** 6 · **Parry** Yes · **STR/DEX req** 12/10 · **Cost** Cheap · **Enc** 3"
+    },
+    {
+      "name": "Spear, Long Spear",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Spear · **Damage** 1D10+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Long · **Hands** 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 11/9 · **Cost** Cheap · **Enc** 2"
+    },
+    {
+      "name": "Spear, Short Spear",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Spear · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Long · **Hands** 1H or 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 7/8 · **Cost** Cheap · **Enc** 2"
+    },
+    {
+      "name": "Torch (weapon)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Club · **Damage** 1D6+flame · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 6/9 · **Enc** 1"
+    },
+    {
+      "name": "Axe, Hand (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Axe · **Damage** 1D6+½dm · **Attacks/round** 1 · **Special** Bleeding · **Range** 20m · **Hands** 1H · **HP** 12 · **Parry** No · **STR/DEX req** 9/11 · **Cost** Cheap · **Enc** 0.5"
+    },
+    {
+      "name": "Blowgun",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Blowgun · **Damage** 1D3 · **Attacks/round** 1 · **Special** Impaling · **Range** 30m · **Hands** 2H · **HP** 4 · **Parry** No · **STR/DEX req** —/11 · **Cost** Cheap · **Enc** 0.5\n\nDarts are often poisoned."
+    },
+    {
+      "name": "Bola (damaging)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Bola · **Damage** 1D4+½dm · **Attacks/round** 1 · **Special** Crushing · **Range** 15m · **Hands** 1H · **HP** 1 · **Parry** No · **STR/DEX req** 9/13 · **Cost** Cheap · **Enc** 3"
+    },
+    {
+      "name": "Bola (snaring)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Bola · **Damage** Special · **Attacks/round** 1 · **Special** Entangling · **Range** 15m · **Hands** 1H · **HP** 1 · **Parry** No · **STR/DEX req** 9/13 · **Cost** Cheap · **Enc** 3"
+    },
+    {
+      "name": "Boomerang",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Boomerang · **Damage** 1D4+½dm · **Attacks/round** 0.5 · **Special** Crushing · **Range** 50m · **Hands** 1H · **HP** 3 · **Parry** No · **STR/DEX req** 9/11 · **Cost** Cheap · **Enc** 0.5"
+    },
+    {
+      "name": "Bow, Self",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Bow · **Damage** 1D6+1+½dm · **Attacks/round** 1 · **Special** Impaling · **Range** 80m · **Hands** 2H · **HP** 6 · **Parry** No · **STR/DEX req** 9/9 · **Cost** Cheap · **Enc** 0.5"
+    },
+    {
+      "name": "Club, Light (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Throw · **Damage** 1D6+½dm · **Attacks/round** 1 · **Special** Crushing · **Range** 20m · **Hands** 1H · **HP** 15 · **Parry** No · **STR/DEX req** 9/7 · **Cost** Cheap · **Enc** 1"
+    },
+    {
+      "name": "Dart",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Dart · **Damage** 1D6+½dm · **Attacks/round** 1 · **Special** Impaling · **Range** 20m · **Hands** 1H · **HP** 4 · **Parry** No · **STR/DEX req** —/9 · **Cost** Cheap · **Enc** 0.5\n\nOften poisoned."
+    },
+    {
+      "name": "Javelin",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Javelin · **Damage** 1D6+½dm · **Attacks/round** 1 · **Special** Impaling · **Range** 25m · **Hands** 1H · **HP** 10 · **Parry** No · **STR/DEX req** 9/9 · **Cost** Cheap · **Enc** 1.5"
+    },
+    {
+      "name": "Knife (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Throw · **Damage** 1D3+½dm · **Attacks/round** 1 · **Special** Impaling · **Range** 10m · **Hands** 1H · **HP** 15 · **Parry** No · **STR/DEX req** 7/11 · **Cost** Cheap · **Enc** 0.2"
+    },
+    {
+      "name": "Lasso",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Other · **Damage** Special · **Attacks/round** 0.5 · **Special** Entangling · **Range** 10m · **Hands** 2H · **HP** 1 · **Parry** No · **STR/DEX req** 9/13 · **Cost** Cheap · **Enc** 1"
+    },
+    {
+      "name": "Net (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Other · **Damage** Special · **Attacks/round** 1 · **Special** Entangling · **Range** 5m · **Hands** 1H · **HP** 6 · **Parry** No · **STR/DEX req** 9/12 · **Cost** Cheap · **Enc** 3"
+    },
+    {
+      "name": "Rock (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Throw · **Damage** 1D2+½dm · **Attacks/round** 2 · **Special** Crushing · **Range** 20m · **Hands** 1H · **HP** 20 · **Parry** No · **STR/DEX req** 5/5 · **Enc** 0.05"
+    },
+    {
+      "name": "Sling",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Sling · **Damage** 1D8+½dm · **Attacks/round** 1 · **Special** Crushing · **Range** 80m · **Hands** 1H · **HP** 2 · **Parry** No · **STR/DEX req** 7/11 · **Cost** Cheap · **Enc** 0.1"
+    },
+    {
+      "name": "Spear, Short (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Spear · **Damage** 1D6+1+½dm · **Attacks/round** 1 · **Special** Impaling · **Range** 15m · **Hands** 1H · **HP** 15 · **Parry** No · **STR/DEX req** 12/10 · **Cost** Cheap · **Enc** 2"
+    },
+    {
+      "name": "Spear, Long (thrown)",
+      "category": "Items",
+      "source": "Weapon (Primitive)",
+      "body": "**Skill** Spear · **Damage** 1D10+1+½dm · **Attacks/round** 1 · **Special** Impaling · **Range** 15m · **Hands** 1H · **HP** 15 · **Parry** No · **STR/DEX req** 12/10 · **Cost** Cheap · **Enc** 2"
+    },
+    {
+      "name": "Axe, Battle Axe",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Axe · **Damage** 1D8+2+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 9/9 · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Axe, Great Axe",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Axe · **Damage** 2D6+2+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 11/9 · **Cost** Average · **Enc** 2"
+    },
+    {
+      "name": "Axe, Wood Axe",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Axe · **Damage** 1D8+2+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 8/7 · **Cost** Inexpensive · **Enc** 1.5"
+    },
+    {
+      "name": "Blackjack",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hand · **Damage** 1D8+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Hands** 1H · **HP** 10 · **Parry** No · **STR/DEX req** 7/7 · **Cost** Inexpensive · **Enc** 0.2"
+    },
+    {
+      "name": "Cestus",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hand · **Damage** 1D3+2+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Hands** 1H · **HP** 10 · **Parry** Yes · **STR/DEX req** 11/7 · **Cost** Average · **Enc** 0.1"
+    },
+    {
+      "name": "Claw (weapon)",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hand · **Damage** 1D4+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Short · **Hands** 1H · **HP** 10 · **Parry** Yes · **STR/DEX req** 9/9 · **Cost** Average · **Enc** 0.1"
+    },
+    {
+      "name": "Dagger",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Dagger · **Damage** 1D4+2+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Short · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 4/4 · **Cost** Average · **Enc** 0.5"
+    },
+    {
+      "name": "Flail",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Flail · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 7 · **Parry** Yes · **STR/DEX req** 7/6 · **Cost** Average · **Enc** 2"
+    },
+    {
+      "name": "Flail, Morningstar",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Flail · **Damage** 1D10+1+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 2H · **HP** 12 · **Parry** Yes · **STR/DEX req** 11/7 · **Cost** Average · **Enc** 2"
+    },
+    {
+      "name": "Garrote",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hand · **Damage** Special · **Attacks/round** 1 · **Range** Short · **Hands** 2H · **HP** 1 · **Parry** No · **STR/DEX req** 8/12 · **Cost** Inexpensive · **Enc** 0.1\n\nSee Choking, Drowning, and Asphyxiation."
+    },
+    {
+      "name": "Gauntlet, Armored",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hand · **Damage** 1D3+1+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Hands** 1H · **HP** 7 · **Parry** Yes · **STR/DEX req** 7/5 · **Cost** Average"
+    },
+    {
+      "name": "Halberd",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Polearm · **Damage** 3D6+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Long · **Hands** 2H · **HP** 25 · **Parry** Yes · **STR/DEX req** 13/9 · **Cost** Average · **Enc** 3"
+    },
+    {
+      "name": "Hammer",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hammer · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 9/7 · **Cost** Inexpensive · **Enc** 1.5"
+    },
+    {
+      "name": "Hammer, Great",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hammer · **Damage** 1D10+3+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Long · **Hands** 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 9/9 · **Cost** Average · **Enc** 2.5"
+    },
+    {
+      "name": "Hammer, Sledge",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hammer · **Damage** 2D6+2+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 11/7 · **Cost** Inexpensive · **Enc** 2"
+    },
+    {
+      "name": "Hammer, War",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hammer · **Damage** 1D6+2+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 20 · **Parry** Yes · **STR/DEX req** 11/9 · **Cost** Average · **Enc** 2"
+    },
+    {
+      "name": "Katana",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D10+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H or 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 11/11 · **Cost** Expensive · **Enc** 1.5\n\nUsed one-handed, damage modifier is halved."
+    },
+    {
+      "name": "Knife (Historic)",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Dagger · **Damage** 1D3+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Short · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 4/4 · **Cost** Inexpensive · **Enc** 0.5"
+    },
+    {
+      "name": "Lance",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Spear · **Damage** 1D8+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Long · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 9/8 · **Cost** Inexpensive · **Enc** 3.5\n\nMounted, uses the mount’s damage modifier instead of the rider’s."
+    },
+    {
+      "name": "Mace, Heavy",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Mace · **Damage** 1D8+2+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 14/9 · **Cost** Average · **Enc** 2.5"
+    },
+    {
+      "name": "Mace, Light",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Mace · **Damage** 1D6+2+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 20 · **Parry** Yes · **STR/DEX req** 7/7 · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Maul, War",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Hammer · **Damage** 1D10+2+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 13/7 · **Cost** Average · **Enc** 2.5"
+    },
+    {
+      "name": "Naginata",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Polearm · **Damage** 2D6+2+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Long · **Hands** 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 7/11 · **Cost** Expensive · **Enc** 2"
+    },
+    {
+      "name": "Pike",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Polearm · **Damage** 1D10+2+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Long · **Hands** 2H · **HP** 15 · **Parry** Yes · **STR/DEX req** 11/7 · **Cost** Inexpensive · **Enc** 3.5"
+    },
+    {
+      "name": "Rapier",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 7/13 · **Cost** Expensive · **Enc** 1"
+    },
+    {
+      "name": "Saber",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D8+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 20 · **Parry** Yes · **STR/DEX req** 7/11 · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Sai",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Dagger · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 20 · **Parry** Yes · **STR/DEX req** 5/11 · **Cost** Inexpensive · **Enc** 1\n\nTraditionally a blunt weapon used to parry and strike."
+    },
+    {
+      "name": "Scimitar",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D8+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 19 · **Parry** Yes · **STR/DEX req** 8/8 · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Scythe",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Improvised · **Damage** 2D6+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Long · **Hands** 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 12/10 · **Cost** Inexpensive · **Enc** 2.5"
+    },
+    {
+      "name": "Sickle",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Improvised · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Medium · **Hands** 1H · **HP** 12 · **Parry** Yes · **STR/DEX req** 7/9 · **Cost** Inexpensive · **Enc** 0.5"
+    },
+    {
+      "name": "Staff, Quarterstaff",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Staff · **Damage** 1D8+dm · **Attacks/round** 1 · **Special** Crushing · **Range** All · **Hands** 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 9/9 · **Cost** Cheap · **Enc** 1.5"
+    },
+    {
+      "name": "Staff, Short",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Staff · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Crushing · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 7/9 · **Cost** Cheap · **Enc** 0.5"
+    },
+    {
+      "name": "Sword Cane",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Medium · **Hands** 1H · **HP** 12 · **Parry** Yes · **STR/DEX req** 7/11 · **Cost** Expensive · **Enc** 1"
+    },
+    {
+      "name": "Sword, Bastard Sword",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D10+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H or 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 13 or 9/9 · **Cost** Average · **Enc** 2\n\nUsed one-handed, damage modifier is halved (STR req 13 one-handed, 9 two-handed)."
+    },
+    {
+      "name": "Sword, Broad Sword",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D8+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 20 · **Parry** Yes · **STR/DEX req** 9/7 · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Sword, Great Sword",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 2D8+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium/Long · **Hands** 2H · **HP** 18 · **Parry** Yes · **STR/DEX req** 14/13 · **Cost** Expensive · **Enc** 3.5"
+    },
+    {
+      "name": "Sword, Long Sword",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D8+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 15 · **Parry** Yes · **STR/DEX req** 7/9 · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Sword, Short Sword",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Medium · **Hands** 1H · **HP** 20 · **Parry** Yes · **STR/DEX req** 5/5 · **Cost** Cheap · **Enc** 1"
+    },
+    {
+      "name": "Trident",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Polearm · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Long · **Hands** 1H or 2H · **HP** 18 · **Parry** Yes · **STR/DEX req** 9/7 · **Cost** Average · **Enc** 2"
+    },
+    {
+      "name": "Wakizashi",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Sword · **Damage** 1D6+1+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 13 · **Parry** Yes · **STR/DEX req** 7/9 · **Cost** Expensive · **Enc** 1"
+    },
+    {
+      "name": "Whip",
+      "category": "Items",
+      "source": "Weapon (Historic)",
+      "body": "**Skill** Other · **Damage** 1D3−1 · **Attacks/round** 1 · **Special** Entangle · **Range** Long · **Hands** 1H · **HP** 4 · **Parry** No · **STR/DEX req** 9/10 · **Cost** Cheap · **Enc** 0.5"
+    },
+    {
+      "name": "Brass Knuckles",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Brawl · **Damage** Brawl +2 · **Attacks/round** 1 · **Special** Crushing · **Range** Short · **Hands** 1H · **HP** 18 · **Parry** No · **STR/DEX req** 5/— · **Cost** Cheap · **Enc** 0.1"
+    },
+    {
+      "name": "Chainsaw",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Improvised · **Damage** 2D8 · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 2H · **HP** 20 · **Parry** No · **STR/DEX req** 11/11 · **Cost** Average · **Enc** 8"
+    },
+    {
+      "name": "Knife, Butcher",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Dagger · **Damage** 1D6+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Short · **Hands** 1H · **HP** 12 · **Parry** No · **STR/DEX req** 5/7 · **Cost** Cheap · **Enc** 0.3"
+    },
+    {
+      "name": "Knife, Pocket",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Dagger · **Damage** 1D4+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Short · **Hands** 1H · **HP** 9 · **Parry** No · **STR/DEX req** —/5 · **Cost** Cheap · **Enc** 0.1"
+    },
+    {
+      "name": "Knife, Switchblade",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Dagger · **Damage** 1D4+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Short · **Hands** 1H · **HP** 7 · **Parry** No · **STR/DEX req** —/5 · **Cost** Cheap · **Enc** 0.1"
+    },
+    {
+      "name": "Taser, Contact",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Other/Brawl · **Damage** Special · **Attacks/round** 1 · **Range** Short · **Hands** 1H · **HP** 7 · **Parry** No · **STR/DEX req** 5/7 · **Cost** Expensive · **Enc** 0.3\n\nStuns the target — see Stunning, p.154."
+    },
+    {
+      "name": "Flamethrower",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Other · **Damage** 2D6+fire · **Attacks/round** 1 · **Range** 25m · **Hands** 2H · **HP** 6 · **Parry** No · **STR/DEX req** 10/8 · **Cost** Expensive · **Enc** 8\n\nA hit target catches fire, taking 1D6+2/round until extinguished."
+    },
+    {
+      "name": "Gun, Machine",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Machine Gun · **Damage** 2D6+4 · **Attacks/round** 1, 3, or burst · **Special** Impaling · **Range** 90m · **Hands** 2H · **HP** 11 · **Parry** No · **STR/DEX req** 9/5 · **Cost** Expensive · **Enc** 3"
+    },
+    {
+      "name": "Gun, Mini-",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Machine Gun · **Damage** 2D6+4 · **Attacks/round** 3 · **Special** Impaling · **Range** 400m · **Hands** 2H · **HP** 14 · **Parry** No · **STR/DEX req** 16/12 · **Cost** Expensive · **Enc** 6"
+    },
+    {
+      "name": "Gun, Submachine",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Submachine Gun · **Damage** 1D8 · **Attacks/round** 2 or burst · **Special** Impaling · **Range** 40m · **Hands** 1H or 2H · **HP** 8 · **Parry** No · **STR/DEX req** 9/6 · **Cost** Expensive · **Enc** 2"
+    },
+    {
+      "name": "Pistol, Derringer",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Pistol · **Damage** 1D6 · **Attacks/round** 1 · **Special** Impaling · **Range** 3m · **Hands** 1H · **HP** 5 · **Parry** No · **STR/DEX req** 5/5 · **Cost** Average · **Enc** 0.3"
+    },
+    {
+      "name": "Pistol, Flintlock",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Pistol · **Damage** 1D6+1 · **Attacks/round** 0.25 · **Special** Impaling · **Range** 10m · **Hands** 1H · **HP** 8 · **Parry** No · **STR/DEX req** 7/5 · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Pistol, Heavy",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Pistol · **Damage** 1D10+2 · **Attacks/round** 1 · **Special** Impaling · **Range** 15m · **Hands** 1H · **HP** 8 · **Parry** No · **STR/DEX req** 11/7 · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Pistol, Light",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Pistol · **Damage** 1D6 · **Attacks/round** 3 · **Special** Impaling · **Range** 10m · **Hands** 1H · **HP** 6 · **Parry** No · **STR/DEX req** 5/5 · **Cost** Average · **Enc** 0.7"
+    },
+    {
+      "name": "Pistol, Medium",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Pistol · **Damage** 1D8 · **Attacks/round** 2 · **Special** Impaling · **Range** 20m · **Hands** 1H · **HP** 8 · **Parry** No · **STR/DEX req** 7/5 · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Revolver, Heavy",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Revolver · **Damage** 1D10+2 · **Attacks/round** 1 · **Special** Impaling · **Range** 20m · **Hands** 1H · **HP** 14 · **Parry** No · **STR/DEX req** 11/5 · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Revolver, Light",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Revolver · **Damage** 1D6 · **Attacks/round** 2 · **Special** Impaling · **Range** 15m · **Hands** 1H · **HP** 10 · **Parry** No · **STR/DEX req** 5/5 · **Cost** Average · **Enc** 0.7"
+    },
+    {
+      "name": "Revolver, Medium",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Revolver · **Damage** 1D8 · **Attacks/round** 1 · **Special** Impaling · **Range** 25m · **Hands** 1H · **HP** 12 · **Parry** No · **STR/DEX req** 7/5 · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Rifle, Assault",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Rifle · **Damage** 2D6+2 · **Attacks/round** 2 or burst · **Special** Impaling · **Range** 90m · **Hands** 2H · **HP** 12 · **Parry** No · **STR/DEX req** 10/5 · **Cost** Expensive · **Enc** 3.5"
+    },
+    {
+      "name": "Rifle, Bolt-action",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Rifle · **Damage** 2D6+4 · **Attacks/round** 0.5 · **Special** Impaling · **Range** 110m · **Hands** 2H · **HP** 12 · **Parry** No · **STR/DEX req** 7/5 · **Cost** Average · **Enc** 3"
+    },
+    {
+      "name": "Rifle, Elephant",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Rifle · **Damage** 3D6+4 · **Attacks/round** 1 or 2 · **Special** Impaling · **Range** 100m · **Hands** 2H · **HP** 12 · **Parry** No · **STR/DEX req** 13/5 · **Cost** Average · **Enc** 4.5"
+    },
+    {
+      "name": "Rifle, Musket",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Rifle · **Damage** 1D10+4 · **Attacks/round** 0.25 · **Special** Impaling · **Range** 60m · **Hands** 2H · **HP** 12 · **Parry** No · **STR/DEX req** 9/5 · **Cost** Average · **Enc** 3.5"
+    },
+    {
+      "name": "Rifle, Sniper",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Rifle · **Damage** 2D10+4 · **Attacks/round** 1 · **Special** Impaling · **Range** 250m · **Hands** 2H · **HP** 10 · **Parry** No · **STR/DEX req** 12/7 · **Cost** Expensive · **Enc** 4\n\nBase chance halved without a bipod; range halved without a scope."
+    },
+    {
+      "name": "Rifle, Sporting",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Rifle · **Damage** 2D6 · **Attacks/round** 1 · **Special** Impaling · **Range** 80m · **Hands** 2H · **HP** 12 · **Parry** No · **STR/DEX req** 7/5 · **Cost** Average · **Enc** 3"
+    },
+    {
+      "name": "Shotgun, Automatic",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Shotgun · **Damage** 4D6/2D6/1D6 · **Attacks/round** 1 or 2 · **Special** Impaling · **Range** 10/20/50m · **Hands** 2H · **HP** 14 · **Parry** No · **STR/DEX req** 11/5 · **Cost** Expensive · **Enc** 4\n\nDamage by range increment."
+    },
+    {
+      "name": "Shotgun, Double-barreled",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Shotgun · **Damage** 4D6/2D6/1D6 · **Attacks/round** 1 or 2 · **Special** Impaling · **Range** 10/20/50m · **Hands** 2H · **HP** 12 · **Parry** No · **STR/DEX req** 9/5 · **Cost** Average · **Enc** 3.5\n\nDamage by range increment."
+    },
+    {
+      "name": "Shotgun, Sawn-off",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Shotgun · **Damage** 4D6/1D6 · **Attacks/round** 1 or 2 · **Special** Impaling · **Range** 5/20m · **Hands** 1H · **HP** 14 · **Parry** No · **STR/DEX req** 9/5 · **Cost** Average · **Enc** 2\n\nNot effective beyond 20m."
+    },
+    {
+      "name": "Shotgun, Sporting",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Shotgun · **Damage** 4D6/2D6/1D6 · **Attacks/round** 1 · **Special** Impaling · **Range** 10/20/50m · **Hands** 2H · **HP** 10 · **Parry** No · **STR/DEX req** 7/5 · **Cost** Average · **Enc** 3\n\nDamage by range increment."
+    },
+    {
+      "name": "Spray, Chemical",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Other · **Damage** Special · **Attacks/round** 1 · **Range** 2m · **Hands** 1H · **HP** 2 · **Parry** No · **STR/DEX req** 3/7 · **Cost** Average · **Enc** 0.2\n\nA low-POT contact poison."
+    },
+    {
+      "name": "Taser, Dart",
+      "category": "Items",
+      "source": "Weapon (Modern)",
+      "body": "**Skill** Other · **Damage** Special · **Attacks/round** 0.5 · **Range** DEX · **Hands** 1H · **HP** 8 · **Parry** No · **STR/DEX req** 3/7 · **Cost** Expensive · **Enc** 0.5\n\nStuns the target — see Stunning, p.154."
+    },
+    {
+      "name": "Axe, Vibro-",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Polearm · **Damage** 2D8+4+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 2H · **HP** 20 · **Parry** Yes · **STR/DEX req** 11/5 · **Cost** Average · **Enc** 3"
+    },
+    {
+      "name": "Knife, Vibro-",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Dagger · **Damage** 2D4+2+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Short · **Hands** 1H · **HP** 16 · **Parry** Yes · **STR/DEX req** 7/7 · **Cost** Average · **Enc** 0.5"
+    },
+    {
+      "name": "Lance, Stun",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Staff · **Damage** 1D6+dm+stun · **Attacks/round** 1 · **Special** Knockback · **Range** Long · **Hands** 2H · **HP** 18 · **Parry** Yes · **STR/DEX req** 9/5 · **Cost** Average · **Enc** 2.5\n\nRoll damage vs. target CON; loser is stunned 1D3+1 rounds."
+    },
+    {
+      "name": "Sword, Energy",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Sword · **Damage** 2D10+dm · **Attacks/round** 1 · **Special** Impaling · **Range** Medium · **Hands** 1H · **HP** 30 · **Parry** Yes · **STR/DEX req** 11/15 · **Cost** Priceless · **Enc** 1\n\nHalves the target’s effective armor value (round up)."
+    },
+    {
+      "name": "Sword, Monofilament",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Sword · **Damage** 3D12 · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 12 · **Parry** No · **STR/DEX req** 5/15 · **Cost** Expensive · **Enc** 0.5\n\nIgnores half the target’s armor value (round up); fumbling risks hitting yourself."
+    },
+    {
+      "name": "Sword, Vibro-",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Sword · **Damage** 2D6+3+dm · **Attacks/round** 1 · **Special** Bleeding · **Range** Medium · **Hands** 1H · **HP** 18 · **Parry** Yes · **STR/DEX req** 9/7 · **Cost** Expensive · **Enc** 1.5"
+    },
+    {
+      "name": "Whip, Shock",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Other · **Damage** 1+½db+stun · **Attacks/round** 1 · **Special** Entangle · **Range** Long · **Hands** 1H · **HP** 10 · **Parry** No · **STR/DEX req** 7/9 · **Cost** Average · **Enc** 1\n\nRoll damage vs. target CON; loser is stunned 1D3+1 rounds."
+    },
+    {
+      "name": "Pistol, Blaster",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 1D8+2 · **Attacks/round** 2 · **Special** Impaling · **Range** 15m · **Hands** 1H · **HP** 14 · **Parry** No · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Pistol, Disintegrator",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 3D4+1 · **Attacks/round** 1 · **Range** 10m · **Hands** 1H · **HP** 12 · **Parry** No · **Cost** Expensive · **Enc** 1"
+    },
+    {
+      "name": "Pistol, Electromagnetic Pulse",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 2D6 vs. tech · **Attacks/round** 1 · **Range** 15m · **Hands** 1H · **HP** 12 · **Parry** No · **Cost** Average · **Enc** 1\n\nVs. robots/machines: resistance roll vs. CON stuns 1D3+1 rounds on a hit; damage exceeding HP knocks it ‘unconscious’ (restored with Repair)."
+    },
+    {
+      "name": "Pistol, Flechette",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 2D4 · **Attacks/round** 1 or burst · **Special** Impaling · **Range** 15m · **Hands** 1H · **HP** 14 · **Parry** No · **Cost** Average · **Enc** 0.8\n\nHalf damage vs. hardened armor."
+    },
+    {
+      "name": "Pistol, Laser",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 1D8 · **Attacks/round** 3 · **Special** Impaling · **Range** 20m · **Hands** 1H · **HP** 14 · **Parry** No · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Pistol, Plasma",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 2D10+2 · **Attacks/round** 1 · **Special** Impaling · **Range** 30m · **Hands** 1H · **HP** 18 · **Parry** No · **Cost** Expensive · **Enc** 1.2"
+    },
+    {
+      "name": "Pistol, Shock",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 2D4 · **Attacks/round** 1 · **Special** Knockback · **Range** 15m · **Hands** 1H · **HP** 12 · **Parry** No · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Pistol, Stun",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Pistol, Energy · **Damage** 2D6 stun · **Attacks/round** 1 · **Special** Knockback · **Range** 15m · **Hands** 1H · **HP** 16 · **Parry** No · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Rifle, Blaster",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 2D8+3 · **Attacks/round** 2 · **Special** Impaling · **Range** 60m · **Hands** 2H · **HP** 20 · **Parry** No · **Cost** Average · **Enc** 1"
+    },
+    {
+      "name": "Rifle, Disintegrator",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 3D6+2 · **Attacks/round** 1 · **Range** 30m · **Hands** 2H · **HP** 18 · **Parry** No · **Cost** Expensive · **Enc** 2"
+    },
+    {
+      "name": "Rifle, Electromagnetic Pulse",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 3D8 vs. tech · **Attacks/round** 1 · **Range** 75m · **Hands** 2H · **HP** 18 · **Parry** No · **Cost** Average · **Enc** 2\n\nAs Pistol, EMP but longer ranged."
+    },
+    {
+      "name": "Rifle, Laser",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 2D8 · **Attacks/round** 2 · **Special** Impaling · **Range** 100m · **Hands** 2H · **HP** 20 · **Parry** No · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Rifle, Plasma",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 2D10+4 · **Attacks/round** 1 · **Special** Impaling · **Range** 70m · **Hands** 2H · **HP** 18 · **Parry** No · **Cost** Expensive · **Enc** 2"
+    },
+    {
+      "name": "Rifle, Shock",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 3D8 · **Attacks/round** 1 · **Special** Knockback · **Range** 50m · **Hands** 2H · **HP** 18 · **Parry** No · **Cost** Average · **Enc** 1.5"
+    },
+    {
+      "name": "Rifle, Sonic",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 1D3+2 · **Attacks/round** 1 · **Special** Knockback · **Range** 50m · **Hands** 2H · **HP** 16 · **Parry** No · **Cost** Average · **Enc** 2\n\nDamages a living target each round it hits; vs. an unliving target, resistance roll vs. CON/armor/HP."
+    },
+    {
+      "name": "Rifle, Stun",
+      "category": "Items",
+      "source": "Weapon (Advanced)",
+      "body": "**Skill** Rifle, Energy · **Damage** 2D8 stun · **Attacks/round** 1 · **Special** Knockback · **Range** 50m · **Hands** 2H · **HP** 22 · **Parry** No · **Cost** Average · **Enc** 1.5\n\nResistance roll vs. CON: success takes only minimum (2) damage; loss stuns 1D3+1 rounds."
+    },
+    {
+      "name": "Helmet (Primitive)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +1 (random +1 point) · **Burden** Light · **Enc** 0.5 · **Skill modifier** −5% to Perception skills · **Fits SIZ** ±1 · **Locations** Head · **Cost** Cheap"
+    },
+    {
+      "name": "Hide Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 1 (random 1D3−1) · **Burden** Light · **Enc** 3.5 · **Fits SIZ** ±3 · **Locations** All · **Cost** Cheap"
+    },
+    {
+      "name": "Chain",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 7 (random 1D8−1) · **Burden** Moderate · **Enc** 20 · **Skill modifier** −20% to Physical skills · **Fits SIZ** −2 · **Locations** All · **Cost** Expensive"
+    },
+    {
+      "name": "Clothing, Heavy",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 1 (random 1D2−1) · **Burden** None · **Enc** 2.5 · **Fits SIZ** ±2 · **Locations** All · **Cost** Cheap"
+    },
+    {
+      "name": "Helmet, Heavy (Ancient/Medieval)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +2 (random +2 points) · **Burden** Light · **Enc** 2.5 · **Skill modifier** −50% to Perception skills · **Fits SIZ** ±0 · **Locations** Head · **Cost** Average"
+    },
+    {
+      "name": "Helmet, Light (Ancient/Medieval)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +1 (random +1 point) · **Burden** None · **Enc** 1.5 · **Skill modifier** −15% to Perception skills · **Fits SIZ** ±1 · **Locations** Head · **Cost** Inexpensive"
+    },
+    {
+      "name": "Lamellar",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 6 (random 1D8−1) · **Burden** Moderate · **Enc** 18 · **Skill modifier** −15% to Physical skills · **Fits SIZ** ±1 · **Locations** All but head · **Cost** Expensive"
+    },
+    {
+      "name": "Leather, Soft",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 1 (random 1D6−1) · **Burden** Light · **Enc** 3.5 · **Fits SIZ** ±2 · **Locations** All · **Cost** Inexpensive"
+    },
+    {
+      "name": "Leather, Hard",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 2 (random 1D6) · **Burden** Moderate · **Enc** 5 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±1 · **Locations** All · **Cost** Average"
+    },
+    {
+      "name": "Leather, Cuirbouilli",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 3 (random 2D3) · **Burden** Light · **Enc** 5 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±0 · **Locations** All · **Cost** Expensive"
+    },
+    {
+      "name": "Padded/Quilted",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 1 (random 1D2−1) · **Burden** None · **Enc** 3 · **Fits SIZ** ±2 · **Locations** All · **Cost** Inexpensive"
+    },
+    {
+      "name": "Padded/Quilted, Heavy",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 2 (random 1D3−1) · **Burden** Light · **Enc** 4 · **Skill modifier** −5% to Physical skills · **Fits SIZ** ±1 · **Locations** All · **Cost** Inexpensive"
+    },
+    {
+      "name": "Plate, Full",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 8 (random 1D10) · **Burden** Cumbersome · **Enc** 25 · **Skill modifier** −25% to Physical skills · **Fits SIZ** −1 · **Locations** All but head · **Cost** Expensive"
+    },
+    {
+      "name": "Plate, Half",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 7 (random 1D8) · **Burden** Moderate · **Enc** 18 · **Skill modifier** −20% to Physical skills · **Fits SIZ** −1 · **Locations** All but head · **Cost** Expensive"
+    },
+    {
+      "name": "Ring Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 5 (random 1D6) · **Burden** Light · **Enc** 10 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±1 · **Locations** All but head · **Cost** Average"
+    },
+    {
+      "name": "Scale Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 6 (random 2D4−1) · **Burden** Moderate · **Enc** 20 · **Skill modifier** −15% to Physical skills · **Fits SIZ** ±1 · **Locations** All but head · **Cost** Average"
+    },
+    {
+      "name": "Ballistic Cloth",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 3/5 (random 1D3/1D6−1) · **Burden** Light · **Enc** 4 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±1 · **Locations** Arms, Chest · **Cost** Expensive"
+    },
+    {
+      "name": "Bulletproof Vest, Early",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 4 (random 1D4) · **Burden** Moderate · **Enc** 11 · **Skill modifier** −25% to Physical skills · **Fits SIZ** ±1 · **Locations** Chest · **Cost** Expensive"
+    },
+    {
+      "name": "Bulletproof Vest, Modern",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 4/8 (random 1D4/1D8) · **Burden** Light · **Enc** 8 · **Skill modifier** −5% to Physical skills · **Fits SIZ** ±3 · **Locations** Chest · **Cost** Expensive"
+    },
+    {
+      "name": "Flak Jacket",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 4 (random 1D4) · **Burden** Moderate · **Enc** 8 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±2 · **Locations** Arms, Chest · **Cost** Expensive"
+    },
+    {
+      "name": "Helmet, Heavy (Modern)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +6 (random +3 points) · **Burden** Light · **Enc** 3.5 · **Skill modifier** −25% to Perception skills · **Fits SIZ** ±1 · **Locations** Head · **Cost** Average"
+    },
+    {
+      "name": "Helmet, Light (Modern)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +3 (random +2 points) · **Burden** None · **Enc** 2.5 · **Skill modifier** −10% to Perception skills · **Fits SIZ** ±2 · **Locations** Head · **Cost** Inexpensive"
+    },
+    {
+      "name": "Riot Gear",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 12/6 (random 1D10+2) · **Burden** Moderate · **Enc** 12 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±1 · **Locations** All (includes helmet) · **Cost** Expensive"
+    },
+    {
+      "name": "Adaptive Mesh",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 6 (random 1D4+2) · **Burden** Light · **Enc** 2 · **Skill modifier** −5% to Physical skills · **Fits SIZ** ±1 · **Locations** All · **Cost** Expensive"
+    },
+    {
+      "name": "Assault Armor, Light",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 8 (random 2D6) · **Burden** Moderate · **Enc** 12 · **Skill modifier** −10% to Physical skills · **Fits SIZ** ±1 · **Locations** All (includes helmet) · **Cost** Expensive"
+    },
+    {
+      "name": "Assault Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 10 (random 2D4+2) · **Burden** Moderate · **Enc** 16 · **Skill modifier** −25% to Physical skills · **Fits SIZ** ±1 · **Locations** All (includes helmet) · **Cost** Expensive"
+    },
+    {
+      "name": "Energy Armor",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 1-20 · **Burden** Light · **Enc** 4 · **Skill modifier** −5% to Hide/Stealth/Perception per AV · **Fits SIZ** Any · **Locations** All (worn alone) · **Cost** Expensive"
+    },
+    {
+      "name": "Helmet, Heavy (Advanced)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +4 (random +4) · **Burden** Light · **Enc** 5 · **Skill modifier** −15% to Perception skills · **Fits SIZ** ±1 · **Locations** Head · **Cost** Average"
+    },
+    {
+      "name": "Helmet, Light (Advanced)",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** +3 (random +2) · **Burden** None · **Enc** 2 · **Skill modifier** −5% to Perception skills · **Fits SIZ** ±2 · **Locations** Head · **Cost** Average"
+    },
+    {
+      "name": "Powered Assault Armor, Light",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 14 (random 2D6+2) · **Burden** Cumbersome · **Enc** 36 · **Skill modifier** −20% to Physical/Manipulation skills; +3 STR, −3 DEX · **Fits SIZ** ±1 · **Locations** All · **Cost** Priceless"
+    },
+    {
+      "name": "Powered Assault Armor, Heavy",
+      "category": "Items",
+      "source": "Armor",
+      "body": "**AV** 16 (random 4D4) · **Burden** Cumbersome · **Enc** 48 · **Skill modifier** −50% to Physical/Manipulation skills; +6 STR, −6 DEX · **Fits SIZ** ±1 · **Locations** All · **Cost** Priceless"
+    },
+    {
+      "name": "Shield, Primitive",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 10% · **AV/HP** 10 · **Damage** 1D2+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Light · **Locations** Arm · **STR/DEX** 5/7 · **Enc** 2 · **Cost** Cheap"
+    },
+    {
+      "name": "Shield, Buckler",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 05% · **AV/HP** 15 · **Damage** 1D2+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Light · **Locations** Arm · **STR/DEX** 5/7 · **Enc** 1 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Full",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 22 · **Damage** 1D4+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Arm, Chest, Head · **STR/DEX** 11/9 · **Enc** 5 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Half",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 15 · **Damage** 1D2+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Arm, Chest · **STR/DEX** 5/7 · **Enc** 3 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Heater",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 20 · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Arm, Chest · **STR/DEX** 9/9 · **Enc** 3 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Hoplite",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 26 · **Damage** 1D4+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Cumbersome · **Locations** Abdomen, Arm, Chest · **STR/DEX** 12/8 · **Enc** 7 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Kite",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 22 · **Damage** 1D4+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Abdomen, Arm, Chest · **STR/DEX** 11/9 · **Enc** 5 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Large Round",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 22 · **Damage** 1D4+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Abdomen, Arm, Chest · **STR/DEX** 11/9 · **Enc** 5 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Round",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 20 · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Arm, Chest · **STR/DEX** 9/9 · **Enc** 4 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Spiked",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 20 · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Impale · **Burden** Moderate · **Locations** Arm, Chest · **STR/DEX** 9/9 · **Enc** 5 · **Cost** Average"
+    },
+    {
+      "name": "Shield, Target",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 15 · **Damage** 1D2+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Light · **Locations** Arm, Chest · **STR/DEX** 5/7 · **Enc** 3 · **Cost** Cheap"
+    },
+    {
+      "name": "Shield, Riot",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 15% · **AV/HP** 16 · **Damage** 1D3+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Moderate · **Locations** Abdomen, Arm, Chest, Head · **STR/DEX** 9/9 · **Enc** 3 · **Cost** Expensive"
+    },
+    {
+      "name": "Shield, Energy",
+      "category": "Items",
+      "source": "Shield",
+      "body": "**Base chance** 20% · **AV/HP** 25 · **Damage** 1D2+dm · **Attacks/round** 1 · **Special** Knockback · **Burden** Light · **Locations** Arm, Chest · **STR/DEX** 3/3 · **Enc** 1 · **Cost** Expensive"
+    },
+    {
+      "name": "Herbalist or Midwife’s Kit",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "Bandages, poultices, thread and needle, and herbal remedies of varying efficacy; used with the Knowledge (Herbalism) skill. Usually cheap."
+    },
+    {
+      "name": "First Aid Kit",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "Sterile bandages, minor ointments, eyewash, poison treatment, and small tools. Used with the First Aid skill. Usually cheap."
+    },
+    {
+      "name": "Doctor’s Bag",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "Pills, antibiotics, a stethoscope, and diagnostic/emergency-treatment tools. Used with First Aid, or Medicine for procedures. Expensive."
+    },
+    {
+      "name": "Surgery Kit",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "Sterile surgical tools, gloves, dressings, antiseptics, sutures — essential for the Medicine skill’s surgery use. Expensive."
+    },
+    {
+      "name": "Trauma Kit",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "Battlefield-oriented supplies: adrenalin shots, antitoxins, wound-packing gear, a portable defibrillator, limited surgical tools. Expensive."
+    },
+    {
+      "name": "Medi-kit",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "Advanced dermal regenerators, hypo-sprays, clotting agents, and a simple medical scanner. Makes First Aid attempts Easy and doubles hit points healed. Expensive."
+    },
+    {
+      "name": "Auto-doc",
+      "category": "Items",
+      "source": "Medical Gear",
+      "body": "A fully automated medical treatment system with 100% Medicine and First Aid, doubling hit points restored and halving recovery time. Expensive to Priceless."
+    },
+    {
+      "name": "Chemistry Set",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "Small quantities of chemicals, a microscope, and mixing/storage tools for basic Science (Chemistry) tasks. Cheap."
+    },
+    {
+      "name": "Computer",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "Aids Appraise, Art, Gaming, Knowledge, Science, Teach, and especially Research: up to +20% if suitable for the skill, none for an average setup, up to −20% for an inferior one."
+    },
+    {
+      "name": "Criminology Kit",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "Fingerprint and trace-evidence tools: collection bags, magnifying glasses, chemicals, black-light and normal flashlights. Expensive."
+    },
+    {
+      "name": "Disguise Kit",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "Skin dyes, makeup, wigs, false teeth/hair, and styling tools to change appearance. Cheap to Average commercially, Expensive if high-quality."
+    },
+    {
+      "name": "Lockpicks",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "From a few single picks to a sophisticated set with stethoscope and drills for opening locks. Cheap to Expensive."
+    },
+    {
+      "name": "Suppressor / Silencer",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "Muffles a firearm’s report but halves its base range; wears out after 1D100+10 shots. Cannot fit a shotgun or heavy machine gun. Expensive and often Restricted."
+    },
+    {
+      "name": "Telescopic Scope / Laser Sight",
+      "category": "Items",
+      "source": "Other Gear",
+      "body": "A scope doubles a firearm’s base range; a laser sight quadruples it. Especially effective with Aimed Attacks. Average value (precision scopes may be Expensive)."
+    }
+  ],
+  "monsters": [
+    {
+      "name": "Alligator or Crocodile",
+      "desc": "A large aquatic reptile. Alligators are smaller and weaker than crocodiles, with smaller jaws and are less aggressive.",
+      "characteristics": {
+        "STR": 25,
+        "CON": 18,
+        "SIZ": 25,
+        "POW": 7
+      },
+      "hp": 22,
+      "move": "Walk 7, Swim 6",
+      "damageBonus": "+2D6",
+      "armor": 5,
+      "armorNote": "hide",
+      "attacksText": "Bite 50%, 1D10+dm",
+      "skillsText": "Dodge 30%, Hide 50%, Search 35%, Sense 30%, Stealth 75%, Track 15%",
+      "source": "brp",
+      "id": "brp-alligator-or-crocodile",
+      "abilities": []
+    },
+    {
+      "name": "Bear",
+      "desc": "Can attack twice a round, with two claws or a claw and a bite. Grizzlies are larger and fiercer; polar bears are larger and more powerful still.",
+      "characteristics": {
+        "STR": 20,
+        "CON": 13,
+        "SIZ": 20,
+        "POW": 10
+      },
+      "hp": 17,
+      "move": "Walk 12, Swim 2",
+      "damageBonus": "+2D6",
+      "armor": 3,
+      "armorNote": "fur",
+      "attacksText": "Bite 25%, 1D10; Claw 25%, 1D6+dm",
+      "skillsText": "Climb 35%, Move Quietly 35%, Search 35%, Sense 35%",
+      "source": "brp",
+      "id": "brp-bear",
+      "abilities": []
+    },
+    {
+      "name": "Brontosaur",
+      "desc": "A gigantic herbivorous dinosaur. Attacks once a round with a tail lash (an area sweep) or a trample against prone or much smaller targets.",
+      "characteristics": {
+        "STR": 72,
+        "CON": 41,
+        "SIZ": 62,
+        "POW": 3
+      },
+      "hp": 57,
+      "move": "Walk 7",
+      "damageBonus": "+7D6",
+      "armor": 14,
+      "armorNote": "hide",
+      "attacksText": "Tail Lash 50%, 1D6+½dm; Trample 75%, 7D6+dm",
+      "skillsText": "Listen 35%, Sense 30%, Spot 35%",
+      "source": "brp",
+      "id": "brp-brontosaur",
+      "abilities": []
+    },
+    {
+      "name": "Condor, Eagle, etc.",
+      "desc": "A large bird of prey.",
+      "characteristics": {
+        "STR": 10,
+        "CON": 16,
+        "SIZ": 22,
+        "POW": 13,
+        "DEX": 19
+      },
+      "hp": 14,
+      "move": "Fly 14, Walk 2",
+      "damageBonus": "+1D6",
+      "armor": 1,
+      "armorNote": "feathers",
+      "attacksText": "Bite 45%, 1D6; Claw 45%, 1D6+dm",
+      "skillsText": "Dodge 50%, Sense 25%, Search 90%",
+      "source": "brp",
+      "id": "brp-condor-eagle-etc",
+      "abilities": []
+    },
+    {
+      "name": "Dog",
+      "desc": "A wild dog; wild dogs form packs of 1D8+3 or more. Use wolf statistics for larger dogs.",
+      "characteristics": {
+        "STR": 7,
+        "CON": 10,
+        "SIZ": 4,
+        "POW": 13,
+        "DEX": 13
+      },
+      "hp": 8,
+      "move": "Walk 10, Swim 6",
+      "damageBonus": "−1D4",
+      "armor": 0,
+      "attacksText": "Bite 30%, 1D6+½dm",
+      "skillsText": "Dodge 55%, Listen 75%, Sense 90%",
+      "source": "brp",
+      "id": "brp-dog",
+      "abilities": [],
+      "armorNote": ""
+    },
+    {
+      "name": "Elephant",
+      "desc": "A massive herbivore that prefers to charge or trample, but can also grab a target with its trunk to set up a trample or fling it away.",
+      "characteristics": {
+        "STR": 55,
+        "CON": 26,
+        "SIZ": 63,
+        "POW": 13
+      },
+      "hp": 45,
+      "move": "Walk 10, Swim 2",
+      "damageBonus": "+6D6",
+      "armor": 4,
+      "armorNote": "skin",
+      "attacksText": "Trample 50%, 4D6+dm; Plunge 25%, 6D6+dm; Trunk 50%, constriction; Gore 25%, 2D6+dm",
+      "skillsText": "Listen 65%, Search 35%, Sense 55%",
+      "source": "brp",
+      "id": "brp-elephant",
+      "abilities": []
+    },
+    {
+      "name": "Gorilla",
+      "desc": "Attacks twice a round: two fists, bite and strike, or bite and grapple. Females are smaller than males.",
+      "characteristics": {
+        "STR": 26,
+        "CON": 17,
+        "SIZ": 19,
+        "POW": 17
+      },
+      "hp": 16,
+      "move": "Walk 12, Swim 2",
+      "damageBonus": "+2D6",
+      "armor": 3,
+      "armorNote": "fur",
+      "attacksText": "Bite 45%, 2D6; Wrestle 45%, 3D6+dm",
+      "skillsText": "Climb 70%, Hide 40%, Listen 35%, Move Quietly 60%, Search 30%, Sense 40%",
+      "source": "brp",
+      "id": "brp-gorilla",
+      "abilities": []
+    },
+    {
+      "name": "Hawk",
+      "desc": "Attacks with both claws simultaneously and bites 5 DEX ranks later.",
+      "characteristics": {
+        "STR": 2,
+        "CON": 5,
+        "SIZ": 2,
+        "POW": 7,
+        "DEX": 29
+      },
+      "hp": 4,
+      "move": "Fly 12, Walk 1",
+      "damageBonus": "−1D6",
+      "armor": 0,
+      "attacksText": "Claw 45%, 1D4+dm; Bite 30%, 1D3+dm",
+      "skillsText": "Dodge 75%, Spot 100%",
+      "source": "brp",
+      "id": "brp-hawk",
+      "abilities": [],
+      "armorNote": ""
+    },
+    {
+      "name": "Horse",
+      "desc": "Untrained horses flee from blood, fire, gunfire, screams, or explosions. Warhorses hold ground with a successful Ride check and are tougher.",
+      "characteristics": {
+        "STR": 29,
+        "CON": 13,
+        "SIZ": 26,
+        "POW": 11
+      },
+      "hp": 20,
+      "move": "Walk 12, Swim 2",
+      "damageBonus": "+2D6",
+      "armor": 1,
+      "armorNote": "hide",
+      "attacksText": "Kick 20%, 2D8+dm; Plunge 10%, 2D6+dm; Bite 10%, 1D6",
+      "skillsText": "Dodge 45%, Hide 25%, Move Quietly 25%, Sense 80%",
+      "source": "brp",
+      "id": "brp-horse",
+      "abilities": []
+    },
+    {
+      "name": "Insect Swarm",
+      "desc": "A hive of stinging insects (wasps, bees, army ants). The size of the hive determines stings per round (1D6 for a small nest, up to 8D6 for a huge hive); venom potency depends on stings and insect type.",
+      "characteristics": {},
+      "hp": 0,
+      "move": "Fly 12, Walk 10",
+      "damageBonus": "None",
+      "armor": 0,
+      "attacksText": "See description — automatic stings each round until the swarm is escaped, deterred, or destroyed.",
+      "skillsText": "Search 50%",
+      "source": "brp",
+      "id": "brp-insect-swarm",
+      "abilities": [],
+      "armorNote": ""
+    },
+    {
+      "name": "Lion",
+      "desc": "Can make one claw and one bite each round; if both hit, it hangs on and keeps biting next round, raking with hind claws instead of clawing.",
+      "characteristics": {
+        "STR": 19,
+        "CON": 11,
+        "SIZ": 17,
+        "POW": 13
+      },
+      "hp": 14,
+      "move": "Walk 10, Swim 2",
+      "damageBonus": "+1D6",
+      "armor": 2,
+      "armorNote": "skin",
+      "attacksText": "Bite 40%, 1D10; Claw 60%, 1D6+dm; Rip 80%, 2D6+dm",
+      "skillsText": "Dodge 20%, Hide 20%, Listen 30%, Sense 40%, Track 15%",
+      "source": "brp",
+      "id": "brp-lion",
+      "abilities": []
+    },
+    {
+      "name": "Rat Pack",
+      "desc": "Each \"pack\" is ten rats; multiply the number of packs by ×5 for each pack’s attack chance per round. A successful attack automatically kills one rat and chases off the rest. Bites may carry disease.",
+      "characteristics": {},
+      "hp": 0,
+      "move": "Walk 10, Swim 6",
+      "damageBonus": "None",
+      "armor": 0,
+      "attacksText": "# of packs ×5%, 1D3 damage",
+      "skillsText": "Climb 75%, Search 75%, Swim 75%",
+      "source": "brp",
+      "id": "brp-rat-pack",
+      "abilities": [],
+      "armorNote": ""
+    },
+    {
+      "name": "Shark",
+      "desc": "If its bite misses or is dodged, it attempts a fin slash 5 DEX ranks later. After a hit, some sharks keep biting and thrashing round after round.",
+      "characteristics": {
+        "STR": 23,
+        "CON": 16,
+        "SIZ": 23,
+        "POW": 11
+      },
+      "hp": 23,
+      "move": "Swim 10",
+      "damageBonus": "+2D6",
+      "armor": 5,
+      "armorNote": "skin",
+      "attacksText": "Bite 75%, 2D6+dm; Fin Slash 50%, 2D3+½dm",
+      "skillsText": "Sense 95%, Swim 100%",
+      "source": "brp",
+      "id": "brp-shark",
+      "abilities": []
+    },
+    {
+      "name": "Snake (Constrictor)",
+      "desc": "Bites, then attempts to constrict 5 DEX ranks later. A constricted target takes chest damage each round and must break free with a STR resistance roll.",
+      "characteristics": {
+        "STR": 23,
+        "CON": 13,
+        "SIZ": 18,
+        "POW": 13
+      },
+      "hp": 16,
+      "move": "Slither 6, Swim 4",
+      "damageBonus": "+1D6",
+      "armor": 1,
+      "armorNote": "skin",
+      "attacksText": "Bite 65%, 1D4+½dm; Constrict 40%, 1D6+dm; Swallow 100%, special",
+      "skillsText": "Climb 85%, Dodge 60%, Hide 75%, Sense 75%, Stealth 90%, Swim 70%",
+      "source": "brp",
+      "id": "brp-snake-constrictor",
+      "abilities": []
+    },
+    {
+      "name": "Snake (Venomous)",
+      "desc": "A venomous snake; see Poisons (p.151) for potency by species.",
+      "characteristics": {
+        "STR": 5,
+        "CON": 7,
+        "SIZ": 5,
+        "POW": 5
+      },
+      "hp": 6,
+      "move": "Slither 6, Swim 4",
+      "damageBonus": "−1D6",
+      "armor": 0,
+      "attacksText": "Bite 70%, 1D2+½dm (impaling) + poison",
+      "skillsText": "Climb 50%, Dodge 50%, Hide 80%, Sense 65%, Stealth 90%, Swim 70%",
+      "source": "brp",
+      "id": "brp-snake-venomous",
+      "abilities": [],
+      "armorNote": ""
+    },
+    {
+      "name": "Squid (Giant)",
+      "desc": "Can attack up to five targets simultaneously with its beak and ten tentacles; a second tentacle latching onto a target begins constriction. Its poison POT equals its CON.",
+      "characteristics": {
+        "STR": 33,
+        "CON": 13,
+        "SIZ": 33,
+        "POW": 19
+      },
+      "hp": 23,
+      "move": "Swim 10, \"Walk\" 4",
+      "damageBonus": "+3D6",
+      "armor": 2,
+      "armorNote": "hide",
+      "attacksText": "Beak 45%, 1D10+½dm + poison; Tentacle 45%, 1D6+dm",
+      "skillsText": "Hide 70%, Swim 100%",
+      "source": "brp",
+      "id": "brp-squid-giant",
+      "abilities": []
+    },
+    {
+      "name": "Tiger",
+      "desc": "Makes two simultaneous claws and a bite (5 DEX ranks later); if both claws hit, it hangs on and rips with hind claws next round.",
+      "characteristics": {
+        "STR": 23,
+        "CON": 11,
+        "SIZ": 17,
+        "POW": 11
+      },
+      "hp": 19,
+      "move": "Walk 12",
+      "damageBonus": "+1D6",
+      "armor": 2,
+      "armorNote": "skin",
+      "attacksText": "Bite 45%, 1D10+½dm; Claw 70%, 1D8+dm; Ripping 80%, 2D8+dm",
+      "skillsText": "Dodge 45%, Hide 80%, Jump 55%, Stealth 75%, Sense 70%, Track 50%",
+      "source": "brp",
+      "id": "brp-tiger",
+      "abilities": []
+    },
+    {
+      "name": "Tyrannosaurus Rex",
+      "desc": "Bites first, then 5 DEX ranks later seizes with both foreclaws (substituted for a kick against larger targets), sometimes climbing onto prey to bite and kick.",
+      "characteristics": {
+        "STR": 67,
+        "CON": 35,
+        "SIZ": 53,
+        "POW": 13
+      },
+      "hp": 44,
+      "move": "Walk 12",
+      "damageBonus": "+6D6",
+      "armor": 10,
+      "armorNote": "hide",
+      "attacksText": "Bite 50%, 2D6+dm; Foreclaw 35%, 1D4+½dm; Kick 45%, 1D6+dm",
+      "skillsText": "Jump 50%, Listen 45%, Sense 35%, Spot 50%, Track 50%",
+      "source": "brp",
+      "id": "brp-tyrannosaurus-rex",
+      "abilities": []
+    },
+    {
+      "name": "Wolf",
+      "desc": "Hunts in packs of a dozen to 40 or more, fighting cooperatively; a large wolf may try to knock a target prone so the pack can tear at it.",
+      "characteristics": {
+        "STR": 13,
+        "CON": 11,
+        "SIZ": 8,
+        "POW": 13
+      },
+      "hp": 10,
+      "move": "Walk 10",
+      "damageBonus": "None",
+      "armor": 2,
+      "armorNote": "fur",
+      "attacksText": "Bite 30%, 1D8+½dm",
+      "skillsText": "Dodge 35%, Listen 75%, Sense 90%, Spot 60%, Track 80%",
+      "source": "brp",
+      "id": "brp-wolf",
+      "abilities": []
+    },
+    {
+      "name": "Centaur",
+      "desc": "Half-human, half-horse. Wise and pastoral, keepers of lore, fine craftsmen, musicians, and warriors; freely intermingle with humans.",
+      "characteristics": {
+        "STR": 17,
+        "CON": 11,
+        "SIZ": 26,
+        "INT": 13,
+        "POW": 11,
+        "DEX": 14,
+        "CHA": 11
+      },
+      "hp": 19,
+      "move": "12",
+      "damageBonus": "+1D4 (human); +2D6 (horse)",
+      "armor": 1,
+      "armorNote": "hide, can wear armor",
+      "attacksText": "Composite Bow 45%, 1D8+1+½dm; Lance 35%, 1D10+1+dm; Bastard Sword 40%, 1D10+1+dm; Target Shield 50%, 1D2+dm; Kick 50%, 1D6+dm; Rear and Plunge 35%, 2D8+dm; Trample 25%, 2D6+dm",
+      "skillsText": "Appraise 50%, Bargain 35%, Command 25%, Dodge 35%, Etiquette 35%, Insight 40%, First Aid 40%, Jump 60%, Knowledge (History) 50%, Listen 35%, Perform (Lyre) 35%, Sense 50%, Spot 40%, Swim 35%, Track 25%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Kicks 5 DEX ranks after a melee weapon strike; melee damage modifier uses STR×2 (normal for kicks/trample/charge). Prefers magic to sorcery: Enhance 35%, Heal 60%, Illusion 45%, Perception 40%, Vision 50%."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-centaur"
+    },
+    {
+      "name": "Dragon",
+      "desc": "Gigantic, flame-breathing flying reptiles with armored hides; solitary hoarders. Some are intelligent, most are cunning beasts. This represents a bestial dragon.",
+      "characteristics": {
+        "STR": 70,
+        "CON": 35,
+        "SIZ": 70,
+        "INT": 10,
+        "POW": 20,
+        "DEX": 11
+      },
+      "hp": 53,
+      "move": "4 (10 flying)",
+      "damageBonus": "+8D6",
+      "armor": 12,
+      "armorNote": "scales",
+      "attacksText": "Breathe Flame 75%, 4D6+special; Bite 65%, 3D6+dm; Claw 50%, 1D6+dm; Tail 50%, 1D6+½dm",
+      "skillsText": "Climb 65%, Dodge 55%, First Aid 45%, Hide 35%, Jump 45%, Sense 30%, Spot 45%, Stealth 45%, Swim 35%, Track 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Fire covers a 3m area at range equal to POW in meters; costs 1D6 power/fatigue points to breathe and can ignite targets. On the ground, makes two attacks a round (bite or breathe, plus claw or tail 5 DEX ranks later); tail sweep is an area attack. Intelligent dragons (INT 4D6) know magic or sorcery and may have other breath weapons."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-dragon"
+    },
+    {
+      "name": "Dwarf",
+      "desc": "Traditionally live underground; famed for short tempers, fine craftsmanship, ancient grudges, excessive drinking, and long beards.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 15,
+        "SIZ": 6,
+        "INT": 13,
+        "POW": 10,
+        "DEX": 10,
+        "CHA": 10
+      },
+      "hp": 12,
+      "move": "6",
+      "damageBonus": "None",
+      "armor": 8,
+      "armorNote": "chain and a light helm",
+      "attacksText": "Hammer 35%, 1D6+dm; Battleaxe 50%, 1D8+2+dm; Heavy Crossbow 40%, 2D4+2; Buckler 50%, 1D2+dm",
+      "skillsText": "Appraise 50%, Bargain 45%, Brawl 50%, Craft (blacksmithing) 45%, Dodge 40%, Grapple 45%, Knowledge (Dwarf-lore) 35%, Language (Human) 35%, Language (Dwarf) 65%, Listen 45%, Repair (weapons and armor) 35%, Spot 45%, Status 35%, Throw 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Traditionally shun magic, though some use magic or sorcery. Natural Super Sense (Dark Vision) with levels equal to half POW (round up)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-dwarf"
+    },
+    {
+      "name": "Elf",
+      "desc": "Traditionally forest dwellers with a strong connection to nature; long-lived, aloof, and mysterious. Half-elves average both parents’ characteristics.",
+      "characteristics": {
+        "STR": 9,
+        "CON": 11,
+        "SIZ": 9,
+        "INT": 17,
+        "POW": 13,
+        "DEX": 14,
+        "CHA": 11
+      },
+      "hp": 10,
+      "move": "11",
+      "damageBonus": "None",
+      "armor": 1,
+      "armorNote": "soft leather",
+      "attacksText": "Longbow 55%, 1D8+1+½dm; Short Sword 45%, 1D6+1+dm; Short Spear 40%, 1D6+1+dm; Short Spear (thrown) 55%, 1D6+1+½dm",
+      "skillsText": "Climb 65%, Dodge 55%, First Aid 45%, Hide 35%, Jump 45%, Knowledge (Elf-lore) 45%, Language (Human) 40%, Language (Elvish) 85%, Listen 55%, Perform (Sing) 35%, Sense 30%, Spot 45%, Stealth 45%, Swim 35%, Track 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Commonly use magic; natural Super Sense (Night Vision) at half POW (round up). Common magic: Dispel 45%, Heal 50%, Illusion 35%, Perception 60%, Resistance 50%, Vision 60%."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-elf"
+    },
+    {
+      "name": "Ghost",
+      "desc": "The spiritual remnant of a living being, attached to a place, object, or person, usually tied to its death. Frequently insane and driven to right some past wrong.",
+      "characteristics": {
+        "INT": 13,
+        "POW": 14,
+        "CHA": 11
+      },
+      "hp": 0,
+      "move": "14 (equal to POW)",
+      "damageBonus": "None",
+      "armor": 0,
+      "armorNote": "immaterial",
+      "attacksText": "Ghostly Combat, POW vs. POW, 1D3 power points",
+      "skillsText": "As appropriate.",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Ghostly combat is a POW vs. POW roll; the loser drains 1D3 power points (some ghosts drain more, or inflict HP damage instead). A ghost reduced to 0 power points may possess the target. Immaterial — not subject to the Intangibility superpower’s limits. May have other powers suited to its former life: psychic powers (Cryokinesis, Mind Blast, Mind Control, Pyrokinesis, Telekinesis) or superpowers (Drain, Energy Control, Invisibility, Teleport, Weather Control)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-ghost"
+    },
+    {
+      "name": "Ghoul",
+      "desc": "Hideously deformed humans who feed on the dead, caught between life and death; bestial and barely intelligent. Formed when a malignant spirit possesses a fresh corpse.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 11,
+        "SIZ": 13,
+        "INT": 11,
+        "DEX": 11
+      },
+      "hp": 12,
+      "move": "8",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "armorNote": "may wear armor",
+      "attacksText": "Claw 30%, 1D6+dm; Bite 30%, 1D6+dm + venom; Howl 100%, special",
+      "skillsText": "Climb 60%, Dodge 45%, Grapple 50%, Hide 35%, Jump 50%, Listen 60%, Sense 40%, Spot 50%, Stealth 60%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Bite injects venom (POT = CON); enough accumulated POT paralyzes the target for days equal to their CON. Howl (½ CON meters, round up) is a POW vs. INT roll that stuns failing targets until the howling stops; costs 1 power point. Natural Super Sense (Night Vision) at half INT (round up). More intelligent ghouls may know sorcery. Gains power points by eating corpses (1 per 3 SIZ) and must spend 1 power point daily or its body decomposes."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-ghoul"
+    },
+    {
+      "name": "Giant",
+      "desc": "Huge, ugly, surly humanoids with a taste for human flesh. This is a fully-grown, 8-meter generic giant; giants grow 1D6+6 STR and SIZ every ten years.",
+      "characteristics": {
+        "STR": 57,
+        "CON": 26,
+        "SIZ": 57,
+        "INT": 10,
+        "POW": 10,
+        "DEX": 10,
+        "CHA": 7
+      },
+      "hp": 42,
+      "move": "18",
+      "damageBonus": "+6D6",
+      "armor": 12,
+      "armorNote": "skin (6 + damage-modifier dice)",
+      "attacksText": "Club 35%, 3D6+dm (+knockback); Kick/Stomp 35%, 1D6+dm (+knockback); Thrown Rock 35%, 2D6+½dm",
+      "skillsText": "Sense 60%, Spot 40%, Throw 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Uses enormous clubs (10 + damage-modifier dice HP) or tree trunks, specializing in sweep attacks. Some powerful or older giants use magic or sorcery."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-giant"
+    },
+    {
+      "name": "Griffin",
+      "desc": "A chimerical flying predator: the body and hindquarters of a lion with the head, forelegs, and wings of an eagle. Traditionally nests on mountaintops.",
+      "characteristics": {
+        "STR": 35,
+        "CON": 23,
+        "SIZ": 35,
+        "INT": 6,
+        "POW": 17,
+        "DEX": 23
+      },
+      "hp": 29,
+      "move": "8 (12 flying)",
+      "damageBonus": "+3D6",
+      "armor": 6,
+      "armorNote": "hide",
+      "attacksText": "Bite 70%, 1D6+dm; Claw 70%, 1D6+dm",
+      "skillsText": "Dodge 30%, Fly 100%, Listen 50%, Sense 65%, Spot 75%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Attacks with both claws simultaneously and bites 5 DEX ranks later."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-griffin"
+    },
+    {
+      "name": "Halfling",
+      "desc": "Small, peaceful, civilized human-like beings fond of eating, pipe-smoking, and drinking; live in rural communities, often barefoot.",
+      "characteristics": {
+        "STR": 7,
+        "CON": 19,
+        "SIZ": 4,
+        "INT": 13,
+        "POW": 10,
+        "DEX": 17,
+        "CHA": 11
+      },
+      "hp": 12,
+      "move": "6",
+      "damageBonus": "−1D6",
+      "armor": 0,
+      "armorNote": "may wear armor",
+      "attacksText": "Short Sword 35%, 1D6+1+dm; Sling 35%, 1D8+½dm; Thrown Rock 50%, 1D4 (no damage modifier)",
+      "skillsText": "Appraise 35%, Bargain 35%, Craft (farming) 75%, Dodge 60%, Drive (wagon) 45%, Grapple 35%, Hide 65%, Knowledge (Halfling-lore) 35%, Language (Halfling) 75%, Language (Human) 65%, Listen 65%, Sense 45%, Spot 50%, Throw 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Expert at throwing rocks — ignore the negative damage modifier for thrown rocks. Traditionally shun magic; fewer still use sorcery."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-halfling"
+    },
+    {
+      "name": "Minotaur",
+      "desc": "Bull-headed, hoofed humanoids; surly and violent, with little civilization of their own, dwelling in ruins or the wild. Some speak; others are bestial.",
+      "characteristics": {
+        "STR": 23,
+        "CON": 16,
+        "SIZ": 23,
+        "INT": 7,
+        "POW": 11,
+        "DEX": 11,
+        "CHA": 7
+      },
+      "hp": 19,
+      "move": "6",
+      "damageBonus": "+2D6",
+      "armor": 3,
+      "armorNote": "hide, can wear leather",
+      "attacksText": "Great Axe 55%, 3D6+dm; Head Butt 35%, 1D6+dm (+knockback); Brawl 50%, 1D3+dm",
+      "skillsText": "Dodge 40%, Listen 35%, Sense 30%, Spot 35%, Track 55%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Can use head butt or a weapon in a round, not both unless capable of two attacks. If wounded or scoring a special success, goes berserk for 24−CON turns (as the Fury sorcery spell); can shake it off with a successful INT×1 roll, then is fatigued. Rarely knows magic."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-minotaur"
+    },
+    {
+      "name": "Mummy",
+      "desc": "An undead creature formed from a preserved corpse, animated by curse or necromancy, often guarding a temple or tomb. Fire is unusually effective against them.",
+      "characteristics": {
+        "STR": 21,
+        "CON": 17,
+        "SIZ": 13,
+        "INT": 11,
+        "POW": 16,
+        "DEX": 7
+      },
+      "hp": 15,
+      "move": "8",
+      "damageBonus": "+1D6",
+      "armor": 3,
+      "armorNote": "skin, may wear armor",
+      "attacksText": "Fist 70%, 1D3+dm; Grapple 25%, special; Short Sword 45%, 1D6+1+dm",
+      "skillsText": "Language (ancient tongue) 90%, Listen 50%, Sense 45%, Spot 50%, Stealth 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Two fist attacks a round; if both hit, grapples and chokes next round. It is twice as easy to ignite a mummy and its fires are harder to extinguish. May remember sorcery from its former life — a sorcerer-mummy might know Brazier of Power (4), Gift of the Earth (4), Pox (1), Sorcerer’s Talons (2)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-mummy"
+    },
+    {
+      "name": "Orc",
+      "desc": "Savage, bestial humanoids who despise humans, elves, and dwarves; grayish skin, fangs, pointed ears. Prefer darkness; enslave and cannibalize captives.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 11,
+        "SIZ": 9,
+        "INT": 11,
+        "POW": 10,
+        "DEX": 14,
+        "CHA": 7
+      },
+      "hp": 10,
+      "move": "8",
+      "damageBonus": "None",
+      "armor": 6,
+      "armorNote": "ring and light helmet",
+      "attacksText": "Scimitar 35%, 1D8+1+dm; Composite Bow 35%, 1D8+1+½dm; Short Spear 35%, 1D6+1+dm; Short Spear (thrown) 35%, 1D6+1+½dm; Spiked Shield 35%, 1D3+dm",
+      "skillsText": "Climb 55%, Dodge 40%, Hide 35%, Knowledge (Orc-lore) 35%, Language (Human) 25%, Language (Orcish) 60%, Listen 50%, Ride (wolf) 50%, Sense 35%, Spot 45%, Stealth 40%, Track 30%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Sorcery is orc society’s most fearsome power; sorcerer-orcs (POW 16+) often lead as priests, knowing spells like Cloak of Night (2), Pox (1), Rat’s Vision (1), Sorcerer’s Razor (1), Sorcerer’s Speed (2), Ward (3). \"Greater\" orcs are larger (STR 5D6, CON 3D6+3, SIZ 3D6+6); \"lesser\" orcs are weaker (STR 3D6, SIZ 2D6)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-orc"
+    },
+    {
+      "name": "Skeleton",
+      "desc": "Animated bones created or summoned by magic or an ancient curse, usually guarding treasure or a tomb. Move at their living speed but cannot swim, and never tire.",
+      "characteristics": {
+        "STR": 11,
+        "SIZ": 13,
+        "INT": 11,
+        "POW": 1,
+        "DEX": 11
+      },
+      "hp": 13,
+      "move": "10",
+      "damageBonus": "None",
+      "armor": 0,
+      "armorNote": "may wear armor",
+      "attacksText": "Broadsword 55%, 1D8+1+dm; Self Bow 50%, 1D6+1+½dm; Large Round Shield 55%, 1D4+dm",
+      "skillsText": "Dodge 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "No CON — hit points equal SIZ. Immune to bleeding/impaling special effects and takes no damage at all from thrusting weapons (unless a special/critical, in which case damage applies but not the secondary effect). Any blow has a chance of shattering the skeleton outright equal to the damage done ×4%, in addition to normal HP loss."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-skeleton"
+    },
+    {
+      "name": "Troll",
+      "desc": "Huge, flesh-eating humanoids with greenish-black hide and long claws; dwell in caves, mountains, or under bridges, nocturnal and shunning sunlight. Trollwives are smaller but smarter and faster.",
+      "characteristics": {
+        "STR": 23,
+        "CON": 13,
+        "SIZ": 26,
+        "INT": 7,
+        "POW": 7,
+        "DEX": 10,
+        "CHA": 4
+      },
+      "hp": 20,
+      "move": "6",
+      "damageBonus": "+2D6",
+      "armor": 3,
+      "armorNote": "skin",
+      "attacksText": "Tree Trunk Club 45%, 1D10+2+dm; Claw 50%, 1D6+dm; Grapple 50%, special",
+      "skillsText": "Dodge 35%, Sense 55%, Spot 55%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Regenerates 1D3 hit points per combat round (1 per wounded location if using hit locations) unless dead, in sunlight, or wounded by fire. Natural Super Sense (Night Vision) at half POW (round up). Its club is like a giant’s (10 + damage-modifier dice HP) and it cannot parry the round it uses club-then-claw. Trollwives are usually sorcery-using witches (Curse of Sorcery (4), Pox (1), Undo Sorcery (2), Witch Sight (3))."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-troll"
+    },
+    {
+      "name": "Unicorn",
+      "desc": "A horse-like magical animal with a single straight horn; solitary, peaceful, and highly sensitive to magic. Trusting of maidenly humans and elves.",
+      "characteristics": {
+        "STR": 31,
+        "CON": 13,
+        "SIZ": 25,
+        "INT": 13,
+        "POW": 19,
+        "DEX": 13,
+        "CHA": 14
+      },
+      "hp": 19,
+      "move": "12",
+      "damageBonus": "+2D6",
+      "armor": 0,
+      "attacksText": "Horn 75%, 1D10+dm; Kick 40%, 1D8+dm; Rear & Plunge 40%, 2D8+dm; Trample 75%, 2D6+dm",
+      "skillsText": "Dodge 35%, Hide 65%, Insight 50%, Jump 90%, Listen 70%, Sense 80%, Spot 75%, Stealth 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Can heal wounds by touch with its horn (1 power point per HP restored; 6+ points reattaches a severed limb). Can cure poison/disease-drained characteristics at a cost of 1 permanent POW per point cured. Detects poison by touching it with its horn; a cup made from the horn shatters if poisoned."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-unicorn",
+      "armorNote": ""
+    },
+    {
+      "name": "Vampire",
+      "desc": "Undead who survive by drinking blood, created when a victim shares blood with a vampire and dies. Some retain their intelligence and move through society unnoticed; others are little more than beasts.",
+      "characteristics": {
+        "STR": 21,
+        "CON": 21,
+        "SIZ": 11,
+        "INT": 13,
+        "POW": 13,
+        "DEX": 11,
+        "CHA": 11
+      },
+      "hp": 16,
+      "move": "12",
+      "damageBonus": "+1D6",
+      "armor": 0,
+      "armorNote": "can wear armor",
+      "attacksText": "Bite 50%, 1D4+½dm + Blood Drain; Claw 50%, 1D4+dm + Chill Touch; Hypnotic Gaze, POW vs. POW, special; Grapple 75%, special",
+      "skillsText": "Dodge 50%, Etiquette 50%, Fly 90%, Hide 70%, Insight 60%, Jump 75%, Knowledge (History) 75%, Language (ancient) 75%, Language (modern) 50%, Listen 60%, Persuade 60%, Sense 75%, Spot 75%, Stealth 80%, Track 75%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "One bite and two claws a round (or one claw and a hypnotic gaze); grapples and drains blood after both claws and a bite connect. Blood Drain siphons 1D6 STR or power points a round (CON once STR is gone; 0 CON kills), converted to the vampire’s own power points (max = its CON) — a vampire has no POW of its own. Chill Touch drains 1D3 power points a round via a power point resistance roll after a claw hit. Hypnotic Gaze (current power points vs. target POW) forces simple commands. Night Sight combines Dark/Infrared/Night Vision at half INT. Regenerates 1D3 HP/round unless in sunlight or near a holy symbol. May also command lesser undead/animals (Legions of the Night), turn to mist, shape-shift into wolf/bat/rat-swarm, or cast double the normal human capacity of magic/sorcery spells."
+        },
+        {
+          "name": "Weaknesses",
+          "text": "Loses 1D6 power points daily (Difficult rolls at 1-2 left); takes 1 damage/round in direct sunlight and cannot regenerate, shape-change, mist, or gaze while in it; double damage from fire; decapitation is final; holy symbols and holy water (acid, 1D4/round) harm it; loses 3D6 power points/day without 4+ hours in native earth; a wooden stake through the heart (1D3+dm, 6 HP, base 15%) disintegrates it."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-vampire"
+    },
+    {
+      "name": "Werewolf",
+      "desc": "A shape-changer between human, hybrid, and wolf forms (lycanthropy), sometimes voluntary, sometimes tied to the full moon. In human form it has ordinary human characteristics.",
+      "characteristics": {
+        "STR": 21,
+        "CON": 13,
+        "SIZ": 11,
+        "INT": 13,
+        "POW": 13,
+        "DEX": 13
+      },
+      "hp": 12,
+      "move": "12 (hybrid) / 13 (wolf)",
+      "damageBonus": "+1D4 (hybrid) / +1D6 (wolf)",
+      "armor": 1,
+      "armorNote": "fur; immune to normal weapons",
+      "attacksText": "Hybrid: Bite 50%, 1D4+½dm; Claws 65%, 1D6+dm. Wolf: Bite 65%, 1D8+½dm; Claws 45%, 1D6+dm",
+      "skillsText": "Climb 75%, Dodge 65%, Hide 60%, Jump 80%, Listen 70%, Sense 90%, Spot 70%, Track 90%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Immune to all damage but magic, fire, and silver — other attacks simply bounce off. Regenerates 1 HP/round (not damage from silver). Can shift between human, hybrid, and wolf forms in 5 DEX ranks at no power point cost. Makes one bite and two claw attacks a round in any form."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-werewolf"
+    },
+    {
+      "name": "Zombie",
+      "desc": "An animated corpse raised by necromancy, voodoo, demonic possession, or toxins; thirsts for flesh, usually mute, not very bright, and easily fooled.",
+      "characteristics": {
+        "STR": 16,
+        "CON": 16,
+        "SIZ": 13,
+        "INT": 6,
+        "POW": 1,
+        "DEX": 7,
+        "CHA": 4
+      },
+      "hp": 14,
+      "move": "4",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "attacksText": "Bite 30%, 1D3+½dm; Claw 25%, 1D3+dm; Grapple 35%, special; Large Club 35%, 1D8+1+dm",
+      "skillsText": "Sense 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Weapon skill equals DEX×5; never dodges or parries. Most slashing/crushing/impaling weapons do only half damage; fire does full damage. Some types can only be finished by a special/critical hit to the head. Some are infectious — a successful bite turns the victim in a number of turns equal to their CON."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-zombie",
+      "armorNote": ""
+    },
+    {
+      "name": "Angel",
+      "desc": "A holy being, emissary of a divine power, serving as messenger, guardian, soldier, or mentor. This example is a winged humanoid with a breastplate and flaming sword.",
+      "characteristics": {
+        "STR": 26,
+        "CON": 31,
+        "SIZ": 13,
+        "INT": 13,
+        "POW": 26,
+        "DEX": 19,
+        "CHA": 26
+      },
+      "hp": 22,
+      "move": "10 (12 flying)",
+      "damageBonus": "+1D6",
+      "armor": 10,
+      "armorNote": "plate breastplate + 10-pt divine radiance",
+      "attacksText": "Flaming Broad Sword 200%, 1D8+1+dm +2D6 fire; Holy Fire 100%, 10D6 fire; Voice of Heaven 100%, special",
+      "skillsText": "Command 100%, Dodge 100%, Flight 100%, Insight 75%, Knowledge (any) 100%, Language (any) 100%, Sense 90%, Spot 90%, Teach 90%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Divine Radiance grants 10-pt armor vs. any damage. Flight at levels equal to POW, free. Healing Touch restores HP at 1 per power point and can cure any infirmity for 1 permanent POW each. Holy Fire is a 3m-square flame strike doing 10D6 (10 power points, once/day). Invisibility at half POW in levels for 3 power points. Voice of Heaven stuns a 10m radius (POW vs. POW) for 3 power points. May know magic (Countermagic, Dispel, Enhance, Light, Speak to Mind, Teleport, all at 100%) or superpowers; rarely sorcery, never mutation."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-angel"
+    },
+    {
+      "name": "Demon, Greater",
+      "desc": "An infernal being summoned or manifest for terrible purpose; may be bestial or urbane and persuasive. This represents a combat-oriented, clawed and horned demon.",
+      "characteristics": {
+        "STR": 35,
+        "CON": 23,
+        "SIZ": 23,
+        "INT": 11,
+        "POW": 17,
+        "DEX": 17,
+        "CHA": 21
+      },
+      "hp": 23,
+      "move": "10 (12 flying)",
+      "damageBonus": "+2D6",
+      "armor": 8,
+      "armorNote": "tough hide, may wear armor",
+      "attacksText": "Great Sword (one-handed) 150%, 2D8+dm +2D6 flame; Whip 90%, 1D3−1+½dm entangle +1D6 fire; Flame Breath 100%, 6D6 fire; Claws 150%, 1D6+dm; Grapple 150%, special",
+      "skillsText": "Climb 90%, Dodge 75%, Fly 100%, Jump 75%, Sense 75%, Spot 75%, Throw 75%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Aura of Terror (POW vs. POW in a POW-meter radius, 1 power point) inflicts fear making all actions Difficult. Blight taints the land within POW×100m over 30−POW days. Flame Breath is a 3m-square, 6D6 area attack at CON meters range for 6 power points, burning three extra rounds. Flies tirelessly. Regenerates 1D6 HP/round for free. Sheath of Smoke and Fire burns anyone within 2m for 1D6/round for 1 power point. May have one or more Chaotic Features."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-demon-greater"
+    },
+    {
+      "name": "Demon, Lesser",
+      "desc": "A smaller demon summoned by a sorcerer or sent as an emissary; a grotesque, emaciated, gargoyle-like creature. Not cowardly, but prefers non-combat means.",
+      "characteristics": {
+        "STR": 10,
+        "CON": 11,
+        "SIZ": 10,
+        "INT": 10,
+        "POW": 13,
+        "DEX": 14,
+        "CHA": 7
+      },
+      "hp": 10,
+      "move": "8 (12 flying)",
+      "damageBonus": "None",
+      "armor": 1,
+      "armorNote": "scaled hide",
+      "attacksText": "Claw 50%, 1D3+dm; Bite 35%, 1D3+½dm; Grapple 45%, special",
+      "skillsText": "Bargain 55%, Climb 65%, Dodge 50%, Fast Talk 40%, Fly 75%, Hide 45%, Knowledge (Region: Hell) 35%, Listen 40%, Sense 35%, Spot 50%, Stealth 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Two claw attacks a round; grapples and bites next round if both hit. May know a few sorcery spells if POW is high enough — common ones are Curse of Sorcery (4), Flames of the Sun (4), Midnight (1), Pox (1). May have a Chaotic Feature."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-demon-lesser"
+    },
+    {
+      "name": "Elemental, Air",
+      "desc": "Floating, transparent, beautiful humanoid spirits of surpassing beauty surrounded by a whirlwind, mischievous with a short attention span. Often called sylphs.",
+      "characteristics": {
+        "STR": 11,
+        "CON": 11,
+        "SIZ": 7,
+        "INT": 14,
+        "POW": 11,
+        "DEX": 14,
+        "CHA": 14
+      },
+      "hp": 18,
+      "move": "10 (12 flying)",
+      "damageBonus": "None",
+      "armor": 0,
+      "armorNote": "invulnerable to normal attacks",
+      "attacksText": "Scouring Wind 50%, 1D10 (knockback, range POW in meters)",
+      "skillsText": "Dodge 75%, Fly 100%, Language (summoner’s) 100%, Listen 75%, Science (Meteorology) 100%, Sense 75%, Spot 75%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Hit points are CON+SIZ, not averaged; disappears at 0 HP or 0 power points, no natural healing. Casts Lift and Lightning at POW×3%; knows the sorcery spell Wings of the Sky (4) for free; has ¼ POW (round up) in levels of Energy Control/Projection (Wind). Can destroy a fire elemental of equal strength at the cost of its own life, supply breathable air (1 HP/round), and turn invisible for 1 power point."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-elemental-air"
+    },
+    {
+      "name": "Elemental, Earth",
+      "desc": "Thick-bodied humanoid forms of stone, earth, and minerals with mossy hair or beards; slow-witted, grumpy, but obedient. Often called gnomes.",
+      "characteristics": {
+        "STR": 30,
+        "CON": 17,
+        "SIZ": 11,
+        "INT": 7,
+        "POW": 11,
+        "DEX": 7,
+        "CHA": 7
+      },
+      "hp": 27,
+      "move": "6",
+      "damageBonus": "+1D6 or +2D6",
+      "armor": 0,
+      "armorNote": "invulnerable to normal attacks",
+      "attacksText": "Fist 50%, 1D6+dm",
+      "skillsText": "Appraise 50%, Craft (Blacksmithing) 75%, Language (summoner’s) 25%, Science (Metallurgy) 100%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Hit points are CON+SIZ, not averaged. Casts Dull and Wall at POW×3%; knows Gift of the Earth (4) for free; has ¼ POW (round up) in levels of Barrier. Can destroy an air elemental of equal strength at the cost of its own life, burrow through earth (carrying a willing character), has a chance of breaking metal weapons that strike it, and senses precious metals/underground items within INT×100 meters."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-elemental-earth"
+    },
+    {
+      "name": "Elemental, Fire",
+      "desc": "Four-legged reptiles made of fiery plasma; irritable, quick-tempered, scorching the ground and smoking as they speak. Often called salamanders.",
+      "characteristics": {
+        "STR": 13,
+        "CON": 11,
+        "SIZ": 17,
+        "INT": 7,
+        "POW": 11,
+        "DEX": 14,
+        "CHA": 7
+      },
+      "hp": 27,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "armorNote": "invulnerable to normal attacks",
+      "attacksText": "Flame Breath 50%, 1D10/round fire (range POW in meters); Grapple 50%, special + 1D6/round fire",
+      "skillsText": "Demolition 75%, Dodge 50%, Language (summoner’s) 50%, Listen 50%, Sense 50%, Spot 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Hit points are CON+SIZ, not averaged. Casts Flame and Resistance at POW×3%; knows Flames of the Sun (4) for free; has ¼ POW (round up) in levels of Energy Control/Projection (Heat). Can destroy a water elemental of equal strength at the cost of its own life, and ignites flammable material by touch."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-elemental-fire"
+    },
+    {
+      "name": "Elemental, Water",
+      "desc": "Beautiful, translucent aquatic humanoid females, greenish-blue, alluring, leaving wet footprints and dripping constantly. Often called undines.",
+      "characteristics": {
+        "STR": 17,
+        "CON": 17,
+        "SIZ": 7,
+        "INT": 14,
+        "POW": 11,
+        "DEX": 11,
+        "CHA": 14
+      },
+      "hp": 24,
+      "move": "10 (12 swimming)",
+      "damageBonus": "None",
+      "armor": 0,
+      "armorNote": "invulnerable to normal attacks",
+      "attacksText": "Drowning 50%, special",
+      "skillsText": "Dodge 75%, Language (summoner’s) 75%, Navigate 100%, Science (Oceanography) 100%, Sense 50%, Spot 50%, Swim 100%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Hit points are CON+SIZ, not averaged. Casts Heal and Unseal at POW×3%; knows Bounty of the Sea (4) for free; has ¼ POW (round up) in levels of Drain and Super Movement (Water Walking). Can destroy an earth elemental of equal strength at the cost of its own life. Drowns a touched target (Easy attacks thereafter, costs the elemental HP equal to damage dealt); turns invisible underwater for 1 power point; senses items within its home water within INT×100 meters."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-elemental-water"
+    },
+    {
+      "name": "Alien, Grey",
+      "desc": "Frail, emotionless beings who visit Earth for research and experimentation, relying on sophisticated technology to immobilize captive subjects.",
+      "characteristics": {
+        "STR": 7,
+        "CON": 7,
+        "SIZ": 7,
+        "INT": 19,
+        "POW": 11,
+        "DEX": 14,
+        "CHA": 5
+      },
+      "hp": 7,
+      "move": "7",
+      "damageBonus": "−1D4",
+      "armor": 0,
+      "attacksText": "Stun Pistol 50%, 2D6 (stuns); Disintegrator Rifle 35%, 3D6+2",
+      "skillsText": "Dodge 40%, Fine Manipulation 75%, First Aid 75%, Hide 60%, Knowledge (Human Culture) 55%, Knowledge (Region: Milky Way) 85%, Language (Area) 20%, Language (Zeta Reticulan) 100%, Listen 55%, Medicine 100%, Navigate 70%, Pilot (UFO) 80%, Repair (Quantum) 50%, Science (Astronomy) 75%, Science (Planetology) 95%, Science (Zoology) 50%, Sense 60%, Spot 50%, Stealth 50%, Technical Skill (UFO Sensors) 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Uses psychic powers at POW×2% or higher: Emotion Control, Mind Control, Mind Shield, Telekinesis, Telepathy."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-alien-grey",
+      "armorNote": ""
+    },
+    {
+      "name": "Alien, Xenomorph",
+      "desc": "Ravenous, vaguely insectile aliens that devour any living being encountered; reproduce by implanting eggs in hosts. A brood queen is said to lead each hive.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 11,
+        "SIZ": 14,
+        "INT": 7,
+        "POW": 7,
+        "DEX": 17,
+        "CHA": 4
+      },
+      "hp": 13,
+      "move": "12",
+      "damageBonus": "+1D4",
+      "armor": 2,
+      "armorNote": "carapace, spews acidic blood when wounded",
+      "attacksText": "Claw 50%, 1D6+dm; Bite 35%, 1D6+dm; Tail Lash 35%, 1D4+dm; Grapple 35%, special",
+      "skillsText": "Climb 75%, Dodge 50%, Hide 60%, Jump 50%, Listen 35%, Sense 50%, Spot 35%, Stealth 50%, Track 75%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Two claw attacks then a bite 5 DEX ranks later (substitutes tail lash when appropriate); grapples and bites if both claws hit. Blood sprays as corrosive acid for 1D6+2 rounds when wounded — anyone within 1m must make a Luck roll or take 1D3 acid damage, which continues eating through armor each round."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-alien-xenomorph"
+    },
+    {
+      "name": "Blob",
+      "desc": "A grotesque mass of slimy, semi-translucent protoplasm, constantly extending pseudopods and engulfing victims to digest them alive. Can compact itself through tight spaces.",
+      "characteristics": {
+        "STR": 63,
+        "CON": 42,
+        "SIZ": 84,
+        "INT": 7,
+        "POW": 11,
+        "DEX": 4
+      },
+      "hp": 63,
+      "move": "10",
+      "damageBonus": "+8D6",
+      "armor": 0,
+      "attacksText": "Engulf 70%, engulfs +dm",
+      "skillsText": "Climb 50%, Hide 25%, Sense 25%, Stealth 25%, Track 25%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "No armor, but fire/electrical attacks do only half damage and firearms only 1 point. Engulfing applies its damage modifier each round thereafter (1D3−1 if hit locations aren’t used); escaping takes a Difficult Effort roll. Regenerates 1 HP/round until full."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-blob",
+      "armorNote": ""
+    },
+    {
+      "name": "Robot, Giant",
+      "desc": "Built by a secret government agency to fight alien creatures and giant monsters; armored, heavily armed, and idolized despite the collateral damage it causes.",
+      "characteristics": {
+        "STR": 88,
+        "CON": 88,
+        "SIZ": 88,
+        "INT": 11,
+        "POW": 7,
+        "DEX": 11
+      },
+      "hp": 188,
+      "move": "24 (176 flying)",
+      "damageBonus": "+10D6",
+      "armor": 30,
+      "armorNote": "armored hull",
+      "attacksText": "Energy Cannon 100%, 10D6; Missile Pod 100%, 8D6+8 (+knockback); Energy Sword 75%, 4D10+dm; Fist 75%, 1D6+dm; Kick 75%, 1D6+dm (knockback); Stomp 75%, 2D6+dm; Grapple 75%, special",
+      "skillsText": "Artillery 75%, Dodge 40%, Fine Manipulation 35%, Fly (Internal Rockets) 90%, Jump 55%, Knowledge (Kaiju) 50%, Language (English) 30%, Language (Japanese) 75%, Listen 65%, Martial Arts 40%, Navigate 50%, Repair (Mechanical) 55%, Spot 65%, Throw 55%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "188 HP includes +100 from Extra Hit Points. Built from superpowers: Absorption (Electric) 20; Adaptation (High Pressure, Vacuum, always-on) 30; Armor (Heat, Kinetic, Radiation) 30 each; Energy Projection (Kinetic) 10; Extra Energy +200; Extra Hit Points +100; Flight 30; Resistance (Radiation, Sound) 10 each; Super Sense (5 types) 10 each; Super Skill 15 (Artillery +60%, Brawl +40%, Fly +60%, Navigate +20%, Repair +20%, Spot +40%)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-robot-giant"
+    },
+    {
+      "name": "Robot, Killer",
+      "desc": "A pitiless, resourceful robot of many possible origins — military gone rogue, murderous household unit, or an assassin from elsewhere in time or space.",
+      "characteristics": {
+        "STR": 38,
+        "CON": 26,
+        "SIZ": 16,
+        "INT": 13,
+        "POW": 7,
+        "DEX": 11,
+        "CHA": 11
+      },
+      "hp": 21,
+      "move": "10",
+      "damageBonus": "+2D6",
+      "armor": 20,
+      "armorNote": "internal plating",
+      "attacksText": "Plasma Rifle 80%, 2D10+4; Assault Rifle 80%, 2D6+2; Automatic Shotgun 80%, 4D6/2D6/1D6; Heavy Pistol 80%, 1D10+2; Fist 80%, 1D3+dm",
+      "skillsText": "Artillery 80%, Brawl 80%, Climb 50%, Demolition 50%, Dodge 40%, Drive (Motorcycle) 75%, Drive (Truck) 60%, Grapple 80%, Jump 50%, Knowledge (Future History) 65%, Knowledge (Region: Local) 50%, Language (Binary) 100%, Language (Local) 60%, Listen 65%, Pilot (Helicopter) 50%, Repair (Electronics) 75%, Repair (Mechanical) 95%, Spot 75%, Strategy 40%, Throw 55%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Equipped for its era/setting. Usually has a few Super Sense superpowers (Infrared Vision, Super Hearing, Super Vision, Ultrasonic Hearing) at 5 each, free to use. Some can shape-change, stretch, or carry integral weapons (claws, blades, laser eyes, firearms)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-robot-killer"
+    },
+    {
+      "name": "Robot, Utility",
+      "desc": "A humble, humble servant robot engineered to aid humans with mechanical, electrical, diplomatic, or personal-assistance work; programmed to avoid harming living beings.",
+      "characteristics": {
+        "STR": 13,
+        "SIZ": 11,
+        "INT": 13,
+        "DEX": 11
+      },
+      "hp": 11,
+      "move": "8",
+      "damageBonus": "None",
+      "armor": 4,
+      "armorNote": "plating",
+      "attacksText": "Brawl 30%, 1D3+dm; Power Tools 50%, 1D6 (fire or electric)",
+      "skillsText": "Diplomacy package: Appraise 85%, Bargain 55%, Etiquette 95%, Fast Talk 75%, Heavy Machine (Binary Loadlifter) 50%, Hide 25%, Insight 35%, Knowledge (Alien Cultures) 75%, Knowledge (Linguistics) 100%, Language (all known) 95%, Listen 55%, Persuade 45%, Teach 60%. Technical package: Fine Manipulation 95%, Heavy Machine (Spaceport Systems) 95%, Hide 35%, Language (Galactic Common, cannot speak) 50%, Language (Machine) 100%, Listen 50%, Pilot (Starfighter) 50%, Repair (Electronic) 95%, Repair (Mechanical) 95%, Repair (Quantum) 75%, Spot 50%, Technical Skill (Computer Use) 100%.",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Strict programming against harming sentients, though some are less strict and may act in self-defense. Has built-in tools (welders, electric dischargers) usable as weapons."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-robot-utility"
+    },
+    {
+      "name": "Cave Dweller",
+      "desc": "A primitive human focused on survival for self, family, and tribe; barely uses tools, migrates with the seasons, and venerates the spirits of weather and prey.",
+      "characteristics": {
+        "STR": 15,
+        "CON": 16,
+        "SIZ": 10,
+        "INT": 8,
+        "POW": 12,
+        "DEX": 15,
+        "CHA": 9
+      },
+      "hp": 13,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 1,
+      "armorNote": "hide",
+      "attacksText": "Short Spear 50%, 1D6+1+dm; Short Spear (thrown) 50%, 1D6+1+½dm; Light Club 50%, 1D6+dm; Rock (thrown) 50%, 1D2+½dm; Grapple 50%, special",
+      "skillsText": "Brawl 50%, Climb 60%, Craft (Wood Carving) 25%, Dodge 35%, Hide 35%, Jump 50%, Language (Own) 40%, Listen 55%, Sense 50%, Spot 65%, Stealth 30%, Throw 50%, Track 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely has powers, though a tribal shaman may have a few magic spells or psychic abilities if POW is high enough."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-cave-dweller"
+    },
+    {
+      "name": "Criminal Mastermind",
+      "desc": "A gang leader or highly placed organized-crime figure; unscrupulous, ruthless, and cunning, backed by an army of henchmen.",
+      "characteristics": {
+        "STR": 11,
+        "CON": 12,
+        "SIZ": 12,
+        "INT": 12,
+        "POW": 17,
+        "DEX": 16,
+        "CHA": 14
+      },
+      "hp": 12,
+      "move": "10",
+      "damageBonus": "None",
+      "armor": 0,
+      "attacksText": "Medium Pistol 75%, 1D8; Straight Razor 65%, 1D4+dm; Machine Gun 55%, 2D6+4",
+      "skillsText": "Appraise 55%, Bargain 65%, Command 65%, Craft (Cooking) 55%, Craft (License Plates) 35%, Demolition 35%, Disguise 25%, Dodge 50%, Drive (Getaway Car) 45%, Etiquette 45%, Fast Talk 55%, Gaming 60%, Hide 35%, Insight 75%, Knowledge (Law) 55%, Language (Local) 75%, Language (Own) 75%, Listen 55%, Medicine (Pharmacology) 35%, Perform (Singing) 50%, Persuade 75%, Sense 40%, Sleight of Hand 35%, Spot 45%, Status 55%, Stealth 55%, Strategy 60%, Throw 45%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely has powers, and is usually the enemy of those who do."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-criminal-mastermind",
+      "armorNote": ""
+    },
+    {
+      "name": "Cyborg",
+      "desc": "A human augmented with technological elements as improvement or replacement for lost body parts; has come to accept the alienation this creates.",
+      "characteristics": {
+        "STR": 33,
+        "CON": 24,
+        "SIZ": 14,
+        "INT": 14,
+        "POW": 11,
+        "DEX": 22,
+        "CHA": 14
+      },
+      "hp": 19,
+      "move": "10",
+      "damageBonus": "+2D6",
+      "armor": 0,
+      "attacksText": "Brawl 90%, 1D3+10+dm",
+      "skillsText": "Climb 40%, Dodge 65%, Drive (Car) 55%, Hide 40%, Jump 75%, Language (Own) 85%, Listen 75%, Pilot (Experimental Jets) 75%, Repair (Electronic) 55%, Science (Cybernetics) 40%, Spot 85%, Stealth 40%, Throw 65%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Defensive Systems: Armor 5 (vs. electrical) + Extra Energy 5 (+50 power points). Physical: Leap 5 (+10m), Super Characteristics 40 (STR +20, CON +10, DEX +10), Super Speed 2 (extra move + action). Sensory: Super Sense (Super Hearing 10, Super Vision 10, Infrared Vision 5, Ultrasonic Hearing 5). Tactical: Defense 2 (−10% to be hit), Super Skill 8 (Jump +40%, Listen +40%, Spot +60%, Throw +25%), Unarmed Combat 5 (+10 damage, −25% to one attacker’s chance, +25% Brawl)."
+        },
+        {
+          "name": "Weaknesses",
+          "text": "Cyborg identity makes a normal life impossible; a government agency has significant involvement in its modifications; magnetic attacks do an extra 1D6 damage to its components."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-cyborg",
+      "armorNote": ""
+    },
+    {
+      "name": "Demigod",
+      "desc": "The offspring of a god and a mortal, immortal, caught between two worlds and undecided whether to lead humanity against the gods or toward them.",
+      "characteristics": {
+        "STR": 35,
+        "CON": 34,
+        "SIZ": 15,
+        "INT": 13,
+        "POW": 18,
+        "DEX": 15,
+        "CHA": 17
+      },
+      "hp": 25,
+      "move": "10",
+      "damageBonus": "+2D6",
+      "armor": 20,
+      "armorNote": "Armor (Kinetic)",
+      "attacksText": "Brawl 110%, 1D3+dm; Grapple 110%, special; Short Sword 100%, 1D6+1+dm; Round Shield 80%, 1D3+dm",
+      "skillsText": "Brawl 110%, Climb 80%, Command 45%, Dodge 65%, Drive (Chariot) 65%, Etiquette 25%, Grapple 110%, Insight 55%, Jump 75%, Knowledge (Mythology) 85%, Language (Ancient Own) 100%, Language (Local) 90%, Listen 65%, Navigate 60%, Perform (Harp) 50%, Persuade 45%, Ride (Horse) 45%, Sense 70%, Spot 60%, Status 45%, Stealth 50%, Strategy 60%, Swim 75%, Throw 85%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Adaptation (Radiation, Underwater, Vacuum) 5 each; Armor (Kinetic) 20; Extra Energy 20 (+200 power points); Extra Hit Points 30; Leap 10 (+20m Jump); Regeneration 3 (3 HP/round); Sidekick; Super Characteristics 50 (STR/CON +20, POW/CHA +5); Super Skills 20 (several skills +40-80%); Unarmed Combat 5. Often has a mortal sidekick and may use magic or sorcery."
+        },
+        {
+          "name": "Weaknesses",
+          "text": "Cannot live a normal life; hunted by enemies of the gods and by rival gods; always called upon by mortals for help."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-demigod"
+    },
+    {
+      "name": "Detective",
+      "desc": "A police detective, forensics expert, private eye, or criminologist, trained in investigation, observation, surveillance, and deduction.",
+      "characteristics": {
+        "STR": 13,
+        "CON": 12,
+        "SIZ": 14,
+        "INT": 17,
+        "POW": 14,
+        "DEX": 14,
+        "CHA": 15
+      },
+      "hp": 13,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "attacksText": "Medium Pistol 75%, 1D8; Fist 65%, 1D3+dm; Grapple 50%, special",
+      "skillsText": "Appraise 35%, Bargain 35%, Climb 55%, Disguise 35%, Dodge 40%, Drive (Sedan) 55%, Etiquette 25%, Fast Talk 65%, Hide 40%, Insight 55%, Knowledge (Law) 65%, Knowledge (Region: Local) 55%, Knowledge (Streetwise) 50%, Language (Local) 75%, Listen 45%, Persuade 45%, Research 75%, Sense 50%, Sleight of Hand 25%, Spot 65%, Stealth 50%, Track 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely has powers, though some few magicians or sorcerers become detectives."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-detective",
+      "armorNote": ""
+    },
+    {
+      "name": "Galactic Knight",
+      "desc": "A spacefaring paladin of a mystic tradition, sworn to a code of honor as a defender of peace and justice across the galaxy; shuns traditional weaponry.",
+      "characteristics": {
+        "STR": 16,
+        "CON": 15,
+        "SIZ": 14,
+        "INT": 15,
+        "POW": 21,
+        "DEX": 17,
+        "CHA": 15
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "attacksText": "Energy Sword 150%, 2D10+dm; Brawl 80%, 1D3+dm",
+      "skillsText": "Climb 75%, Command 50%, Dodge 75%, Hide 45%, Insight 75%, Jump 65%, Knowledge (Region: Galaxy) 35%, Language (Alien) 70%, Language (Own) 105%, Listen 65%, Martial Arts 80%, Navigate 50%, Persuade 35%, Pilot (Starfighter) 65%, Repair (Mechanical) 55%, Sense 70%, Spot 65%, Stealth 70%, Strategy 50%, Throw 60%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Psychic abilities of the mystic tradition: Danger Sense 60%, Empathy 55%, Mind Control 35%, Precognition 40%, Telekinesis 45%, Telepathy 50%."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-galactic-knight",
+      "armorNote": ""
+    },
+    {
+      "name": "Gunslinger",
+      "desc": "A killer specializing in fast, deadly handgun combat, usually driven to violence by tragedy or a taste for killing; reputation is their most potent weapon.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 15,
+        "SIZ": 14,
+        "INT": 14,
+        "POW": 15,
+        "DEX": 18,
+        "CHA": 13
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 1,
+      "armorNote": "heavy clothing",
+      "attacksText": "Medium Revolver 95%, 1D8; Sporting Rifle 85%, 2D6; Double-barreled Shotgun 75%, 4D6/2D6/1D6; Knife 75%, 1D4+2+dm; Fist 75%, 1D3+dm",
+      "skillsText": "Brawl 75%, Climb 60%, Demolition 30%, Dodge 60%, First Aid 40%, Gaming 65%, Grapple 50%, Insight 65%, Knowledge (Region: Local) 65%, Language (Own) 70%, Listen 65%, Ride (Horse) 75%, Sense 50%, Sleight of Hand 35%, Spot 75%, Stealth 50%, Throw 55%, Track 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely has any powers."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-gunslinger"
+    },
+    {
+      "name": "Knight",
+      "desc": "A mounted, armored warrior skilled in swordsmanship, jousting, and chivalric etiquette, sworn to a liege and drawing a stipend to maintain arms and horses.",
+      "characteristics": {
+        "STR": 15,
+        "CON": 15,
+        "SIZ": 15,
+        "INT": 11,
+        "POW": 12,
+        "DEX": 15,
+        "CHA": 14
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 10,
+      "armorNote": "plate and heavy helm",
+      "attacksText": "Long Sword 75%, 1D8+dm; Kite Shield 65%, 1D4+dm; Lance 75%, 1D8+1+mount’s dm (usually +2D6); Light Mace 65%, 1D6+2+dm; Long Bow 60%, 1D8+1+½dm; Dagger 50%, 1D4+2+dm; Armored Gauntlet 50%, 1D3+1+dm",
+      "skillsText": "Command 45%, Dodge 50%, Etiquette 65%, Knowledge (Heraldry) 50%, Language (Other) 35%, Language (Own) 60%, Listen 45%, Ride (Horse) 75%, Sense 20%, Spot 45%, Status 60%, Strategy 30%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Generally has no powers, though rare knights know magic or carry a magic artifact (blessed weapon, holy relic, virtue-laid armor). Evil knights sworn to dark powers may use sorcery. Tournament lances do crushing damage instead of impaling."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-knight"
+    },
+    {
+      "name": "Maniac",
+      "desc": "A seemingly normal person turned violently, homicidally insane, stalking isolated victims or roaming as a serial killer; either utterly ordinary or in a distinctive mask.",
+      "characteristics": {
+        "STR": 15,
+        "CON": 14,
+        "SIZ": 14,
+        "INT": 14,
+        "POW": 15,
+        "DEX": 17,
+        "CHA": 12
+      },
+      "hp": 14,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "attacksText": "Butcher Knife 75%, 1D6+dm; Wood Axe 75%, 1D8+2+dm; Chainsaw 65%, 2D8; Pitchfork 55%, 1D6+dm; Machete 65%, 1D6+dm; Grapple 75%, special",
+      "skillsText": "Brawl 75%, Dodge 50%, Drive (Van) 65%, Hide 60%, Language (Own) 60%, Listen 45%, Sense 40%, Spot 65%, Stealth 80%, Throw 50%, Track 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Most have no powers, though some have exceptional toughness from a mutation such as Hardy, Increased Characteristic, Regeneration, or Natural Weapon (teeth)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-maniac",
+      "armorNote": ""
+    },
+    {
+      "name": "Mutant",
+      "desc": "A soul mutated by radiation, biological agents, or unlucky genetics; feared and unable to live a normal life, often one of many such victims in a post-apocalyptic setting.",
+      "characteristics": {
+        "STR": 19,
+        "CON": 9,
+        "SIZ": 13,
+        "INT": 14,
+        "POW": 12,
+        "DEX": 15,
+        "CHA": 10
+      },
+      "hp": 11,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 7,
+      "armorNote": "bony knobs on skin",
+      "attacksText": "Brawl 55%, 1D3+1D6+dm",
+      "skillsText": "Disguise 25%, Dodge 40%, Drive (Dune Buggy) 40%, Fast Talk 25%, First Aid 40%, Hide 40%, Language (Own) 55%, Listen 35%, Sense 25%, Spot 30%, Stealth 25%, Track 25%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Mutations: Congenital Disease (hemophilia, CON −5), Increased Characteristic (STR +6), Natural Weaponry (bony knobs, +1D6 damage), Sensitivity (blood), Structural Improvement (bony knobs, +7-pt natural armor)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-mutant"
+    },
+    {
+      "name": "Ninja",
+      "desc": "A feared shadowy killer trained in secret martial arts, stealth, infiltration, and assassination, often born into a clan and working alone or in groups.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 13,
+        "SIZ": 10,
+        "INT": 14,
+        "POW": 15,
+        "DEX": 17,
+        "CHA": 12
+      },
+      "hp": 12,
+      "move": "10",
+      "damageBonus": "None",
+      "armor": 0,
+      "armorNote": "or 2-pt light chain mail",
+      "attacksText": "Katana 65%, 1D10+1+dm; Dagger 65%, 1D4+2+dm; Composite Bow 50%, 1D8+1+½dm; Blowgun 50%, 1D3 + poison; Fist 55%, 1D3+dm; Kick 55%, 1D3+dm",
+      "skillsText": "Climb 80%, Disguise 55%, Dodge 65%, Fine Manipulation 45%, Hide 70%, Jump 65%, Language (Own) 70%, Listen 65%, Martial Arts 35%, Sense 50%, Sleight of Hand 55%, Spot 55%, Stealth 75%, Swim 55%, Throw 50%, Track 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Blowdarts usually carry a paralytic POT 15 poison. Generally no powers, though a setting may grant sorcery or superpowers approximating extraordinary martial arts."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-ninja"
+    },
+    {
+      "name": "Pirate",
+      "desc": "An oceangoing bandit ranging from urbane rogue to despicable savage; this represents an average crewmember skilled in seamanship and hand-to-hand combat.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 15,
+        "SIZ": 13,
+        "INT": 11,
+        "POW": 10,
+        "DEX": 14,
+        "CHA": 13
+      },
+      "hp": 14,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "attacksText": "Cutlass (Saber) 55%, 1D8+1+dm; Knife 45%, 1D4+2+dm; Flintlock Pistol 50%, 1D6+1; Musket 40%, 1D10+4; Fist 50%, 1D3+dm",
+      "skillsText": "Artillery 30%, Brawl 50%, Climb 80%, Craft (Carpentry) 55%, Dodge 40%, Fine Manipulation 45%, Gaming 35%, Grapple 50%, Jump 45%, Knowledge (Region: Local) 40%, Language (Local) 40%, Language (Own) 55%, Listen 45%, Navigate 50%, Perform (Sea Chantey) 45%, Pilot (Ship) 35%, Sense 30%, Sleight of Hand 35%, Spot 50%, Swim 45%, Throw 50%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Usually none, but some pirate chiefs bargain with darkness for sorcery if POW qualifies: Bird’s Vision (1), Breath of Life (1), Rat’s Vision (1), Sorcerer’s Razor (2), Sorcerer’s Sureness (2), Wings of the Sky (4)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-pirate",
+      "armorNote": ""
+    },
+    {
+      "name": "Police Officer",
+      "desc": "A modern law-enforcement officer, usually on patrol or first on scene at an incident; heavily-armed S.W.A.T. officers handle the most violent situations.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 14,
+        "SIZ": 14,
+        "INT": 14,
+        "POW": 14,
+        "DEX": 14,
+        "CHA": 14
+      },
+      "hp": 14,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 8,
+      "armorNote": "bulletproof vest (4 vs. melee) or 12-pt riot gear",
+      "attacksText": "Medium Pistol 70%, 1D8; Shotgun 50%, 4D6/2D6/1D6; Baton (Light Club) 50%, 1D6+dm; Pepper Spray 65%, special (POT 16, blinds 1D4+2 rounds); Taser 65%, special; Grapple 65%, special",
+      "skillsText": "Brawl 65%, Dodge 40%, Drive (Police Car) 55%, Insight 35%, Knowledge (Law) 50%, Language (Spanish) 30%, Language (English) 80%, Listen 50%, Persuade 50%, Ride (Horse) 45%, Sense 30%, Spot 45%, Stealth 30%, Throw 45%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely, if ever, has powers."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-police-officer"
+    },
+    {
+      "name": "Priest",
+      "desc": "A devout worshipper of a patron deity, having left the monastery to bring their faith’s message to unbelievers and strike down those who oppose it.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 13,
+        "SIZ": 14,
+        "INT": 15,
+        "POW": 16,
+        "DEX": 13,
+        "CHA": 15
+      },
+      "hp": 14,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 8,
+      "armorNote": "chain and light helmet",
+      "attacksText": "Morningstar Flail 50%, 1D10+1+dm; Full Shield 45%, 1D4+dm; Sling 40%, 1D8+½dm; Kick 40%, 1D3+dm",
+      "skillsText": "Art (Illuminated Manuscripts) 35%, Command 25%, Craft (Bookmaking) 35%, Dodge 40%, First Aid 45%, Insight 35%, Knowledge (Religion) 70%, Language (Own) 70%, Listen 45%, Literacy (Common) 70%, Perform (Hymns) 35%, Persuade 45%, Ride (Horse) 35%, Spot 40%, Status 35%, Teach 30%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Psychic abilities granted by their deity: Divination, Mind Shield, Precognition, Sensitivity, all at POW×1%. Has at least 50 Allegiance to their patron deity."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-priest"
+    },
+    {
+      "name": "Psychic",
+      "desc": "Born with a particular gift that developed in young adulthood; learned self-discipline and meditation to put their strange abilities to use aiding others.",
+      "characteristics": {
+        "STR": 12,
+        "CON": 13,
+        "SIZ": 14,
+        "INT": 15,
+        "POW": 19,
+        "DEX": 14,
+        "CHA": 14
+      },
+      "hp": 14,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 0,
+      "attacksText": "Fist 35%, 1D3+dm",
+      "skillsText": "Art (Painting) 35%, Bargain 35%, Dodge 40%, Drive (Automobile) 30%, Fast Talk 35%, Insight 50%, Knowledge (Art History) 45%, Language (Own) 90%, Listen 35%, Research 65%, Sense 35%, Spot 40%, Status 35%, Stealth 30%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Psychic abilities: Aura Detection 35%, Precognition 25%, Psychometry 50%."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-psychic",
+      "armorNote": ""
+    },
+    {
+      "name": "Soldier",
+      "desc": "Trained in modern warfare, obedient to the chain of command, and calm under fire. This example is especially fit and experienced, perhaps an elite commando.",
+      "characteristics": {
+        "STR": 15,
+        "CON": 14,
+        "SIZ": 15,
+        "INT": 13,
+        "POW": 11,
+        "DEX": 13,
+        "CHA": 13
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 8,
+      "armorNote": "bulletproof vest (4 vs. melee) + 3-pt light helmet",
+      "attacksText": "Assault Rifle 65%, 2D6+2; Combat Knife (Dagger) 50%, 1D4+2+dm; Grenade (Explosive) 40%, 4D6 (knockback)",
+      "skillsText": "Artillery 30%, Brawl 45%, Climb 50%, Command 25%, Dodge 40%, Drive (Humvee) 45%, First Aid 40%, Grapple 50%, Hide 35%, Jump 35%, Language (Own) 65%, Listen 45%, Spot 45%, Stealth 40%, Strategy 20%, Throw 40%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely, if ever, has powers."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-soldier"
+    },
+    {
+      "name": "Sorcerer",
+      "desc": "Apprenticed in the mystic arts since youth, the sorcerer deals with demons and elemental forces; arrogant among non-magical mortals but careful to avoid personal combat.",
+      "characteristics": {
+        "STR": 9,
+        "CON": 11,
+        "SIZ": 15,
+        "INT": 19,
+        "POW": 21,
+        "DEX": 14,
+        "CHA": 12
+      },
+      "hp": 13,
+      "move": "10",
+      "damageBonus": "None",
+      "armor": 0,
+      "armorNote": "or 4-pt Sorcerer’s Armor",
+      "attacksText": "Dagger 35%, 1D4+2+dm",
+      "skillsText": "Appraise 35%, Dodge 40%, Etiquette 35%, Fast Talk 45%, Hide 30%, Insight 35%, Knowledge (Academic Lore) 50%, Knowledge (Blasphemous Lore) 20%, Knowledge (Occult) 70%, Language (Demonic) 50%, Language (Own) 85%, Listen 35%, Persuade 45%, Research 75%, Ride (Horse) 35%, Sense 35%, Sleight of Hand 35%, Spot 55%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Sorcery spells in memory: Curse of Sorcery (4), Sorcerous Armor (4), Sorcerer’s Sharp Flame (3), Summon Demon (1), Undo Sorcery (2), Heal (2), Witch Sight (3)."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-sorcerer"
+    },
+    {
+      "name": "Spy",
+      "desc": "A clandestine operative trained in infiltration, stealth, disguise, combat, and espionage, ranging from armed intrusion to sabotage and assassination.",
+      "characteristics": {
+        "STR": 14,
+        "CON": 14,
+        "SIZ": 13,
+        "INT": 15,
+        "POW": 14,
+        "DEX": 15,
+        "CHA": 14
+      },
+      "hp": 14,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 5,
+      "armorNote": "ballistic cloth tuxedo (3 vs. melee)",
+      "attacksText": "Light Pistol 75%, 1D6; Sniper Rifle 75%, 2D10+4; Throwing Knife 75%, 1D4+½dm; Fist 80%, 1D3+dm; Kick 65%, 1D3+dm",
+      "skillsText": "Appraise 45%, Brawl 65%, Climb 60%, Demolition 40%, Disguise 60%, Dodge 50%, Drive (Sports Car) 85%, Etiquette 65%, Fast Talk 75%, Fine Manipulation 75%, First Aid 55%, Gaming 65%, Grapple 65%, Hide 75%, Insight 65%, Jump 50%, Knowledge (Espionage) 75%, Language (Own) 90%, Language (Other) 70%, Listen 65%, Martial Arts 45%, Persuade 55%, Pilot (Boat) 65%, Pilot (Helicopter) 45%, Research 45%, Ride (Horse) 45%, Sense 60%, Sleight of Hand 55%, Spot 65%, Stealth 70%, Strategy 50%, Swim 65%, Throw 65%, Track 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely, if ever, has any powers, but may carry high-tech spy gear."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-spy"
+    },
+    {
+      "name": "Superhero",
+      "desc": "Given powers by accident or genetic quirk, vowing to protect ordinary people from threats both natural and unnatural. Sample: Stormcloud, a brash lightning-based hero and TV meteorologist.",
+      "characteristics": {
+        "STR": 25,
+        "CON": 20,
+        "SIZ": 12,
+        "INT": 14,
+        "POW": 16,
+        "DEX": 20,
+        "CHA": 15
+      },
+      "hp": 16,
+      "move": "10 (62 flying)",
+      "damageBonus": "+1D6",
+      "armor": 12,
+      "armorNote": "Armor (Kinetic, Radiation)",
+      "attacksText": "Lightning Bolt 45%, 6D6 electric; Brawl 50%, 1D3+dm",
+      "skillsText": "Art (Photography) 70%, Brawl 50%, Dodge 50%, Drive (Car) 35%, Fly 80%, Grapple 35%, Knowledge (Region: Local) 35%, Language (Own) 85%, Perform (News) 50%, Research 45%, Science (Meteorology) 25%, Status 25%, Technical Skill (Use Computer) 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Absorption (Electric) 18; Armor (Kinetic, Radiation) 12 each; Energy Projection (Electric) 6; Extra Energy 15 (+150 power points); Flight 10; Super Characteristics 30 (STR +14, CON +8, DEX +8)."
+        },
+        {
+          "name": "Weaknesses",
+          "text": "Weak to water — loses 2D6 power points each round wet or submerged."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-superhero"
+    },
+    {
+      "name": "Supervillain",
+      "desc": "Uses their abilities for fortune, power, revenge, or malfeasance. Sample: Doctor Dread, a former defense engineer in unlicensed military-tech armor, funding illegal weapons research.",
+      "characteristics": {
+        "STR": 15,
+        "CON": 18,
+        "SIZ": 9,
+        "INT": 17,
+        "POW": 17,
+        "DEX": 18,
+        "CHA": 10
+      },
+      "hp": 14,
+      "move": "10 (62 flying)",
+      "damageBonus": "None",
+      "armor": 4,
+      "armorNote": "Armor (Kinetic) + 20-pt Force Field (Electric, Kinetic, Radiation)",
+      "attacksText": "Heat Projector 70%, 6D6 fire; Brawl 50%, 1D3+dm",
+      "skillsText": "Command 35%, Dodge 40%, Drive (Van) 55%, Fine Manipulation 65%, Jump 65%, Language (Own) 125%, Listen 45%, Repair (Electronic) 85%, Repair (Quantum) 75%, Research 85%, Science (Physics) 95%, Spot 50%, Technical Skill (Use Computer) 95%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Armor (Kinetic) 4; Energy Projection (Heat) 6; Extra Energy 15 (+150 power points); Flight 3; Force Field (Electric, Kinetic, Radiation) 20 each; Leap 10 (+20m Jump); Super Sense (Infravision, Ultrasonic Hearing) 1 each."
+        },
+        {
+          "name": "Weaknesses",
+          "text": "Full-time supervillainy; physically distinctive (ugly); psychological failings (bloodthirsty, arrogant); identity tied to the armor, which can be shut down or removed."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-supervillain"
+    },
+    {
+      "name": "Thug",
+      "desc": "A goon for hire, working for a criminal group or just looking for trouble; backup muscle for breaking-and-entering, robbery, banditry, or mugging.",
+      "characteristics": {
+        "STR": 16,
+        "CON": 14,
+        "SIZ": 15,
+        "INT": 10,
+        "POW": 10,
+        "DEX": 12,
+        "CHA": 11
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 1,
+      "armorNote": "leather jacket",
+      "attacksText": "Heavy Pistol 50%, 1D10+2; Switchblade 50%, 1D4+dm; Baseball Bat 50%, 1D6+dm; Fist 50%, 1D3+dm; Head Butt 35%, 1D3+dm",
+      "skillsText": "Demolition 20%, Dodge 35%, Drive (Truck) 50%, Gaming 30%, Grapple 50%, Hide 25%, Insight 25%, Knowledge (Region: Home City) 35%, Language (Own) 50%, Listen 35%, Persuade 35%, Sense 30%, Sleight of Hand 25%, Spot 35%, Stealth 25%, Throw 35%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Never has powers. If they did, they’d be doing better for themselves."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-thug"
+    },
+    {
+      "name": "Tribal Warrior",
+      "desc": "Encountered wherever civilization has not reached, using weapons primitive by the day’s standard, hunting and defending the tribe under the guidance of its elders.",
+      "characteristics": {
+        "STR": 16,
+        "CON": 14,
+        "SIZ": 15,
+        "INT": 11,
+        "POW": 13,
+        "DEX": 16,
+        "CHA": 13
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 1,
+      "armorNote": "hide armor",
+      "attacksText": "Short Spear 65%, 1D6+1+dm; Short Spear (thrown) 75%, 1D6+1+½dm; Light Club 55%, 1D6+dm; Light Club (thrown) 65%, 1D6+½dm; Shield 65%, 1D2+dm; Blowgun 75%, 1D3 + poison; Grapple 65%, special",
+      "skillsText": "Climb 75%, Dodge 40%, Hide 45%, Jump 45%, Language (Own) 60%, Listen 55%, Sense 60%, Spot 65%, Stealth 60%, Swim 55%, Throw 65%, Track 70%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Blowdarts usually carry a paralytic POT 10 poison. Rarely has powers, but the tribe’s shaman or wise person often has psychic abilities, magic, or occasionally sorcery."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-tribal-warrior"
+    },
+    {
+      "name": "Viking",
+      "desc": "Northern warriors who voyage for exploration, trade, and raiding; fierce, proud, excellent sailors, and surprisingly civilized among their own, bound by a strict code of honor.",
+      "characteristics": {
+        "STR": 15,
+        "CON": 14,
+        "SIZ": 15,
+        "INT": 11,
+        "POW": 11,
+        "DEX": 13,
+        "CHA": 12
+      },
+      "hp": 15,
+      "move": "10",
+      "damageBonus": "+1D4",
+      "armor": 7,
+      "armorNote": "scale and light helmet",
+      "attacksText": "Broad Sword 65%, 1D8+1+dm; Hand Axe 55%, 1D6+1+dm; Hand Axe (thrown) 55%, 1D6+1+½dm; Self Bow 50%, 1D6+1+½dm; Large Round Shield 50%, 1D4+dm; Brawl 55%, 1D3+dm",
+      "skillsText": "Appraise 45%, Bargain 35%, Brawl 25%, Craft (type) 05%, Dodge 40%, Gaming 40%, Grapple 35%, Insight 15%, Jump 25%, Language (Own) 55%, Listen 40%, Navigate 35%, Pilot (ship) 25%, Ride (type) 05%, Spot 35%, Status 25%",
+      "abilities": [
+        {
+          "name": "Powers",
+          "text": "Rarely has powers, though some spellcasters use rune magic, shapeshifting, or sorcery. A wealthy or favored Viking may carry a magic weapon, armor, or other artifact."
+        }
+      ],
+      "source": "brp",
+      "id": "brp-viking"
+    }
+  ]
+}

@@ -333,11 +333,3 @@ test('data/monsters.json seed: every entry parseable, Title Case, has id', () =>
     assert.ok(m.ac && m.ac.asc != null, 'no AC: ' + m.name);
   }
 });
-
-test('js/monsters-data.js: <script>-loadable copy matches data/monsters.json (for file://)', () => {
-  const jsonSeed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'monsters.json'), 'utf8'));
-  const jsSeed = require('../js/monsters-data.js');
-  assert.ok(Array.isArray(jsSeed) && jsSeed.length >= 200);
-  assert.equal(jsSeed.length, jsonSeed.length);
-  assert.deepEqual(jsSeed.map(m => m.id), jsonSeed.map(m => m.id));
-});

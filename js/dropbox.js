@@ -6,12 +6,13 @@
  * it too), and every save() (js/core.js calls OSR.dropboxNoteSave) uploads it
  * again a few seconds later.
  *
- * Sign-in is Dropbox OAuth 2 with PKCE and no redirect URI: Connect opens
- * Dropbox in a new tab, Dropbox shows a code, and the user pastes it back. The
+ * Sign-in is Dropbox OAuth 2 with PKCE: Connect sends this tab to Dropbox,
+ * and Dropbox redirects back to the app's own URL with ?code=…, which
+ * initDropbox() reads on the next boot. The fallback, "Connect with a code",
+ * asks for no redirect: Dropbox shows a code and the user pastes it back. The
  * code buys a refresh token (token_access_type=offline) that does not expire,
  * so the app gets new 4-hour access tokens by itself, with no backend and no
- * app secret. Because nothing redirects back to the page, it works from
- * file:// and from the single-file release too. The calls are plain fetch to
+ * app secret. The calls are plain fetch to
  * api.dropboxapi.com / content.dropboxapi.com — the app's one network
  * dependency (see AGENTS.md "Dropbox sync"). The app is an "App folder" app:
  * it sees only its own folder.
@@ -32,6 +33,9 @@
   const CONTENT_API = 'https://content.dropboxapi.com/2';
   const META_KEY = 'osr_dropbox_v1';
   const TOKEN_KEY = 'osr_dropbox_token';
+  // The PKCE verifier between Connect and the redirect back (sessionStorage:
+  // this tab only, gone when it closes).
+  const PENDING_KEY = 'osr_dropbox_pending';
   // Left behind by the Google Drive sync this file replaced.
   const OLD_KEYS = ['osr_gdrive_v1', 'osr_gdrive_token'];
   const FILE_NAME = 'Character Keeper campaign.json';
@@ -115,12 +119,20 @@
     return { verifier, challenge: base64url(new Uint8Array(digest)), method: 'S256' };
   }
 
-  function authUrl(key, pair) {
-    return AUTH_URL + '?' + new URLSearchParams({
+  // With redirectUri, Dropbox sends the browser back there with ?code=&state=;
+  // without it, Dropbox shows the code for the user to paste.
+  function authUrl(key, pair, redirectUri, state) {
+    const p = {
       client_id: key, response_type: 'code', token_access_type: 'offline',
       code_challenge: pair.challenge, code_challenge_method: pair.method
-    });
+    };
+    if (redirectUri) Object.assign(p, { redirect_uri: redirectUri, state });
+    return AUTH_URL + '?' + new URLSearchParams(p);
   }
+
+  // The app's own URL, without query or hash. It must be in the Dropbox app's
+  // list of redirect URIs.
+  function redirectUri() { return location.origin + location.pathname; }
 
   /* ---- Tokens ---- */
   function dbxError(status, message, summary) {
@@ -336,15 +348,57 @@
     return syncNow();
   }
 
-  // Step 1 (a click): open Dropbox's consent page in a new tab. The tab is
-  // opened before the async PKCE work, so pop-up blockers see the click.
-  async function connect() {
+  function requireAppKey() {
     const key = appKey();
     if (!key) {
       alert('Enter your Dropbox app key first (Settings → Dropbox sync → Setup).');
       const d = $('#dbx-setup'); if (d) d.open = true;
-      return;
     }
+    return key;
+  }
+
+  // Step 1: send this tab to Dropbox's consent page. Dropbox redirects back
+  // to redirectUri() and initDropbox() finishes there.
+  async function connect() {
+    const key = requireAppKey();
+    if (!key) return;
+    const pair = await pkcePair(window.crypto && crypto.subtle);
+    const state = base64url(crypto.getRandomValues(new Uint8Array(16)));
+    const uri = redirectUri();
+    try {
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ verifier: pair.verifier, appKey: key, state, redirectUri: uri }));
+    } catch (e) { alert('This browser blocks session storage, so the Dropbox sign-in cannot finish. Use "Connect with a code" under Setup.'); return; }
+    OSR.dropboxRedirect(authUrl(key, pair, uri, state));
+  }
+
+  // Back from Dropbox (initDropbox at boot): ?code=&state= or ?error=.
+  // Removes them from the address bar, checks the state against this tab's
+  // pending sign-in, and trades the code. Returns false when the URL has no
+  // sign-in reply.
+  async function finishRedirect() {
+    const q = new URLSearchParams(location.search);
+    if (!q.has('code') && !q.has('error')) return false;
+    const code = q.get('code'), state = q.get('state'), error = q.get('error');
+    ['code', 'state', 'error', 'error_description'].forEach(k => q.delete(k));
+    const rest = q.toString();
+    history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    let pending = null;
+    try {
+      pending = JSON.parse(sessionStorage.getItem(PENDING_KEY));
+      sessionStorage.removeItem(PENDING_KEY);
+    } catch (e) { /* none */ }
+    if (!pending) return true; // not this tab's sign-in (a stale or copied link): ignore it
+    if (error) { if (error !== 'access_denied') alert('Dropbox sign-in failed (' + error + ').'); return true; }
+    if (state !== pending.state) { alert('The Dropbox sign-in reply does not match this tab. Click Connect again.'); return true; }
+    return (await finishConnect(code, pending)) ? 'connected' : true;
+  }
+
+  // Fallback (Setup → "Connect with a code"): open Dropbox's consent page in a
+  // new tab with no redirect; Dropbox shows a code to paste. The tab is opened
+  // before the async PKCE work, so pop-up blockers see the click.
+  async function connectWithCode() {
+    const key = requireAppKey();
+    if (!key) return;
     const tab = window.open('', '_blank');
     const pair = await pkcePair(window.crypto && crypto.subtle);
     const url = authUrl(key, pair);
@@ -356,16 +410,20 @@
     if (input) { input.value = ''; input.focus(); }
   }
 
-  // Step 2: trade the code the user pasted for tokens, then sync.
-  async function finishConnect(code) {
-    const a = dbx.auth;
+  // Step 2: trade the code (pasted, or from the redirect) for tokens, then sync.
+  // `a` is the pending sign-in: { verifier, appKey, redirectUri? }.
+  async function finishConnect(code, a = dbx.auth) {
     code = String(code || '').trim();
     if (!a || !code) return;
     let j;
     try {
-      j = await tokenRequest({ grant_type: 'authorization_code', code, code_verifier: a.verifier, client_id: a.appKey });
+      const params = { grant_type: 'authorization_code', code, code_verifier: a.verifier, client_id: a.appKey };
+      // Dropbox checks that it matches the redirect_uri of the consent page.
+      if (a.redirectUri) params.redirect_uri = a.redirectUri;
+      j = await tokenRequest(params);
     } catch (e) {
-      alert(e.status === 401 ? 'Dropbox did not accept the code. Click Connect again and paste the new code.' : e.message);
+      alert(e.status === 401 ? (a.redirectUri ? 'Dropbox did not accept the sign-in. Click Connect again.'
+        : 'Dropbox did not accept the code. Click Connect again and paste the new code.') : e.message);
       return;
     }
     if (!j.refresh_token) { alert('Dropbox sent no refresh token. Click Connect again.'); return; }
@@ -376,6 +434,7 @@
     saveMeta();
     if (first) OSR.pushNote('Dropbox', 'Connected');
     await syncNow();
+    return true;
   }
 
   function cancelConnect() { dbx.auth = null; renderDropbox(); }
@@ -484,6 +543,8 @@
   }
 
   function renderDropbox() {
+    const uriEl = $('#dbx-redirect-uri');
+    if (uriEl) uriEl.textContent = redirectUri();
     const btn = $('#dbx-status');
     if (btn) {
       const v = meta.enabled && STATUS_VIEW[dbx.status];
@@ -515,9 +576,10 @@
   }
 
   // Called at the end of init() (js/main.js), after seeding.
-  function initDropbox() {
+  async function initDropbox() {
     OLD_KEYS.forEach(k => writeJson(k, null));
     renderDropbox();
+    if ((await finishRedirect()) === 'connected') return; // finishConnect already synced
     if (!meta.enabled) return;
     if (hasToken()) syncNow();
     else setStatus('signed-out');
@@ -525,6 +587,7 @@
 
   function wireDropbox() {
     $('#dbx-connect').addEventListener('click', () => connect());
+    $('#dbx-connect-code').addEventListener('click', () => connectWithCode());
     $('#dbx-finish').addEventListener('click', () => finishConnect($('#dbx-code').value));
     $('#dbx-code').addEventListener('keydown', e => { if (e.key === 'Enter') finishConnect(e.target.value); });
     $('#dbx-cancel').addEventListener('click', cancelConnect);
@@ -537,8 +600,7 @@
       renderDropbox();
     });
     $('#dbx-status').addEventListener('click', () => {
-      // Reconnect needs the code row, which is on the Settings tab.
-      if (dbx.status === 'signed-out') { $('.tab-btn[data-tab="settings"]').click(); connect(); }
+      if (dbx.status === 'signed-out') connect();
       else if (dbx.status === 'conflict') openDropboxModal();
       else syncNow();
     });
@@ -562,7 +624,10 @@
   Object.assign(OSR, {
     DROPBOX_FILE_NAME: FILE_NAME, DROPBOX_META_KEY: META_KEY, DROPBOX_TOKEN_KEY: TOKEN_KEY,
     hashText, decideSync, pkcePair, dropboxNoteSave, dropboxFlush, dropboxSyncNow: syncNow,
-    dropboxConnect: connect, dropboxFinishConnect: finishConnect, dropboxDisconnect: disconnect,
+    dropboxConnect: connect, dropboxConnectWithCode: connectWithCode, dropboxFinishConnect: finishConnect,
+    dropboxFinishRedirect: finishRedirect, DROPBOX_PENDING_KEY: PENDING_KEY,
+    // Leaves the app for Dropbox's consent page. Tests replace it.
+    dropboxRedirect: url => location.assign(url), dropboxDisconnect: disconnect,
     dropboxUseRemoteCopy: useRemoteCopy, dropboxUseLocalCopy: useLocalCopy,
     openDropboxModal, closeDropboxModal, renderDropbox, initDropbox, wireDropbox, dropboxState
   });

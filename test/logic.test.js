@@ -728,7 +728,7 @@ test('seedCompendium: adds the bundled gear once, then is idempotent', () => {
   const added = T.seedCompendium();
   assert.ok(added > 0);
   assert.equal(T.state.compendium.length, added);
-  assert.equal(T.state.compendiumSeedVersion, T.COMPENDIUM_SEED_VERSION);
+  assert.equal(T.state.compendiumSeedVersion, T.data.seeds.osr.version);
   const en = T.state.compendium[0];
   assert.equal(en.category, 'Items');
   assert.equal(en.source, 'Shadowdark Core');
@@ -736,7 +736,7 @@ test('seedCompendium: adds the bundled gear once, then is idempotent', () => {
 });
 
 test('seedCompendium: leaves an existing same-name entry untouched', () => {
-  const name = T.COMPENDIUM_SEED[0].name;
+  const name = T.data.seeds.osr.compendium[0].name;
   T.state.compendium = [{ id: 'mine', name, category: 'Rules', source: 'Homebrew', body: 'mine' }];
   T.seedCompendium();
   const mine = T.state.compendium.find(e => e.id === 'mine');
@@ -872,7 +872,7 @@ test('SL data: every [ref] in an SL Compendium body resolves to another SL entry
 });
 
 test('SL data: every monster def is complete enough for Combat and Populate by HD', () => {
-  const lib = window.SL_MONSTER_LIBRARY;
+  const lib = window.OSR.data.seeds.sl.monsters;
   assert.equal(new Set(lib.map(d => d.name)).size, lib.length, 'names are unique');
   lib.forEach(d => {
     assert.ok(typeof d.ac.desc === 'number', d.name + ': AC');
@@ -892,8 +892,8 @@ test('SL monsters are invisible under other systems, and vice versa (Compendium 
   assert.equal(T.monstersForSystem().length, 0);
   assert.equal(T.compendiumForSystem().length, 0);
   T.state.settings.system = 'sl';
-  assert.equal(T.monstersForSystem().length, window.SL_MONSTER_LIBRARY.length);
-  assert.equal(T.compendiumForSystem().length, window.SL_COMPENDIUM_SEED.length);
+  assert.equal(T.monstersForSystem().length, window.OSR.data.seeds.sl.monsters.length);
+  assert.equal(T.compendiumForSystem().length, window.OSR.data.seeds.sl.compendium.length);
 });
 
 test('acDisplay: Silent Legions shows its descending AC plus the "*" mark; other formats are unchanged', () => {
@@ -1642,26 +1642,14 @@ test('addMissingPregens: adds only the example characters the campaign lacks, ke
   assert.equal(T.state.characters.length, 9);
 });
 
-test('seed fallbacks: the inline Unknown Armies and Silent Legions sheets match data/*.txt byte for byte', () => {
-  const fs = require('fs');
-  const path = require('path');
-  const checked = T.SEED_FILES.filter(f => /-(ua3e|sl)\.txt$/.test(f));
-  assert.equal(checked.length, 6);
-  checked.forEach(f => {
-    const i = T.SEED_FILES.indexOf(f);
-    assert.equal(T.SEED_FALLBACK[i], fs.readFileSync(path.join(__dirname, '..', f), 'utf8'), f + ' differs from its inline copy in js/seed.js');
-  });
-});
-
 // The Unknown Armies Compendium is not bundled (the UA3 data tools build it
 // from the user's own books), so this checks the link names themselves: the
 // names of those tools' entries for these identities and features.
 const UA_PREGEN_LINKS = ['Veteran', 'Caring', 'Autodidact', 'Occultist', 'Troll', 'Resists Shocks to a Meter',
   'Provides Firearm Attacks', 'Casts Rituals', 'Evaluates a Meter', 'Coerces a Meter', 'Read Passion or Obsession'];
 test('Unknown Armies pregens: every identity is a book identity with a [link] to it, and the sheet parses', () => {
-  T.SEED_FILES.forEach((f, i) => {
+  T.data.pregens.forEach(({ file: f, text: body }) => {
     if (!/-ua3e\.txt$/.test(f)) return;
-    const body = T.SEED_FALLBACK[i];
     const refs = (body.match(/\[([^\]]+)\]/g) || []).map(r => r.slice(1, -1)).filter(r => r !== 'Unknown Armies');
     refs.forEach(r => assert.ok(UA_PREGEN_LINKS.includes(r), f + ': [' + r + '] is not a known Compendium name'));
     const def = window.UAStatblock.parseUAStatblock(body.match(/```ua\n([\s\S]*?)\n```/)[1]);
@@ -1679,9 +1667,8 @@ test('Silent Legions pregens: every [ref] resolves in the SL Compendium, and the
   T.state.compendium = [];
   T.seedSlCompendium();
   T.state.settings.system = 'sl';
-  T.SEED_FILES.forEach((f, i) => {
+  T.data.pregens.forEach(({ file: f, text: body }) => {
     if (!/-sl\.txt$/.test(f)) return;
-    const body = T.SEED_FALLBACK[i];
     const refs = (body.match(/\[([^\]]+)\]/g) || []).map(r => r.slice(1, -1)).filter(r => r !== 'Silent Legions');
     assert.ok(refs.length > 0, f + ': links to the Compendium');
     refs.forEach(r => assert.equal(T.compByExactName(r).length, 1, f + ': [' + r + '] has no Silent Legions Compendium entry'));

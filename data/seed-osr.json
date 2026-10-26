@@ -1,0 +1,201 @@
+{
+  "system": "osr",
+  "version": 1,
+  "compendium": [
+    {
+      "name": "Arrows",
+      "category": "Items",
+      "body": "**Cost** 1 gp per 20 · **Gear slots** 1 slot per 20\n\nAmmunition for shortbows or longbows."
+    },
+    {
+      "name": "Backpack",
+      "category": "Items",
+      "body": "**Cost** 2 gp · **Gear slots** 0 (the first backpack is free to carry)\n\nHolds all the gear you can carry. Don't lose it."
+    },
+    {
+      "name": "Caltrops",
+      "category": "Items",
+      "body": "**Cost** 5 sp per bag · **Gear slots** 1\n\nTiny, triangle-shaped iron spikes. A living creature that steps on caltrops takes 1 damage and can only move at half speed for 10 rounds."
+    },
+    {
+      "name": "Coin",
+      "category": "Items",
+      "body": "**Cost** varies · **Gear slots** 1 slot per 100 (the first 100 are free to carry)\n\nOne gold piece (gp) is worth 10 silver pieces (sp) or 100 copper pieces (cp)."
+    },
+    {
+      "name": "Crossbow bolts",
+      "category": "Items",
+      "body": "**Cost** 1 gp per 20 · **Gear slots** 1 slot per 20\n\nAmmunition for crossbows."
+    },
+    {
+      "name": "Crowbar",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Gear slots** 1\n\nGrants advantage on checks to pry open stuck objects."
+    },
+    {
+      "name": "Flask or bottle",
+      "category": "Items",
+      "body": "**Cost** 3 sp · **Gear slots** 1\n\nGlass container that holds one draught of liquid."
+    },
+    {
+      "name": "Flint and steel",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Gear slots** 1\n\nA small fire starter. With it, routine attempts to light a fire always succeed."
+    },
+    {
+      "name": "Gem",
+      "category": "Items",
+      "body": "**Cost** varies · **Gear slots** 1 slot per 10\n\nGems come in numerous varieties and are very valuable."
+    },
+    {
+      "name": "Grappling hook",
+      "category": "Items",
+      "body": "**Cost** 1 gp · **Gear slots** 1\n\nA rope anchor with three curved tines."
+    },
+    {
+      "name": "Iron spikes",
+      "category": "Items",
+      "body": "**Cost** 1 gp per 10 · **Gear slots** 1 slot per 10\n\nStrong spikes, each with a hole for threading rope. Can be hammered in with weapons or other iron spikes."
+    },
+    {
+      "name": "Lantern",
+      "category": "Items",
+      "body": "**Cost** 5 gp · **Gear slots** 1\n\nCasts light up to a double near distance (see Light, pg. 84). Requires oil. Has a shutter to hide the light."
+    },
+    {
+      "name": "Mirror",
+      "category": "Items",
+      "body": "**Cost** 10 gp · **Gear slots** 1\n\nA small, polished mirror."
+    },
+    {
+      "name": "Oil flask",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Gear slots** 1\n\nFuels a lantern for one hour of real time. Thrown, one flask covers a close area and burns for 4 rounds, dealing 1d4 damage each round."
+    },
+    {
+      "name": "Pole",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Gear slots** 1\n\nWooden, 10' long."
+    },
+    {
+      "name": "Rations",
+      "category": "Items",
+      "body": "**Cost** 5 sp per 3 · **Gear slots** 1 slot per 3\n\nOne day of food and water supply for one person."
+    },
+    {
+      "name": "Rope, 60'",
+      "category": "Items",
+      "body": "**Cost** 1 gp · **Gear slots** 1\n\nHemp, 60' long."
+    },
+    {
+      "name": "Torch",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Gear slots** 1\n\nSheds light to a near distance (see Light Sources, pg. 84). Burns for one hour of real time."
+    },
+    {
+      "name": "Crawling Kit",
+      "category": "Items",
+      "body": "**Cost** 7 gp · **Gear slots** 7\n\nA starting bundle containing:\n\n- Backpack ×1\n- Flint and steel ×1\n- Torch ×2\n- Rations ×3\n- Iron spikes ×10\n- Grappling hook ×1\n- Rope, 60' ×1"
+    },
+    {
+      "name": "Leather armor",
+      "category": "Items",
+      "body": "**Cost** 10 gp · **Gear slots** 1 · **AC** 11 + DEX mod"
+    },
+    {
+      "name": "Chainmail",
+      "category": "Items",
+      "body": "**Cost** 60 gp · **Gear slots** 2 · **AC** 13 + DEX mod\n\nDisadvantage on stealth and swim checks."
+    },
+    {
+      "name": "Plate mail",
+      "category": "Items",
+      "body": "**Cost** 130 gp · **Gear slots** 3 · **AC** 15\n\nCannot swim. Disadvantage on stealth checks."
+    },
+    {
+      "name": "Shield",
+      "category": "Items",
+      "body": "**Cost** 10 gp · **Gear slots** 1 · **AC** +2\n\nOccupies one hand."
+    },
+    {
+      "name": "Mithral",
+      "category": "Items",
+      "body": "**Cost** ×4 the base price · **Gear slots** −1 · Metal armor only\n\nMithral armor has no penalty to stealth or swim."
+    },
+    {
+      "name": "Bastard sword",
+      "category": "Items",
+      "body": "**Cost** 10 gp · **Type** Melee (close) · **Damage** 1d8 one-handed or 1d10 two-handed · **Properties** Versatile, 2 slots"
+    },
+    {
+      "name": "Club",
+      "category": "Items",
+      "body": "**Cost** 5 cp · **Type** Melee (close) · **Damage** 1d4"
+    },
+    {
+      "name": "Crossbow",
+      "category": "Items",
+      "body": "**Cost** 8 gp · **Type** Ranged (far) · **Damage** 1d6 · **Properties** Two-handed, Loading"
+    },
+    {
+      "name": "Dagger",
+      "category": "Items",
+      "body": "**Cost** 1 gp · **Type** Melee or ranged (close/near) · **Damage** 1d4 · **Properties** Finesse, Thrown"
+    },
+    {
+      "name": "Greataxe",
+      "category": "Items",
+      "body": "**Cost** 10 gp · **Type** Melee (close) · **Damage** 1d8 one-handed or 1d10 two-handed · **Properties** Versatile, 2 slots"
+    },
+    {
+      "name": "Greatsword",
+      "category": "Items",
+      "body": "**Cost** 12 gp · **Type** Melee (close) · **Damage** 1d12 · **Properties** Two-handed, 2 slots"
+    },
+    {
+      "name": "Javelin",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Type** Melee or ranged (close/far) · **Damage** 1d4 · **Properties** Thrown"
+    },
+    {
+      "name": "Longbow",
+      "category": "Items",
+      "body": "**Cost** 8 gp · **Type** Ranged (far) · **Damage** 1d8 · **Properties** Two-handed"
+    },
+    {
+      "name": "Longsword",
+      "category": "Items",
+      "body": "**Cost** 9 gp · **Type** Melee (close) · **Damage** 1d8"
+    },
+    {
+      "name": "Mace",
+      "category": "Items",
+      "body": "**Cost** 5 gp · **Type** Melee (close) · **Damage** 1d6"
+    },
+    {
+      "name": "Shortbow",
+      "category": "Items",
+      "body": "**Cost** 6 gp · **Type** Ranged (far) · **Damage** 1d4 · **Properties** Two-handed"
+    },
+    {
+      "name": "Shortsword",
+      "category": "Items",
+      "body": "**Cost** 7 gp · **Type** Melee (close) · **Damage** 1d6"
+    },
+    {
+      "name": "Spear",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Type** Melee or ranged (close/near) · **Damage** 1d6 · **Properties** Thrown"
+    },
+    {
+      "name": "Staff",
+      "category": "Items",
+      "body": "**Cost** 5 sp · **Type** Melee (close) · **Damage** 1d4 · **Properties** Two-handed"
+    },
+    {
+      "name": "Warhammer",
+      "category": "Items",
+      "body": "**Cost** 10 gp · **Type** Melee (close) · **Damage** 1d10 · **Properties** Two-handed"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ const { test } = require('node:test');
 // Values from the app live in jsdom's realm: compare them with deepEqual, not deepStrictEqual.
 const assert = require('node:assert');
 const crypto = require('node:crypto');
-const { boot, click, setValue } = require('./helpers/boot.js');
+const { boot, blankSave, click, setValue } = require('./helpers/boot.js');
 
 const APP_KEY = 'testappkey123';
 const GOOD_CODE = 'code-ok';
@@ -66,6 +66,7 @@ function fakeDropbox(window) {
     if (u.pathname === '/oauth2/token') {
       const p = new URLSearchParams(opts.body);
       dbx.calls.push('token ' + p.get('grant_type'));
+      dbx.tokenParams = p;
       assert.strictEqual(p.get('client_id'), APP_KEY);
       assert.ok(!p.has('client_secret'), 'PKCE: no app secret');
       if (p.get('grant_type') === 'authorization_code') {
@@ -123,9 +124,9 @@ async function setup(opts) {
   return env;
 }
 
-// Connect → the user clicks Allow on Dropbox → pastes the code → Finish.
+// "Connect with a code" → the user clicks Allow on Dropbox → pastes the code → Finish.
 async function connect(env, code = GOOD_CODE) {
-  await env.T.dropboxConnect();
+  await env.T.dropboxConnectWithCode();
   const url = new URL(env.opened[env.opened.length - 1].location.href);
   env.dbx.challenge = url.searchParams.get('code_challenge'); // the "plain" method in jsdom (no crypto.subtle)
   setValue(env.$('#dbx-code'), code);
@@ -166,7 +167,7 @@ test('Dropbox sync: decideSync picks create / link / noop / upload / pull / conf
   window.close();
 });
 
-test('Dropbox sync: Connect opens Dropbox, the pasted code creates the campaign file, then a save uploads it again; tokens never enter the campaign', async () => {
+test('Dropbox sync: "Connect with a code" opens Dropbox, the pasted code creates the campaign file, then a save uploads it again; tokens never enter the campaign', async () => {
   const env = await setup();
   const { T, window, $, dbx, opened } = env;
   T.createCharacter('# Aria\nHP 5/5');
@@ -174,7 +175,7 @@ test('Dropbox sync: Connect opens Dropbox, the pasted code creates the campaign 
   assert.strictEqual($('#dbx-connect').textContent, 'Connect');
   assert.ok($('#dbx-code-row').hidden);
 
-  await T.dropboxConnect();
+  await T.dropboxConnectWithCode();
   assert.strictEqual(opened.length, 1);
   assert.strictEqual(opened[0].opener, null, 'the Dropbox tab cannot reach back into the app');
   const url = new URL(opened[0].location.href);
@@ -182,7 +183,7 @@ test('Dropbox sync: Connect opens Dropbox, the pasted code creates the campaign 
   assert.strictEqual(url.searchParams.get('client_id'), APP_KEY);
   assert.strictEqual(url.searchParams.get('response_type'), 'code');
   assert.strictEqual(url.searchParams.get('token_access_type'), 'offline', 'asks for a refresh token');
-  assert.ok(!url.searchParams.has('redirect_uri'), 'no redirect: Dropbox shows the code, so file:// works');
+  assert.ok(!url.searchParams.has('redirect_uri'), 'no redirect: Dropbox shows the code to paste');
   assert.ok(!$('#dbx-code-row').hidden, 'the paste box is shown');
   assert.strictEqual($('#dbx-open').href, url.href, 'Open Dropbox link, for blocked pop-ups');
   assert.ok($('#dbx-connect').hidden);
@@ -278,14 +279,16 @@ test('Dropbox sync: an expired access token is refreshed without asking; a revok
   assert.strictEqual($('#dbx-connect').textContent, 'Reconnect');
   assert.deepEqual(names(T), ['Aria', 'Brannoc', 'Corvin', 'Offline Edit']);
 
+  // Reconnect in the header sends the tab to Dropbox, which redirects back.
+  const sent = [];
+  T.dropboxRedirect = u => sent.push(u);
   click($('#dbx-status'));
   for (let i = 0; i < 5; i++) await tick();
-  assert.ok($('#tab-settings').classList.contains('is-active'), 'Reconnect shows the Settings tab, where the code goes');
-  assert.ok(!$('#dbx-code-row').hidden);
-  dbx.challenge = new URL(env.opened[env.opened.length - 1].location.href).searchParams.get('code_challenge');
-  setValue($('#dbx-code'), GOOD_CODE);
-  click($('#dbx-finish'));
-  for (let i = 0; i < 20; i++) await tick();
+  assert.strictEqual(sent.length, 1, 'Reconnect goes to Dropbox');
+  const auth = new URL(sent[0]);
+  dbx.challenge = auth.searchParams.get('code_challenge');
+  window.history.replaceState(null, '', '/?code=' + GOOD_CODE + '&state=' + auth.searchParams.get('state'));
+  await T.dropboxFinishRedirect();
   assert.strictEqual(T.dropboxState().status, 'synced');
   assert.deepEqual(remoteNames(dbx), ['Aria', 'Brannoc', 'Corvin', 'Offline Edit']);
   window.close();
@@ -485,4 +488,92 @@ test('Dropbox sync: a reload with sync on pulls a newer Dropbox copy at boot; wi
   assert.strictEqual(env2.T.dropboxState().status, 'signed-out');
   assert.match(env2.document.querySelector('#dbx-status').textContent, /Reconnect/);
   env2.window.close();
+});
+
+// Connect (redirect flow) in one tab, then boot the app again at the URL Dropbox
+// redirects back to, with that tab's sessionStorage. Returns the second boot.
+async function redirectRoundTrip({ code = GOOD_CODE, state, error, keepPending = true } = {}) {
+  const env = await setup();
+  const { T, window, $ } = env;
+  const sent = [];
+  T.dropboxRedirect = u => sent.push(u);
+  click($('#dbx-connect'));
+  for (let i = 0; i < 5; i++) await tick();
+  assert.strictEqual(sent.length, 1);
+  const auth = new URL(sent[0]);
+  const pending = window.sessionStorage.getItem(T.DROPBOX_PENDING_KEY);
+  window.close();
+
+  const q = new URLSearchParams();
+  if (error) q.set('error', error); else q.set('code', code);
+  q.set('state', state == null ? auth.searchParams.get('state') : state);
+  let dbx;
+  const back = await boot({
+    url: 'https://osr.test/?' + q + '#settings',
+    storage: blankSave(), // a saved campaign: no reset() after boot, which would queue another upload
+    session: keepPending ? { [T.DROPBOX_PENDING_KEY]: pending } : {},
+    beforeScripts(w) { dbx = fakeDropbox(w); dbx.challenge = auth.searchParams.get('code_challenge'); }
+  });
+  for (let i = 0; i < 20; i++) await tick();
+  return Object.assign(back, { auth, dbx, $: s => back.document.querySelector(s) });
+}
+
+test('Dropbox sync: Connect sends the tab to Dropbox with a redirect back to the app; the reply connects, syncs, and leaves a clean URL', async () => {
+  const env = await setup();
+  assert.strictEqual(env.$('#dbx-redirect-uri').textContent, 'https://osr.test/', 'Setup shows the redirect URI to register');
+  env.window.close();
+
+  const back = await redirectRoundTrip();
+  const { T, window, dbx, auth } = back;
+  assert.strictEqual(auth.origin + auth.pathname, 'https://www.dropbox.com/oauth2/authorize');
+  assert.strictEqual(auth.searchParams.get('redirect_uri'), 'https://osr.test/');
+  assert.strictEqual(auth.searchParams.get('token_access_type'), 'offline');
+  assert.match(auth.searchParams.get('state'), /^[A-Za-z0-9_-]{16,}$/);
+
+  assert.strictEqual(dbx.tokenParams.get('redirect_uri'), 'https://osr.test/', 'the token request repeats the redirect URI');
+  assert.strictEqual(T.dropboxState().status, 'synced');
+  assert.strictEqual(T.dropboxState().meta.enabled, true);
+  assert.strictEqual(dbx.only().path, '/Character Keeper campaign.json');
+  assert.strictEqual(window.location.search, '', 'the code is removed from the address bar');
+  assert.strictEqual(window.location.hash, '#settings', 'the rest of the URL stays');
+  assert.strictEqual(window.sessionStorage.getItem(T.DROPBOX_PENDING_KEY), null, 'the verifier is used once');
+  window.close();
+});
+
+test('Dropbox sync: a redirect reply with the wrong state, without a pending sign-in, or with an error does not connect', async () => {
+  const wrong = await redirectRoundTrip({ state: 'not-the-one' });
+  assert.strictEqual(wrong.T.dropboxState().meta.enabled, false);
+  assert.ok(!wrong.dbx.calls.some(c => c.startsWith('token')), 'the code is never traded');
+  assert.strictEqual(wrong.window.location.search, '');
+  wrong.window.close();
+
+  const stale = await redirectRoundTrip({ keepPending: false });
+  assert.strictEqual(stale.T.dropboxState().meta.enabled, false);
+  assert.deepEqual(stale.dbx.calls, [], 'a copied or old link does nothing');
+  assert.strictEqual(stale.window.location.search, '');
+  stale.window.close();
+
+  const denied = await redirectRoundTrip({ error: 'access_denied' });
+  assert.strictEqual(denied.T.dropboxState().meta.enabled, false);
+  assert.deepEqual(denied.dbx.calls, []);
+  assert.strictEqual(denied.window.location.search, '');
+  denied.window.close();
+});
+
+test('Dropbox sync: a refused redirect code shows the sign-in message and keeps sync off', async () => {
+  let alerted = '';
+  const env = await setup();
+  const sent = [];
+  env.T.dropboxRedirect = u => sent.push(u);
+  click(env.$('#dbx-connect'));
+  for (let i = 0; i < 5; i++) await tick();
+  const auth = new URL(sent[0]);
+  env.window.alert = m => { alerted = m; };
+  env.dbx.challenge = auth.searchParams.get('code_challenge');
+  env.window.history.replaceState(null, '', '/?code=expired&state=' + auth.searchParams.get('state'));
+  await env.T.dropboxFinishRedirect();
+  assert.match(alerted, /did not accept the sign-in/);
+  assert.strictEqual(env.T.dropboxState().meta.enabled, false);
+  assert.strictEqual(env.window.location.search, '');
+  env.window.close();
 });

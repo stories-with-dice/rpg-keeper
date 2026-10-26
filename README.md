@@ -11,12 +11,13 @@ Disciplines, and Equipment in the Compendium, and its creature templates and nam
 Bestiary; see [Silent Legions](#silent-legions) below. Unknown Armies Combat counts wounds up to
 the wound threshold, and its book content can be loaded from your own PDFs; see
 [Unknown Armies](#unknown-armies). Plain
-HTML/CSS/JS — no build step, no server required, no account, nothing leaves your browser
+HTML/CSS/JS — no build step, no backend, no account, nothing leaves your browser
 (unless you turn on the optional [Dropbox sync](#dropbox-sync-optional)).
 
 - **Live:** deployed to GitHub Pages from `main` (see the repo's Pages settings for the URL).
-- **Local:** just open `index.html` in a browser. Everything works from `file://`, including the
-  bundled monster library. (Serving over a local web server also works and is slightly cleaner.)
+- **Local:** serve the folder with any static web server, for example `python3 -m http.server`,
+  then open `http://localhost:8000/`. Opening `index.html` as a file (`file://`) does not work: the
+  app loads its data files over http.
 
 ---
 
@@ -51,14 +52,14 @@ has the same data. It is off until you click **Connect**.
   you remove the app from your Dropbox account.
 - **Disconnect** stops the sync. The campaign stays in this browser and the file stays in Dropbox.
 
-**Where it works.** Everywhere: GitHub Pages, a local server, `index.html` opened as a file
-(`file://`), and the single-file release download.
-
 **Connect.**
 
-1. Click **Connect**. Dropbox opens in a new tab.
-2. Click **Allow**. Dropbox shows a code.
-3. Copy the code, paste it into the box under **Dropbox sync**, and click **Finish**.
+1. Click **Connect**. This tab goes to Dropbox.
+2. Click **Allow**. Dropbox sends you back to the app, and the sync starts.
+
+If you cannot register the app's address (step 3 of Setup), use **connect with a code** under
+Setup instead. Dropbox opens in a new tab and shows a code. Paste the code into the box under
+**Dropbox sync**, and click **Finish**.
 
 **Setup (once).** The app needs a Dropbox app key:
 
@@ -67,8 +68,10 @@ has the same data. It is off until you click **Connect**.
    folder name under **Apps**.
 2. On the **Permissions** tab, tick **files.content.write** and **files.content.read**. Click
    **Submit**.
-3. On the **Settings** tab, keep **Allow public clients (Implicit Grant & PKCE)** on **Allow**. You
-   do not need a redirect URI.
+3. On the **Settings** tab, keep **Allow public clients (Implicit Grant & PKCE)** on **Allow**.
+   Under **Redirect URIs**, add the app's address and click **Add**. Settings → Dropbox sync →
+   **Setup** shows the address to add. Add one for each place where you open the app, for example
+   the GitHub Pages URL and `http://localhost:8000/`.
 4. In the app, open Settings → Dropbox sync → **Setup** and paste the **App key**. It is stored in
    this browser only. (A deployment can also set `DEFAULT_APP_KEY` in `js/dropbox.js`, so its users
    don't have to.) The app key is not a secret. Never paste the app secret.
@@ -78,14 +81,17 @@ connect, which is enough for a gaming group.
 
 **If Connect fails:**
 
-- *Dropbox did not accept the code*: the code is single-use and expires after a few minutes. Click
-  **Connect** again and paste the new code.
+- The Dropbox page shows *Invalid redirect_uri*: the app's address is not in the app's **Redirect
+  URIs**. Add it (Setup step 3), or use **connect with a code**.
+- *Dropbox did not accept the sign-in* or *the code*: the code is single-use and expires after a few
+  minutes. Click **Connect** again.
 - The Dropbox page shows *Invalid client_id*: the app key is wrong. Copy it again from the App
   Console.
 - The header shows **Sync error** with `missing_scope`: tick the permissions in step 2, click
   **Submit**, then click **Disconnect** and **Connect** again. A token keeps the permissions the app
   had when you connected.
-- No tab opens: the browser blocked it. Click **Open Dropbox** next to the code box.
+- With **connect with a code**, no tab opens: the browser blocked it. Click **Open Dropbox** next to
+  the code box.
 
 ---
 
@@ -454,8 +460,8 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
 - Monster data: the **Shadowdark RPG** core bestiary (© The Arcane Library) — see
   `data/bestiary_data.json`.
 - Silent Legions stats and rules summaries: **Silent Legions** by Kevin Crawford (© Sine Nomine
-  Publishing) — see `js/sl-monsters-data.js` and `js/sl-compendium-seed.js`.
-- Bundled libraries (no CDN, works offline): [marked](https://marked.js.org/) for Markdown,
+  Publishing) — see `data/seed-sl.json`.
+- Bundled libraries (no CDN): [marked](https://marked.js.org/) for Markdown,
   [Font Awesome Free 6.5.2](https://fontawesome.com/) for icons.
 
 See [AGENTS.md](AGENTS.md) if you want to work on the code.

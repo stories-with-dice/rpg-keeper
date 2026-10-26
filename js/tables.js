@@ -1,6 +1,6 @@
 /* js/tables.js — the Tables tab: a filterable, rollable browser over the
- * static random-table library (js/tables-data.js's window.TABLES_LIBRARY,
- * converted from data/tables/*.csv by scripts/convert-tables.js — see
+ * static random-table library (OSR.data.tables, loaded by js/data.js from
+ * data/tables.json, converted from data/tables/*.csv by scripts/convert-tables.js — see
  * AGENTS.md). Read-only reference data, same pattern as the Bestiary's PL
  * generator tables — no state persistence, no CRUD.
  */
@@ -9,7 +9,7 @@
   const { $, escapeHtml } = OSR;
 
   function library() {
-    return Array.isArray(window.TABLES_LIBRARY) ? window.TABLES_LIBRARY : [];
+    return OSR.data.tables;
   }
 
   function tableTags() {
