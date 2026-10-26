@@ -50,6 +50,7 @@
     OSR.wireDropbox();
     OSR.wireCampaigns();
     OSR.wireMaps();
+    OSR.wireTokens();
     OSR.wireSeeds();
     OSR.wireRollPopup();
   }

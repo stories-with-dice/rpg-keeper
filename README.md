@@ -371,7 +371,22 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 - **Measure.** With the ruler tool, drag from one point to another. The app shows the distance in
   cells and in your unit, for example "3 cells · 15 ft". A diagonal step on squares counts as one cell.
 
-Tokens, drawing, and hexcrawl notes come in later versions.
+- **Tokens.** Open **Tokens** and click an icon: a token appears in the middle of the view, on the
+  grid. Choose its **Size** (cells across; on hexes, rings) and **Color** first.
+  - **From combat** lists the combatants (Combat tab) that have no token on this scene. Click one
+    for a token linked to it: it shows the combatant's name, side (green ally, red enemy, gray
+    neutral), HP as a ring, and a dashed ring on whose turn it is. Hover a token for its HP, AC,
+    side, and statuses.
+  - With the hand tool, drag a token to move it; it snaps to the grid (hold Alt to place it
+    freely). Shift+click adds a token to the selection, and Shift+drag on the map selects with a
+    box; the selection moves together.
+  - The bar over the map edits the selected token: label, size, color, and **Link** (a combatant or
+    a character). **Delete** (or the Delete key) removes it.
+  - When a combatant leaves combat, its token stays with the combatant's name. A character's token
+    stays linked to the character.
+  - Alt+click on the map shows a short ping at that point (it is not saved).
+
+Drawing and hexcrawl notes come in later versions.
 
 ---
 
@@ -514,6 +529,9 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
   `data/bestiary_data.json`.
 - Silent Legions stats and rules summaries: **Silent Legions** by Kevin Crawford (© Sine Nomine
   Publishing) — see `data/seed-sl.json`.
+- Map token icons: [game-icons.net](https://game-icons.net) by Lorc, Delapouite, Skoll,
+  DarkZaitzev, Cathelineau, Faithtoken, and Caro Asercion, under
+  [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) — see `data/token-icons.json`.
 - Bundled libraries (no CDN): [marked](https://marked.js.org/) for Markdown,
   [Font Awesome Free 6.5.2](https://fontawesome.com/) for icons.
 

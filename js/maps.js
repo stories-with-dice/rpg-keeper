@@ -49,6 +49,7 @@
     sc.grid.unitsPerCell = Number(sc.grid.unitsPerCell) >= 0 ? Number(sc.grid.unitsPerCell) : GRID_DEFAULTS.unitsPerCell;
     sc.hexcrawl = Object.assign({ on: false, explored: [], coords: false }, sc.hexcrawl || {});
     ['tokens', 'drawings', 'pins'].forEach(k => { if (!Array.isArray(sc[k])) sc[k] = []; });
+    if (OSR.ensureTokenShape) sc.tokens.forEach(OSR.ensureTokenShape); // js/tokens.js
     return sc;
   }
 
@@ -136,13 +137,19 @@
 
   // The object URL of a scene's image, or null while it loads (renderScene
   // runs again when it is ready) or when it is missing.
+  const loading = new Set(); // promises of image loads in progress (mapsIdle)
   function imageHref(sc) {
     if (!sc.imageBlobId) return sc.imageUrl || null;
     const v = images.get(sc.imageBlobId);
     if (v && v !== 'loading' && v !== 'missing') return v;
-    if (!v) loadImage(sc);
+    if (!v) {
+      const p = loadImage(sc).finally(() => loading.delete(p));
+      loading.add(p);
+    }
     return null;
   }
+  // Resolves when no image load is in progress (tests close their window then).
+  const mapsIdle = () => Promise.all(Array.from(loading)).then(() => (loading.size ? mapsIdle() : undefined));
   async function loadImage(sc) {
     const id = sc.imageBlobId;
     images.set(id, 'loading');
@@ -224,6 +231,7 @@
     $('#map-svg').hidden = !cur;
     renderGridPanel(cur);
     renderScene();
+    OSR.renderTokenPanel();
     setStatus(status);
   }
 
@@ -269,9 +277,9 @@
   function overlayMarkup(sc, stroke) {
     if (!overlay || overlay.sceneId !== sc.id) return '';
     const a = overlay.a, b = overlay.b;
-    if (overlay.kind === 'calibrate') {
+    if (overlay.kind === 'calibrate' || overlay.kind === 'box') {
       const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y), w = Math.abs(b.x - a.x), h = Math.abs(b.y - a.y);
-      return '<rect class="map-calibrate" x="' + num(x) + '" y="' + num(y) + '" width="' + num(w) + '" height="' + num(h) + '" stroke-width="' + num(stroke * 2) + '"/>';
+      return '<rect class="' + (overlay.kind === 'box' ? 'map-box' : 'map-calibrate') + '" x="' + num(x) + '" y="' + num(y) + '" width="' + num(w) + '" height="' + num(h) + '" stroke-width="' + num(stroke * 2) + '"/>';
     }
     const fs = stroke * 16;
     return '<line class="map-measure" x1="' + num(a.x) + '" y1="' + num(a.y) + '" x2="' + num(b.x) + '" y2="' + num(b.y) + '" stroke-width="' + num(stroke * 3) + '"/>' +
@@ -306,7 +314,8 @@
     svg.innerHTML =
       '<g class="map-layer-image">' + image + '</g>' +
       '<g class="map-layer-grid">' + gridMarkup(sc, v, stroke) + '</g>' +
-      '<g class="map-layer-drawings"></g><g class="map-layer-pins"></g><g class="map-layer-tokens"></g>' +
+      '<g class="map-layer-drawings"></g><g class="map-layer-pins"></g>' +
+      '<g class="map-layer-tokens">' + OSR.tokensMarkup(sc, stroke) + '</g>' +
       '<g class="map-layer-overlay">' + overlayMarkup(sc, stroke) + '</g>';
   }
 
@@ -389,6 +398,20 @@
     const p = screenToMap(e.clientX, e.clientY, rect, v);
     const kind = e.button === 1 || spaceDown ? 'pan' : tool;
     if (kind === 'calibrate' && sc.grid.locked) { setStatus('The grid is locked. Untick Lock grid to set it.'); return; }
+    // With the hand tool, tokens come first: select, move, box-select (Shift),
+    // or Alt+click on the map for a ping.
+    if (kind === 'pan' && e.button === 0 && !spaceDown) {
+      const td = OSR.tokenPointerDown(e, sc, p);
+      if (td && td.kind === 'none') return;
+      if (td) {
+        drag = Object.assign(td, { sceneId: sc.id });
+        if (td.kind === 'box') overlay = { kind: 'box', sceneId: sc.id, a: p, b: p };
+        if (e.preventDefault) e.preventDefault();
+        renderScene();
+        return;
+      }
+      if (e.altKey) { OSR.tokenPing(sc, p, v.w / OSR.mapRect().width); return; }
+    }
     drag = { kind, sceneId: sc.id, startClient: { x: e.clientX, y: e.clientY }, startView: Object.assign({}, v), a: p };
     if (kind === 'measure' || kind === 'calibrate') overlay = { kind, sceneId: sc.id, a: p, b: p };
     if (e.preventDefault) e.preventDefault();
@@ -402,7 +425,11 @@
     const sc = activeScene();
     if (!sc || sc.id !== drag.sceneId) { drag = null; return; }
     const rect = OSR.mapRect();
-    if (drag.kind === 'pan') {
+    if (drag.kind === 'tokens' || drag.kind === 'box') {
+      const p = screenToMap(e.clientX, e.clientY, rect, viewOf(sc));
+      OSR.tokenPointerMove(drag, sc, p);
+      if (drag.kind === 'box') overlay.b = p;
+    } else if (drag.kind === 'pan') {
       const v = drag.startView;
       views[sc.id] = Object.assign({}, v, {
         x: v.x - (e.clientX - drag.startClient.x) * v.w / rect.width,
@@ -421,6 +448,12 @@
     const d = drag;
     drag = null;
     const sc = activeScene();
+    if (sc && (d.kind === 'tokens' || d.kind === 'box')) {
+      if (d.kind === 'box') overlay = null;
+      OSR.tokenPointerUp(d, sc);
+      renderScene();
+      return;
+    }
     if (!sc || d.kind !== 'calibrate') return;
     const a = overlay.a, b = overlay.b;
     overlay = null;
@@ -446,7 +479,8 @@
   let spaceDown = false;
   function onMapKey(e) {
     const sc = activeScene();
-    if (!sc) return;
+    // Keys typed in the token bar's fields are text, not map commands.
+    if (!sc || isTextField(e.target) || e.target.tagName === 'SELECT') return;
     if (e.key === ' ') { spaceDown = e.type === 'keydown'; if (e.type === 'keydown') e.preventDefault(); return; }
     if (e.type !== 'keydown') return;
     const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
@@ -458,6 +492,9 @@
       e.preventDefault();
       OSR.save();
       renderMaps();
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && OSR.selectedTokenIds(sc).length) {
+      e.preventDefault();
+      OSR.deleteTokens(sc, OSR.selectedTokenIds(sc));
     } else if (e.key === 'Escape' && overlay) { overlay = null; setStatus(''); renderScene(); }
   }
 
@@ -554,7 +591,7 @@
 
   Object.assign(OSR, {
     ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
-    mapRect, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
+    mapRect, mapView: viewOf, mapsIdle, screenToMap, zoomAt, measureText, renameScene, duplicateScene, deleteScene,
     openSceneModal, closeSceneModal, renderMaps, renderScene, wireMaps, mapsState
   });
 })(window.OSR = window.OSR || {});

@@ -34,7 +34,7 @@ async function setup(opts) {
   // A map image loads from IndexedDB after the test's last step: close later,
   // so that load does not render into a closed window.
   const close = window.close.bind(window);
-  window.close = () => { setTimeout(close, 50); };
+  window.close = () => { T.mapsIdle().then(() => setTimeout(close, 0)); };
   return env;
 }
 

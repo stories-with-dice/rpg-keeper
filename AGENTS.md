@@ -80,6 +80,9 @@ js/grid.js              pure map grid geometry (window.MapGrid / module.exports)
                        hexes — cellAt, cellCenter, cellCorners, distance, cellsCovered, cellsIn, gridFromRect
 js/maps.js              the Maps tab: scenes (state.scenes), the SVG view (pan, zoom), images in IndexedDB
                        blobs, grid settings and calibration, the measure tool — see "The Maps tab"
+js/tokens.js            map tokens on a scene: add/snap/move/select/delete, links to combat entries and
+                       characters (unlinkTokens from js/combat.js), the hover card, pings — see
+                       "The Maps tab"
 js/tables.js            the Tables tab: tag filter + name search over OSR.data.tables, expand a
                        table (<details>) and roll its formula — read-only, no state/CRUD
 js/settings.js          the Settings tab
@@ -107,6 +110,8 @@ data/spells.json       GENERATED: the Shadowdark core spells, folded into the OS
                        js/data.js
 data/tables/*.csv      source data for the random tables (one file per table, "range,Details" rows)
 data/tables.json       GENERATED: the random tables (scripts/convert-tables.js)
+data/token-icons.json  the 30 preset map tokens: [{ id: '<author>/<name>', name, author, paths: [d…] }], made
+                       by scripts/build-token-icons.js from game-icons.net SVGs (CC BY 3.0)
 data/seed-osr.json     hand-maintained Shadowdark core gear: { system, version, compendium }
 data/seed-brp.json     hand-maintained BRP seed: { system, version, compendium, monsters } — Chapter 11
                        creatures/NPCs and the Powers/Equipment of Chapters 4 and 8
@@ -117,10 +122,14 @@ data/*.txt             example character sheets (seeded on first run)
 scripts/convert-bestiary.js   CLI: bestiary_data.json -> data/monsters.json
 scripts/convert-spells-from-shadowdark-resources.js  CLI: spell_data.json -> data/spells.json,
                        { name, category:"Spells", body } entries js/data.js folds into the OSR seed
+scripts/build-token-icons.js  CLI: a folder of game-icons.net <author>/<name>.svg files -> data/token-icons.json
+                       (path data only; refuses any other element, a transform, or another viewBox)
 scripts/convert-tables.js     CLI: data/tables/*.csv -> data/tables.json (see "Tables tab" below
                        for the table shape and the per-file tag mapping)
 test/monsters.test.js  node:test suite for the parser + converter
 test/grid.test.js      node:test suite for js/grid.js (pure)
+test/tokens.test.js    node:test suite for js/tokens.js: icons, snapping, moving and selecting, combat
+                       links and unlinking, the bar, Delete, pings
 test/maps.test.js      node:test suite for js/maps.js and the .zip Export/Import: scenes, images (file,
                        paste, address, drop), grid, calibration, measure, pan/zoom
 test/tables.test.js    node:test suite for scripts/convert-tables.js (CSV parsing, range parsing,
@@ -895,8 +904,8 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   drawings, pins }`, where `grid` is `{ type: 'square'|'hex', orient: 'flat'|'pointy', size,
   offsetX, offsetY, unitsPerCell, unit, show, locked }`. Each belongs to one system
   (`splitState` puts it in that system's document) and shows only under that System;
-  `state.activeSceneIds[system]` is the open one. `tokens`, `drawings`, `pins`, and `hexcrawl` are
-  for the later Maps PRs (docs/maps-plan.md).
+  `state.activeSceneIds[system]` is the open one. `drawings`, `pins`, and `hexcrawl` are for the
+  later Maps PRs (docs/maps-plan.md).
 - **Images** are blobs in IndexedDB (`OSR.store.putBlob(id, { bytes, type, width, height })`,
   `bytes` an ArrayBuffer — fake-indexeddb cannot store a jsdom Blob). `storeImage()` runs
   `OSR.decodeImage()` first (canvas: scaled to `MAX_SIDE` 8192 px, encoded as WebP, or PNG where the
@@ -916,6 +925,29 @@ buildRaw}` for tests. Flags: `--dry-run`, `--no-merge` (drop preserved non-Shado
   the SVG's box (tests replace it: jsdom has no layout). Pan: drag with the hand tool, the middle
   button, or Space held. Zoom: the wheel, by its distance (`Math.pow(1.0015, deltaY)`), around the
   pointer, between 20 map px and 6 × the image (`zoomLimits()`). **Fit** forgets the view.
+- **Tokens** (`js/tokens.js`) are in `scene.tokens`: `{ id, iconId, x, y, size, color, label, link }`,
+  `(x, y)` the center in map px, `link` null, `{ kind: 'combat', entryId }`, or
+  `{ kind: 'character', charId }`. The icons are `OSR.data.tokenIcons` (path data only, drawn in
+  the app's own SVG with `fill: #fff` on a circle of `color` — never a downloaded SVG). A palette
+  click (`#token-palette`) or a **From combat** button (`#token-from-combat`: the combat entries
+  with no token on this scene, `addTokenForEntry()`, icon guessed by name with `tokenIconFor()`)
+  adds one at the view's center. `snapTokenPoint()`: an odd size on squares centers on a cell, an
+  even size on a corner, hexes on a hex center. With the hand tool, `js/maps.js` hands pointer
+  events to `tokenPointerDown/Move/Up`: press a token to select and drag it (snapped on release by
+  the token under the pointer, so a group keeps its shape; Alt: free), Shift+click to add to the
+  selection, Shift+drag on the map for a box, Alt+click on the map for a ping (`tokenPing()`, a
+  CSS animation in the overlay, removed after 2 s, never saved). The selection is in memory
+  (`selectedTokenIds()`). `#token-edit` sits over the map (absolute), so showing it on
+  pointer-down does not move the map under the pointer; the map's key handler ignores keys from
+  its fields. Delete/Backspace on `#map-wrap` deletes the selection.
+- **Linked tokens** show the entry's name, side (ring color), HP (`.map-token-hp`, a dashed
+  circle), turn (`.map-token-turn`), and down state, read live from `state.combat` with the combat
+  helpers (`entryHp`, `entryMaxHp`, `entryDown`, `acDisplay`, `charQuickAC`). A character token's
+  HP is its HP tracker, or the sheet's HP while the tracker is 0/0. `removeEntry()` and
+  **Clear** (`js/combat.js`) call `OSR.unlinkTokens(ids)` before the entries go: a character's
+  token links to the character, any other keeps the entry's name as its `label`. The hover card
+  (`#token-card`) shows the same data on `mouseover`. Settings credits the icon authors
+  (`#set-token-credits`).
 - **Tools** (`#map-tools`, `tool`): pointer events on the SVG, moves and ups on `window`.
   `measure` draws a line and puts `measureText()` ("3 cells · 15 ft", `MapGrid.distance`: a square
   diagonal counts 1) in `#map-status`. `calibrate` drags a rectangle over `#grid-span` × `#grid-span`

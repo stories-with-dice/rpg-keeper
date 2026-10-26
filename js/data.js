@@ -7,7 +7,8 @@
  *     the converters in scripts/;
  *   - data/seed-<system>.json — the hand-maintained seed for each system:
  *     { system, version, compendium: [...], monsters?: [...] };
- *   - data/*.txt — the example characters (pregens).
+ *   - data/*.txt — the example characters (pregens);
+ *   - data/token-icons.json — the preset map tokens (scripts/build-token-icons.js).
  *
  * Result, on OSR.data:
  *   monsters  the OSR (Shadowdark/OSE) bestiary
@@ -16,6 +17,7 @@
  *             Compendium seed is the gear from data/seed-osr.json plus every
  *             spell from data/spells.json whose name is not already there
  *   pregens   [{ file, text }] in PREGEN_FILES order
+ *   tokenIcons [{ id, name, author, paths }] — game-icons.net icons, path data only
  */
 (function (OSR) {
   'use strict';
@@ -27,7 +29,7 @@
     'data/vivian-sato-sl.txt', 'data/ray-kowalczyk-sl.txt'
   ];
 
-  OSR.data = { monsters: [], tables: [], seeds: {}, pregens: [] };
+  OSR.data = { monsters: [], tables: [], seeds: {}, pregens: [], tokenIcons: [] };
 
   async function get(url, as) {
     let res;
@@ -52,7 +54,8 @@
     const jobs = {
       monsters: get('data/monsters.json'), spells: get('data/spells.json'), tables: get('data/tables.json'),
       osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'), sl: get('data/seed-sl.json'),
-      pregens: Promise.all(PREGEN_FILES.map(f => get(f, 'text')))
+      pregens: Promise.all(PREGEN_FILES.map(f => get(f, 'text'))),
+      tokenIcons: get('data/token-icons.json')
     };
     const keys = Object.keys(jobs);
     const settled = await Promise.allSettled(keys.map(k => jobs[k]));
@@ -69,7 +72,8 @@
         brp: seed(r.brp),
         sl: seed(r.sl)
       },
-      pregens: PREGEN_FILES.map((file, i) => ({ file, text: r.pregens[i] }))
+      pregens: PREGEN_FILES.map((file, i) => ({ file, text: r.pregens[i] })),
+      tokenIcons: r.tokenIcons
     };
     return OSR.data;
   }

@@ -507,6 +507,7 @@
     const ents = OSR.state.combat.entries;
     const i = ents.findIndex(x => x.id === id);
     if (i < 0) return;
+    if (OSR.unlinkTokens) OSR.unlinkTokens([id]); // map tokens keep the name (js/tokens.js)
     ents.splice(i, 1);
     const fallback = ents.length ? ents[Math.min(i, ents.length - 1)].id : null;
     if (OSR.state.combat.activeId === id) OSR.state.combat.activeId = fallback;
@@ -1079,6 +1080,7 @@
     $('#cb-add-monster').addEventListener('click', OSR.openMonsterModal);
     $('#cb-clear').addEventListener('click', () => {
       if (!OSR.state.combat.entries.length || confirm('Clear all combatants and reset to round 1?')) {
+        if (OSR.unlinkTokens) OSR.unlinkTokens(OSR.state.combat.entries.map(e => e.id));
         OSR.state.combat = { round: 1, activeId: null, selectedId: null, entries: [] };
         OSR.save();
         renderCombat();

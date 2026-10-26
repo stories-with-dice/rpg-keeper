@@ -1358,3 +1358,42 @@ button, input, textarea, select {
 }
 .scene-error { color: var(--accent); }
 .scene-error[hidden] { display: none; }
+.map-box { fill: rgba(200, 161, 90, .12); stroke: var(--accent); stroke-dasharray: 4 3; }
+
+/* ===== Map tokens (js/tokens.js) ===== */
+.map-token { cursor: grab; }
+.map-token-icon { fill: #fff; pointer-events: none; }
+.map-token-label { fill: var(--text); text-anchor: middle; paint-order: stroke; stroke: rgba(0, 0, 0, .8); stroke-width: .22em; font-family: var(--font-body); pointer-events: none; }
+.map-token-hp { fill: none; pointer-events: none; }
+.map-token-sel { fill: none; stroke: var(--accent-2); }
+.map-token-turn { fill: none; stroke: var(--accent); stroke-dasharray: 6 4; }
+.map-token.is-down { opacity: .5; }
+.map-ping { fill: none; stroke: var(--accent); animation: map-ping 2s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes map-ping { from { opacity: 1; transform: scale(.2); } to { opacity: 0; transform: scale(1.4); } }
+.map-token-panel { margin-bottom: 10px; }
+.map-token-panel[hidden] { display: none; }
+.map-token-panel summary { cursor: pointer; color: var(--text-dim); }
+.token-add, .token-edit { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 8px 0; font-size: 13px; }
+/* Over the map's top edge, so showing it never moves the map under the pointer. */
+.token-edit {
+  position: absolute; top: 8px; left: 8px; right: 8px; z-index: 5; margin: 0;
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-2) 92%, transparent); box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.token-add label, .token-edit label { display: inline-flex; align-items: center; gap: 6px; }
+.token-edit[hidden], .token-edit label[hidden] { display: none; }
+.token-edit input[type="text"] { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 6px; color: var(--text); }
+.token-palette { display: flex; flex-wrap: wrap; gap: 4px; }
+.token-icon-btn { width: 34px; height: 34px; padding: 3px; border-radius: 50%; background: var(--bg-3); border: 1px solid var(--border); cursor: pointer; }
+.token-icon-btn:hover { border-color: var(--accent); }
+.token-icon-btn svg { width: 100%; height: 100%; fill: var(--text); display: block; }
+.token-from-combat { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.token-entry-btn.side-ally { border-color: #4caf50; }
+.token-entry-btn.side-enemy { border-color: #e05252; }
+.token-card {
+  position: fixed; z-index: 30; pointer-events: none; max-width: 260px;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 10px; font-size: 12px; line-height: 1.5; box-shadow: 0 4px 14px rgba(0, 0, 0, .4);
+}
+.token-card[hidden] { display: none; }
+.set-credits { margin-top: 16px; }

@@ -203,8 +203,28 @@
           </div>
           <p class="hint">To set the grid from the map: choose <i class="fa-solid fa-crop-simple"></i>, then drag over one cell of the map's own grid, from corner to corner. For more precision, drag over several cells and enter their number in <b>Drag covers</b>. For hexes, drag across a row of hexes, from the left edge of the first to the right edge of the last. Arrow keys then move the grid by 1 px (Shift: 10 px).</p>
         </details>
+        <details class="map-token-panel" id="map-token-panel" hidden>
+          <summary>Tokens</summary>
+          <div class="token-add">
+            <label>Size <select id="token-size" class="btn"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+            <label>Color <input type="color" id="token-color" value="#5b4a33" /></label>
+            <span class="hint">Click an icon to put a token in the middle of the view.</span>
+          </div>
+          <div class="token-palette" id="token-palette"></div>
+          <div class="token-from-combat" id="token-from-combat"></div>
+          <p class="hint">With the hand tool: drag a token to move it (Alt: no snap). Shift+click adds a token to the selection; Shift+drag selects with a box. Delete removes the selection. Alt+click on the map pings a point.</p>
+        </details>
         <div class="map-wrap" id="map-wrap" tabindex="0">
           <svg id="map-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>
+          <div class="token-edit" id="token-edit" hidden>
+            <b id="token-edit-title"></b>
+            <label class="token-one">Label <input type="text" id="token-label" autocomplete="off" /></label>
+            <label class="token-one">Size <select id="token-edit-size" class="btn"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+            <label class="token-one">Color <input type="color" id="token-edit-color" /></label>
+            <label class="token-one">Link <select id="token-link" class="btn"></select></label>
+            <button id="token-delete" class="btn btn-danger" type="button">Delete</button>
+          </div>
+          <div class="token-card" id="token-card" hidden></div>
           <div class="map-empty" id="map-empty" hidden>No scenes for this System yet. Choose <b>+ New scene…</b>, drop an image here, or paste one (Ctrl+V).</div>
         </div>
       </section>
@@ -319,6 +339,7 @@
             <button id="dbx-disconnect" class="btn" hidden>Disconnect</button>
           </span>
         </div>
+        <p class="hint set-credits" id="set-token-credits"></p>
       </section>
     </main>
 
@@ -591,6 +612,7 @@
   <script src="js/combat-populate.js"></script>
   <script src="js/grid.js"></script>
   <script src="js/maps.js"></script>
+  <script src="js/tokens.js"></script>
   <script src="js/compendium.js"></script>
   <script src="js/compendium-popups.js"></script>
   <script src="js/tables.js"></script>

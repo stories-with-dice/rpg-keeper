@@ -42,6 +42,7 @@ const SCRIPTS = [
   'js/combat-populate.js',
   'js/grid.js',
   'js/maps.js',
+  'js/tokens.js',
   'js/compendium.js',
   'js/compendium-popups.js',
   'js/tables.js',
