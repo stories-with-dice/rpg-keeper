@@ -19,7 +19,7 @@ const { test } = require('node:test');
 // Values from the app live in jsdom's realm: compare them with deepEqual, not deepStrictEqual.
 const assert = require('node:assert');
 const crypto = require('node:crypto');
-const { boot, blankSave, click, setValue, savedState } = require('./helpers/boot.js');
+const { boot, blankSave, click, setValue, savedState, answerImport } = require('./helpers/boot.js');
 const { APP_KEY, GOOD_CODE, fakeOpen, fakeDropbox, newDropbox } = require('./helpers/fake-dropbox.js');
 
 const tick = () => new Promise(r => setTimeout(r, 0));
@@ -673,7 +673,7 @@ test('Dropbox sync: a content pack imported on one device reaches the seed of an
   const pack = { pack: { name: 'Night Pack', system: 'ua3e' },
     compendium: [{ ref: 'np-1', name: 'Night Shift', category: 'Rules', body: 'Work at night.' }],
     monsters: [{ ref: 'np-m1', name: 'Night Clerk', source: 'ua3e', desc: 'Tired.' }] };
-  await a.T.importData(new a.window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' }));
+  await answerImport(a.window, () => a.T.importData(new a.window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' })));
   await a.T.dropboxFlush();
   await settle();
   const seed = shared.json('/seeds/ua3e.json');

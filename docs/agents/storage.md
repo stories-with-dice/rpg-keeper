@@ -52,9 +52,20 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
   `seedRef` (`replaceSeeded()`). Scenes get new ids.
 - Export adds `tables` (the table library). Import (Replace or Merge) and packs give tables to
   `OSR.addTables()`, which skips a name (case-insensitive) or id the library has.
-- **Content packs**: a file with `pack: { name, system }` goes to `importPack`: merge only, one
-  confirm, then `OSR.setSystem(pack.system)`. If `saveNow()` returns `false`, it removes what it
-  added and alerts. Pack tables go to the table library (source = the pack name). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
+- **Content packs**: a file with `pack: { name, system }` goes to `importPack`: merge only, then
+  `OSR.setSystem(pack.system)`. `choosePackItems()` opens the import picker `#import-modal` and
+  resolves to `{ replace, compendium, monsters, tables }` (the picked source objects) or null.
+  The picker model (`picker.items`: `{ group, cat, name, exists, on, src }`, `picker.cats`) groups
+  Compendium entries by category, monsters in one category, and tables by `cleanTable().output`.
+  `exists` uses the same match as the merge: `compIndex()` (ref, else name + category) and
+  `monsterIndex()` (ref, else name), in the pack's system; `OSR.tableByName()` for tables. While
+  Replace is off, an existing item is disabled and skipped. `syncPicker()` updates checkboxes
+  (indeterminate for a partial category or group), counts, and the summary without a re-render.
+  Escape calls `closeImportModal()`. With Replace, `mergeCompendium`/`mergeMonsters(…, opts)`
+  replace the match in place (same id) and `OSR.addTables(…, { replace })` updates the table's
+  fields (same id and name). If `saveNow()` or `saveTables()` fails, it restores the copies of
+  `state.compendium`, `state.monsters`, and the library tables taken before, and alerts. Tests answer
+  the picker with `answerImport()` in `test/helpers/boot.js`. Pack tables go to the table library (source = the pack name). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
   store.
 
 ## Seeding (`js/data.js`, `js/seeds.js`, `js/seed.js`)

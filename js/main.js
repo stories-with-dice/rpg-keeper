@@ -16,7 +16,7 @@
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
         OSR.closePopulateHdModal(); OSR.closeDropboxModal(); OSR.closeMonsterGenerator();
         OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal(); OSR.closeMapMenu();
-        OSR.closeTableEditor();
+        OSR.closeTableEditor(); OSR.closeImportModal();
       }
     });
   }

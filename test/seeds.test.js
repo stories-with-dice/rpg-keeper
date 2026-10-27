@@ -10,7 +10,7 @@
 const { test } = require('node:test');
 // Values from the app live in jsdom's realm: compare them with deepEqual, not deepStrictEqual.
 const assert = require('node:assert');
-const { boot, click, setValue } = require('./helpers/boot.js');
+const { boot, click, setValue, answerImport } = require('./helpers/boot.js');
 
 const tick = () => new Promise(r => setTimeout(r, 0));
 const settle = async (n = 20) => { for (let i = 0; i < n; i++) await tick(); };
@@ -118,7 +118,7 @@ const uaPack = () => ({
 test('a content pack goes into the system\'s seed too; another campaign is offered it', async () => {
   const { T, window, document } = await boot();
   const $ = s => document.querySelector(s);
-  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+  await answerImport(window, () => T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' })));
   const added = T.state.compendium.find(e => e.name === 'Night Shift');
   assert.strictEqual(added.seedRef, 'np-1');
   assert.strictEqual(added.seedHash, T.contentHash(added));

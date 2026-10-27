@@ -2,7 +2,7 @@
  * (.json, or a .zip with the map images: see exportData / importZip). */
 (function (OSR) {
   'use strict';
-  const $ = OSR.$;
+  const { $, $$, escapeHtml } = OSR;
 
   /* ---- Clipboard / paste modal ---- */
   function openPasteModal(text) {
@@ -93,7 +93,11 @@
   // An item with a `seedRef` (a seeded item, from an export) replaces the
   // campaign's item with the same seedRef instead (js/seeds.js). With
   // `fromPack`, every added item becomes a seed copy (seedRef + seedHash).
+  // With opts.replace (the import picker's "Replace"), a match is replaced in
+  // place (same id) instead of skipped; its id goes into opts.replaced.
   const validSystem = (s, fallback) => (OSR.SYSTEMS.indexOf(s) === -1 ? fallback : s);
+  const lc = s => String(s || '').trim().toLowerCase();
+  const inSystem = (x, system) => (x.system || 'osr') === system;
   function replaceSeeded(list, item, system) {
     if (!item.seedRef) return false;
     const i = list.findIndex(x => (x.system || 'osr') === system && x.seedRef === item.seedRef);
@@ -103,71 +107,239 @@
     list[i] = item;
     return true;
   }
-  function mergeCompendium(list, fallbackSystem, fromPack) {
+  // The index of the campaign's Compendium entry or monster that an imported
+  // one matches (same ref, else same name — and category for an entry), or -1.
+  function compIndex(en, system) {
+    return OSR.state.compendium.findIndex(x => inSystem(x, system) &&
+      ((en.ref && x.ref === en.ref) || (lc(x.name) === lc(en.name) && x.category === en.category)));
+  }
+  function monsterIndex(m, system) {
+    return OSR.state.monsters.findIndex(x => inSystem(x, system) && ((m.ref && x.ref === m.ref) || lc(x.name) === lc(m.name)));
+  }
+  function mergeCompendium(list, fallbackSystem, fromPack, opts) {
+    const o = opts || {};
     const state = OSR.state;
     const added = [];
     list.forEach(en => {
       if (!en) return;
       const system = validSystem(en.system, fallbackSystem);
       if (!fromPack && replaceSeeded(state.compendium, Object.assign({}, en), system)) return;
-      const key = String(en.name || '').toLowerCase() + '\0' + en.category;
-      if (state.compendium.some(x => (x.system || 'osr') === system &&
-          ((en.ref && x.ref === en.ref) || (x.name.toLowerCase() + '\0' + x.category) === key))) return;
-      const item = { id: OSR.uid(), name: String(en.name || ''), category: en.category,
+      const at = compIndex(en, system);
+      if (at !== -1 && !o.replace) return;
+      const item = { id: at === -1 ? OSR.uid() : state.compendium[at].id, name: String(en.name || ''), category: en.category,
         source: en.source || OSR.COMPENDIUM_DEFAULT_SOURCE, system: system,
         body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() };
       if (en.ref) item.ref = String(en.ref);
       if (fromPack) { item.seedRef = OSR.seedRefOf(system, 'c', en); item.seedHash = OSR.contentHash(item); }
       else if (en.seedRef) { item.seedRef = en.seedRef; if (en.seedHash) item.seedHash = en.seedHash; }
-      state.compendium.push(item);
-      added.push(item.id);
+      if (at === -1) { state.compendium.push(item); added.push(item.id); }
+      else { state.compendium[at] = item; if (o.replaced) o.replaced.push(item.id); }
     });
     return added;
   }
-  function mergeMonsters(list, fallbackSystem, fromPack) {
+  // Without opts.replace, only a monster with the same ref is skipped (a
+  // monster's name is not unique: an export can carry two "Goblin"s).
+  function mergeMonsters(list, fallbackSystem, fromPack, opts) {
+    const o = opts || {};
     const state = OSR.state;
     const added = [];
     list.forEach(m => {
       if (!m) return;
       const system = validSystem(m.system, fallbackSystem);
       if (!fromPack && replaceSeeded(state.monsters, m, system)) return;
-      if (m.ref && state.monsters.some(x => x.ref === m.ref && (x.system || 'osr') === system)) return;
+      const at = o.replace ? monsterIndex(m, system) : -1;
+      if (at === -1 && m.ref && state.monsters.some(x => x.ref === m.ref && inSystem(x, system))) return;
       if (fromPack) { const copy = OSR.monsterCopy(system, m); Object.keys(copy).forEach(k => { m[k] = copy[k]; }); }
-      m.id = OSR.uid();
       m.system = system;
-      state.monsters.push(m);
-      added.push(m.id);
+      if (at === -1) { m.id = OSR.uid(); state.monsters.push(m); added.push(m.id); }
+      else { m.id = state.monsters[at].id; state.monsters[at] = m; if (o.replaced) o.replaced.push(m.id); }
     });
     return added;
   }
 
+  /* ---- The import picker (#import-modal) ---- */
+
+  // A content pack's items in groups (Compendium, Bestiary, Tables) and
+  // categories, each with a checkbox. `picker` while the modal is open:
+  //   items   [{ group, cat, name, exists, on, src }]; `exists` = the campaign
+  //           (or the table library) has one with that name; `on` = ticked
+  //   cats    [{ group, name, items: [index] }]
+  //   replace the "Replace" option; while off, an existing item is skipped
+  //   resolve the promise of choosePackItems()
+  let picker = null;
+  const IMPORT_GROUPS = [['compendium', 'Compendium'], ['monsters', 'Bestiary'], ['tables', 'Tables']];
+
+  function pickerModel(system, origin, comp, mons, tbls) {
+    const items = [];
+    comp.forEach(en => items.push({ group: 'compendium', cat: en.category || 'Other', name: String(en.name || ''),
+      exists: compIndex(en, system) !== -1, src: en }));
+    mons.forEach(m => items.push({ group: 'monsters', cat: 'Monsters', name: String(m.name || ''),
+      exists: monsterIndex(m, system) !== -1, src: m }));
+    tbls.forEach(t => {
+      if (!t || typeof t.source !== 'string') return;
+      const c = OSR.cleanTable(t, { system, origin });
+      items.push({ group: 'tables', cat: c.output, name: c.name, exists: !!OSR.tableByName(c.name), src: t });
+    });
+    items.forEach(it => { it.on = true; });
+    const cats = [];
+    IMPORT_GROUPS.forEach(([g]) => {
+      const byName = new Map();
+      items.forEach((it, i) => {
+        if (it.group !== g) return;
+        if (!byName.has(it.cat)) byName.set(it.cat, { group: g, name: it.cat, items: [] });
+        byName.get(it.cat).items.push(i);
+      });
+      Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name)).forEach(c => cats.push(c));
+    });
+    return { items, cats, replace: false };
+  }
+
+  const willImport = it => it.on && (!it.exists || picker.replace);
+  const canPick = it => !it.exists || picker.replace;
+
+  function renderPicker() {
+    const caret = (key, open) => '<button class="imp-caret" data-toggle="' + key + '" aria-expanded="' + open + '">' + (open ? '\u25BE' : '\u25B8') + '</button>';
+    $('#import-list').innerHTML = IMPORT_GROUPS.map(([g, label]) => {
+      const cats = picker.cats.map((c, ci) => [c, ci]).filter(([c]) => c.group === g);
+      if (!cats.length) return '';
+      return '<div class="imp-group">' +
+        '<div class="imp-head">' + caret('g', true) + '<label><input type="checkbox" data-group="' + g + '" /> <b>' + label + '</b></label>' +
+          '<span class="hint imp-count" data-count-group="' + g + '"></span></div>' +
+        '<div class="imp-body">' + cats.map(([c, ci]) =>
+          '<div class="imp-cat">' +
+            '<div class="imp-head">' + caret('c', false) + '<label><input type="checkbox" data-cat="' + ci + '" /> ' + escapeHtml(c.name) + '</label>' +
+              '<span class="hint imp-count" data-count-cat="' + ci + '"></span></div>' +
+            '<ul class="imp-items" hidden>' + c.items.map(i => {
+              const it = picker.items[i];
+              return '<li><label><input type="checkbox" data-item="' + i + '" /> ' + escapeHtml(it.name) + '</label>' +
+                (it.exists ? ' <span class="badge imp-have" title="You have one with this name">you have it</span>' : '') + '</li>';
+            }).join('') + '</ul>' +
+          '</div>').join('') + '</div>' +
+      '</div>';
+    }).join('');
+    syncPicker();
+  }
+
+  // Sets every checkbox, count, and the summary from `picker`, without
+  // rebuilding the list (so open categories stay open).
+  function syncPicker() {
+    const box = (list, cb, count) => {
+      const on = list.filter(it => canPick(it) && it.on).length, can = list.filter(canPick).length;
+      cb.checked = can > 0 && on === can;
+      cb.indeterminate = on > 0 && on < can;
+      cb.disabled = can === 0;
+      count.textContent = list.filter(willImport).length + ' / ' + list.length;
+    };
+    $$('#import-list input[data-item]').forEach(cb => {
+      const it = picker.items[+cb.dataset.item];
+      cb.checked = willImport(it);
+      cb.disabled = !canPick(it);
+    });
+    $$('#import-list input[data-cat]').forEach(cb => {
+      const ci = cb.dataset.cat;
+      box(picker.cats[+ci].items.map(i => picker.items[i]), cb, $('#import-list [data-count-cat="' + ci + '"]'));
+    });
+    $$('#import-list input[data-group]').forEach(cb => {
+      const g = cb.dataset.group;
+      box(picker.items.filter(it => it.group === g), cb, $('#import-list [data-count-group="' + g + '"]'));
+    });
+    const add = picker.items.filter(it => willImport(it) && !it.exists).length;
+    const rep = picker.items.filter(it => willImport(it) && it.exists).length;
+    const skip = picker.items.filter(it => it.exists && !picker.replace).length;
+    $('#import-summary').textContent = 'Add ' + add + (picker.replace ? ', replace ' + rep : '') +
+      (skip ? ' · ' + skip + ' you have are skipped' : '');
+    $('#import-go').disabled = add + rep === 0;
+  }
+
+  // Opens the picker. Resolves to { replace, compendium, monsters, tables }
+  // (the source objects to import) or null (Cancel, ×, Escape).
+  function choosePackItems(name, system, comp, mons, tbls) {
+    if (picker) closeImportModal();
+    return new Promise(resolve => {
+      picker = Object.assign(pickerModel(system, name, comp, mons, tbls), { resolve });
+      $('#import-title').textContent = 'Import "' + name + '"';
+      $('#import-intro').textContent = 'Into ' + (OSR.SYSTEM_LABELS[system] || system) +
+        ' (tables go to every campaign). Untick what you do not want. Items you already have (same name) are skipped, unless you tick Replace.';
+      $('#import-replace').checked = false;
+      renderPicker();
+      $('#import-modal').hidden = false;
+    });
+  }
+
+  function finishPicker(go) {
+    const p = picker;
+    if (!p) return;
+    picker = null;
+    $('#import-modal').hidden = true;
+    $('#import-list').innerHTML = '';
+    if (!go) { p.resolve(null); return; }
+    const out = { replace: p.replace, compendium: [], monsters: [], tables: [] };
+    p.items.forEach(it => { if (it.on && (!it.exists || p.replace)) out[it.group].push(it.src); });
+    p.resolve(out);
+  }
+  function closeImportModal() { finishPicker(false); }
+
+  function wireImportModal() {
+    const list = $('#import-list');
+    list.addEventListener('change', e => {
+      const cb = e.target;
+      if (!picker || !cb.matches('input[type="checkbox"]')) return;
+      let items = [];
+      if (cb.dataset.item != null) items = [picker.items[+cb.dataset.item]];
+      else if (cb.dataset.cat != null) items = picker.cats[+cb.dataset.cat].items.map(i => picker.items[i]);
+      else if (cb.dataset.group != null) items = picker.items.filter(it => it.group === cb.dataset.group);
+      items.filter(canPick).forEach(it => { it.on = cb.checked; });
+      syncPicker();
+    });
+    list.addEventListener('click', e => {
+      const btn = e.target.closest('.imp-caret');
+      if (!btn) return;
+      const body = btn.parentElement.nextElementSibling;
+      body.hidden = !body.hidden;
+      btn.textContent = body.hidden ? '\u25B8' : '\u25BE';
+      btn.setAttribute('aria-expanded', String(!body.hidden));
+    });
+    $('#import-replace').addEventListener('change', e => { if (picker) { picker.replace = e.target.checked; syncPicker(); } });
+    $('#import-all').addEventListener('click', () => { if (picker) { picker.items.forEach(it => { it.on = true; }); syncPicker(); } });
+    $('#import-none').addEventListener('click', () => { if (picker) { picker.items.forEach(it => { it.on = false; }); syncPicker(); } });
+    $('#import-go').addEventListener('click', () => finishPicker(true));
+    $('#import-cancel').addEventListener('click', closeImportModal);
+    $('#import-close').addEventListener('click', closeImportModal);
+  }
+
   // A content pack — { pack: { name, system }, compendium: [...], monsters: [...], tables: [...] },
   // for example the Unknown Armies catalog that the UA3 data tools write — is
-  // only ever added to what is there. It never replaces the whole state, so
-  // the Replace/Merge question of a full export is not asked.
+  // only ever merged into what is there, so the Replace/Merge question of a
+  // full export is not asked. The import picker chooses the items, and
+  // whether an item you have (same name) is replaced or skipped.
   async function importPack(data) {
     const pack = data.pack || {};
     const system = validSystem(pack.system, OSR.currentSystem());
-    const comp = Array.isArray(data.compendium) ? data.compendium : [];
     const mons = (Array.isArray(data.monsters) ? data.monsters : []).filter(Boolean);
     mons.forEach(OSR.fixAbilities);
-    const tbls = Array.isArray(data.tables) ? data.tables : [];
     const name = String(pack.name || 'content pack');
-    if (!confirm('Add "' + name + '" to ' + (OSR.SYSTEM_LABELS[system] || system) + '?\n\n' +
-        comp.length + ' Compendium entries, ' + mons.length + ' Bestiary monsters, and ' + tbls.length + ' tables. ' +
-        'Entries you already have are skipped. Nothing is replaced.')) return;
-    const addedC = mergeCompendium(comp, system, true);
-    const addedM = mergeMonsters(mons.map(m => JSON.parse(JSON.stringify(m))), system, true);
+    const pick = await choosePackItems(name, system, (Array.isArray(data.compendium) ? data.compendium : []).filter(Boolean),
+      mons, Array.isArray(data.tables) ? data.tables : []);
+    if (!pick) return;
+    const comp = pick.compendium;
+    const picked = pick.monsters;
+    // A copy of what the import may change, to put back if the write fails.
+    const before = { compendium: OSR.state.compendium.slice(), monsters: OSR.state.monsters.slice(),
+      tables: OSR.tableLib.tables.map(t => Object.assign({}, t)) };
+    const replaced = [];
+    const opts = { replace: pick.replace, replaced };
+    const addedC = mergeCompendium(comp, system, true, opts);
+    const addedM = mergeMonsters(picked.map(m => JSON.parse(JSON.stringify(m))), system, true, opts);
     // Tables go to the table library that every campaign shares (js/tables.js).
-    const addedT = OSR.addTables(tbls, { system, origin: name });
+    const addedT = OSR.addTables(pick.tables, { system, origin: name, replace: pick.replace, replaced });
     OSR.ensureStateShape();
-    if (!(await OSR.saveNow()) || (addedT.length && !(await OSR.saveTables()))) {
+    const tablesChanged = addedT.length || pick.tables.length;
+    if (!(await OSR.saveNow()) || (tablesChanged && !(await OSR.saveTables()))) {
       // The browser storage refused the write (full or blocked): keep the
       // app as it was instead of holding data that a reload would lose.
-      const c = new Set(addedC), m = new Set(addedM);
-      OSR.state.compendium = OSR.state.compendium.filter(e => !c.has(e.id));
-      OSR.state.monsters = OSR.state.monsters.filter(d => !m.has(d.id));
-      OSR.removeTables(addedT);
+      OSR.state.compendium = before.compendium;
+      OSR.state.monsters = before.monsters;
+      OSR.tableLib.tables = before.tables;
       OSR.save();
       OSR.saveTables();
       alert('Import failed: the browser storage is full, so "' + name + '" was not added.');
@@ -175,9 +347,10 @@
     }
     // The pack also goes into the system's seed, so every other campaign
     // (and every device, through Dropbox) is offered it (js/seeds.js).
-    try { await OSR.addToSeed(system, comp, mons); } catch (e) { console.warn('seed write failed', e); }
+    try { await OSR.addToSeed(system, comp, picked); } catch (e) { console.warn('seed write failed', e); }
     OSR.pushNote('Import', 'added ' + addedC.length + ' Compendium entries, ' + addedM.length +
-      ' monsters, and ' + addedT.length + ' tables from "' + name + '"');
+      ' monsters, and ' + addedT.length + ' tables' + (replaced.length ? ', and replaced ' + replaced.length + ' items' : '') +
+      ' from "' + name + '"');
     if (OSR.currentSystem() !== system) OSR.setSystem(system);
     else { OSR.renderCompendium(); OSR.renderMonsterBrowser(); OSR.renderTables(); OSR.renderSettings(); }
   }
@@ -278,6 +451,7 @@
   }
 
   function wireIO() {
+    wireImportModal();
     $('#btn-paste-create').addEventListener('click', () => {
       const t = $('#paste-area').value;
       if (t && t.trim()) { OSR.createCharacter(t); closePasteModal(); }
@@ -297,5 +471,5 @@
     });
   }
 
-  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, exportJson, exportZip, closeExportModal, mergeCompendium, mergeMonsters, importPack, importData, replaceState, wireIO });
+  Object.assign(OSR, { openPasteModal, closePasteModal, pasteFromClipboard, exportData, exportJson, exportZip, closeExportModal, mergeCompendium, mergeMonsters, importPack, closeImportModal, importData, replaceState, wireIO });
 })(window.OSR = window.OSR || {});

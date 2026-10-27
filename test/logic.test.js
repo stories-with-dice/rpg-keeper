@@ -15,7 +15,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, savedState, savedTables, slPack } = require('./helpers/boot.js');
+const { boot, rigRandom, face, savedState, savedTables, answerImport, slPack } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -807,8 +807,7 @@ test('BRP entries are invisible under other systems, and vice versa (Compendium 
 // that the Silent Legions Foundry VTT importer writes from the user's PDF.
 // test/fixtures/sl-pack.json has that pack's shape with made-up text.
 async function importSlPack() {
-  window.confirm = () => true;
-  await T.importPack(slPack());
+  await answerImport(window, () => T.importPack(slPack()));
 }
 
 test('Silent Legions pack: importPack adds Compendium entries, monsters in the SL def shape, and tables, tagged system:sl', async () => {
@@ -1790,15 +1789,19 @@ function uaPack() {
   };
 }
 
+const packFile = pack => new window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' });
+const importPackFile = (pack, choose) => answerImport(window, () => T.importData(packFile(pack)), choose);
+
 test('importData: a content pack is only ever added — no Replace question — keeps its system, and switches System to it', async () => {
   const asked = [];
   window.confirm = m => { asked.push(m); return true; };   // OK here would mean "Replace ALL" for a full export
   T.createCharacter('# Keeper\nHP 5/5');
-  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
-  assert.equal(asked.length, 1);
-  assert.match(asked[0], /Add "Test UA pack" to Unknown Armies 3rd Ed\?/);
-  assert.match(asked[0], /1 Compendium entries, 1 Bestiary monsters, and 0 tables/);
-  assert.doesNotMatch(asked[0], /Replace ALL/);
+  await importPackFile(uaPack(), doc => {
+    assert.equal(doc.querySelector('#import-title').textContent, 'Import "Test UA pack"');
+    assert.match(doc.querySelector('#import-intro').textContent, /Into Unknown Armies 3rd Ed/);
+    assert.equal(doc.querySelector('#import-summary').textContent, 'Add 2');
+  });
+  assert.equal(asked.length, 0, 'the picker asks, not a confirm');
   assert.ok(T.state.characters.some(c => c.name === 'Keeper'), 'nothing is replaced');
   assert.equal(T.state.compendium.find(e => e.name === 'Night Shift').system, 'ua3e');
   assert.equal(T.state.compendium.find(e => e.name === 'Night Shift').ref, 'spell:t:night-shift');
@@ -1806,20 +1809,23 @@ test('importData: a content pack is only ever added — no Replace question — 
   assert.equal(T.currentSystem(), 'ua3e');
 
   // A second import of the same pack adds nothing (matched by ref).
-  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+  await importPackFile(uaPack(), doc => {
+    assert.equal(doc.querySelectorAll('#import-list .imp-have').length, 2, 'both are marked "you have it"');
+    assert.equal(doc.querySelector('#import-go').disabled, true, 'nothing to import');
+    return 'cancel';
+  });
   assert.equal(T.state.compendium.filter(e => e.name === 'Night Shift').length, 1);
   assert.equal(T.state.monsters.filter(m => m.name === 'Night Clerk').length, 1);
 });
 
 test('importData: a content pack adds its tables to the table library; a table name the library has is skipped', async () => {
-  window.confirm = () => true;
   const pack = Object.assign(uaPack(), { tables: [
     { name: 'Omen', output: 'encounters', source: 'd2\n1: [Sign]\n2: calm\n' },
     { name: 'Sign', source: 'd1\n1: crow\n' },
     { name: 'Lair', origin: 'My Book', setting: 'fantasy', output: 'Location', source: 'd1\n1: cave\n' },
     { name: 'Lab', settings: ['horror', 'modern', 'space'], source: 'd1\n1: vats\n' }] });
   T.addTables([{ id: 'x', name: 'sign', source: 'd1\n1: mine\n', createdAt: 1 }]);
-  await T.importData(new window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' }));
+  await importPackFile(pack);
   assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.origin, t.settings, t.output]), [
     ['sign', 'Homebrew', ['Fantasy'], 'Other'],
     ['Omen', 'Test UA pack', ['Modern'], 'Encounter'],
@@ -1863,11 +1869,98 @@ test('Table library: mergeTableLibs keeps every table, the later edit on the sam
   assert.deepEqual(m.deleted, { 2: 15 });
 });
 
-test('importData: Cancel on a content pack adds nothing', async () => {
-  window.confirm = () => false;
-  await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+test('importData: Cancel on a content pack adds nothing; × and Escape cancel too', async () => {
+  await importPackFile(uaPack(), () => 'cancel');
+  await importPackFile(uaPack(), doc => { doc.querySelector('#import-close').click(); });
+  const p = T.importData(packFile(uaPack()));
+  for (let i = 0; i < 100 && document.querySelector('#import-modal').hidden; i++) await new Promise(r => setTimeout(r, 0));
+  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
+  await p;
+  assert.equal(document.querySelector('#import-modal').hidden, true);
   assert.equal(T.state.compendium.length, 0);
   assert.equal(T.state.monsters.length, 0);
+});
+
+// A pack with two Compendium categories, two monsters, and two tables.
+function pickPack() {
+  return {
+    pack: { name: 'Pick Pack', system: 'osr' },
+    compendium: [
+      { name: 'Lantern', category: 'Items', body: 'New lantern.' },
+      { name: 'Rope', category: 'Items', body: 'New rope.' },
+      { name: 'Haste', category: 'Spells', body: 'New haste.' }],
+    monsters: [{ name: 'Bog Rat', ref: 'pp:rat', hd: '1', hp: 4, attacks: [] }, { name: 'Mire Hag', ref: 'pp:hag', hd: '4', hp: 18, attacks: [] }],
+    tables: [{ name: 'Bog', output: 'Location', source: 'd1\n1: mud\n' }, { name: 'Hags', output: 'Entity', source: 'd1\n1: [Bog]\n' }]
+  };
+}
+
+test('Import picker: groups by Compendium category, Bestiary, and table output; unticked entries, categories, and groups are not imported', async () => {
+  await importPackFile(pickPack(), doc => {
+    const $ = s => doc.querySelector(s);
+    const heads = Array.from(doc.querySelectorAll('#import-list .imp-head label')).map(l => l.textContent.trim());
+    assert.deepEqual(heads, ['Compendium', 'Items', 'Spells', 'Bestiary', 'Monsters', 'Tables', 'Entity', 'Location']);
+    assert.ok(Array.from(doc.querySelectorAll('#import-list input')).every(cb => cb.checked), 'everything starts ticked');
+    assert.equal($('#import-summary').textContent, 'Add 7');
+    const tick = (cb, on) => { cb.checked = on; cb.dispatchEvent(new window.Event('change', { bubbles: true })); };
+    const item = name => Array.from(doc.querySelectorAll('#import-list input[data-item]')).find(cb => cb.parentElement.textContent.trim() === name);
+    const head = text => Array.from(doc.querySelectorAll('#import-list .imp-head label')).find(l => l.textContent.trim() === text).querySelector('input');
+
+    tick(item('Rope'), false);
+    assert.equal(head('Items').indeterminate, true, 'a category with some ticked items is indeterminate');
+    assert.equal(head('Compendium').indeterminate, true);
+    tick(head('Spells'), false);
+    assert.equal(item('Haste').checked, false, 'a category untick unticks its items');
+    tick(head('Bestiary'), false);
+    assert.equal(item('Mire Hag').checked, false, 'a group untick unticks its items');
+    tick(item('Mire Hag'), true);
+    assert.equal($('#import-summary').textContent, 'Add 4');
+
+    // A category's caret shows or hides its items.
+    const caret = head('Spells').closest('.imp-head').querySelector('.imp-caret');
+    assert.equal(caret.parentElement.nextElementSibling.hidden, true, 'categories start closed');
+    caret.click();
+    assert.equal(caret.parentElement.nextElementSibling.hidden, false);
+  });
+  assert.deepEqual(T.state.compendium.map(e => e.name), ['Lantern']);
+  assert.deepEqual(T.state.monsters.map(m => m.name), ['Mire Hag']);
+  assert.deepEqual(T.tableLib.tables.map(t => t.name), ['Bog', 'Hags']);
+  assert.deepEqual(T.seeds.osr.compendium.filter(e => e.name === 'Rope' || e.name === 'Lantern').map(e => e.name), ['Lantern'],
+    'only the picked items go into the seed');
+});
+
+test('Import picker: "Replace" replaces the items you have with the same name (same id); without it they are skipped', async () => {
+  T.state.compendium.push({ id: 'mine', name: 'lantern', category: 'Items', source: 'Me', system: 'osr', body: 'My lantern.', createdAt: 1 });
+  T.state.monsters.push({ id: 'rat', name: 'Bog Rat', system: 'osr', hd: '1', hp: 3, attacks: [] });
+  T.addTables([{ id: 'bog', name: 'BOG', source: 'd1\n1: my mud\n' }, { id: 'day', name: 'Day', source: 'd1\n1: [BOG]\n' }]);
+  T.save();
+
+  await importPackFile(pickPack(), doc => {
+    const have = Array.from(doc.querySelectorAll('#import-list li')).filter(li => li.querySelector('.imp-have'));
+    assert.deepEqual(have.map(li => li.querySelector('label').textContent.trim()), ['Lantern', 'Bog Rat', 'Bog']);
+    assert.ok(have.every(li => li.querySelector('input').disabled && !li.querySelector('input').checked), 'skipped while Replace is off');
+    assert.equal(doc.querySelector('#import-summary').textContent, 'Add 4 · 3 you have are skipped');
+  });
+  assert.equal(T.state.compendium.find(e => e.id === 'mine').body, 'My lantern.');
+  assert.equal(T.state.monsters.filter(m => m.name === 'Bog Rat').length, 1);
+  assert.equal(T.tableLib.tables.find(t => t.id === 'bog').source, 'd1\n1: my mud\n');
+
+  await importPackFile(pickPack(), doc => {
+    const replace = doc.querySelector('#import-replace');
+    replace.checked = true;
+    replace.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.equal(doc.querySelector('#import-summary').textContent, 'Add 0, replace 7');
+    const rat = Array.from(doc.querySelectorAll('#import-list input[data-item]')).find(cb => cb.parentElement.textContent.trim() === 'Bog Rat');
+    rat.checked = false;
+    rat.dispatchEvent(new window.Event('change', { bubbles: true }));
+  });
+  const lantern = T.state.compendium.find(e => e.id === 'mine');
+  assert.equal(lantern.body, 'New lantern.', 'replaced in place: the id stays');
+  assert.equal(lantern.seedHash, T.contentHash(lantern), 'the replacement is a seed copy');
+  assert.equal(T.state.monsters.find(m => m.id === 'rat').hp, 3, 'an unticked item is not replaced');
+  const bog = T.tableLib.tables.find(t => t.id === 'bog');
+  assert.deepEqual([bog.name, bog.source, bog.output], ['BOG', 'd1\n1: mud\n', 'Location'], 'a table keeps its id and name, so lookups to it work');
+  assert.deepEqual((await savedTables(T)).tables.find(t => t.id === 'bog').source, 'd1\n1: mud\n');
+  assert.match(T.state.log[T.state.log.length - 1].formula, /replaced 6 items/);
 });
 
 test('importData: a content pack that does not fit in browser storage is taken out again, with an alert', async () => {
@@ -1878,7 +1971,7 @@ test('importData: a content pack that does not fit in browser storage is taken o
   // IndexedDB refuses the write (QuotaExceededError aborts the transaction).
   T.store.putDocs = () => Promise.reject(new window.DOMException('quota', 'QuotaExceededError'));
   try {
-    await T.importData(new window.File([JSON.stringify(uaPack())], 'pack.json', { type: 'application/json' }));
+    await importPackFile(uaPack());
   } finally {
     T.store.putDocs = putDocs;
     window.alert = origAlert;

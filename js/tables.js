@@ -74,19 +74,30 @@
     return { tables, deleted };
   }
 
+  const tableByName = name => OSR.tableLib.tables.find(x => x.name.toLowerCase() === String(name || '').trim().toLowerCase()) || null;
   const isNameTaken = (name, exceptId) => OSR.tableLib.tables.some(x => x.id !== exceptId && x.name.toLowerCase() === name.toLowerCase());
 
   // Adds tables to the library (import, content packs, old campaign tables).
   // A table without text, a deleted one, one the library has (same id), or
-  // one whose name the library has is skipped. Returns the added ids; the
-  // caller saves.
+  // one whose name the library has is skipped. With opts.replace, a table
+  // whose name the library has replaces that table's fields (it keeps its id
+  // and name, so lookups to it still work); its id goes into opts.replaced.
+  // Returns the added ids; the caller saves.
   function addTables(list, opts) {
+    const o = opts || {};
     const added = [];
     (Array.isArray(list) ? list : []).forEach(t => {
       if (!t || typeof t !== 'object' || typeof t.source !== 'string') return;
       if (t.id && (OSR.tableLib.deleted[t.id] || OSR.tableLib.tables.some(x => x.id === t.id))) return;
-      const item = cleanTable(t, opts);
-      if (!item.name || /[[\]]/.test(item.name) || isNameTaken(item.name)) return;
+      const item = cleanTable(t, o);
+      if (!item.name || /[[\]]/.test(item.name)) return;
+      const had = tableByName(item.name);
+      if (had) {
+        if (!o.replace) return;
+        Object.assign(had, { origin: item.origin, settings: item.settings, output: item.output, source: item.source, updatedAt: Date.now() });
+        if (o.replaced) o.replaced.push(had.id);
+        return;
+      }
       OSR.tableLib.tables.push(item);
       added.push(item.id);
     });
@@ -655,7 +666,7 @@
   }
 
   Object.assign(OSR, {
-    TABLE_SETTINGS, TABLE_OUTPUTS, loadTables, saveTables, addTables, removeTables, adoptCampaignTables,
+    TABLE_SETTINGS, TABLE_OUTPUTS, cleanTable, tableByName, loadTables, saveTables, addTables, removeTables, adoptCampaignTables,
     mergeTableLibs, setTableLibrary, renderTables, wireTables, resetTableFilters, openTableEditor, closeTableEditor, tableAcItems
   });
 })(window.OSR = window.OSR || {});

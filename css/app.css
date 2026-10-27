@@ -1600,3 +1600,21 @@ button, input, textarea, select {
 .icon-result { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; }
 .icon-preview { width: 32px; height: 32px; flex: none; border-radius: 4px; background: #000; fill: #fff; display: block; }
 .icon-author { color: var(--text-dim); font-size: 11px; }
+
+/* ---------- Import picker (#import-modal, js/io.js) ---------- */
+#import-modal .modal-box-lg { max-height: 92vh; display: flex; flex-direction: column; }
+.imp-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.imp-tools .map-check { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.imp-list { overflow: auto; min-height: 120px; border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 8px; background: var(--bg); }
+.imp-head { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.imp-head label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.imp-count { margin-left: auto; font-size: 12px; }
+.imp-caret { background: none; border: none; color: var(--text-dim); cursor: pointer; width: 1.4em; padding: 0; font-size: 13px; }
+.imp-body { padding-left: 18px; }
+.imp-group + .imp-group { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px; }
+.imp-items { list-style: none; margin: 0 0 4px; padding-left: 38px; font-size: 13px; }
+.imp-items[hidden], .imp-body[hidden] { display: none; }
+.imp-items li label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.imp-items label:has(input:disabled) { color: var(--text-dim); }
+.imp-have { font-size: 10px; }
+#import-summary { margin-left: auto; }

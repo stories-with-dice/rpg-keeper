@@ -257,6 +257,25 @@ async function savedState(T) {
   return T.joinState(T.parseDocs(raw));
 }
 
+// Runs an import that may open the import picker (#import-modal, a content
+// pack) and answers it: `choose(document)` may change the ticks first; then
+// it clicks Import, or Cancel when `choose` returns 'cancel' or Import is
+// disabled. Resolves with
+// the import's result.
+async function answerImport(window, run, choose) {
+  const doc = window.document;
+  let done = false;
+  const p = Promise.resolve(run()).finally(() => { done = true; });
+  for (let i = 0; i < 500 && !done && doc.querySelector('#import-modal').hidden; i++) await new Promise(r => setTimeout(r, 0));
+  if (!doc.querySelector('#import-modal').hidden) {
+    const r = choose ? choose(doc) : null;
+    // Import is disabled when nothing is ticked (a pack you have): Cancel then.
+    const go = doc.querySelector('#import-go');
+    (r === 'cancel' || go.disabled ? doc.querySelector('#import-cancel') : go).click();
+  }
+  return p;
+}
+
 // The table library (js/tables.js) as saved in IndexedDB.
 async function savedTables(T) {
   const raw = await T.store.getDocs('library');
@@ -270,4 +289,4 @@ function slPack() {
   return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'sl-pack.json'), 'utf8'));
 }
 
-module.exports = { savedState, savedTables, boot, blankSave, rigRandom, face, fire, click, setValue, key, slPack };
+module.exports = { savedState, savedTables, answerImport, boot, blankSave, rigRandom, face, fire, click, setValue, key, slPack };

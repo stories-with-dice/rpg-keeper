@@ -40,9 +40,17 @@ campaign.
   and the log. When the campaign has map images, Export asks first: with **Include map images**,
   you get `osr-manager-YYYYMMDD.zip` with the same data and every map image. Import reads both.
 - **Import** offers **Replace all** or **Merge** (adds the file's characters + monsters to what you have).
-  A **content pack** (a file with a `pack` header, such as the Unknown Armies catalog below) is only
-  ever added: Import asks once, skips entries you already have, and switches **System** to the
-  pack's system.
+  A **content pack** (a file with a `pack` header, such as the Unknown Armies catalog below) never
+  replaces the whole campaign. Import opens a window that lists the pack's items:
+  - Groups are **Compendium** (by category), **Bestiary**, and **Tables** (by output). Click ▸ to
+    show the entries of a category.
+  - Tick or untick a group, a category, or one entry. **Select all** and **Select none** change
+    every entry. The summary shows how many items are added and replaced.
+  - An entry you already have (same name) shows **you have it**. It is skipped, unless you tick
+    **Replace the items I already have**. A replaced item keeps its place (and a table its name,
+    so the tables that roll on it still work).
+  - **Import** adds what is ticked and switches **System** to the pack's system. **Cancel**, ×, or
+    Escape adds nothing.
 
 Use Export/Import to back up, move between machines, or share a party.
 
