@@ -65,7 +65,8 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
   replace the match in place (same id) and `OSR.addTables(…, { replace })` updates the table's
   fields (same id and name). If `saveNow()` or `saveTables()` fails, it restores the copies of
   `state.compendium`, `state.monsters`, and the library tables taken before, and alerts. Tests answer
-  the picker with `answerImport()` in `test/helpers/boot.js`. Pack tables go to the table library (source = the pack name). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
+  the picker with `answerImport()` in `test/helpers/boot.js`. The format for pack writers is
+  [docs/content-pack-format.md](../content-pack-format.md). Pack tables go to the table library (source = the pack name). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
   store.
 
 ## Seeding (`js/data.js`, `js/seeds.js`, `js/seed.js`)

@@ -51,6 +51,7 @@ campaign.
     so the tables that roll on it still work).
   - **Import** adds what is ticked and switches **System** to the pack's system. **Cancel**, ×, or
     Escape adds nothing.
+  - To write a tool that makes packs, see [docs/content-pack-format.md](docs/content-pack-format.md).
 
 Use Export/Import to back up, move between machines, or share a party.
 
@@ -537,6 +538,7 @@ A content pack can carry tables too (a `tables` list of `{ name, source, origin,
 where `source` is the table text and `settings` is a list such as `["Modern", "Horror"]`), so you can
 keep the tables from your books in a private pack. A pack table without `origin` gets the pack
 name; without `settings`, the pack's System gives them. An older single `setting` string works too.
+The full format is in [docs/content-pack-format.md](docs/content-pack-format.md).
 
 ---
 

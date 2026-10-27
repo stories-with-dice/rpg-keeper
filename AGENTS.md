@@ -13,6 +13,10 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 | [combat.md](docs/agents/combat.md) | the Combat tracker: entries, statuses, the right-click menu, the detail panel |
 | [maps.md](docs/agents/maps.md) | Maps tab: scenes, view, tokens, drawings, pins, hexcrawl, toolbar, hotkeys, pop-out, undo |
 
+The content pack format for tools that write packs is in
+[docs/content-pack-format.md](docs/content-pack-format.md). Update it when the import of packs,
+the Compendium entry, the monster def, or the table fields change.
+
 ## Hard rules
 
 - **Static single-page app**: `index.html`, `css/app.css`, `js/*.js`. No build step, framework,
