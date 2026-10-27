@@ -3,7 +3,9 @@
     "id": "arctic",
     "name": "Arctic",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -313,7 +315,9 @@
     "id": "artisan_district",
     "name": "Artisan District",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -623,7 +627,9 @@
     "id": "castle_district",
     "name": "Castle District",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -933,7 +939,9 @@
     "id": "cave",
     "name": "Cave",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -1243,7 +1251,9 @@
     "id": "deep_tunnels",
     "name": "Deep Tunnels",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -1553,7 +1563,9 @@
     "id": "desert",
     "name": "Desert",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -1863,7 +1875,9 @@
     "id": "forest",
     "name": "Forest",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -2173,7 +2187,9 @@
     "id": "grassland",
     "name": "Grassland",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -2483,7 +2499,9 @@
     "id": "high_district",
     "name": "High District",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -2793,7 +2811,9 @@
     "id": "jungle",
     "name": "Jungle",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -3103,7 +3123,9 @@
     "id": "low_district",
     "name": "Low District",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -3413,7 +3435,9 @@
     "id": "market",
     "name": "Market",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -3723,7 +3747,9 @@
     "id": "mountain",
     "name": "Mountain",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -4033,7 +4059,9 @@
     "id": "ocean",
     "name": "Ocean",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -4343,7 +4371,9 @@
     "id": "river_and_coast",
     "name": "River & Coast",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -4653,7 +4683,9 @@
     "id": "ruins",
     "name": "Ruins",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -4963,7 +4995,9 @@
     "id": "slums",
     "name": "Slums",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -5273,7 +5307,9 @@
     "id": "swamp",
     "name": "Swamp",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -5583,7 +5619,9 @@
     "id": "tavern",
     "name": "Tavern",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -5893,7 +5931,9 @@
     "id": "temple_district",
     "name": "Temple District",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -6203,7 +6243,9 @@
     "id": "tomb",
     "name": "Tomb",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [
@@ -6513,7 +6555,9 @@
     "id": "university_district",
     "name": "University District",
     "origin": "Shadowdark",
-    "setting": "Fantasy",
+    "settings": [
+      "Fantasy"
+    ],
     "output": "Encounter",
     "formula": "d100",
     "entries": [

@@ -849,8 +849,9 @@ test('Silent Legions pack: importPack adds Compendium entries, monsters in the S
   assert.equal(tele.category, 'Powers');
   assert.equal(tele.source, 'Discipline');
   assert.deepEqual(T.tableLib.tables.map(t => t.name), slPack().tables.map(t => t.name));
-  assert.ok(T.tableLib.tables.every(t => t.setting === 'Horror'), 'a Silent Legions pack table is set in Horror');
-  assert.ok(T.tableLib.tables.every(t => t.origin === slPack().pack.name), 'the pack name is the source');
+  assert.deepEqual(T.tableLib.tables.map(t => [t.origin, t.settings, t.output]), slPack().tables.map(t => [t.origin, t.settings, t.output]),
+    'the pack gives source, settings, and output');
+  assert.deepEqual(T.tableLib.tables[0].settings, ['Modern', 'Horror'], 'Silent Legions is Modern and Horror');
   assert.deepEqual(T.seeds.sl.monsters.map(m => m.name), mons.map(m => m.name), 'the pack goes into the seed store too');
 
   await importSlPack();
@@ -1815,15 +1816,17 @@ test('importData: a content pack adds its tables to the table library; a table n
   const pack = Object.assign(uaPack(), { tables: [
     { name: 'Omen', output: 'encounters', source: 'd2\n1: [Sign]\n2: calm\n' },
     { name: 'Sign', source: 'd1\n1: crow\n' },
-    { name: 'Lair', origin: 'My Book', setting: 'fantasy', output: 'Location', source: 'd1\n1: cave\n' }] });
+    { name: 'Lair', origin: 'My Book', setting: 'fantasy', output: 'Location', source: 'd1\n1: cave\n' },
+    { name: 'Lab', settings: ['horror', 'modern', 'space'], source: 'd1\n1: vats\n' }] });
   T.addTables([{ id: 'x', name: 'sign', source: 'd1\n1: mine\n', createdAt: 1 }]);
   await T.importData(new window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' }));
-  assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.origin, t.setting, t.output]), [
-    ['sign', 'Homebrew', 'Fantasy', 'Other'],
-    ['Omen', 'Test UA pack', 'Modern', 'Encounter'],
-    ['Lair', 'My Book', 'Fantasy', 'Location']]);
+  assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.origin, t.settings, t.output]), [
+    ['sign', 'Homebrew', ['Fantasy'], 'Other'],
+    ['Omen', 'Test UA pack', ['Modern'], 'Encounter'],
+    ['Lair', 'My Book', ['Fantasy'], 'Location'],
+    ['Lab', 'Test UA pack', ['Modern', 'Horror'], 'Other']], 'an old single `setting` and unknown settings are read');
   assert.equal('tables' in T.state, false, 'no table goes into the campaign');
-  assert.deepEqual((await savedTables(T)).tables.map(t => t.name), ['sign', 'Omen', 'Lair'], 'the library is saved');
+  assert.deepEqual((await savedTables(T)).tables.map(t => t.name), ['sign', 'Omen', 'Lair', 'Lab'], 'the library is saved');
 });
 
 test('Table library: the tables of an old campaign or export move to the library once; Export carries the library', async () => {
@@ -1832,9 +1835,9 @@ test('Table library: the tables of an old campaign or export move to the library
     { id: 'old1', name: 'Old', tag: 'Custom', system: 'ua3e', source: 'd1\n1: x\n', createdAt: 5 },
     { id: 'old2', name: 'kept', system: 'osr', source: 'd1\n1: y\n' }] });
   assert.equal('tables' in T.state, false);
-  assert.deepEqual(T.tableLib.tables.map(t => [t.id, t.name, t.origin, t.setting, t.output]),
-    [['keep', 'Kept', 'Homebrew', 'Fantasy', 'Other'], ['old1', 'Old', 'Homebrew', 'Modern', 'Other']],
-    'a name the library has is skipped; the System gives the setting');
+  assert.deepEqual(T.tableLib.tables.map(t => [t.id, t.name, t.origin, t.settings, t.output]),
+    [['keep', 'Kept', 'Homebrew', ['Fantasy'], 'Other'], ['old1', 'Old', 'Homebrew', ['Modern'], 'Other']],
+    'a name the library has is skipped; the System gives the settings');
   const docs = T.splitState(Object.assign({}, T.state, { tables: [] }));
   assert.equal('tables' in docs.osr, false, 'a system document has no tables');
 

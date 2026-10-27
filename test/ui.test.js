@@ -1304,7 +1304,8 @@ test('Tables tab: lists every seeded table, with Source, Setting, and Output fil
 
   const values = f => $$('#tbl-filters input[data-filter="' + f + '"]').map(cb => cb.dataset.value);
   assert.deepEqual(values('origin'), ['Shadowdark']);
-  assert.deepEqual(values('setting'), ['Fantasy', 'Modern', 'Horror']);
+  assert.deepEqual(values('settings'), ['Fantasy', 'Modern', 'Horror']);
+  assert.equal($('#tbl-hide-subs').checked, true, '"Don\'t show included subtables" starts on');
   assert.deepEqual(values('output'), ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other']);
   assert.ok($$('#tbl-filters input').every(cb => cb.checked), 'every value starts enabled');
   const arctic = $('#tbl-list .tbl-row[data-id="arctic"] summary').textContent;
@@ -1320,27 +1321,31 @@ test('Tables tab: lists every seeded table, with Source, Setting, and Output fil
 
 test('Tables tab: unticking a filter value hides its tables; right-clicking a value isolates it in its row', async () => {
   tab('tables');
-  makeTable('Ghost', 'd1\n1: boo\n', { origin: 'My Notes', setting: 'Horror', output: 'Entity' });
-  makeTable('Mall', 'd1\n1: shops\n', { setting: 'Modern', output: 'Location' });
-  const total = window.OSR.data.tables.length + 2;
+  makeTable('Ghost', 'd1\n1: boo\n', { origin: 'My Notes', settings: ['Horror'], output: 'Entity' });
+  makeTable('Mall', 'd1\n1: shops\n', { settings: ['Modern'], output: 'Location' });
+  makeTable('Arcade', 'd1\n1: neon\n', { settings: ['Modern', 'Horror'], output: 'Location' });
+  const total = window.OSR.data.tables.length + 3;
   const box = (f, v) => $('#tbl-filters input[data-filter="' + f + '"][data-value="' + v + '"]');
   const toggle = (f, v) => { const cb = box(f, v); cb.checked = !cb.checked; cb.dispatchEvent(new window.Event('change', { bubbles: true })); };
   assert.deepEqual($$('#tbl-filters input[data-filter="origin"]').map(cb => cb.dataset.value), ['Homebrew', 'My Notes', 'Shadowdark']);
 
   toggle('origin', 'Shadowdark');
-  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Ghost', 'Mall']);
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade', 'Ghost', 'Mall']);
   toggle('output', 'Entity');
-  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Mall']);
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade', 'Mall']);
+  toggle('settings', 'Modern');
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade'], 'a table shows while one of its settings is ticked');
+  toggle('settings', 'Modern');
   toggle('origin', 'Shadowdark');
   toggle('output', 'Entity');
   assert.equal($$('#tbl-list .tbl-row').length, total);
 
   // The isolate handler applies on a deferred setTimeout(…, 0) — see
   // js/tables.js's wireTables().
-  box('setting', 'Horror').closest('label').dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  box('settings', 'Horror').closest('label').dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
   await new Promise(r => setTimeout(r, 10));
-  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Ghost']);
-  assert.deepEqual($$('#tbl-filters input[data-filter="setting"]').filter(cb => cb.checked).map(cb => cb.dataset.value), ['Horror']);
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade', 'Ghost']);
+  assert.deepEqual($$('#tbl-filters input[data-filter="settings"]').filter(cb => cb.checked).map(cb => cb.dataset.value), ['Horror']);
   assert.ok($$('#tbl-filters input[data-filter="output"]').every(cb => cb.checked), 'the other rows do not change');
 });
 
@@ -1374,42 +1379,48 @@ test('Tables tab: expanding a table and clicking Roll rolls its formula, highlig
   assert.deepEqual(copied, ['A starving human is trapped in an icy, natural pit']);
 });
 
-// Fills the table editor (#tbl-modal) and clicks Save. meta: { origin, setting, output }.
+// Fills the table editor (#tbl-modal) and clicks Save. meta: { origin, settings, output }.
 function makeTable(name, source, meta) {
   const m = meta || {};
   click($('#tbl-new'));
   setValue($('#tbl-f-name'), name);
   if (m.origin) setValue($('#tbl-f-origin'), m.origin);
-  if (m.setting) setValue($('#tbl-f-setting'), m.setting);
+  if (m.settings) $$('#tbl-f-settings input').forEach(cb => { cb.checked = m.settings.indexOf(cb.dataset.setting) !== -1; });
   if (m.output) setValue($('#tbl-f-output'), m.output);
   setValue($('#tbl-f-src'), source);
   click($('#tbl-f-save'));
 }
+const editorSettings = () => $$('#tbl-f-settings input').filter(cb => cb.checked).map(cb => cb.dataset.setting);
 const tblRow = name => $$('#tbl-list .tbl-row').find(li => li.querySelector('.tbl-name').textContent === name);
 
 test('Tables tab: New table saves a user table (in the table library) that rolls on sub-tables', async () => {
   tab('tables');
   click($('#tbl-new'));
   assert.equal($('#tbl-f-origin').value, 'Homebrew', 'a new table starts as Homebrew');
-  assert.equal($('#tbl-f-setting').value, 'Fantasy', 'the OSR System gives Fantasy');
+  assert.deepEqual(editorSettings(), ['Fantasy'], 'the OSR System gives Fantasy');
   assert.equal($('#tbl-f-output').value, 'Other');
   assert.deepEqual(Array.from($('#tbl-f-output').options).map(o => o.value), ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other']);
   click($('#tbl-f-cancel'));
   makeTable('Color', 'd2\n1: red\n2: blue\n');
   makeTable('Thing', 'd2 | Shape | Size\n1: cube | small\n2: orb | large\n', { origin: 'Old Zine', output: 'Entity' });
-  makeTable('Omen', 'd2\n1: A [Color] [Thing.Shape]\n2: [2x Color] lights\n', { setting: 'Horror' });
+  makeTable('Omen', 'd2\n1: A [Color] [Thing.Shape]\n2: [2x Color] lights\n', { settings: ['Modern', 'Horror'] });
   assert.equal($('#tbl-modal').hidden, true, 'Save closes the editor');
   assert.equal('tables' in T.state, false, 'the campaign keeps no tables');
   const saved = (await savedTables(T)).tables;
-  assert.deepEqual(saved.map(t => [t.name, t.origin, t.setting, t.output]), [
-    ['Color', 'Homebrew', 'Fantasy', 'Other'], ['Thing', 'Old Zine', 'Fantasy', 'Entity'], ['Omen', 'Homebrew', 'Horror', 'Other']]);
+  assert.deepEqual(saved.map(t => [t.name, t.origin, t.settings, t.output]), [
+    ['Color', 'Homebrew', ['Fantasy'], 'Other'], ['Thing', 'Old Zine', ['Fantasy'], 'Entity'], ['Omen', 'Homebrew', ['Modern', 'Horror'], 'Other']]);
 
   // Edit opens with the saved values.
   click(tblRow('Thing').querySelector('.tbl-edit'));
   assert.equal($('#tbl-f-origin').value, 'Old Zine');
   assert.equal($('#tbl-f-output').value, 'Entity');
   setValue($('#tbl-f-output'), 'Group');
+  $$('#tbl-f-settings input').forEach(cb => { cb.checked = false; });
   click($('#tbl-f-save'));
+  assert.match($('#tbl-msg').textContent, /at least one setting/);
+  $('#tbl-f-settings input[data-setting="Modern"]').checked = true;
+  click($('#tbl-f-save'));
+  assert.deepEqual(T.tableLib.tables.find(t => t.name === 'Thing').settings, ['Modern']);
   assert.equal(T.tableLib.tables.find(t => t.name === 'Thing').output, 'Group');
 
   const omen = tblRow('Omen');
@@ -1521,14 +1532,43 @@ test('Tables tab: every System sees every table; a user table hides a built-in o
   window.OSR.setSystem('sl');
   assert.ok(tblRow('Arctic').classList.contains('is-user'), 'Silent Legions sees the user Arctic');
   click($('#tbl-new'));
-  assert.equal($('#tbl-f-setting').value, 'Horror', 'a new table under Silent Legions starts as Horror');
+  assert.deepEqual(editorSettings(), ['Modern', 'Horror'], 'a new table under Silent Legions starts as Modern and Horror');
   click($('#tbl-f-cancel'));
   makeTable('Cult', 'd1\n1: a cult\n');
   assert.ok(tblRow('Cult'));
 
   window.OSR.setSystem('osr');
   assert.ok(tblRow('Cult'), 'OSR sees the table made under Silent Legions');
-  assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.setting]), [['Arctic', 'Fantasy'], ['Cult', 'Horror']]);
+  assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.settings]), [['Arctic', ['Fantasy']], ['Cult', ['Modern', 'Horror']]]);
+});
+
+test('Tables tab: "Don\'t show included subtables" hides the tables that other tables roll on; search and a ref click still show them', () => {
+  tab('tables');
+  T.addTables([
+    { name: 'Hue', source: 'd1\n1: grey\n' },
+    { name: 'Shape', source: 'd1\n1: orb\n' },
+    { name: 'Thing', source: 'd1\n1: a [Hue] [Shape]\n' },
+    { name: 'Loop', source: 'd1\n1: [Loop]\n' }]);
+  T.renderTables();
+  const builtins = window.OSR.data.tables.length;
+  const mine = () => $$('#tbl-list .tbl-row.is-user .tbl-name').map(n => n.textContent);
+  assert.deepEqual(mine(), ['Loop', 'Thing'], 'Hue and Shape are hidden; a table that rolls only on itself is not');
+  assert.match($('#tbl-count').textContent, new RegExp((builtins + 2) + ' / ' + (builtins + 4)));
+
+  setValue($('#tbl-search'), 'hue');
+  assert.deepEqual(mine(), ['Hue'], 'a search shows a sub-table');
+  setValue($('#tbl-search'), '');
+
+  click(tblRow('Thing').querySelector('summary'));
+  click(tblRow('Thing').querySelector('.tbl-ref[data-ref-id]'));
+  assert.deepEqual(mine(), ['Hue', 'Loop', 'Thing'], 'a ref click opens and shows the sub-table');
+
+  const hide = $('#tbl-hide-subs');
+  hide.checked = false;
+  hide.dispatchEvent(new window.Event('change', { bubbles: true }));
+  assert.deepEqual(mine(), ['Hue', 'Loop', 'Shape', 'Thing']);
+  T.resetTableFilters();
+  assert.equal(hide.checked, true, 'a reset turns it on again');
 });
 
 /* ================================================================== */

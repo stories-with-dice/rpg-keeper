@@ -300,20 +300,35 @@
  "tables": [
   {
    "name": "Test: Omen",
-   "tag": "Test Tables",
+   "origin": "Silent Legions",
+   "settings": [
+    "Modern",
+    "Horror"
+   ],
    "system": "sl",
+   "output": "Other",
    "source": "# Test table\n1d4\n1: A cold wind\n2: A dead bird\n3-4: Nothing\n"
   },
   {
    "name": "Test: Place",
-   "tag": "Test Tables",
+   "origin": "Silent Legions",
+   "settings": [
+    "Modern",
+    "Horror"
+   ],
    "system": "sl",
+   "output": "Location",
    "source": "1d2\n1: A cellar\n2: A church\n"
   },
   {
    "name": "Test Generator",
-   "tag": "Generators",
+   "origin": "Silent Legions",
+   "settings": [
+    "Modern",
+    "Horror"
+   ],
    "system": "sl",
+   "output": "Adventure",
    "source": "# Rolls on each\n1d1\n1: Omen: [Test: Omen]; Place: [Test: Place]\n"
   }
  ]

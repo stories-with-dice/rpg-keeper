@@ -468,9 +468,13 @@ Every campaign and every **System** sees the same tables.
 
 - Three filter rows choose which tables are listed. Tick or untick a value, or **right-click** a
   value to show only that one in its row.
-  - **Source**: where the table comes from (Shadowdark, a pack name, Homebrew).
-  - **Setting**: Fantasy, Modern, or Horror.
+  - **Source**: where the table comes from (Shadowdark, Silent Legions, Homebrew).
+  - **Setting**: Fantasy, Modern, or Horror. A table can have more than one (Silent Legions tables
+    are Modern and Horror). It shows while one of its settings is ticked.
   - **Output**: what the table makes: Encounter, Entity, Location, Adventure, Group, or Other.
+- **Don't show included subtables** (on by default) hides each table that another table rolls on,
+  so the list shows the generators and not their parts. A search still finds a hidden table, and a
+  click on a `[Name]` link shows it.
 - **Search** filters by table name. The count shows *matches / total*.
 - Click a table's name to **expand** it and see every row. A `[Name]` in a row is a link: click it
   to open that table.
@@ -485,8 +489,9 @@ Every campaign and every **System** sees the same tables.
   label. Click the label to roll that whole group again. A `;` ends a line. Text like
   `A [Color] [Shape]` stays on one line. The Session Log shows the same lines.
 - **+ New table** opens the table editor. Set its **Source** (type a new one or pick one in use),
-  **Setting**, and **Output** there. A new table starts as Homebrew, Other, and the setting of the
-  current System (Unknown Armies: Modern; Silent Legions: Horror; else Fantasy).
+  **Setting** (tick one or more), and **Output** there. A new table starts as Homebrew, Other, and
+  the settings of the current System (Unknown Armies: Modern; Silent Legions: Modern and Horror;
+  else Fantasy).
 - **Duplicate** copies any table (built-in ones too) into a new one that you can change. Your
   tables show a **mine** badge and have **Edit** and **Delete**. Delete removes the table from
   every campaign. Your tables go into Export (an Import adds the ones you do not have) and into
@@ -520,9 +525,10 @@ the list shows its columns. Below the text, the editor lists problems: a bad die
 values with no entry, overlapping ranges, and unknown tables. **Test roll** rolls the draft without
 logging it. If you rename a table, the lookups to it in your other tables change too.
 
-A content pack can carry tables too (a `tables` list of `{ name, source, origin, setting, output }`,
-where `source` is the table text), so you can keep the tables from your books in a private pack.
-A pack table without `origin` gets the pack name; without `setting`, the pack's System gives it.
+A content pack can carry tables too (a `tables` list of `{ name, source, origin, settings, output }`,
+where `source` is the table text and `settings` is a list such as `["Modern", "Horror"]`), so you can
+keep the tables from your books in a private pack. A pack table without `origin` gets the pack
+name; without `settings`, the pack's System gives them. An older single `setting` string works too.
 
 ---
 

@@ -12,7 +12,7 @@
  * range, e.g. after "98-99" — parsed as 100, not 0).
  *
  * Each table gets the Tables tab's filter fields: `origin` (shown as
- * "Source"), `setting`, and `output` (js/tables.js lists the allowed
+ * "Source"), `settings` (a list), and `output` (js/tables.js lists the allowed
  * settings and outputs). DEFAULT_META applies to every CSV; META (by filename
  * slug) overrides it for one table. See docs/agents/monsters.md "Tables tab".
  *
@@ -26,7 +26,7 @@ const path = require('path');
 
 const SETTINGS = ['Fantasy', 'Modern', 'Horror'];
 const OUTPUTS = ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other'];
-const DEFAULT_META = { origin: 'Shadowdark', setting: 'Fantasy', output: 'Encounter' };
+const DEFAULT_META = { origin: 'Shadowdark', settings: ['Fantasy'], output: 'Encounter' };
 const META = {};
 
 // Display-name overrides for slugs that don't title-case cleanly.
@@ -86,9 +86,9 @@ function convertFile(filePath) {
     return { range: r[0].trim(), lo: range.lo, hi: range.hi, text: r[1].trim() };
   });
   const meta = Object.assign({}, DEFAULT_META, META[slug]);
-  if (SETTINGS.indexOf(meta.setting) === -1) throw new Error(`${slug}.csv: unknown setting "${meta.setting}"`);
+  meta.settings.forEach(x => { if (SETTINGS.indexOf(x) === -1) throw new Error(`${slug}.csv: unknown setting "${x}"`); });
   if (OUTPUTS.indexOf(meta.output) === -1) throw new Error(`${slug}.csv: unknown output "${meta.output}"`);
-  return { id: slug, name: NAME_MAP[slug] || titleCase(slug), origin: meta.origin, setting: meta.setting, output: meta.output,
+  return { id: slug, name: NAME_MAP[slug] || titleCase(slug), origin: meta.origin, settings: meta.settings.slice(), output: meta.output,
     formula: formula, entries: entries };
 }
 

@@ -228,7 +228,7 @@ test('Table library: every campaign sees the same tables; the first boot after t
   window.close();
 
   const r = await boot({ indexedDB });
-  assert.deepEqual(r.T.tableLib.tables.map(t => [t.name, t.setting]).sort(), [['Alpha', 'Fantasy'], ['Beta', 'Modern']]);
+  assert.deepEqual(r.T.tableLib.tables.map(t => [t.name, t.settings.join()]).sort(), [['Alpha', 'Fantasy'], ['Beta', 'Modern']]);
   assert.deepEqual((await savedTables(r.T)).tables.map(t => t.name).sort(), ['Alpha', 'Beta']);
   r.T.save();
   await r.T.flushSave();

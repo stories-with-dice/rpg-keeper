@@ -1212,9 +1212,14 @@ button, input, textarea, select {
 #tbl-modal .modal-box-lg { max-height: 92vh; overflow: auto; }
 .comp-form .tbl-f-name { flex: 1 1 160px; }
 .comp-form .tbl-f-origin { flex: 0 0 160px; }
-.comp-form .tbl-f-setting, .comp-form .tbl-f-output { flex: 0 0 120px; }
+.comp-form .tbl-f-setting { flex: 0 0 auto; }
+.comp-form .tbl-f-output { flex: 0 0 120px; }
+.tbl-f-setting .comp-cats { padding-top: 6px; }
+.comp-form .tbl-f-setting input[type="checkbox"] { width: auto; min-width: 0; padding: 0; }
+.tbl-f-setting .comp-cat { color: var(--text); }
+.tbl-hide-subs { font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .comp-form .tbl-f-origin, .comp-form .tbl-f-setting, .comp-form .tbl-f-output { min-width: 0; }
-.comp-form .tbl-f-setting select, .comp-form .tbl-f-output select { min-width: 0; }
+.comp-form .tbl-f-output select { min-width: 0; }
 #tbl-filters { margin-bottom: 12px; }
 #tbl-filters .comp-filter-row:last-of-type { margin-bottom: 0; }
 .tbl-setting { opacity: .8; }

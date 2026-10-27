@@ -45,7 +45,7 @@ test('every data/tables/*.csv converts to a complete, gapless, non-overlapping t
   assert.ok(CSV_FILES.length >= 20, 'expected the full set of table CSVs');
   for (const f of CSV_FILES) {
     const t = convertFile(path.join(TABLES_DIR, f));
-    assert.ok(t.id && t.name && t.origin && t.setting && t.output && t.formula, f + ': missing a field');
+    assert.ok(t.id && t.name && t.origin && t.settings.length && t.output && t.formula, f + ': missing a field');
     assert.ok(t.entries.length > 0, f + ': no entries');
     // Every table so far rolls a single die (d100, or d20 for the Silent
     // Legions monster qualities) — its rows must cover 1..sides exactly once.

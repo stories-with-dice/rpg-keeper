@@ -174,9 +174,12 @@
           <button id="tbl-new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New table</button>
         </div>
         <div id="tbl-filters">
-          <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="tbl-f-origins"></div></div>
-          <div class="comp-filter-row"><span class="comp-filter-label">Setting</span><div class="comp-cats" id="tbl-f-settings"></div></div>
-          <div class="comp-filter-row"><span class="comp-filter-label">Output</span><div class="comp-cats" id="tbl-f-outputs"></div></div>
+          <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="tbl-filter-origin"></div></div>
+          <div class="comp-filter-row"><span class="comp-filter-label">Setting</span><div class="comp-cats" id="tbl-filter-settings"></div></div>
+          <div class="comp-filter-row"><span class="comp-filter-label">Output</span><div class="comp-cats" id="tbl-filter-output"></div></div>
+          <div class="comp-filter-row"><span class="comp-filter-label">Show</span>
+            <label class="tbl-hide-subs" title="Hide every table that another table rolls on. A search shows them."><input type="checkbox" id="tbl-hide-subs" checked /> Don't show included subtables</label>
+          </div>
         </div>
         <p id="tbl-empty" class="hint" hidden>No tables yet.</p>
         <ul class="comp-list tbl-list" id="tbl-list"></ul>
@@ -663,10 +666,10 @@
           <input id="tbl-f-origin" type="text" list="tbl-origin-list" autocomplete="off" placeholder="Homebrew" />
           <datalist id="tbl-origin-list"></datalist>
         </label>
-        <label class="field tbl-f-setting">
+        <div class="field tbl-f-setting">
           <span>Setting</span>
-          <select id="tbl-f-setting"></select>
-        </label>
+          <div class="comp-cats" id="tbl-f-settings"></div>
+        </div>
         <label class="field tbl-f-output">
           <span>Output</span>
           <select id="tbl-f-output"></select>

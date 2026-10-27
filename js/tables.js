@@ -4,15 +4,18 @@
  *             converted from data/tables/*.csv by scripts/convert-tables.js).
  *             Read-only; Duplicate copies one into a user table.
  *   user      the table library OSR.tableLib.tables
- *             ({ id, name, origin, setting, output, source }). `source` is
+ *             ({ id, name, origin, settings, output, source }). `source` is
  *             the text format of js/table-syntax.js; `origin` is where the
- *             table comes from (shown as "Source").
+ *             table comes from (shown as "Source"); `settings` is a list
+ *             (Silent Legions is Modern and Horror).
  * The table library is not part of a campaign: it lives in IndexedDB as the
  * document 'library/tables' (js/store.js) and in Dropbox as /tables.json
  * (js/dropbox.js). OSR.tableLib.deleted ({ id: time }) remembers deleted
  * tables, so a merge with another copy does not bring them back.
  * A table's entries can roll on other tables by name ([Name], [Name.Col],
  * [2x Name], [2d6]). A user table hides a built-in one with the same name.
+ * "Don't show included subtables" (on by default) hides every table that
+ * another table rolls on, unless the user searches or opens it by a ref.
  */
 (function (OSR) {
   'use strict';
@@ -21,9 +24,10 @@
   const TABLE_SETTINGS = ['Fantasy', 'Modern', 'Horror'];
   const TABLE_OUTPUTS = ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other'];
   const DEFAULT_ORIGIN = 'Homebrew';
-  // The setting a table gets when it has none: from the System it was made in.
-  const SYSTEM_SETTING = { osr: 'Fantasy', brp: 'Fantasy', ua3e: 'Modern', sl: 'Horror' };
-  const FILTERS = ['origin', 'setting', 'output'];
+  // The settings a table gets when it has none: from the System it was made in.
+  const SYSTEM_SETTINGS = { osr: ['Fantasy'], brp: ['Fantasy'], ua3e: ['Modern'], sl: ['Modern', 'Horror'] };
+  const FILTERS = ['origin', 'settings', 'output'];
+  const FILTER_ROW = { origin: '#tbl-filter-origin', settings: '#tbl-filter-settings', output: '#tbl-filter-output' };
 
   /* ---- the table library ---- */
 
@@ -36,8 +40,15 @@
     return list.find(x => x.toLowerCase() === s || x.toLowerCase() + 's' === s) || null;
   }
 
+  // ["horror", "Modern", "x"] → ["Modern", "Horror"] (list order, no unknowns).
+  // A string (the old single `setting`) counts as a list of one.
+  function pickSettings(v) {
+    const list = (Array.isArray(v) ? v : v == null ? [] : [v]).map(x => pick(TABLE_SETTINGS, x));
+    return TABLE_SETTINGS.filter(x => list.indexOf(x) !== -1);
+  }
+
   // A table as the library keeps it. `system` (a campaign table, a pack) only
-  // gives the default setting; `origin` is the default source.
+  // gives the default settings; `origin` is the default source.
   function cleanTable(t, opts) {
     const o = opts || {};
     const now = Date.now();
@@ -45,13 +56,15 @@
       id: t.id ? String(t.id) : OSR.uid(),
       name: String(t.name == null ? '' : t.name).trim(),
       origin: String(t.origin || '').trim() || o.origin || DEFAULT_ORIGIN,
-      setting: pick(TABLE_SETTINGS, t.setting) || SYSTEM_SETTING[t.system || o.system] || 'Fantasy',
+      settings: firstList(pickSettings(t.settings != null ? t.settings : t.setting), SYSTEM_SETTINGS[t.system || o.system], ['Fantasy']),
       output: pick(TABLE_OUTPUTS, t.output) || 'Other',
       source: String(t.source == null ? '' : t.source),
       createdAt: t.createdAt || now,
       updatedAt: t.updatedAt || t.createdAt || now
     };
   }
+
+  const firstList = (...lists) => lists.find(l => l && l.length).slice();
 
   function cleanLib(lib) {
     lib = lib && typeof lib === 'object' ? lib : {};
@@ -154,12 +167,12 @@
       c = { source: t.source, parsed: TS.parseTable(t.source) };
       parseCache.set(t.id, c);
     }
-    return Object.assign({}, c.parsed, { id: t.id, name: t.name, origin: t.origin, setting: t.setting, output: t.output,
+    return Object.assign({}, c.parsed, { id: t.id, name: t.name, origin: t.origin, settings: t.settings, output: t.output,
       user: true, source: t.source });
   }
 
   function builtin(t) {
-    return { id: t.id, name: t.name, origin: t.origin, setting: t.setting, output: t.output, formula: t.formula, columns: [], user: false,
+    return { id: t.id, name: t.name, origin: t.origin, settings: t.settings, output: t.output, formula: t.formula, columns: [], user: false,
       entries: t.entries.map(en => Object.assign({ cells: [] }, en)), problems: [] };
   }
 
@@ -197,39 +210,60 @@
   // The values each filter row shows: every source a table has, and the fixed
   // settings and outputs.
   function filterValues(key) {
-    return key === 'origin' ? tableOrigins() : key === 'setting' ? TABLE_SETTINGS : TABLE_OUTPUTS;
+    return key === 'origin' ? tableOrigins() : key === 'settings' ? TABLE_SETTINGS : TABLE_OUTPUTS;
   }
 
-  const noneOff = () => ({ origin: new Set(), setting: new Set(), output: new Set() });
+  // A table's values for one filter (settings is a list, the others one value).
+  const valuesOf = (t, key) => (Array.isArray(t[key]) ? t[key] : [t[key]]);
+  const noneOff = () => ({ origin: new Set(), settings: new Set(), output: new Set() });
   let tblOff = noneOff();           // filter values the user unticked, by filter
   let tblOpenIds = new Set();       // ids of currently-expanded <details> rows
   let tblLastRoll = Object.create(null); // id -> { tree } (js/table-syntax.js node)
 
   // Cleared by the test seam's reset() and a campaign switch.
-  function resetTableFilters() { tblOff = noneOff(); tblOpenIds = new Set(); tblLastRoll = Object.create(null); }
+  let tblShowIds = new Set();       // sub-tables opened by a ref or a save: shown though included
+  function resetTableFilters() {
+    tblOff = noneOff(); tblOpenIds = new Set(); tblShowIds = new Set(); tblLastRoll = Object.create(null);
+    $('#tbl-hide-subs').checked = true;
+  }
+
+  // Lower-case names of the tables that another table rolls on.
+  function includedNames(list, resolve) {
+    const out = new Set();
+    list.forEach(t => TS.refNames(t, resolve).forEach(n => { if (n !== t.name.toLowerCase()) out.add(n); }));
+    return out;
+  }
 
   function renderTableFilters() {
     const counts = noneOff();
     FILTERS.forEach(k => { counts[k] = new Map(); });
-    library().forEach(t => FILTERS.forEach(k => counts[k].set(t[k], (counts[k].get(t[k]) || 0) + 1)));
+    library().forEach(t => FILTERS.forEach(k => valuesOf(t, k).forEach(v => counts[k].set(v, (counts[k].get(v) || 0) + 1))));
     FILTERS.forEach(k => {
-      $('#tbl-f-' + k + 's').innerHTML = filterValues(k).map(v =>
+      $(FILTER_ROW[k]).innerHTML = filterValues(k).map(v =>
         '<label class="comp-cat"><input type="checkbox" data-filter="' + k + '" data-value="' + escapeHtml(v) + '"' +
         (tblOff[k].has(v) ? '' : ' checked') + ' /> ' + escapeHtml(v) +
         ' <span class="hint">' + (counts[k].get(v) || 0) + '</span></label>').join('');
     });
   }
 
-  function tblMatches(list) {
-    list = list.filter(t => FILTERS.every(k => !tblOff[k].has(t[k])));
+  // A table shows when each filter row has one of its values ticked.
+  function tblMatches(list, resolve) {
+    const all = list;
+    list = list.filter(t => FILTERS.every(k => valuesOf(t, k).some(v => !tblOff[k].has(v))));
     const term = $('#tbl-search').value.trim().toLowerCase();
     if (term) list = list.filter(t => t.name.toLowerCase().indexOf(term) !== -1);
+    else if ($('#tbl-hide-subs').checked) {
+      const inc = includedNames(all, resolve);
+      list = list.filter(t => !inc.has(t.name.toLowerCase()) || tblShowIds.has(t.id));
+    }
     return list.slice().sort((a, b) => a.name.localeCompare(b.name));
   }
 
   // Ticks every filter value of table `t`, so it shows.
   function showTable(t) {
-    if (t) FILTERS.forEach(k => tblOff[k].delete(t[k]));
+    if (!t) return;
+    FILTERS.forEach(k => valuesOf(t, k).forEach(v => tblOff[k].delete(v)));
+    tblShowIds.add(t.id);
   }
 
   // Entry text with each [ref] as a chip; a chip to a listed table opens it.
@@ -324,7 +358,7 @@
         '<summary>' +
           '<span class="tbl-name">' + escapeHtml(t.name) + '</span>' +
           '<span class="badge" title="Output">' + escapeHtml(t.output) + '</span>' +
-          '<span class="badge tbl-setting" title="Setting">' + escapeHtml(t.setting) + '</span>' +
+          t.settings.map(v => '<span class="badge tbl-setting" title="Setting">' + escapeHtml(v) + '</span>').join('') +
           '<span class="hint tbl-origin" title="Source">' + escapeHtml(t.origin) + '</span>' +
           (t.user ? '<span class="badge tbl-mine" title="Your table">mine</span>' : '') +
           (subs ? '<span class="hint tbl-subs" title="Rolls on other tables"><i class="fa-solid fa-diagram-project"></i> ' + subs + '</span>' : '') +
@@ -351,8 +385,8 @@
   function renderTables() {
     renderTableFilters();
     const all = library();
-    const list = tblMatches(all);
     const resolve = resolver();
+    const list = tblMatches(all, resolve);
     $('#tbl-count').textContent = list.length + ' / ' + all.length;
     $('#tbl-empty').hidden = all.length > 0;
     $('#tbl-list').innerHTML = list.map(t => tableRowHtml(t, resolve)).join('');
@@ -413,7 +447,7 @@
   const optionsHtml = (list, value) => list.map(v =>
     '<option value="' + escapeHtml(v) + '"' + (v === value ? ' selected' : '') + '>' + escapeHtml(v) + '</option>').join('');
 
-  // opts: { name, origin, setting, output, source } prefills a new table (Duplicate).
+  // opts: { name, origin, settings, output, source } prefills a new table (Duplicate).
   function openTableEditor(id, opts) {
     const t = id ? OSR.tableLib.tables.find(x => x.id === id) : null;
     editId = t ? t.id : null;
@@ -421,7 +455,9 @@
     $('#tbl-modal-title').textContent = t ? 'Edit table' : 'New table';
     $('#tbl-f-name').value = o.name || '';
     $('#tbl-f-origin').value = o.origin;
-    $('#tbl-f-setting').innerHTML = optionsHtml(TABLE_SETTINGS, o.setting);
+    $('#tbl-f-settings').innerHTML = TABLE_SETTINGS.map(v =>
+      '<label class="comp-cat"><input type="checkbox" data-setting="' + escapeHtml(v) + '"' +
+      (o.settings.indexOf(v) !== -1 ? ' checked' : '') + ' /> ' + escapeHtml(v) + '</label>').join('');
     $('#tbl-f-output').innerHTML = optionsHtml(TABLE_OUTPUTS, o.output);
     $('#tbl-f-src').value = t ? t.source : (o.source || 'd6\n1: \n');
     $('#tbl-origin-list').innerHTML = tableOrigins().map(g => '<option value="' + escapeHtml(g) + '"></option>').join('');
@@ -453,12 +489,13 @@
   function saveTable() {
     const name = $('#tbl-f-name').value.trim();
     const origin = $('#tbl-f-origin').value.trim() || DEFAULT_ORIGIN;
-    const setting = pick(TABLE_SETTINGS, $('#tbl-f-setting').value) || TABLE_SETTINGS[0];
+    const settings = Array.from(document.querySelectorAll('#tbl-f-settings input:checked')).map(cb => cb.dataset.setting);
     const output = pick(TABLE_OUTPUTS, $('#tbl-f-output').value) || 'Other';
     const source = $('#tbl-f-src').value;
     const msg = $('#tbl-msg');
     if (!name) { msg.textContent = 'Give the table a name.'; $('#tbl-f-name').focus(); return; }
     if (/[[\]]/.test(name)) { msg.textContent = 'A name cannot contain [ or ].'; return; }
+    if (!settings.length) { msg.textContent = 'Tick at least one setting.'; return; }
     const clash = OSR.tableLib.tables.find(x => x.id !== editId && x.name.toLowerCase() === name.toLowerCase());
     if (clash) { msg.textContent = 'You already have a table named "' + clash.name + '".'; return; }
     const parsed = TS.parseTable(source);
@@ -475,9 +512,9 @@
           if (next !== x.source) Object.assign(x, { source: next, updatedAt: now });
         });
       }
-      Object.assign(t, { name, origin, setting, output, source: TS.renameRefs(source, old, name), updatedAt: now });
+      Object.assign(t, { name, origin, settings, output, source: TS.renameRefs(source, old, name), updatedAt: now });
     } else {
-      t = { id: OSR.uid(), name, origin, setting, output, source, createdAt: now, updatedAt: now };
+      t = { id: OSR.uid(), name, origin, settings, output, source, createdAt: now, updatedAt: now };
       OSR.tableLib.tables.push(t);
     }
     saveTables();
@@ -504,7 +541,7 @@
     if (!t) return;
     let name = t.name + ' (copy)', n = 2;
     while (isNameTaken(name)) name = t.name + ' (copy ' + n++ + ')';
-    openTableEditor(null, { name, origin: t.origin, setting: t.setting, output: t.output, source: t.user ? t.source : TS.toSource(t) });
+    openTableEditor(null, { name, origin: t.origin, settings: t.settings.slice(), output: t.output, source: t.user ? t.source : TS.toSource(t) });
   }
 
   // "[" autocomplete items for the editor (js/compendium-popups.js shows them):
@@ -533,6 +570,7 @@
 
   function wireTables() {
     $('#tbl-search').addEventListener('input', renderTables);
+    $('#tbl-hide-subs').addEventListener('change', renderTables);
     $('#tbl-new').addEventListener('click', () => openTableEditor(null));
     $('#tbl-filters').addEventListener('change', e => {
       const cb = e.target.closest('input[data-filter]');

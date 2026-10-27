@@ -55,7 +55,7 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   statLine, buildRaw }`. Flags `--dry-run`, `--no-merge`, `--out`, `--js-out`.
 - `scripts/convert-spells-from-shadowdark-resources.js`: `data/spell_data.json` → `data/spells.json`.
 - `scripts/convert-tables.js`: `data/tables/*.csv` → `data/tables.json`. `DEFAULT_META` gives every
-  table `origin`, `setting`, `output`; `META[slug]` overrides one (the script throws on a setting or
+  table `origin`, `settings` (a list), `output`; `META[slug]` overrides one (the script throws on a setting or
   output not in its `SETTINGS`/`OUTPUTS`, which match `js/tables.js`). `parseRange`: `"00"` after
   `"98-99"` is 100.
 - `scripts/build-token-icons.js`, `scripts/build-icon-index.js`: see maps.md.
@@ -64,14 +64,15 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
 
 - Tables are not scoped to a campaign or a System: every list shows every table.
 - Filter fields on every table: `origin` (the UI says "Source": free text, default `Homebrew`),
-  `setting` (one of `TABLE_SETTINGS`: Fantasy, Modern, Horror), `output` (one of `TABLE_OUTPUTS`:
-  Encounter, Entity, Location, Adventure, Group, Other). `cleanTable()` fixes case and plurals
-  (`encounters` → `Encounter`); a missing setting comes from the table's `system` (`SYSTEM_SETTING`:
-  ua3e Modern, sl Horror, else Fantasy). A table's text stays in `source` (the old field name, which
+  `settings` (a list, in `TABLE_SETTINGS` order: Fantasy, Modern, Horror), `output` (one of
+  `TABLE_OUTPUTS`: Encounter, Entity, Location, Adventure, Group, Other). `cleanTable()` fixes case
+  and plurals (`encounters` → `Encounter`), drops unknown settings, and reads an old single
+  `setting` string; no settings → from the table's `system` (`SYSTEM_SETTINGS`: ua3e Modern, sl
+  Modern + Horror, else Fantasy). A table's text stays in `source` (the old field name, which
   packs use), so the origin field is `origin`.
-- Two kinds of table. Built-in: `OSR.data.tables`, `{ id, name, origin, setting, output, formula,
+- Two kinds of table. Built-in: `OSR.data.tables`, `{ id, name, origin, settings, output, formula,
   entries: [{ range, lo, hi, text }] }`, read-only. User: the table library `OSR.tableLib =
-  { tables: [{ id, name, origin, setting, output, source, createdAt, updatedAt }], deleted: { id: time } }`.
+  { tables: [{ id, name, origin, settings, output, source, createdAt, updatedAt }], deleted: { id: time } }`.
 - The table library is shared by every campaign on the device: IndexedDB document `library/tables`,
   Dropbox `/tables.json` (see storage.md). `loadTables()` runs at boot before `load()`; the first
   time (no library document) it collects the `tables` of every campaign's system documents.
@@ -83,7 +84,7 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   wins) does not bring it back.
 - `library()` gives the user tables (parsed, cached by `source`) and every built-in table that no
   user table hides by name (case-insensitive). Both have the parsed shape
-  `{ id, name, origin, setting, output, formula, columns, entries: [{ range, lo, hi, text, cells }], problems, user }`.
+  `{ id, name, origin, settings, output, formula, columns, entries: [{ range, lo, hi, text, cells }], problems, user }`.
 - `js/table-syntax.js` (`window.TableSyntax`, pure, also `module.exports`): `parseTable(source)`
   (the format is in its header comment and README.md), `rollTable(table, ctx)` → a node tree,
   `nodeText()`, `rerollAt(tree, path, ctx)`, `highlight(source, resolve)`, `refProblems()`,
@@ -100,15 +101,22 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   each sub-node renders as `.tbl-sub[data-path]` and a click calls `rerollAt` (logged as
   "Name (again: Sub)"). Rows are `<details>`; `tblOpenIds` keeps open rows across renders
   (capture-phase `toggle` listener). `tblOff[filter]` holds the unticked values of each filter row
-  (`#tbl-f-origins`, `#tbl-f-settings`, `#tbl-f-outputs` in `#tbl-filters`), so a new source shows.
-  Right-click isolates one value in its row only. Save and a click on a ref tick the table's values.
+  (`#tbl-filter-origin`, `#tbl-filter-settings`, `#tbl-filter-output` in `#tbl-filters`), so a new
+  source shows. A table shows when each row has one of its values ticked (`valuesOf()`: settings
+  is a list). Right-click isolates one value in its row only.
+- `#tbl-hide-subs` "Don't show included subtables" (checked by default and by
+  `resetTableFilters()`, not saved): `includedNames()` collects the names that any listed table
+  refs (`TS.refNames`, a table's ref to itself does not count); those tables are hidden unless a
+  search term is typed or the id is in `tblShowIds`. `showTable()` (Save, a ref click) ticks the
+  table's filter values and adds its id to `tblShowIds`.
 - Editor `#tbl-modal`: a transparent `<textarea id="tbl-f-src">` over `<pre id="tbl-hl">`; both must
   keep the same font, padding, border, and wrapping (css/app.css). `[` autocomplete is
   `OSR.acFromTableEditor` (mode `'table'` of `OSR.compAC` in js/compendium-popups.js, items from
   `OSR.tableAcItems`). Save is blocked by `error` problems, an empty name, `[`/`]` in the name, or a
   name the library already has. A rename rewrites refs in the other user tables. Fields:
-  `#tbl-f-origin` (datalist of the sources in use), `#tbl-f-setting`, `#tbl-f-output` (selects). A new
-  table starts as Homebrew, the current System's setting, and Other; Duplicate copies all three.
+  `#tbl-f-origin` (datalist of the sources in use), `#tbl-f-settings` (checkboxes; Save needs one),
+  `#tbl-f-output` (select). A new table starts as Homebrew, the current System's settings, and
+  Other; Duplicate copies all three.
 - Tests: `test/table-syntax.test.js` (parser, roller), `test/ui.test.js` "Tables tab",
   `test/logic.test.js` "Table library", `test/campaigns.test.js` (shared, first-boot move),
   `test/dropbox.test.js` (`/tables.json`),
