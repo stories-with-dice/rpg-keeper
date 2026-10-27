@@ -6,9 +6,9 @@ Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, **Basic Rolepl
 Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
 at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
 sample NPCs from the *Basic Roleplaying: Universal Game Engine* core book), and Combat shows its
-characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions ships with its Spells,
-Disciplines, and Equipment in the Compendium, and its creature templates and named horrors in the
-Bestiary; see [Silent Legions](#silent-legions) below. Unknown Armies Combat counts wounds up to
+characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions book content (Compendium,
+Bestiary, random tables) can be loaded from your own PDF; see [Silent Legions](#silent-legions)
+below. Unknown Armies Combat counts wounds up to
 the wound threshold, and its book content can be loaded from your own PDFs; see
 [Unknown Armies](#unknown-armies). Plain
 HTML/CSS/JS — no build step, no backend, no account, nothing leaves your browser
@@ -461,8 +461,8 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 
 A library of **random tables**. The built-in ones are encounter tables (one per terrain/district —
 Arctic, Cave, Market, Tavern, Tomb, and so on), each rollable with its own dice formula (usually
-**d100**). The **Silent Legions** tag holds the d20 *Monster Qualities* table (e.g. *Acidic: Damage
-up, Hit up, Morale down*) for customizing a creature template. You can also make your own tables,
+**d100**). A content pack can add a system's tables (for example the Silent Legions pack). You can
+also make your own tables,
 and a table can roll on other tables (a **master table**).
 
 - **Tags** filter which tables are listed — tick/untick, or **right-click** a tag to show only that
@@ -555,16 +555,22 @@ Set Settings → **System** to **Silent Legions**.
   stay clickable.
 - **Madness**: each Silent Legions character gets a **Madness (Name)** tracker, max 100, starting
   from the block's `Madness:` line. After that the tracker is what you update.
-- **Bestiary**: the book's 11 creature templates at Weak / Average / Strong (e.g. *Amorphous Terror
-  (Average)*) and its named entities (cultists, undead, the Uncanny Abominations). Stats are the
-  book's; descriptions are short summaries. HP is the d8 average; reroll if you like.
+- **Book content (optional)**: the app ships no Silent Legions book text. If you own the PDF, the
+  separate Silent Legions Foundry VTT system (its "Import from PDF" dialog, or
+  `node tools/extract.mjs "Silent Legions.pdf"`) writes `keeper-sl-pack.json`. Load it with
+  **Import**. It adds:
+  - **Compendium**: rules and quick reference, the four classes and their abilities, skills,
+    backgrounds, deliria, the 38 spells, the 8 disciplines, weapons, armor, gear, vehicles, and the
+    60 location tags.
+  - **Bestiary**: the 11 creature templates at Weak / Average / Strong and the named NPCs and
+    horrors (58 monsters). HP is the d8 average; reroll if you like.
+  - **Tables tab**: the book's random tables, plus generators (master tables such as *Cult*,
+    *Dark Sorcery*, or *Occult Grimoire*) that roll on them.
+- Old campaigns had a built-in Silent Legions Compendium and Bestiary. The app removes those
+  entries and monsters once, unless you edited them.
 - **Combat**: AC shows as the book's descending number (`6*` = ordinary harm doesn't work). A
   to-hit roll's log line says which ACs it hits (1d20 + bonus + AC ≥ 20). The detail panel adds
   **Skill** (2d6 + skill), **Slaughter** (6+ triples the damage), and **Madness** buttons.
-- **Compendium**: the 38 Gray Path spells (by level), the 8 Occult Disciplines (per-level powers),
-  rules notes (*Casting Spells*, *Using Disciplines*, *Slaughter Die*, *Burst and Suppressive Fire*,
-  *Vehicles*), and the weapon, armor, gear, and vehicle tables. Bodies are short summaries, so
-  check the book for the full text.
 
 ---
 
@@ -630,8 +636,6 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
 
 - Monster data: the **Shadowdark RPG** core bestiary (© The Arcane Library) — see
   `data/bestiary_data.json`.
-- Silent Legions stats and rules summaries: **Silent Legions** by Kevin Crawford (© Sine Nomine
-  Publishing) — see `data/seed-sl.json`.
 - Map token icons: [game-icons.net](https://game-icons.net) by Lorc, Delapouite, Skoll,
   DarkZaitzev, Cathelineau, Faithtoken, Caro Asercion, and the other artists of icons you
   download, under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (some CC0) — see

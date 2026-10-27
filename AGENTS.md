@@ -25,8 +25,8 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
   (`ICON_URL`) when the user picks a search result; results show lazy preview `<img>`s from the
   same host. (2) Opt-in Dropbox sync (`js/dropbox.js`), nothing before the user clicks Connect.
   Add no other network use.
-- **No book text in the repo** (the repo is public). Silent Legions data is paraphrased; the SL PDF
-  is gitignored. Unknown Armies content comes only from the user's private content pack.
+- **No book text in the repo** (the repo is public). Silent Legions and Unknown Armies content comes
+  only from the user's private content packs. `test/fixtures/sl-pack.json` has made-up text only.
 - **Generated files**: never edit `data/monsters.json`, `data/spells.json`, `data/tables.json`,
   `data/game-icons-index.json` by hand. Edit the source data or the script, run it, commit both.
 
@@ -50,7 +50,7 @@ they also `module.exports` for Node.
 | `js/consumables.js`, `js/notes.js`, `js/mde.js` | trackers; the Journal; the shared EasyMDE builder |
 | `js/combat.js`, `js/combat-populate.js` | Combat tracker; Populate by HD |
 | `js/monsters.js`, `js/monster-form.js`, `js/monster-modals.js`, `js/monster-browser.js` | parser; fields form; add/edit modals; Bestiary tab and PL generator |
-| `js/ua-statblock.js`, `js/brp-seed.js`, `js/sl-seed.js`, `js/seed.js` | UA parser and rules; BRP/SL/OSR seeding and pregens |
+| `js/ua-statblock.js`, `js/brp-seed.js`, `js/seed.js` | UA parser and rules; BRP/OSR seeding and pregens |
 | `js/compendium.js`, `js/compendium-popups.js` | Compendium CRUD and filters; hover popups and autocomplete |
 | `js/maps.js`, `js/grid.js`, `js/tokens.js`, `js/drawings.js`, `js/pins.js`, `js/history.js`, `js/icons.js` | Maps tab |
 | `js/tables.js`, `js/table-syntax.js` | Tables tab and table editor; table text parser and master-table roller |

@@ -50,7 +50,7 @@ English, Latin
 
 ## Sorcery
 
-The trial record describes [Whispers of the Scribe] in enough detail to learn it. She hasn't tried yet — see [Casting Spells] for what it would cost.
+The trial record describes [Whispers of the Scribe] in enough detail to learn it. She hasn't tried yet. The spell's entry gives what it would cost.
 
 ## Background
 

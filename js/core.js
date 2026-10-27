@@ -26,8 +26,8 @@
   /* ------------------------------------------------------------------ */
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
-    monsters: [], monstersSeeded: false, brpMonstersSeeded: false, slMonstersSeeded: false, conditions: [],
-    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, slCompendiumSeeded: false,
+    monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
+    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false,
     scenes: [], activeSceneIds: {}, tables: [],
     settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
@@ -132,6 +132,14 @@
     return had;
   }
 
+  // A monster's abilities as { name, text } objects (a plain string becomes
+  // the text). Returns true when it changed something.
+  function fixAbilities(m) {
+    if (!Array.isArray(m.abilities) || !m.abilities.some(a => typeof a === 'string')) return false;
+    m.abilities = m.abilities.map(a => (typeof a === 'string' ? { name: '', text: a } : a));
+    return true;
+  }
+
   function ensureStateShape() {
     const state = OSR.state;
     if (!Array.isArray(state.characters)) state.characters = [];
@@ -153,6 +161,10 @@
     state.monsters.forEach(m => {
       if (!m.id) m.id = uid();
       m.system = SYSTEMS.indexOf(m.system) === -1 ? 'osr' : m.system;
+      // Early Silent Legions packs wrote abilities as strings. A copy that was
+      // unedited before the fix stays unedited (js/seeds.js).
+      const unedited = m.seedHash && OSR.contentHash && OSR.contentHash(m) === m.seedHash;
+      if (fixAbilities(m) && unedited) m.seedHash = OSR.contentHash(m);
     });
     // Notes are campaign-global. Fold any old per-character notes into it once.
     if (typeof state.notes !== 'string') state.notes = '';
@@ -186,6 +198,7 @@
     if (!state.combat || typeof state.combat !== 'object') state.combat = {};
     state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
     if (!Array.isArray(state.combat.entries)) state.combat.entries = [];
+    if (OSR.dropLegacySlSeed) OSR.dropLegacySlSeed(state); // js/seeds.js
     if (OSR.linkSeeds && OSR.seeds && Object.keys(OSR.seeds).length) OSR.linkSeeds(state); // js/seeds.js
     if (!Array.isArray(state.scenes)) state.scenes = [];
     if (!state.activeSceneIds || typeof state.activeSceneIds !== 'object') state.activeSceneIds = {};
@@ -383,7 +396,7 @@
     STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
     THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
-    applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape,
+    applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape, fixAbilities,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
     woundTrackerLabel, ensureWoundTracker, MADNESS_MAX, madnessTrackerLabel, ensureMadnessTracker,
     save, activeChar

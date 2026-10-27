@@ -73,10 +73,8 @@
     if (withPregens && !OSR.state.characters.length) seed();
     if (!OSR.state.monsters.length && !OSR.state.monstersSeeded) seedMonsters();
     if (!OSR.state.brpMonstersSeeded) OSR.seedBrpMonsters();
-    if (!OSR.state.slMonstersSeeded) OSR.seedSlMonsters();
     if (!OSR.state.compendiumSeeded) OSR.seedCompendium();
     if (!OSR.state.brpCompendiumSeeded) OSR.seedBrpCompendium();
-    if (!OSR.state.slCompendiumSeeded) OSR.seedSlCompendium();
   }
 
   Object.assign(OSR, { seedMissing, loadSeedSheets, seed, missingPregens, addMissingPregens, seedMonsters });

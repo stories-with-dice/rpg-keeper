@@ -29,12 +29,11 @@ const TAG_MAP = {
   cave: 'Underground', deep_tunnels: 'Underground', ruins: 'Underground', tomb: 'Underground',
   artisan_district: 'City', castle_district: 'City', high_district: 'City', low_district: 'City',
   market: 'City', slums: 'City', temple_district: 'City', university_district: 'City',
-  tavern: 'Tavern',
-  sl_monster_qualities: 'Silent Legions'
+  tavern: 'Tavern'
 };
 
 // Display-name overrides for slugs that don't title-case cleanly.
-const NAME_MAP = { river_and_coast: 'River & Coast', sl_monster_qualities: 'Monster Qualities (Silent Legions)' };
+const NAME_MAP = { river_and_coast: 'River & Coast' };
 
 function titleCase(slug) {
   return slug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');

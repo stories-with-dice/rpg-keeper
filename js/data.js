@@ -53,7 +53,7 @@
   async function loadData() {
     const jobs = {
       monsters: get('data/monsters.json'), spells: get('data/spells.json'), tables: get('data/tables.json'),
-      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'), sl: get('data/seed-sl.json'),
+      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'),
       pregens: Promise.all(PREGEN_FILES.map(f => get(f, 'text'))),
       tokenIcons: get('data/token-icons.json')
     };
@@ -69,8 +69,7 @@
       tables: r.tables,
       seeds: {
         osr: seed(r.osr, { compendium: withSpells(r.osr.compendium || [], r.spells), monsters: r.monsters }),
-        brp: seed(r.brp),
-        sl: seed(r.sl)
+        brp: seed(r.brp)
       },
       pregens: PREGEN_FILES.map((file, i) => ({ file, text: r.pregens[i] })),
       tokenIcons: r.tokenIcons

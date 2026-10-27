@@ -123,8 +123,8 @@ test('Dropbox sync: "Connect with a code" opens Dropbox; the first sync writes t
   assert.deepEqual(dbx.paths(), [
     '/campaigns/' + cid + '/brp.json', '/campaigns/' + cid + '/osr.json', '/campaigns/' + cid + '/shared.json',
     '/campaigns/' + cid + '/sl.json', '/campaigns/' + cid + '/ua3e.json', '/campaigns/index.json',
-    '/seeds/brp.json', '/seeds/osr.json', '/seeds/sl.json'
-  ].sort(), 'no seed file for a system with an empty seed (ua3e)');
+    '/seeds/brp.json', '/seeds/osr.json'
+  ].sort(), 'no seed file for a system with an empty seed (ua3e, sl)');
   assert.deepEqual(dbx.json('/campaigns/index.json').map(c => [c.id, c.name, c.primary]), [[cid, 'Default', true]]);
   assert.deepEqual(remoteNames(T, dbx), ['Aria']);
   assert.strictEqual(dbx.json('/seeds/osr.json').monsters.length, T.data.seeds.osr.monsters.length);

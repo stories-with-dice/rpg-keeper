@@ -199,7 +199,7 @@ test('Campaign selector: "+ New campaign…" creates and opens an empty campaign
   assert.deepEqual(T.state.characters, [], 'no example characters in a new campaign');
   assert.strictEqual(T.state.notes, '');
   assert.strictEqual(T.state.monsters.filter(m => m.system === 'osr').length, T.data.seeds.osr.monsters.length);
-  assert.strictEqual(T.state.compendium.filter(e => e.system === 'sl').length, T.data.seeds.sl.compendium.length);
+  assert.strictEqual(T.state.compendium.filter(e => e.system === 'brp').length, T.data.seeds.brp.compendium.length);
   assert.strictEqual(await T.store.getMeta('activeCampaignId'), T.campaignId);
   window.close();
 });

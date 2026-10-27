@@ -17,7 +17,7 @@ const DATA = path.join(__dirname, '..', 'data');
 const readJson = f => JSON.parse(fs.readFileSync(path.join(DATA, f), 'utf8'));
 
 test('data/seed-<system>.json: each parses, names its own system, has a version, and its names are unique', () => {
-  ['osr', 'brp', 'sl'].forEach(sys => {
+  ['osr', 'brp'].forEach(sys => {
     const f = 'seed-' + sys + '.json';
     const seed = readJson(f);
     assert.strictEqual(seed.system, sys, f + ': system');
@@ -49,7 +49,7 @@ test('OSR.loadData: builds the seeds and pregens from data/, with the spells fol
   assert.strictEqual(osr.monsters.length, readJson('monsters.json').length);
   assert.strictEqual(T.data.tables.length, readJson('tables.json').length);
   assert.strictEqual(T.data.seeds.brp.monsters.length, readJson('seed-brp.json').monsters.length);
-  assert.strictEqual(T.data.seeds.sl.compendium.length, readJson('seed-sl.json').compendium.length);
+  assert.strictEqual(T.data.seeds.sl, undefined, 'no built-in Silent Legions data: it comes from a content pack');
   assert.deepEqual(T.data.pregens.map(p => p.file), Array.from(T.PREGEN_FILES));
   T.data.pregens.forEach(p => assert.strictEqual(p.text, fs.readFileSync(path.join(DATA, '..', p.file), 'utf8'), p.file));
   window.close();
@@ -62,12 +62,11 @@ test('first run: seeds every system from data/ (characters, Bestiary, Compendium
   assert.deepEqual(T.state.characters.map(c => c.name).slice(0, 2), ['Garrick', 'Gulzund Blize']);
   assert.strictEqual(count(T.state.monsters, 'osr'), readJson('monsters.json').length);
   assert.strictEqual(count(T.state.monsters, 'brp'), readJson('seed-brp.json').monsters.length);
-  assert.strictEqual(count(T.state.monsters, 'sl'), readJson('seed-sl.json').monsters.length);
+  assert.strictEqual(count(T.state.monsters, 'sl'), 0);
   assert.strictEqual(count(T.state.compendium, 'osr'), T.data.seeds.osr.compendium.length);
   assert.strictEqual(count(T.state.compendium, 'brp'), readJson('seed-brp.json').compendium.length);
-  assert.strictEqual(count(T.state.compendium, 'sl'), readJson('seed-sl.json').compendium.length);
+  assert.strictEqual(count(T.state.compendium, 'sl'), 0);
   assert.ok(T.state.compendium.some(e => e.name === 'Torch' && e.source === 'Shadowdark Core'));
-  assert.ok(T.state.monsters.some(m => m.name === 'Ghoul' && m.system === 'sl'));
   assert.strictEqual(T.state.compendiumSeedVersion, T.data.seeds.osr.version);
   window.close();
 });
@@ -77,12 +76,12 @@ test('a data file that fails to load shows the error, starts nothing, and leaves
   saved.characters = [{ id: 'c1', name: 'Kept', system: '', body: '# Kept\n' }];
   const text = JSON.stringify(saved);
   const { window, document, STORAGE_KEY } = await boot({
-    storage: text, missingData: ['data/seed-sl.json', 'data/ray-kowalczyk-sl.txt'], allowLoadError: true
+    storage: text, missingData: ['data/seed-brp.json', 'data/ray-kowalczyk-sl.txt'], allowLoadError: true
   });
   const box = document.querySelector('#load-error');
   assert.ok(!box.hidden, 'the error is shown');
   assert.match(box.textContent, /could not start/);
-  assert.match(box.textContent, /data\/seed-sl\.json: HTTP 404/);
+  assert.match(box.textContent, /data\/seed-brp\.json: HTTP 404/);
   assert.match(box.textContent, /data\/ray-kowalczyk-sl\.txt: HTTP 404/);
   assert.ok(document.querySelector('.main').hidden, 'the app is not shown');
   assert.strictEqual(document.querySelector('#char-select').options.length, 0, 'nothing rendered');

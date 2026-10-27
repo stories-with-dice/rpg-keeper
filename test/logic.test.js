@@ -15,7 +15,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, savedState } = require('./helpers/boot.js');
+const { boot, rigRandom, face, savedState, slPack } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -803,54 +803,44 @@ test('BRP entries are invisible under other systems, and vice versa (Compendium 
 /* Silent Legions: seeds, data integrity, combat rolls                */
 /* ================================================================== */
 
-test('seedSlMonsters: populates state.monsters, tagged system:sl, in the OSR def shape plus the SL fields', () => {
-  T.state.monsters = [];
-  T.seedSlMonsters();
-  assert.ok(T.state.monsters.every(m => m.system === 'sl' && m.source === 'sl'));
-  const zombie = T.state.monsters.find(m => m.name === 'Zombie');
-  assert.deepEqual(zombie.ac, { asc: null, desc: 7, thac0: null });
-  assert.equal(zombie.hd, '2');
-  assert.equal(zombie.hp, 9, 'the d8 average, floor(4.5 × HD)');
-  assert.deepEqual(zombie.saveTargets, { Save: 14 });
-  assert.equal(zombie.savesText, '14+');
-  assert.equal(zombie.moraleML, 12);
-  assert.equal(zombie.skill, 0);
-  assert.equal(zombie.madness, '1d6');
-  assert.equal(zombie.slaughterDie, '1d6');
-  assert.deepEqual(
-    { label: zombie.attacks[0].label, count: zombie.attacks[0].count, toHit: zombie.attacks[0].toHit, damage: zombie.attacks[0].damage },
-    { label: 'rend', count: 1, toHit: 1, damage: '1d6' });
-  const ordinary = T.state.monsters.find(m => m.name === 'Ordinary Human');
-  assert.equal(ordinary.hd, '½', '"1d4 hp" is stored as half a HD');
-  assert.equal(ordinary.hdNum, 0.5);
-  const strongEntity = T.state.monsters.find(m => m.name === 'Outer Entity (Strong)');
-  assert.ok(strongEntity, 'the creature templates are seeded too');
-  assert.deepEqual(strongEntity.saveTargets, { Save: 9 }, 'templates use the book\'s save formula, 15 − ½HD rounded up');
-  const vampire = T.state.monsters.find(m => m.name === 'Vampire');
-  assert.equal(vampire.mundaneImmune, true);
-  assert.equal(vampire.abilities[0].name, 'AC*', 'the book\'s AC asterisk is explained as an ability');
-});
+// Keeper has no built-in Silent Legions data. It comes from the content pack
+// that the Silent Legions Foundry VTT importer writes from the user's PDF.
+// test/fixtures/sl-pack.json has that pack's shape with made-up text.
+async function importSlPack() {
+  window.confirm = () => true;
+  await T.importPack(slPack());
+}
 
-test('seedSlMonsters: reseeding only ever replaces the sl-tagged slice (other systems preserved)', () => {
+test('Silent Legions pack: importPack adds Compendium entries, monsters in the SL def shape, and tables, tagged system:sl', async () => {
   T.state.monsters = [
     { id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
     { id: 'b1', name: 'Troll', hd: '', hdNum: 0, hp: 20, attacks: [], abilities: [], source: 'brp', system: 'brp' }
   ];
-  T.seedSlMonsters();
-  const slCount = T.state.monsters.filter(m => m.system === 'sl').length;
-  T.seedSlMonsters();
-  assert.equal(T.state.monsters.filter(m => m.system === 'sl').length, slCount, 'no duplicates from the second run');
-  assert.equal(T.state.monsters.filter(m => m.system !== 'sl').length, 2, 'the OSR and BRP monsters survive reseeding');
-});
-
-test('seedSlCompendium: adds Spells, Disciplines, Rules, and Equipment tagged system:sl, using each entry\'s own category/source', () => {
   T.state.compendium = [{ id: 'k1', name: 'Knife', category: 'Items', source: 'Shadowdark Core', body: '', system: 'osr' }];
-  const added = T.seedSlCompendium();
-  assert.ok(added > 0);
+  await importSlPack();
+  const mons = T.state.monsters.filter(m => m.system === 'sl');
+  assert.equal(mons.length, slPack().monsters.length);
+  assert.ok(mons.every(m => m.source === 'sl' && m.seedRef === m.ref && /^slpdf:monster:/.test(m.ref)));
+  const zombie = mons.find(m => m.name === 'Zombie');
+  assert.deepEqual(zombie.ac, { asc: null, desc: 7, thac0: null });
+  assert.equal(zombie.hd, '2');
+  assert.equal(zombie.hp, 9, 'the d8 average, floor(4.5 × HD)');
+  assert.deepEqual(zombie.saveTargets, { Save: 14 });
+  assert.equal(zombie.moraleML, 12);
+  assert.equal(zombie.madness, '1d6');
+  assert.equal(zombie.slaughterDie, '1d6');
+  assert.deepEqual(zombie.abilities, [{ name: '', text: 'Undead' }]);
+  assert.deepEqual(
+    { label: zombie.attacks[0].label, count: zombie.attacks[0].count, toHit: zombie.attacks[0].toHit, damage: zombie.attacks[0].damage },
+    { label: 'rend', count: 1, toHit: 1, damage: '1d6' });
+  const ordinary = mons.find(m => m.name === 'Ordinary');
+  assert.equal(ordinary.hd, '½', '"1d4 hp" is stored as half a HD');
+  assert.equal(ordinary.hdNum, 0.5);
+  assert.equal(mons.find(m => m.name === 'Vampire').mundaneImmune, true);
   const sl = T.state.compendium.filter(e => e.system === 'sl');
-  assert.equal(sl.length, added);
+  assert.equal(sl.length, slPack().compendium.length);
   const knife = sl.find(e => e.name === 'Knife');
-  assert.ok(knife, 'an OSR entry with the same name doesn\'t block the SL one');
+  assert.ok(knife, 'an OSR entry with the same name does not block the SL one');
   assert.equal(knife.source, 'Weapon (Melee)');
   const lamp = sl.find(e => e.name === 'The Black Lamp');
   assert.equal(lamp.category, 'Spells');
@@ -858,21 +848,40 @@ test('seedSlCompendium: adds Spells, Disciplines, Rules, and Equipment tagged sy
   const tele = sl.find(e => e.name === 'Telepathy');
   assert.equal(tele.category, 'Powers');
   assert.equal(tele.source, 'Discipline');
-  assert.equal(T.seedSlCompendium(), 0, 'second run adds nothing');
+  assert.deepEqual(T.state.tables.filter(t => t.system === 'sl').map(t => t.name), slPack().tables.map(t => t.name));
+  assert.deepEqual(T.seeds.sl.monsters.map(m => m.name), mons.map(m => m.name), 'the pack goes into the seed store too');
+
+  await importSlPack();
+  assert.equal(T.state.monsters.filter(m => m.system === 'sl').length, mons.length, 'a second import adds nothing');
+  assert.equal(T.state.compendium.filter(e => e.system === 'sl').length, sl.length);
+  assert.equal(T.state.tables.filter(t => t.system === 'sl').length, slPack().tables.length);
+  assert.equal(T.state.monsters.filter(m => m.system !== 'sl').length, 2, 'the OSR and BRP monsters stay');
 });
 
-test('SL data: every [ref] in an SL Compendium body resolves to another SL entry', () => {
-  T.state.compendium = [];
-  T.seedSlCompendium();
-  const names = new Set(T.state.compendium.map(e => e.name));
+test('Silent Legions pack: a master table rolls on its sub-tables', async () => {
+  await importSlPack();
+  T.state.settings.system = 'sl';
+  T.renderTables();
+  const gen = T.state.tables.find(t => t.name === 'Test Generator');
+  const restore = rigRandom(window, [face(1, 1), face(1, 4), face(2, 2)]);
+  document.querySelector('.tbl-roll[data-id="' + gen.id + '"]').click();
+  restore();
+  const last = T.state.log[T.state.log.length - 1];
+  assert.equal(last.source, 'Test Generator');
+  assert.equal(last.detail, 'Omen: A cold wind; Place: A church');
+});
+
+test('Silent Legions pack: every [ref] in a Compendium body resolves to another SL entry', async () => {
+  await importSlPack();
+  T.state.settings.system = 'sl';
   const refs = [];
-  T.state.compendium.forEach(e => (e.body.match(/\[([^\]]+)\]/g) || []).forEach(r => refs.push([e.name, r.slice(1, -1)])));
+  T.compendiumForSystem().forEach(e => (e.body.match(/\[([^\]]+)\]/g) || []).forEach(r => refs.push([e.name, r.slice(1, -1)])));
   assert.ok(refs.length > 0);
-  refs.forEach(([from, to]) => assert.ok(names.has(to), from + ' links to a missing entry: [' + to + ']'));
+  refs.forEach(([from, to]) => assert.equal(T.compByExactName(to).length, 1, from + ' links to a missing entry: [' + to + ']'));
 });
 
-test('SL data: every monster def is complete enough for Combat and Populate by HD', () => {
-  const lib = window.OSR.data.seeds.sl.monsters;
+test('Silent Legions pack: every monster def is complete enough for Combat and Populate by HD', () => {
+  const lib = slPack().monsters;
   assert.equal(new Set(lib.map(d => d.name)).size, lib.length, 'names are unique');
   lib.forEach(d => {
     assert.ok(typeof d.ac.desc === 'number', d.name + ': AC');
@@ -881,19 +890,49 @@ test('SL data: every monster def is complete enough for Combat and Populate by H
     assert.ok(d.attacks.length > 0, d.name + ': attacks');
     assert.ok(typeof d.saveTargets.Save === 'number', d.name + ': save');
     assert.ok(typeof d.madness === 'string' && typeof d.slaughterDie === 'string', d.name + ': madness/slaughter');
+    d.abilities.forEach(a => assert.ok(typeof a === 'object' && typeof a.text === 'string', d.name + ': abilities are { name, text }'));
   });
 });
 
-test('SL monsters are invisible under other systems, and vice versa (Compendium + Bestiary partition)', () => {
+test('SL monsters are invisible under other systems, and vice versa (Compendium + Bestiary + Tables partition)', async () => {
   T.state.monsters = [];
   T.state.compendium = [];
-  T.seedSlMonsters();
-  T.seedSlCompendium();
+  await importSlPack();
+  T.state.settings.system = 'osr';
   assert.equal(T.monstersForSystem().length, 0);
   assert.equal(T.compendiumForSystem().length, 0);
+  assert.equal(T.tablesForSystem().length, 0);
   T.state.settings.system = 'sl';
-  assert.equal(T.monstersForSystem().length, window.OSR.data.seeds.sl.monsters.length);
-  assert.equal(T.compendiumForSystem().length, window.OSR.data.seeds.sl.compendium.length);
+  assert.equal(T.monstersForSystem().length, slPack().monsters.length);
+  assert.equal(T.compendiumForSystem().length, slPack().compendium.length);
+  assert.equal(T.tablesForSystem().length, slPack().tables.length);
+});
+
+test('old built-in Silent Legions seed: an old campaign loses its unedited copies once; edited copies and pack items stay', () => {
+  const pack = slPack();
+  const knife = T.compCopy('sl', { name: 'Knife', category: 'Items', source: 'Weapon (Melee)', body: 'Old seed text.' });
+  const lamp = T.compCopy('sl', { name: 'The Black Lamp', category: 'Spells', source: 'Spell Level 3', body: 'Old seed text.' });
+  lamp.body = 'My own notes.';
+  const zombie = T.monsterCopy('sl', Object.assign({}, pack.monsters[0], { id: 'sl-zombie', ref: undefined, seedRef: undefined }));
+  const packZombie = T.monsterCopy('sl', pack.monsters[0]);
+  assert.equal(knife.seedRef, 'sl:c:knife');
+  assert.equal(zombie.seedRef, 'sl-zombie');
+  Object.assign(T.state, { compendium: [knife, lamp], monsters: [zombie, packZombie], slCompendiumSeeded: true, slMonstersSeeded: true });
+  T.ensureStateShape();
+  assert.deepEqual(T.state.compendium.map(e => e.body), ['My own notes.']);
+  assert.deepEqual(T.state.monsters.map(m => m.seedRef), [packZombie.seedRef]);
+  assert.equal('slCompendiumSeeded' in T.state, false, 'it runs once');
+  T.state.compendium.push(T.compCopy('sl', { name: 'Club', category: 'Items', body: 'x' }));
+  T.ensureStateShape();
+  assert.equal(T.state.compendium.length, 2, 'a later sl:c: entry is not removed');
+});
+
+test('monster abilities saved as strings (early Silent Legions packs) become { name, text }; an unedited copy stays unedited', () => {
+  const m = T.monsterCopy('sl', Object.assign({}, slPack().monsters[0], { abilities: ['Undead'] }));
+  T.state.monsters = [m];
+  T.ensureStateShape();
+  assert.deepEqual(T.state.monsters[0].abilities, [{ name: '', text: 'Undead' }]);
+  assert.equal(T.state.monsters[0].seedHash, T.contentHash(T.state.monsters[0]));
 });
 
 test('acDisplay: Silent Legions shows its descending AC plus the "*" mark; other formats are unchanged', () => {
@@ -1663,14 +1702,19 @@ test('Unknown Armies pregens: every identity is a book identity with a [link] to
   });
 });
 
-test('Silent Legions pregens: every [ref] resolves in the SL Compendium, and the sheet numbers parse', () => {
+// The Silent Legions Compendium is not bundled (the Silent Legions Foundry VTT
+// importer builds a pack from the user's PDF), so this checks the link names
+// against the names that pack uses. test/fixtures/sl-pack.json has them all.
+const SL_PREGEN_LINKS = ['Club', 'Whispers of the Scribe', 'Revolver', 'Shotgun, Pump', 'Semi-auto Pistol', 'Knife'];
+test('Silent Legions pregens: every [ref] is a name of the Silent Legions pack, and the sheet numbers parse', async () => {
   T.state.compendium = [];
-  T.seedSlCompendium();
+  await importSlPack();
   T.state.settings.system = 'sl';
   T.data.pregens.forEach(({ file: f, text: body }) => {
     if (!/-sl\.txt$/.test(f)) return;
     const refs = (body.match(/\[([^\]]+)\]/g) || []).map(r => r.slice(1, -1)).filter(r => r !== 'Silent Legions');
     assert.ok(refs.length > 0, f + ': links to the Compendium');
+    refs.forEach(r => assert.ok(SL_PREGEN_LINKS.includes(r), f + ': [' + r + '] is not a known pack name'));
     refs.forEach(r => assert.equal(T.compByExactName(r).length, 1, f + ': [' + r + '] has no Silent Legions Compendium entry'));
     assert.ok(T.charDetectHp({ body: body }), f + ': HP x/y is detected for Combat');
     assert.match(T.charQuickAC({ body: body }), /^\d$/, f + ': AC is detected for Combat');

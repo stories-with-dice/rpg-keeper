@@ -58,7 +58,6 @@ const SCRIPTS = [
   'js/dice-ui.js',
   'js/seed.js',
   'js/brp-seed.js',
-  'js/sl-seed.js',
   'js/main.js',
 ];
 
@@ -91,8 +90,8 @@ function blankSave() {
   return JSON.stringify({
     version: 1, activeId: null, activeIdB: null,
     characters: [], consumables: [], notes: '', log: [],
-    monsters: [], monstersSeeded: true, brpMonstersSeeded: true, slMonstersSeeded: true, conditions: [],
-    compendium: [], compendiumSeeded: true, compendiumSeedVersion: 9999, brpCompendiumSeeded: true, slCompendiumSeeded: true,
+    monsters: [], monstersSeeded: true, brpMonstersSeeded: true, conditions: [],
+    compendium: [], compendiumSeeded: true, compendiumSeedVersion: 9999, brpCompendiumSeeded: true,
     settings: { scarletHeroes: false, theme: 'default' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] },
   });
@@ -258,4 +257,11 @@ async function savedState(T) {
   return T.joinState(T.parseDocs(raw));
 }
 
-module.exports = { savedState, boot, blankSave, rigRandom, face, fire, click, setValue, key };
+// A small Silent Legions content pack in the shape that the Silent Legions
+// Foundry VTT importer writes (made-up text). Keeper has no built-in
+// Silent Legions data.
+function slPack() {
+  return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'sl-pack.json'), 'utf8'));
+}
+
+module.exports = { savedState, boot, blankSave, rigRandom, face, fire, click, setValue, key, slPack };

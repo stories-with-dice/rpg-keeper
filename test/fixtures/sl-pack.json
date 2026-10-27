@@ -1,0 +1,320 @@
+{
+ "pack": {
+  "name": "Silent Legions (test fixture)",
+  "system": "sl",
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00.000Z"
+ },
+ "compendium": [
+  {
+   "name": "Occult Disciplines",
+   "category": "Rules",
+   "source": "Sorcery",
+   "body": "Test rules for disciplines.",
+   "ref": "slpdf:rule:occult-disciplines"
+  },
+  {
+   "name": "Whispers of the Scribe",
+   "category": "Spells",
+   "source": "Spell Level 1",
+   "body": "**Level** 1 · **Cost** 1 Expertise or 1 Madness · p. 37\n\nTest spell.",
+   "ref": "slpdf:spell:whispers-of-the-scribe"
+  },
+  {
+   "name": "The Black Lamp",
+   "category": "Spells",
+   "source": "Spell Level 3",
+   "body": "**Level** 3 · **Cost** 1 Expertise or 3 Madness · p. 41\n\nTest spell.",
+   "ref": "slpdf:spell:the-black-lamp"
+  },
+  {
+   "name": "Telepathy",
+   "category": "Powers",
+   "source": "Discipline",
+   "body": "**Cost** 1 Expertise, or Madness = discipline level + 1 — see [Occult Disciplines]\n\nTest discipline.\n\n**1.** Test level.",
+   "ref": "slpdf:discipline:telepathy"
+  },
+  {
+   "name": "Knife",
+   "category": "Items",
+   "source": "Weapon (Melee)",
+   "body": "**Damage** 1d4 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Cost** 10\n\nTest weapon.",
+   "ref": "slpdf:weapon:knife"
+  },
+  {
+   "name": "Club",
+   "category": "Items",
+   "source": "Weapon (Melee)",
+   "body": "**Damage** 1d4 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Cost** 10\n\nTest weapon.",
+   "ref": "slpdf:weapon:club"
+  },
+  {
+   "name": "Revolver",
+   "category": "Items",
+   "source": "Weapon (Firearm)",
+   "body": "**Damage** 1d8 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Range** 30/100 m · **Mag** 6 · **Cost** 10\n\nTest weapon.",
+   "ref": "slpdf:weapon:revolver"
+  },
+  {
+   "name": "Semi-auto Pistol",
+   "category": "Items",
+   "source": "Weapon (Firearm)",
+   "body": "**Damage** 1d6 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Range** 30/100 m · **Mag** 15 · **Cost** 10\n\nTest weapon.",
+   "ref": "slpdf:weapon:semi-auto-pistol"
+  },
+  {
+   "name": "Shotgun, Pump",
+   "category": "Items",
+   "source": "Weapon (Firearm)",
+   "body": "**Damage** 3d4 · **Slaughter** 1d6 · **Attribute** Str/Dex · **Range** 10/30 m · **Mag** 5 · **Cost** 10\n\nTest weapon.",
+   "ref": "slpdf:weapon:shotgun-pump"
+  }
+ ],
+ "monsters": [
+  {
+   "name": "Zombie",
+   "desc": "Test creature: Zombie.",
+   "ac": {
+    "asc": null,
+    "desc": 7,
+    "thac0": null
+   },
+   "hd": "2",
+   "attacks": [
+    {
+     "label": "rend",
+     "count": 1,
+     "toHit": 1,
+     "damage": "1d6",
+     "note": "",
+     "raw": ""
+    }
+   ],
+   "move": "30'",
+   "skill": 0,
+   "madness": "1d6",
+   "abilities": [
+    {
+     "name": "",
+     "text": "Undead"
+    }
+   ],
+   "id": "slpdf-zombie",
+   "ref": "slpdf:monster:zombie",
+   "source": "sl",
+   "mundaneImmune": false,
+   "hdNum": 2,
+   "hp": 9,
+   "align": "",
+   "xp": null,
+   "moraleML": 12,
+   "atkBonus": 1,
+   "attacksText": "rend +1 (1d6)",
+   "stats": null,
+   "saveTargets": {
+    "Save": 14
+   },
+   "savesText": "14+",
+   "slaughterDie": "1d6",
+   "raw": "Zombie\nTest creature: Zombie.\nAC 7, HD 2 (9hp), Atk rend +1 (1d6), Move 30', ML 12, Skill +0, Madness 1d6, Slaughter 1d6, Save 14+"
+  },
+  {
+   "name": "Ghoul",
+   "desc": "Test creature: Ghoul.",
+   "ac": {
+    "asc": null,
+    "desc": 7,
+    "thac0": null
+   },
+   "hd": "3",
+   "attacks": [
+    {
+     "label": "claw",
+     "count": 2,
+     "toHit": 3,
+     "damage": "1d4",
+     "note": "",
+     "raw": ""
+    }
+   ],
+   "move": "30'",
+   "skill": 1,
+   "madness": "None / 1d6",
+   "abilities": [
+    {
+     "name": "",
+     "text": "Undead"
+    }
+   ],
+   "id": "slpdf-ghoul",
+   "ref": "slpdf:monster:ghoul",
+   "source": "sl",
+   "mundaneImmune": false,
+   "hdNum": 3,
+   "hp": 13,
+   "align": "",
+   "xp": null,
+   "moraleML": 8,
+   "atkBonus": 3,
+   "attacksText": "2 claw +3 (1d4)",
+   "stats": null,
+   "saveTargets": {
+    "Save": 14
+   },
+   "savesText": "14+",
+   "slaughterDie": "1d6",
+   "raw": "Ghoul\nTest creature: Ghoul.\nAC 7, HD 3 (13hp), Atk 2 claw +3 (1d4), Move 30', ML 8, Skill +1, Madness None / 1d6, Slaughter 1d6, Save 14+"
+  },
+  {
+   "name": "Vampire",
+   "desc": "Test creature: Vampire.",
+   "ac": {
+    "asc": null,
+    "desc": 6,
+    "thac0": null
+   },
+   "hd": "8",
+   "attacks": [
+    {
+     "label": "strike",
+     "count": 2,
+     "toHit": 8,
+     "damage": "1d6+2",
+     "note": "",
+     "raw": ""
+    }
+   ],
+   "move": "30'",
+   "skill": 3,
+   "madness": "None / 1d4",
+   "abilities": [
+    {
+     "name": "",
+     "text": "Undead"
+    }
+   ],
+   "id": "slpdf-vampire",
+   "ref": "slpdf:monster:vampire",
+   "source": "sl",
+   "mundaneImmune": true,
+   "hdNum": 8,
+   "hp": 36,
+   "align": "",
+   "xp": null,
+   "moraleML": 10,
+   "atkBonus": 8,
+   "attacksText": "2 strike +8 (1d6+2)",
+   "stats": null,
+   "saveTargets": {
+    "Save": 12
+   },
+   "savesText": "12+",
+   "slaughterDie": "1d6",
+   "raw": "Vampire\nTest creature: Vampire.\nAC 6*, HD 8 (36hp), Atk 2 strike +8 (1d6+2), Move 30', ML 10, Skill +3, Madness None / 1d4, Slaughter 1d6, Save 12+"
+  },
+  {
+   "name": "Ordinary",
+   "desc": "Test creature: Ordinary.",
+   "ac": {
+    "asc": null,
+    "desc": 9,
+    "thac0": null
+   },
+   "hd": "½",
+   "attacks": [
+    {
+     "label": "wpn",
+     "count": 1,
+     "toHit": 0,
+     "damage": "",
+     "note": "by weapon",
+     "raw": ""
+    }
+   ],
+   "move": "30'",
+   "skill": 1,
+   "madness": "None",
+   "abilities": [],
+   "id": "slpdf-ordinary",
+   "ref": "slpdf:monster:ordinary",
+   "source": "sl",
+   "mundaneImmune": false,
+   "hdNum": 0.5,
+   "hp": 2,
+   "align": "",
+   "xp": null,
+   "moraleML": 8,
+   "atkBonus": 0,
+   "attacksText": "wpn +0 (by weapon)",
+   "stats": null,
+   "saveTargets": {
+    "Save": 15
+   },
+   "savesText": "15+",
+   "slaughterDie": "1d6",
+   "raw": "Ordinary\nTest creature: Ordinary.\nAC 9, HD 1d4 hp (2hp), Atk wpn +0 (by weapon), Move 30', ML 8, Skill +1, Madness None, Slaughter 1d6, Save 15+"
+  },
+  {
+   "name": "Outer Entity (Strong)",
+   "desc": "Test creature: Outer Entity (Strong).",
+   "ac": {
+    "asc": null,
+    "desc": 2,
+    "thac0": null
+   },
+   "hd": "12",
+   "attacks": [
+    {
+     "label": "touch",
+     "count": 1,
+     "toHit": 12,
+     "damage": "2d8",
+     "note": "",
+     "raw": ""
+    }
+   ],
+   "move": "30'",
+   "skill": 1,
+   "madness": "None",
+   "abilities": [],
+   "id": "slpdf-outer-entity-strong",
+   "ref": "slpdf:monster:outer-entity-strong",
+   "source": "sl",
+   "mundaneImmune": false,
+   "hdNum": 12,
+   "hp": 54,
+   "align": "",
+   "xp": null,
+   "moraleML": 8,
+   "atkBonus": 12,
+   "attacksText": "touch +12 (2d8)",
+   "stats": null,
+   "saveTargets": {
+    "Save": 9
+   },
+   "savesText": "9+",
+   "slaughterDie": "1d6",
+   "raw": "Outer Entity (Strong)\nTest creature: Outer Entity (Strong).\nAC 2, HD 12 (54hp), Atk touch +12 (2d8), Move 30', ML 8, Skill +1, Madness None, Slaughter 1d6, Save 9+"
+  }
+ ],
+ "tables": [
+  {
+   "name": "Test: Omen",
+   "tag": "Test Tables",
+   "system": "sl",
+   "source": "# Test table\n1d4\n1: A cold wind\n2: A dead bird\n3-4: Nothing\n"
+  },
+  {
+   "name": "Test: Place",
+   "tag": "Test Tables",
+   "system": "sl",
+   "source": "1d2\n1: A cellar\n2: A church\n"
+  },
+  {
+   "name": "Test Generator",
+   "tag": "Generators",
+   "system": "sl",
+   "source": "# Rolls on each\n1d1\n1: Omen: [Test: Omen]; Place: [Test: Place]\n"
+  }
+ ]
+}

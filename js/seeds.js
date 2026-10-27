@@ -45,6 +45,43 @@
     };
   }
 
+  // The app once had a built-in Silent Legions seed (data/seed-sl.json):
+  // Compendium entries with the seedRef "sl:c:<name>" and monsters with ids
+  // "sl-<name>". Silent Legions content now comes only from a content pack
+  // (the "slpdf:" refs of the Silent Legions Foundry VTT importer).
+  const legacySlRef = ref => /^sl:c:|^sl-/.test(String(ref || ''));
+
+  // Repairs a stored seed in place: monster abilities as objects (early
+  // Silent Legions packs wrote strings), and no old built-in Silent Legions
+  // items. Returns true when it changed something.
+  function cleanSeed(sys, seed) {
+    if (!seed) return false;
+    const fixed = (seed.monsters || []).map(OSR.fixAbilities).some(Boolean);
+    return dropLegacySlItems(sys, seed) || fixed;
+  }
+
+  function dropLegacySlItems(sys, seed) {
+    if (sys !== 'sl') return false;
+    const n = (seed.compendium || []).length + (seed.monsters || []).length;
+    seed.compendium = (seed.compendium || []).filter(x => !legacySlRef(x.seedRef));
+    seed.monsters = (seed.monsters || []).filter(x => !legacySlRef(x.seedRef));
+    if (seed.compendium.length + seed.monsters.length === n) return false;
+    seed.codeVersion = 0;
+    seed.version = (seed.version || 0) + 1;
+    return true;
+  }
+
+  // A campaign from before the removal (it has the old seeding flags): its
+  // unedited copies of the old built-in items go. Edited copies stay.
+  function dropLegacySlSeed(state) {
+    if (!('slCompendiumSeeded' in state) && !('slMonstersSeeded' in state)) return;
+    const unedited = x => x.system === 'sl' && legacySlRef(x.seedRef) && contentHash(x) === x.seedHash;
+    state.compendium = state.compendium.filter(x => !unedited(x));
+    state.monsters = state.monsters.filter(x => !unedited(x));
+    delete state.slCompendiumSeeded;
+    delete state.slMonstersSeeded;
+  }
+
   // Items of `extra` replace items of `base` with the same seedRef; the rest of
   // both are kept. Returns a new list.
   function mergeItems(base, extra) {
@@ -78,6 +115,7 @@
         seed = seed ? Object.assign(mergeSeeds(seed, code), { codeVersion: code.codeVersion }) : code;
         writes[sys] = JSON.stringify(seed);
       }
+      if (cleanSeed(sys, seed)) writes[sys] = JSON.stringify(seed);
       OSR.seeds[sys] = seed || emptySeed(sys);
     });
     // A failed write (storage full) is not fatal: the seeds work from memory,
@@ -89,6 +127,7 @@
 
   // Replaces one system's seed (a pull from Dropbox, a pack). Resolves when written.
   async function setSeed(sys, seed) {
+    cleanSeed(sys, seed);
     OSR.seeds[sys] = seed;
     await OSR.store.putDocs('seeds', { [sys]: JSON.stringify(seed) });
     checkSeeds();
@@ -118,7 +157,7 @@
   }
 
   // A seed item as the campaign keeps it (the same shapes the seed functions
-  // in js/compendium.js, js/seed.js, js/brp-seed.js, js/sl-seed.js always made).
+  // in js/compendium.js, js/seed.js, js/brp-seed.js always made).
   function compCopy(sys, e) {
     const item = {
       id: uid(), name: e.name,
@@ -278,6 +317,6 @@
 
   Object.assign(OSR, {
     seedRefOf: refOf, codeSeed, mergeSeeds, loadSeeds, setSeed, addToSeed, contentHash, compCopy, monsterCopy,
-    linkSeeds, seedStatus, applySeed, checkSeeds, renderSeedNotice, wireSeeds
+    linkSeeds, seedStatus, applySeed, checkSeeds, renderSeedNotice, wireSeeds, dropLegacySlSeed
   });
 })(window.OSR = window.OSR || {});

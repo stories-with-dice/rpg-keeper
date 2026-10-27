@@ -161,7 +161,8 @@
     const pack = data.pack || {};
     const system = validSystem(pack.system, OSR.currentSystem());
     const comp = Array.isArray(data.compendium) ? data.compendium : [];
-    const mons = Array.isArray(data.monsters) ? data.monsters : [];
+    const mons = (Array.isArray(data.monsters) ? data.monsters : []).filter(Boolean);
+    mons.forEach(OSR.fixAbilities);
     const tbls = Array.isArray(data.tables) ? data.tables : [];
     const name = String(pack.name || 'content pack');
     if (!confirm('Add "' + name + '" to ' + (OSR.SYSTEM_LABELS[system] || system) + '?\n\n' +

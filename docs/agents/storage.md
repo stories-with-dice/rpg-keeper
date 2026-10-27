@@ -57,7 +57,7 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
 
 - `init()` awaits `OSR.loadData()`: `OSR.data.monsters`, `.tables`, `.seeds.osr` (gear in
   `data/seed-osr.json` + spells in `data/spells.json` whose names the gear does not use +
-  `data/monsters.json`), `.seeds.brp`, `.seeds.sl`, `.pregens` (`OSR.PREGEN_FILES`). If any file
+  `data/monsters.json`), `.seeds.brp`, `.pregens` (`OSR.PREGEN_FILES`). If any file
   fails, `showLoadError()` and `init()` stops before `load()`.
 - **Seed store**: `OSR.loadSeeds()` (before `load()`). `OSR.seeds[system]` = `{ system, version,
   codeVersion, compendium, monsters }`, shared by every campaign on the device, stored as
@@ -68,8 +68,8 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
   (`contentHash()` of the copy as seeded). `state.seedVersions[system]` is the version seen.
   `seedStatus(sys)` sorts into `added`, `changed` (copy unedited), `edited`. While seen < version,
   Settings shows `#set-seed-row`: Apply (`applySeed`), Apply and overwrite my edits, Skip.
-- `seedMonsters()`, `seedCompendium()`, `seedBrp*()`, `seedSl*()` read `OSR.seeds`. Each replaces or
-  adds only its own system's slice. BRP/SL seeding runs from `init()` every time, gated by
+- `seedMonsters()`, `seedCompendium()`, `seedBrp*()` read `OSR.seeds`. Each replaces or
+  adds only its own system's slice. BRP seeding runs from `init()` every time, gated by
   `state.brpCompendiumSeeded` and friends.
 - Pregens: `seed()` runs only with no characters. Settings → Add missing pregens
   (`addMissingPregens()`) adds every example whose name no character has, and keeps

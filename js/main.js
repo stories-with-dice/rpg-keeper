@@ -178,11 +178,9 @@
       OSR.state = JSON.parse(JSON.stringify(OSR.STATE_DEFAULTS));
       OSR.state.monstersSeeded = true;
       OSR.state.brpMonstersSeeded = true;
-      OSR.state.slMonstersSeeded = true;
       OSR.state.compendiumSeeded = true;
       OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
       OSR.state.brpCompendiumSeeded = true;
-      OSR.state.slCompendiumSeeded = true;
       OSR.ensureStateShape();
       OSR.lastRoll = null;
       OSR.mode = 'view';

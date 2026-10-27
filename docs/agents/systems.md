@@ -99,5 +99,15 @@ Crit (1), Fumble (100), Matched Success/Failure (doubles). It sets `OSR.lastPerc
   `onDetailClick`. Row chip `Mad …`.
 - Form: `data-schema="sl"`; `.mf-nonsl` hides Alignment/XP.
 - Characters: ` ```sl ` fence (attributes + `Madness: N`); HP and Madness trackers.
-- Compendium (`data/seed-sl.json`): Spells, Disciplines, Rules, Items with `[Name]` cross-links (a
-  logic test checks they resolve). Seeding: `js/sl-seed.js`.
+- Nothing Silent Legions is bundled except the pregens. The content pack comes from the
+  Silent Legions Foundry VTT system (`module/import/keeper-pack.mjs` in that repo): Compendium
+  entries with `slpdf:` refs, monsters in the shape above (`abilities` as `{ name, text }`,
+  `attacksText` as `2 claw +3 (1d4)`), and `tables` in the `js/table-syntax.js` format.
+  `test/fixtures/sl-pack.json` (made-up text, `slPack()` in `test/helpers/boot.js`) has that shape;
+  that repo's `tools/keeper-fixture.mjs` writes it.
+  The pregens' `[Name]` links are names of that pack (`SL_PREGEN_LINKS` in `test/logic.test.js`).
+- The old built-in seed (`data/seed-sl.json`, removed) left seedRefs `sl:c:<name>` and monster ids
+  `sl-<name>`. `cleanSeed()` (js/seeds.js) drops them from the stored seed; `dropLegacySlSeed()`
+  (from `ensureStateShape()`) drops a campaign's unedited copies once, while the campaign still
+  has `slCompendiumSeeded`/`slMonstersSeeded`, then deletes those flags. `fixAbilities()`
+  (js/core.js) turns string abilities from early packs into `{ name: '', text }`.

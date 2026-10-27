@@ -23,9 +23,9 @@ test('seed copies: every seeded entry and monster carries its seedRef and seedHa
   const aboleth = T.state.monsters.find(m => m.id === 'sd-aboleth');
   assert.strictEqual(aboleth.seedRef, 'sd-aboleth');
   assert.strictEqual(aboleth.seedHash, T.contentHash(aboleth));
-  assert.ok(T.state.compendium.filter(e => e.system === 'sl').every(e => e.seedRef && e.seedRef.startsWith('sl:c:')));
+  assert.ok(T.state.compendium.filter(e => e.system === 'brp').every(e => e.seedRef && e.seedRef.startsWith('brp:c:')));
   const stored = await T.store.getDocs('seeds');
-  assert.deepEqual(Object.keys(stored).sort(), ['brp', 'osr', 'sl'], 'Unknown Armies has no code seed: only a pack makes one');
+  assert.deepEqual(Object.keys(stored).sort(), ['brp', 'osr'], 'Unknown Armies and Silent Legions have no code seed: only a pack makes one');
   assert.strictEqual(JSON.parse(stored.osr).codeVersion, T.data.seeds.osr.version);
   assert.ok(window.document.querySelector('#set-seed-row').hidden, 'nothing new on a fresh install');
   window.close();

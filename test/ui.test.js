@@ -12,7 +12,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, fire, click, setValue, key, savedState: readSaved } = require('./helpers/boot.js');
+const { boot, rigRandom, face, fire, click, setValue, key, savedState: readSaved, slPack } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -821,7 +821,7 @@ test('Bestiary: "Fill in fields" with Format = Silent Legions builds an OSR-shap
 
 test('Bestiary: editing a Silent Legions monster opens straight into "Fill in fields" and round-trips its SL fields', () => {
   T.state.settings.system = 'sl';
-  T.state.monsters = [JSON.parse(JSON.stringify(window.OSR.data.seeds.sl.monsters.find(d => d.name === 'Ghoul')))];
+  T.state.monsters = [JSON.parse(JSON.stringify(slPack().monsters.find(d => d.name === 'Ghoul')))];
   T.state.monsters[0].system = 'sl';
   const id = T.state.monsters[0].id;
   tab('bestiary');
@@ -844,7 +844,7 @@ test('Bestiary: editing a Silent Legions monster opens straight into "Fill in fi
 });
 
 test('Combat: a Silent Legions monster shows its descending AC, Madness chip, and Skill / Slaughter / Madness rolls', () => {
-  T.addMonsterEntry(JSON.parse(JSON.stringify(window.OSR.data.seeds.sl.monsters.find(d => d.name === 'Vampire'))));
+  T.addMonsterEntry(JSON.parse(JSON.stringify(slPack().monsters.find(d => d.name === 'Vampire'))));
   tab('combat');
   const row = $('#tracker-list .cbt-row');
   assert.match(row.textContent, /AC 6\*/);
@@ -1712,7 +1712,7 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   );
   T.state.monsters.push(
     { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
-    Object.assign(JSON.parse(JSON.stringify(window.OSR.data.seeds.sl.monsters.find(d => d.name === 'Zombie'))), { system: 'sl' })
+    Object.assign(JSON.parse(JSON.stringify(slPack().monsters.find(d => d.name === 'Zombie'))), { system: 'sl' })
   );
   T.renderAll();
 
