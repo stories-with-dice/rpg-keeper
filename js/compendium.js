@@ -239,13 +239,21 @@
     // `setTimeout(…, 0)` callback always runs after all of them have already
     // fired — making this isolate the final, unconditional word regardless of
     // which spurious event(s) came with it or in what order.
+    // A right-click on the only ticked filter ticks every filter again. "Only
+    // ticked" means no other filter is ticked: the target's own box is
+    // ignored, because a stray toggle can untick it before 'contextmenu'.
     $('#comp-cats').addEventListener('contextmenu', e => {
       const lbl = e.target.closest('label.comp-cat');
       const cb = lbl && lbl.querySelector('input[data-cat]');
       if (!cb) return;
       e.preventDefault();
       const target = cb.dataset.cat;
-      setTimeout(() => { compCatFilter = new Set([target]); renderCompendium(); }, 0);
+      const on = compCats();
+      const solo = Array.from(on).every(c => c === target);
+      setTimeout(() => {
+        compCatFilter = solo ? new Set(COMPENDIUM_CATEGORIES) : new Set([target]);
+        renderCompendium();
+      }, 0);
     });
     $('#comp-sources').addEventListener('contextmenu', e => {
       const lbl = e.target.closest('label.comp-cat');
@@ -253,9 +261,10 @@
       if (!cb) return;
       e.preventDefault();
       const target = cb.dataset.src;
+      const solo = compSources().every(s => s === target || compSrcOff.has(s));
       setTimeout(() => {
         compSrcOff.clear();
-        compSources().forEach(s => { if (s !== target) compSrcOff.add(s); });
+        if (!solo) compSources().forEach(s => { if (s !== target) compSrcOff.add(s); });
         renderCompendium();
       }, 0);
     });

@@ -17,6 +17,13 @@ The content pack format for tools that write packs is in
 [docs/content-pack-format.md](docs/content-pack-format.md). Update it when the import of packs,
 the Compendium entry, the monster def, or the table fields change.
 
+## Git workflow
+
+- Work directly on `main`. Do not create branches.
+- Do not commit, and do not ask to commit. Leave the changes in the working tree; the owner
+  reviews and commits them.
+- Do not push.
+
 ## Hard rules
 
 - **Static single-page app**: `index.html`, `css/app.css`, `js/*.js`. No build step, framework,

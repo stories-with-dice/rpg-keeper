@@ -7,7 +7,9 @@
   is free text (default `OSR.COMPENDIUM_DEFAULT_SOURCE`, "Unknown"); `system` is set at creation
   from `currentSystem()` and never changed by an edit.
 - Filters: category and source checkboxes (`#comp-cats`, `#comp-sources`). A right-click isolates
-  one (deferred with `setTimeout(…, 0)` so a stray `change` cannot win).
+  one (deferred with `setTimeout(…, 0)` so a stray `change` cannot win). A right-click when no
+  other box in the row is ticked ticks them all again (the target's own box is ignored: a stray
+  toggle can untick it first).
 - Editor: `openCompEntry(id | null, prefill)`, an EasyMDE modal (`compMdeInstance()`). Enter saves,
   Shift+Enter is a newline, Escape cancels.
 - `seedCompendium()` adds missing-by-name entries on first run. Settings → Reseed defaults calls it;

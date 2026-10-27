@@ -326,7 +326,8 @@ name, a **category**, a **source**, and a Markdown body edited in a proper Markd
 
 - **+ New entry** opens the editor modal — category defaults to **Other**, source to **Unknown**
   (the source box offers your existing sources as suggestions).
-- **Filter**: tick/untick the **Category** and **Source** checkboxes; type in **Search** to match
+- **Filter**: tick/untick the **Category** and **Source** checkboxes. **Right-click** a checkbox to
+  show only that one; right-click it again to tick every checkbox in its row. Type in **Search** to match
   entry *names*. **Full text** also searches the body; **Fuzzy** switches to approximate matching
   ([Fuse.js](https://fusejs.io/), vendored). The count shows *matches / total*.
 - Click a row (or its **Edit**) to edit; **✕** deletes.
@@ -476,7 +477,7 @@ You can also make your own tables, and a table can roll on other tables (a **mas
 Every campaign and every **System** sees the same tables.
 
 - Three filter rows choose which tables are listed. Tick or untick a value, or **right-click** a
-  value to show only that one in its row.
+  value to show only that one in its row; right-click it again to tick every value in its row.
   - **Source**: where the table comes from (Shadowdark, Silent Legions, Homebrew).
   - **Setting**: Fantasy, Modern, or Horror. A table can have more than one (Silent Legions tables
     are Modern and Horror). It shows while one of its settings is ticked.

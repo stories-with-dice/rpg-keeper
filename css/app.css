@@ -1219,7 +1219,7 @@ button, input, textarea, select {
 .tbl-f-setting .comp-cat { color: var(--text); }
 .tbl-hide-subs { font-size: 13px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .comp-form .tbl-f-origin, .comp-form .tbl-f-setting, .comp-form .tbl-f-output { min-width: 0; }
-.comp-form .tbl-f-output select { min-width: 0; }
+.comp-form .tbl-f-output select, .comp-form .tbl-f-origin input { min-width: 0; }
 #tbl-filters { margin-bottom: 12px; }
 #tbl-filters .comp-filter-row:last-of-type { margin-bottom: 0; }
 .tbl-setting { opacity: .8; }

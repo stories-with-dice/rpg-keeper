@@ -591,7 +591,8 @@
       renderTables();
     });
     // Right-click a value to isolate it: only that one stays ticked in its
-    // row; the other rows do not change. See the
+    // row; the other rows do not change. A right-click on the only ticked
+    // value (no other value ticked) ticks every value in its row again. See the
     // matching comment in js/compendium.js's wireCompendiumEntries() — some
     // input methods (e.g. a trackpad's two-finger-tap right-click) also fire
     // this checkbox's own native toggle + 'change', racing this isolate
@@ -605,7 +606,9 @@
       if (!cb) return;
       e.preventDefault();
       const key = cb.dataset.filter, target = cb.dataset.value;
-      setTimeout(() => { tblOff[key] = new Set(filterValues(key).filter(g => g !== target)); renderTables(); }, 0);
+      const others = filterValues(key).filter(g => g !== target);
+      const solo = others.every(g => tblOff[key].has(g));
+      setTimeout(() => { tblOff[key] = new Set(solo ? [] : others); renderTables(); }, 0);
     });
     $('#tbl-list').addEventListener('click', e => {
       const copy = e.target.closest('.tbl-copy');

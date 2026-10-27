@@ -103,7 +103,8 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   (capture-phase `toggle` listener). `tblOff[filter]` holds the unticked values of each filter row
   (`#tbl-filter-origin`, `#tbl-filter-settings`, `#tbl-filter-output` in `#tbl-filters`), so a new
   source shows. A table shows when each row has one of its values ticked (`valuesOf()`: settings
-  is a list). Right-click isolates one value in its row only.
+  is a list). Right-click isolates one value in its row only; a right-click when no other value in the row
+  is ticked ticks the whole row again.
 - `#tbl-hide-subs` "Don't show included subtables" (checked by default and by
   `resetTableFilters()`, not saved): `includedNames()` collects the names that any listed table
   refs (`TS.refNames`, a table's ref to itself does not count); those tables are hidden unless a

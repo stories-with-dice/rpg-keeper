@@ -1181,7 +1181,7 @@ test('Compendium: unticking a Category checkbox hides entries in that category',
   assert.deepEqual(shown, ['Bless']);
 });
 
-test('Compendium: right-clicking a Category (or Source) filter isolates it', async () => {
+test('Compendium: right-clicking a Category (or Source) filter isolates it; a right-click on the only ticked one ticks all again', async () => {
   T.state.compendium = [
     { id: '1', name: 'Longsword', category: 'Items', source: 'Core', body: '', createdAt: 1 },
     { id: '2', name: 'Bless', category: 'Spells', source: 'Core', body: '', createdAt: 2 },
@@ -1210,6 +1210,12 @@ test('Compendium: right-clicking a Category (or Source) filter isolates it', asy
   await rightClick($$('#comp-sources .comp-cat').find(l => l.textContent.trim() === 'Homebrew'));
   assert.deepEqual(checkedSrcs(), ['Homebrew'], 'only the right-clicked source stays ticked');
   assert.deepEqual(names(), ['Potion'], 'list narrows to Items + Homebrew');
+
+  await rightClick($$('#comp-cats .comp-cat').find(l => l.textContent.trim() === 'Items'));
+  assert.deepEqual(checkedCats(), window.OSR.COMPENDIUM_CATEGORIES.slice(), 'a right-click on the only ticked category ticks every category');
+  await rightClick($$('#comp-sources .comp-cat').find(l => l.textContent.trim() === 'Homebrew'));
+  assert.equal(checkedSrcs().length, $$('#comp-sources input[data-src]').length, 'a right-click on the only ticked source ticks every source');
+  assert.equal(names().length, 3);
 });
 
 test('Compendium/Tables filter checkboxes: a spurious "change" fired alongside a right-click gesture never beats the (deferred) isolate handler', async () => {
@@ -1239,14 +1245,25 @@ test('Compendium/Tables filter checkboxes: a spurious "change" fired alongside a
   // whatever's actually at that screen position when it's dispatched — so,
   // like a real browser, re-query the checkbox after the phantom change's
   // own re-render, rather than reusing a now-stale element reference.)
-  items().checked = false; // the phantom native toggle (button 0, indistinguishable from a real click)
-  change(items());
+  const spells = () => $$('#comp-cats input[data-cat]').find(cb => cb.dataset.cat === 'Spells');
+  spells().checked = false; // the phantom native toggle (button 0, indistinguishable from a real click)
+  change(spells());
+  contextmenu(spells());
+  await tick();
+  assert.deepEqual(checkedCats(), ['Spells'], 'isolated — the isolate handler is the last word regardless of the spurious change');
+
+  // The same gesture on the only ticked category: the phantom toggle unticks
+  // it first, but the right-click still ticks every category again.
+  spells().checked = false;
+  change(spells());
+  contextmenu(spells());
+  await tick();
+  assert.deepEqual(checkedCats(), window.OSR.COMPENDIUM_CATEGORIES.slice(), 'every category is ticked again');
   contextmenu(items());
   await tick();
-  assert.deepEqual(checkedCats(), ['Items'], 'still isolated — the isolate handler is the last word regardless of the spurious change');
+  assert.deepEqual(checkedCats(), ['Items']);
 
   // A genuine left-click change (no accompanying contextmenu) still works normally afterward.
-  const spells = () => $$('#comp-cats input[data-cat]').find(cb => cb.dataset.cat === 'Spells');
   spells().checked = true;
   change(spells());
   assert.deepEqual(checkedCats().sort(), ['Items', 'Spells'], 'a normal left-click toggle still applies');
@@ -1347,6 +1364,12 @@ test('Tables tab: unticking a filter value hides its tables; right-clicking a va
   assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade', 'Ghost']);
   assert.deepEqual($$('#tbl-filters input[data-filter="settings"]').filter(cb => cb.checked).map(cb => cb.dataset.value), ['Horror']);
   assert.ok($$('#tbl-filters input[data-filter="output"]').every(cb => cb.checked), 'the other rows do not change');
+
+  // A second right-click on the only ticked value ticks every value in its row again.
+  box('settings', 'Horror').closest('label').dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  await new Promise(r => setTimeout(r, 10));
+  assert.ok($$('#tbl-filters input[data-filter="settings"]').every(cb => cb.checked), 'every setting is ticked again');
+  assert.equal($$('#tbl-list .tbl-row').length, total);
 });
 
 test('Tables tab: expanding a table and clicking Roll rolls its formula, highlights the matching row, and logs it', () => {
