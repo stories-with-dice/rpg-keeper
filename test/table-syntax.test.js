@@ -108,3 +108,34 @@ test('toSource: a built-in table round-trips through parseTable', () => {
   const back = TS.parseTable(TS.toSource(t));
   assert.deepEqual(back.entries.map(e => [e.lo, e.hi, e.text]), [[1, 99, 'Calm'], [100, 100, 'Storm']]);
 });
+
+test('nodeLines / nodeOutline: "Label: [Table]" parts become lines, nested ones indent, and sentences stay one line', () => {
+  const omen = table('Omen', 'd1\n1: A cold wind\n');
+  const word = table('Word', 'd1\n1: Blight\n');
+  const effect = table('Effect', 'd1\n1: It Creates a Disaster: [Omen]; Word: [Word]\n');
+  const branch = table('Branch', 'd1\n1: It creates a disaster — [Effect]\n');
+  const top = table('Top', 'd1\n1: Effect: [Branch]; Omen: [Omen]; Need: A rite — [Word]; Short: [Omen] — [Word]\n');
+  const sentence = table('Sentence', 'd1\n1: A [Omen] over the [Word] fields\n');
+  const all = [omen, word, effect, branch, top, sentence];
+
+  const tree = TS.rollTable(top, ctx(all, [1, 1, 1, 1, 1, 1, 1, 1, 1]));
+  assert.equal(TS.nodeOutline(tree), [
+    'Effect',
+    '  It creates a disaster',
+    '    It Creates a Disaster: A cold wind',
+    '    Word: Blight',
+    'Omen: A cold wind',
+    'Need: A rite — Blight',
+    'Short: A cold wind — Blight'
+  ].join('\n'), 'a "; " ends a line, also after a sub-table that has no label');
+  const lines = TS.nodeLines(tree);
+  assert.deepEqual(lines.map(l => l.i), [1, 3, -1, 7], 'a line points at its sub-table in parts');
+  assert.equal(lines[3].tail.length, 2, 'the text after an unlabelled sub-table stays on its line');
+
+  const one = TS.rollTable(sentence, ctx(all, [1, 1, 1]));
+  assert.equal(TS.nodeLines(one), null);
+  assert.equal(TS.nodeOutline(one), 'A A cold wind over the Blight fields');
+
+  assert.equal(TS.copyText(one), 'A A cold wind over the Blight fields', 'one line copies as is');
+  assert.equal(TS.copyText(tree), '```\n' + TS.nodeOutline(tree) + '\n```', 'an outline copies in a fenced block with its indents');
+});

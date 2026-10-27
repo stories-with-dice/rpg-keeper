@@ -134,6 +134,38 @@
     return path.length ? sub('', label + ' (' + node.formula + ' → ' + node.roll + ')', inner) : inner;
   }
 
+  // A result laid out as lines (TS.nodeLines): "Label: result" per sub-table,
+  // and a sub-table with lines of its own indented under its label. The label
+  // of an indented group rolls that whole group again.
+  function linesHtml(node, path) {
+    const partsHtml = list => list.map(x => (typeof x.part === 'string' ? escapeHtml(x.part) : nodeHtml(x.part, path.concat(x.i)))).join('');
+    return '<div class="tbl-lines">' + TS.nodeLines(node).map(l => {
+      const label = partsHtml(l.label);
+      if (!l.child) return '<div class="tbl-line">' + label + '</div>';
+      const cp = path.concat(l.i);
+      if (!TS.hasLines(l.child)) {
+        return '<div class="tbl-line">' + (label ? '<span class="tbl-label">' + label + ':</span> ' : '') + nodeHtml(l.child, cp) + partsHtml(l.tail) + '</div>';
+      }
+      const c = l.child;
+      const title = c.kind === 'repeat' ? c.count + '× ' + (c.items[0] ? c.items[0].name : c.src) : c.name + ' (' + c.formula + ' → ' + c.roll + ')';
+      const body = c.kind === 'repeat'
+        ? c.items.map((it, k) => (TS.hasLines(it) ? linesHtml(it, cp.concat(k)) : '<div class="tbl-line">' + nodeHtml(it, cp.concat(k)) + '</div>')).join('')
+        : linesHtml(c, cp);
+      return '<div class="tbl-line is-group"><span class="tbl-sub tbl-label" data-path="' + cp.join('.') + '" title="' +
+        escapeHtml(title + ' · click to roll again') + '">' + (label || escapeHtml(c.name || c.src)) + '</span>' + body + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function resultHtml(t, tree) {
+    const range = TS.formulaRange(t.formula);
+    const rolled = range && range.min === range.max ? '' : '<span class="tbl-roll-result">Rolled <b>' +
+      escapeHtml(String(tree.roll == null ? '?' : tree.roll)) + '</b></span> ';
+    const copy = '<button class="btn tbl-copy" title="Copy the result"><i class="fa-solid fa-copy"></i></button>';
+    return copy + (TS.nodeLines(tree)
+      ? rolled + '<div class="tbl-result-text is-lines">' + linesHtml(tree, []) + '</div>'
+      : rolled + '<span class="tbl-result-text">' + nodeHtml(tree, []) + '</span>');
+  }
+
   function tableRowHtml(t, resolve) {
     const open = tblOpenIds.has(t.id);
     const last = tblLastRoll[t.id];
@@ -160,9 +192,7 @@
             '<button class="btn tbl-dup" data-id="' + id + '"><i class="fa-solid fa-copy"></i> Duplicate</button>' +
             (t.user ? '<button class="btn btn-danger tbl-del" data-id="' + id + '"><i class="fa-solid fa-trash"></i></button>' : '') +
           '</div>' +
-          (last ? '<div class="tbl-result" data-id="' + id + '"><span class="tbl-roll-result">Rolled <b>' +
-            escapeHtml(String(last.tree.roll == null ? '?' : last.tree.roll)) + '</b></span> ' +
-            '<span class="tbl-result-text">' + nodeHtml(last.tree, []) + '</span></div>' : '') +
+          (last ? '<div class="tbl-result" data-id="' + id + '">' + resultHtml(t, last.tree) + '</div>' : '') +
           '<table class="tbl-entries">' + head + '<tbody>' +
             t.entries.map((en, idx) => entryRowHtml(t, en, idx, resolve)).join('') +
           '</tbody></table>' +
@@ -188,7 +218,7 @@
     if (tree.roll == null) return;
     tblLastRoll[id] = { tree };
     tblOpenIds.add(id);
-    OSR.pushLog(t.name, t.formula, tree.roll, tree.entryIdx === -1 ? '(no matching entry)' : TS.nodeText(tree));
+    OSR.pushLog(t.name, t.formula, tree.roll, tree.entryIdx === -1 ? '(no matching entry)' : TS.nodeOutline(tree), { quiet: true });
     renderTables();
   }
 
@@ -199,9 +229,9 @@
     const path = pathStr.split('.').map(Number);
     const fresh = TS.rerollAt(last.tree, path, rollCtx());
     if (!fresh) return;
-    const text = TS.nodeText(last.tree);
+    const text = TS.nodeOutline(last.tree);
     const what = fresh.kind === 'dice' ? fresh.formula : (fresh.name || fresh.src);
-    OSR.pushLog(t.name + ' (again: ' + what + ')', fresh.formula || '', fresh.roll == null ? '' : fresh.roll, text);
+    OSR.pushLog(t.name + ' (again: ' + what + ')', fresh.formula || '', fresh.roll == null ? '' : fresh.roll, text, { quiet: true });
     renderTables();
   }
 
@@ -369,6 +399,14 @@
       setTimeout(() => { tblTagOff = new Set(tableTags().filter(g => g !== target)); renderTables(); }, 0);
     });
     $('#tbl-list').addEventListener('click', e => {
+      const copy = e.target.closest('.tbl-copy');
+      if (copy) {
+        const last = tblLastRoll[copy.closest('.tbl-result').dataset.id];
+        if (last) OSR.copyText(TS.copyText(last.tree));
+        copy.innerHTML = '<i class="fa-solid fa-check"></i>';
+        setTimeout(() => { copy.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 1200);
+        return;
+      }
       const sub = e.target.closest('.tbl-sub');
       if (sub) { rerollPart(sub.closest('.tbl-result').dataset.id, sub.dataset.path); return; }
       const ref = e.target.closest('.tbl-ref[data-ref-id]');

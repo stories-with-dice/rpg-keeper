@@ -868,7 +868,10 @@ test('Silent Legions pack: a master table rolls on its sub-tables', async () => 
   restore();
   const last = T.state.log[T.state.log.length - 1];
   assert.equal(last.source, 'Test Generator');
-  assert.equal(last.detail, 'Omen: A cold wind; Place: A church');
+  assert.equal(last.detail, 'Omen: A cold wind\nPlace: A church', 'one line per sub-table in the log');
+  const result = document.querySelector('.tbl-result[data-id="' + gen.id + '"]');
+  assert.deepEqual(Array.from(result.querySelectorAll('.tbl-line')).map(l => l.textContent), ['Omen: A cold wind', 'Place: A church']);
+  assert.equal(result.querySelector('.tbl-roll-result'), null, 'a 1d1 table does not show "Rolled 1"');
 });
 
 test('Silent Legions pack: every [ref] in a Compendium body resolves to another SL entry', async () => {

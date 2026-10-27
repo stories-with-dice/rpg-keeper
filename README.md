@@ -470,9 +470,15 @@ and a table can roll on other tables (a **master table**).
 - Click a table's name to **expand** it and see every row. A `[Name]` in a row is a link: click it
   to open that table.
 - **Roll** rolls the table's formula, highlights the matching row, and logs the result (table name,
-  formula, total, and the full text) to the **Session Log** at the bottom — same as any other roll
-  in the app. For a master table, every sub-roll in the result is underlined: click one to roll
+  formula, total, and the full text) to the **Session Log** at the bottom. The Dice Roller's
+  last-roll box does not show it. The copy button next to the result copies only the result text;
+  an outline result copies as a block between ```` ``` ```` lines, with its indents. For a master table, every sub-roll in the result is underlined: click one to roll
   only that part again.
+- A master table whose entry is a list of labelled lookups, such as
+  `Origin: [Artifact Origin]; Curse: [Artifact Curse]`, shows its result as an outline: one line
+  per lookup ("Origin: …"), and a sub-table that is itself such a list goes indented under its
+  label. Click the label to roll that whole group again. A `;` ends a line. Text like
+  `A [Color] [Shape]` stays on one line. The Session Log shows the same lines.
 - **+ New table** opens the table editor. **Duplicate** copies any table (built-in ones too) into a
   new one that you can change. Your tables show a **mine** badge and have **Edit** and **Delete**.
   They belong to the current campaign and **System**, and go into Export and Dropbox sync. A table

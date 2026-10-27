@@ -608,7 +608,7 @@ button, input, textarea, select {
   font-size: 13px;
 }
 .dice-last .total { font-size: 20px; font-weight: 700; color: var(--accent); }
-.dice-last .detail { color: var(--text-dim); font-size: 12px; }
+.dice-last .detail { color: var(--text-dim); font-size: 12px; white-space: pre-wrap; }
 .dice-apply {
   width: 100%;
   margin-top: 8px;
@@ -692,6 +692,7 @@ button, input, textarea, select {
 .log-formula { color: var(--accent-2); }
 .log-total { font-weight: 700; }
 .log-detail { color: var(--text-dim); }
+.log-detail.is-lines { flex-basis: 100%; white-space: pre-wrap; }
 .log-empty { color: var(--text-dim); padding: 8px 6px; }
 
 /* ---------- Modal ---------- */
@@ -1173,7 +1174,7 @@ button, input, textarea, select {
 .tbl-row > details:hover > summary { background: var(--bg-3); }
 .tbl-name { font-weight: 600; }
 .tbl-formula { margin-left: auto; }
-.tbl-body { padding: 0 12px 12px; }
+.tbl-body { padding: 8px 12px 12px; }
 .tbl-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .tbl-roll-result { color: var(--text-dim); font-size: 13px; }
 .tbl-entries { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -1187,6 +1188,13 @@ button, input, textarea, select {
 .tbl-actions .btn-danger { margin-left: auto; }
 .tbl-result { margin: 0 0 10px; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); line-height: 1.7; }
 .tbl-result-text { font-size: 14px; }
+.tbl-copy { float: right; margin-left: 8px; padding: 2px 8px; font-size: 12px; line-height: 1.4; }
+.tbl-result-text.is-lines { display: block; margin-top: 2px; line-height: 1.5; }
+.tbl-lines .tbl-lines { margin: 2px 0 4px; padding-left: 14px; border-left: 2px solid var(--border); }
+.tbl-line { padding: 1px 0; }
+.tbl-line.is-group > .tbl-label { font-weight: 600; border-bottom: none; }
+.tbl-label { color: var(--text-dim); }
+.tbl-line.is-group > .tbl-label { color: var(--accent); }
 .tbl-sub { border-bottom: 1px dashed var(--accent-2); cursor: pointer; border-radius: 3px; }
 .tbl-sub:hover { background: var(--roll-tint); }
 .tbl-sub .tbl-sub { border-bottom-color: var(--comp-ref); }

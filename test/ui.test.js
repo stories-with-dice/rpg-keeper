@@ -1341,9 +1341,11 @@ test('Tables tab: expanding a table and clicking Roll rolls its formula, highlig
   click(row.querySelector('summary'));            // native <details> toggle
   assert.equal(row.querySelector('details').open, true);
 
+  const lastBox = $('#dice-last').innerHTML;
   rig(face(42, 100));
   click(row.querySelector('.tbl-roll'));
   assert.equal(logCount(), 1);
+  assert.equal($('#dice-last').innerHTML, lastBox, 'a table roll does not show in the Dice Roller box');
   const last = T.state.log[T.state.log.length - 1];
   assert.equal(last.source, 'Arctic');
   assert.equal(last.total, 42);
@@ -1354,6 +1356,12 @@ test('Tables tab: expanding a table and clicking Roll rolls its formula, highlig
   assert.ok(hit, 'the rolled row is highlighted');
   assert.equal(hit.querySelector('.tbl-range').textContent, '42-43');
   assert.equal(hitRow.querySelector('details').open, true, 'stays expanded across the re-render');
+
+  // Copy puts only the result text (not "Rolled 42") on the clipboard.
+  const copied = [];
+  Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: async t => { copied.push(t); } } });
+  click(hitRow.querySelector('.tbl-copy'));
+  assert.deepEqual(copied, ['A starving human is trapped in an icy, natural pit']);
 });
 
 // Fills the table editor (#tbl-modal) and clicks Save.

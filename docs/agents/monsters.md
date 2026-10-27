@@ -73,7 +73,13 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   `toSource()`, `renameRefs()`. `ctx` is `{ resolve(name), roll(formula) }`; `js/tables.js` builds it
   from `library()` and `evalFormula`. A ref that names a table wins over a dice reading
   (`[d6]` with a table "d6"). Depth limit 12, repeat limit 20, a table on its own stack is an error.
-- Roll: `pushLog(name, formula, total, nodeText(tree))`. `tblLastRoll[id].tree` keeps the result;
+- Layout: `nodeLines(node)` (pure) splits a node's parts into lines when a sub-table follows
+  `Label:` (or `text —` before a sub-table that has lines itself); a `;` in the template text ends
+  a line; text after an unlabelled sub-table is that line's `tail`. Null means one line.
+  `linesHtml()` (js/tables.js) renders `.tbl-lines`/`.tbl-line`, a group label is the group's
+  `.tbl-sub`; `nodeOutline()` is the text form (two-space indents). A `1d1` table hides "Rolled".
+- Roll: `pushLog(name, formula, total, nodeOutline(tree), { quiet: true })` (`.log-detail.is-lines` keeps the breaks;
+  `quiet` skips `#dice-last`). `.tbl-copy` copies `TS.copyText(tree)` (an outline in a ``` fence) through `OSR.copyText()`. `tblLastRoll[id].tree` keeps the result;
   each sub-node renders as `.tbl-sub[data-path]` and a click calls `rerollAt` (logged as
   "Name (again: Sub)"). Rows are `<details>`; `tblOpenIds` keeps open rows across renders
   (capture-phase `toggle` listener). `tblTagOff` holds the unticked tags, so a new tag shows.

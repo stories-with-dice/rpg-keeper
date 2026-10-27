@@ -110,13 +110,15 @@
   // Unknown Armies attack, whose wounds depend on the weapon (js/combat.js).
   OSR.lastPercent = null;
 
-  function pushLog(source, formula, total, detail) {
+  // opts.quiet: log only, leave the Dice Roller's last-roll box (and its apply context) as it is.
+  function pushLog(source, formula, total, detail, opts) {
     const state = OSR.state;
     const entry = { id: OSR.uid(), ts: Date.now(), source: source || 'Roll', formula: formula, total: total, detail: detail || '' };
     state.log.push(entry);
     if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
     OSR.save();
     appendLogEntry(entry);
+    if (opts && opts.quiet) return entry;
     showLast(total, formula, detail);
     // Any roll that isn't from the Dice Roller replaces what's shown, so retire the apply context.
     OSR.lastRoll = null;
@@ -216,7 +218,7 @@
         ? '<span class="log-formula log-md markdown-body">' + e.md + '</span>'
         : '<span class="log-formula">' + escapeHtml(e.formula) + '</span>') +
       (hasTotal ? '<span class="log-total">= ' + escapeHtml(String(e.total)) + '</span>' : '') +
-      (e.detail ? '<span class="log-detail">' + escapeHtml(e.detail) + '</span>' : '');
+      (e.detail ? '<span class="log-detail' + (e.detail.indexOf('\n') !== -1 ? ' is-lines' : '') + '">' + escapeHtml(e.detail) + '</span>' : '');
     list.appendChild(li);
     list.scrollTop = list.scrollHeight;
   }
@@ -245,20 +247,22 @@
         renderLog();
       }
     });
-    $('#btn-log-copy').addEventListener('click', async () => {
-      const text = logToText();
-      try { await navigator.clipboard.writeText(text); }
-      catch (e) {
-        const ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy'); } catch (_) {}
-        ta.remove();
-      }
-    });
+    $('#btn-log-copy').addEventListener('click', () => copyText(logToText()));
+  }
+
+  // Copy text to the clipboard; falls back to execCommand where the Clipboard API is missing.
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      ta.remove();
+    }
   }
 
   Object.assign(OSR, {
     rollDie, rollTerm, evalFormula, normVarKey, substituteVars, formatFormulaDisplay,
-    pushLog, pushNote, doRoll, rollPercent, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog
+    pushLog, pushNote, doRoll, rollPercent, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog, copyText
   });
 })(window.OSR = window.OSR || {});

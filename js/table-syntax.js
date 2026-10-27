@@ -265,6 +265,93 @@
     return node.parts.map(nodeText).join('');
   }
 
+  /* ---- result layout ---- */
+
+  // A result can show as an outline: a sub-table after a label ("Origin: [Artifact
+  // Origin]; Curse: [Artifact Curse]") gets its own line, and a sub-table that has
+  // lines of its own is indented under its label. Text such as "A [Color] cat"
+  // stays on one line. nodeLines(node) gives the lines of a table node, or null
+  // for one line:
+  //   [{ label: [{ part, i }], child, i, tail: [{ part, i }] }]   i: the index in node.parts
+  // `tail` is the text after the last sub-table when it stays on that line;
+  // `child` is null for a line of only text after an indented group.
+  const isSub = p => p && typeof p === 'object' && (p.kind === 'table' || p.kind === 'repeat');
+  function hasLines(node) {
+    if (!node || typeof node !== 'object') return false;
+    if (node.kind === 'repeat') return node.items.some(hasLines);
+    return !!nodeLines(node);
+  }
+  function nodeLines(node) {
+    if (!node || node.kind !== 'table' || node.error || !node.parts.some(isSub)) return null;
+    const lines = [];
+    let buf = [], afterSemi = false, labelled = 0;
+    // The label: the parts since the last line, without the separator before
+    // it ("; ") and the colon or dash after it.
+    const label = (re) => {
+      const out = buf.slice();
+      if (typeof out[0].part === 'string') out[0] = { part: out[0].part.replace(/^[\s;,]+/, ''), i: out[0].i };
+      const last = out[out.length - 1];
+      if (typeof last.part === 'string') out[out.length - 1] = { part: last.part.replace(re, ''), i: last.i };
+      return out.filter(x => typeof x.part !== 'string' || x.part !== '');
+    };
+    // Text since the last line: the end of that line (no "; " in between, and
+    // that line has no lines of its own), else a line of its own.
+    const flush = () => {
+      if (buf.length && buf.some(x => typeof x.part !== 'string' || /[^\s;,.]/.test(x.part))) {
+        const last = lines[lines.length - 1];
+        if (last && !afterSemi && !hasLines(last.child)) last.tail = buf;
+        else lines.push({ label: label(/[\s;,]+$/), child: null, i: -1, tail: [] });
+      }
+      buf = [];
+    };
+    node.parts.forEach((p, i) => {
+      if (typeof p === 'string' && p.indexOf(';') !== -1) {
+        const k = p.lastIndexOf(';');
+        if (k > 0) buf.push({ part: p.slice(0, k), i });
+        flush();
+        afterSemi = true;
+        if (p.slice(k + 1)) buf.push({ part: p.slice(k + 1), i });
+        return;
+      }
+      const prev = buf.length ? buf[buf.length - 1].part : null;
+      if (isSub(p) && typeof prev === 'string') {
+        const colon = /:\s*$/.test(prev), dash = /\s[—–-]\s*$/.test(prev) && hasLines(p);
+        if (colon || dash) {
+          lines.push({ label: label(colon ? /\s*:\s*$/ : /\s*[—–-]\s*$/), child: p, i, tail: [] });
+          buf = []; afterSemi = false; labelled++;
+          return;
+        }
+      }
+      buf.push({ part: p, i });
+    });
+    flush();
+    return labelled ? lines : null;
+  }
+
+  // The result as plain text: one line per outline line, two spaces of
+  // indent per level (the session log). One-line results equal nodeText().
+  function nodeOutline(node, depth) {
+    depth = depth || 0;
+    const lines = nodeLines(node);
+    if (!lines) return nodeText(node);
+    const pad = '  '.repeat(depth);
+    const text = parts => parts.map(x => nodeText(x.part)).join('');
+    return lines.map(l => {
+      const head = text(l.label);
+      if (!l.child) return pad + head;
+      if (!hasLines(l.child)) return pad + (head ? head + ': ' : '') + nodeText(l.child) + text(l.tail);
+      const items = l.child.kind === 'repeat' ? l.child.items : [l.child];
+      return (head ? pad + head + '\n' : '') + items.map(it => nodeOutline(it, depth + (head ? 1 : 0))).join('\n');
+    }).join('\n');
+  }
+
+  // The result for the clipboard: one line as is; an outline as a fenced
+  // block (```), so the indents survive a paste into Markdown.
+  function copyText(node) {
+    const text = nodeOutline(node);
+    return text.indexOf('\n') === -1 ? text : '```\n' + text + '\n```';
+  }
+
   // The child node at `path` (a list of indexes into parts/items), or null.
   function nodeAt(rootNode, path) {
     let n = rootNode;
@@ -346,7 +433,7 @@
   }
 
   const api = { formulaRange, parseTable, parseRef, lookup, refProblems, refNames, rollTable, rerollRef, rerollAt,
-    nodeAt, nodeText, highlight, toSource, renameRefs, REF_RE, COUNT_RE };
+    nodeAt, nodeText, nodeLines, hasLines, nodeOutline, copyText, highlight, toSource, renameRefs, REF_RE, COUNT_RE };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.TableSyntax = api;
 })(typeof window !== 'undefined' ? window : globalThis);
