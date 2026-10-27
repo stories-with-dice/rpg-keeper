@@ -1210,8 +1210,15 @@ button, input, textarea, select {
    draws the same text with colors (js/table-syntax.js highlight()). Both
    need the same font, padding, border, and wrapping. */
 #tbl-modal .modal-box-lg { max-height: 92vh; overflow: auto; }
-.comp-form .tbl-f-name { flex: 1 1 220px; }
-.comp-form .tbl-f-tag { flex: 0 0 180px; }
+.comp-form .tbl-f-name { flex: 1 1 160px; }
+.comp-form .tbl-f-origin { flex: 0 0 160px; }
+.comp-form .tbl-f-setting, .comp-form .tbl-f-output { flex: 0 0 120px; }
+.comp-form .tbl-f-origin, .comp-form .tbl-f-setting, .comp-form .tbl-f-output { min-width: 0; }
+.comp-form .tbl-f-setting select, .comp-form .tbl-f-output select { min-width: 0; }
+#tbl-filters { margin-bottom: 12px; }
+#tbl-filters .comp-filter-row:last-of-type { margin-bottom: 0; }
+.tbl-setting { opacity: .8; }
+.tbl-origin { font-size: 12px; }
 .tbl-editor { position: relative; }
 .tbl-editor .tbl-hl, .modal-box .tbl-editor textarea {
   margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius);

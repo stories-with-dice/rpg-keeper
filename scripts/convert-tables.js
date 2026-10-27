@@ -11,8 +11,10 @@
  * ("02-03"), or "00" (percentile-dice shorthand for the top of a d100
  * range, e.g. after "98-99" — parsed as 100, not 0).
  *
- * A table's tag comes from TAG_MAP (by filename slug) below — keep this in
- * sync when adding a new table CSV. See AGENTS.md's "Tables tab" section.
+ * Each table gets the Tables tab's filter fields: `origin` (shown as
+ * "Source"), `setting`, and `output` (js/tables.js lists the allowed
+ * settings and outputs). DEFAULT_META applies to every CSV; META (by filename
+ * slug) overrides it for one table. See docs/agents/monsters.md "Tables tab".
  *
  * Usage:
  *   node scripts/convert-tables.js [--dir data/tables] [--out data/tables.json]
@@ -22,15 +24,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const TAG_MAP = {
-  arctic: 'Wilderness', desert: 'Wilderness', forest: 'Wilderness', grassland: 'Wilderness',
-  jungle: 'Wilderness', mountain: 'Wilderness', swamp: 'Wilderness',
-  ocean: 'Aquatic', river_and_coast: 'Aquatic',
-  cave: 'Underground', deep_tunnels: 'Underground', ruins: 'Underground', tomb: 'Underground',
-  artisan_district: 'City', castle_district: 'City', high_district: 'City', low_district: 'City',
-  market: 'City', slums: 'City', temple_district: 'City', university_district: 'City',
-  tavern: 'Tavern'
-};
+const SETTINGS = ['Fantasy', 'Modern', 'Horror'];
+const OUTPUTS = ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other'];
+const DEFAULT_META = { origin: 'Shadowdark', setting: 'Fantasy', output: 'Encounter' };
+const META = {};
 
 // Display-name overrides for slugs that don't title-case cleanly.
 const NAME_MAP = { river_and_coast: 'River & Coast' };
@@ -88,9 +85,11 @@ function convertFile(filePath) {
     if (!range) throw new Error(`${slug}.csv: unparseable range "${r[0]}"`);
     return { range: r[0].trim(), lo: range.lo, hi: range.hi, text: r[1].trim() };
   });
-  const tag = TAG_MAP[slug];
-  if (!tag) throw new Error(`${slug}.csv: no tag in TAG_MAP — add one in scripts/convert-tables.js`);
-  return { id: slug, name: NAME_MAP[slug] || titleCase(slug), tag: tag, formula: formula, entries: entries };
+  const meta = Object.assign({}, DEFAULT_META, META[slug]);
+  if (SETTINGS.indexOf(meta.setting) === -1) throw new Error(`${slug}.csv: unknown setting "${meta.setting}"`);
+  if (OUTPUTS.indexOf(meta.output) === -1) throw new Error(`${slug}.csv: unknown output "${meta.output}"`);
+  return { id: slug, name: NAME_MAP[slug] || titleCase(slug), origin: meta.origin, setting: meta.setting, output: meta.output,
+    formula: formula, entries: entries };
 }
 
 function main() {
@@ -107,10 +106,8 @@ function main() {
   if (!files.length) { console.error('No .csv files found in ' + dir); process.exit(1); }
 
   const tables = files.map(f => convertFile(path.join(dir, f)));
-  const tags = Array.from(new Set(tables.map(t => t.tag)));
 
   console.log(`Converted ${tables.length} tables from ${path.relative(root, dir)} (${tables.reduce((n, t) => n + t.entries.length, 0)} entries total)`);
-  console.log(`Tags (${tags.length}): ${tags.join(', ')}`);
 
   if (dry) {
     console.log('\n--dry-run, sample output:\n' + JSON.stringify(tables.slice(0, 1), null, 2));
@@ -122,6 +119,6 @@ function main() {
 
 }
 
-module.exports = { parseCsv, parseRange, convertFile, titleCase };
+module.exports = { parseCsv, parseRange, convertFile, titleCase, SETTINGS, OUTPUTS };
 
 if (require.main === module) main();

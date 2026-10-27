@@ -56,13 +56,19 @@
   }
   function closeExportModal() { const m = $('#export-modal'); if (m) m.hidden = true; }
 
+  // The campaign, plus the shared random tables (js/tables.js): an Import of
+  // the file adds the tables that the table library does not have.
+  function exportText() {
+    return JSON.stringify(Object.assign({}, OSR.state, { tables: OSR.tableLib.tables }), null, 2);
+  }
+
   function exportJson() {
-    download(new Blob([JSON.stringify(OSR.state, null, 2)], { type: 'application/json' }), 'osr-manager-' + stamp() + '.json');
+    download(new Blob([exportText()], { type: 'application/json' }), 'osr-manager-' + stamp() + '.json');
   }
 
   // Resolves to the zip's bytes (tests read them back).
   async function exportZip() {
-    const files = { 'campaign.json': [fflate.strToU8(JSON.stringify(OSR.state, null, 2)), { level: 6 }] };
+    const files = { 'campaign.json': [fflate.strToU8(exportText()), { level: 6 }] };
     for (const [id, type] of sceneImages()) {
       const rec = await OSR.store.getBlob(id);
       // Images are compressed already: stored as they are.
@@ -135,24 +141,6 @@
     return added;
   }
 
-  // User-made random tables (js/tables.js). A table whose name the system
-  // already has is skipped.
-  function mergeTables(list, fallbackSystem) {
-    const state = OSR.state;
-    const added = [];
-    list.forEach(t => {
-      if (!t || typeof t.source !== 'string') return;
-      const system = validSystem(t.system, fallbackSystem);
-      const name = String(t.name || '').trim();
-      if (!name || state.tables.some(x => x.system === system && x.name.toLowerCase() === name.toLowerCase())) return;
-      const item = { id: OSR.uid(), name: name, tag: String(t.tag || 'Custom'), system: system,
-        source: t.source, createdAt: t.createdAt || Date.now(), updatedAt: Date.now() };
-      state.tables.push(item);
-      added.push(item.id);
-    });
-    return added;
-  }
-
   // A content pack — { pack: { name, system }, compendium: [...], monsters: [...], tables: [...] },
   // for example the Unknown Armies catalog that the UA3 data tools write — is
   // only ever added to what is there. It never replaces the whole state, so
@@ -170,17 +158,18 @@
         'Entries you already have are skipped. Nothing is replaced.')) return;
     const addedC = mergeCompendium(comp, system, true);
     const addedM = mergeMonsters(mons.map(m => JSON.parse(JSON.stringify(m))), system, true);
-    const addedT = mergeTables(tbls, system);
+    // Tables go to the table library that every campaign shares (js/tables.js).
+    const addedT = OSR.addTables(tbls, { system, origin: name });
     OSR.ensureStateShape();
-    if (!(await OSR.saveNow())) {
+    if (!(await OSR.saveNow()) || (addedT.length && !(await OSR.saveTables()))) {
       // The browser storage refused the write (full or blocked): keep the
       // app as it was instead of holding data that a reload would lose.
       const c = new Set(addedC), m = new Set(addedM);
       OSR.state.compendium = OSR.state.compendium.filter(e => !c.has(e.id));
       OSR.state.monsters = OSR.state.monsters.filter(d => !m.has(d.id));
-      const t = new Set(addedT);
-      OSR.state.tables = OSR.state.tables.filter(x => !t.has(x.id));
+      OSR.removeTables(addedT);
       OSR.save();
+      OSR.saveTables();
       alert('Import failed: the browser storage is full, so "' + name + '" was not added.');
       return;
     }
@@ -242,7 +231,7 @@
       });
       if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
       if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
-      if (Array.isArray(data.tables)) mergeTables(data.tables, 'osr');
+      if (OSR.addTables(data.tables).length) OSR.saveTables();
       if (Array.isArray(data.scenes)) data.scenes.forEach(sc => {
         if (!sc) return;
         sc.id = OSR.uid();

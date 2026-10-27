@@ -10,7 +10,7 @@
 const { test } = require('node:test');
 // Values from the app live in jsdom's realm: compare them with deepEqual, not deepStrictEqual.
 const assert = require('node:assert');
-const { boot, blankSave, click, setValue, savedState } = require('./helpers/boot.js');
+const { boot, blankSave, click, setValue, savedState, savedTables } = require('./helpers/boot.js');
 
 const tick = () => new Promise(r => setTimeout(r, 0));
 const settle = async (n = 20) => { for (let i = 0; i < n; i++) await tick(); };
@@ -202,6 +202,39 @@ test('Campaign selector: "+ New campaign…" creates and opens an empty campaign
   assert.strictEqual(T.state.compendium.filter(e => e.system === 'brp').length, T.data.seeds.brp.compendium.length);
   assert.strictEqual(await T.store.getMeta('activeCampaignId'), T.campaignId);
   window.close();
+});
+
+test('Table library: every campaign sees the same tables; the first boot after the change moves each campaign\'s tables into it', async () => {
+  const env = await setupTwo();
+  const { T, window, $ } = env;
+  T.addTables([{ id: 't1', name: 'Shared Omen', source: 'd1\n1: crow\n' }]);
+  await T.saveTables();
+  const first = T.campaigns[0].id, second = T.campaignId;
+  setValue($('#campaign-select'), first);
+  await settle();
+  assert.ok(Array.from(env.document.querySelectorAll('#tbl-list .tbl-name')).some(n => n.textContent === 'Shared Omen'),
+    'the other campaign lists the table');
+
+  // An older save: each campaign kept its own tables in its system documents.
+  const putOld = async (cid, sys, tables) => {
+    const doc = JSON.parse((await T.store.getDocs(cid))[sys]);
+    doc.tables = tables;
+    await T.store.putDocs(cid, { [sys]: JSON.stringify(doc) });
+  };
+  await putOld(first, 'osr', [{ id: 'a', name: 'Alpha', tag: 'Custom', system: 'osr', source: 'd1\n1: a\n' }]);
+  await putOld(second, 'ua3e', [{ id: 'b', name: 'Beta', tag: 'Custom', system: 'ua3e', source: 'd1\n1: b\n' }]);
+  await T.store.deleteDocs('library');
+  const indexedDB = window.indexedDB;
+  window.close();
+
+  const r = await boot({ indexedDB });
+  assert.deepEqual(r.T.tableLib.tables.map(t => [t.name, t.setting]).sort(), [['Alpha', 'Fantasy'], ['Beta', 'Modern']]);
+  assert.deepEqual((await savedTables(r.T)).tables.map(t => t.name).sort(), ['Alpha', 'Beta']);
+  r.T.save();
+  await r.T.flushSave();
+  const doc = JSON.parse((await r.T.store.getDocs(r.T.campaignId)).osr);
+  assert.equal('tables' in doc, false, 'the campaign no longer keeps tables');
+  r.window.close();
 });
 
 test('Campaign selector: switching shows each campaign\'s own data in every panel, and keeps both saved', async () => {

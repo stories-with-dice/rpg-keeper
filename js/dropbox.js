@@ -7,6 +7,7 @@
  *   /campaigns/<id>/<system>.json    its document for each system
  *   /campaigns/<id>/maps/<blob>.<ext>  a map image (js/maps.js); never changes
  *   /seeds/<system>.json             the seed of each system (js/seeds.js)
+ *   /tables.json                     the random tables (js/tables.js)
  * Every save() (js/core.js calls OSR.dropboxNoteSave) uploads the changed
  * files a few seconds later. Each file is synced on its own, by its
  * content_hash. Older versions kept a whole campaign in one file
@@ -122,6 +123,7 @@
   const campaignDir = id => '/campaigns/' + id;
   const docPath = (id, key) => campaignDir(id) + '/' + (key === 'campaign' ? 'shared' : key) + '.json';
   const seedPath = sys => '/seeds/' + sys + '.json';
+  const TABLES_PATH = '/tables.json';
   const IMAGE_EXT = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif' };
   const blobPath = (id, blobId, type) => campaignDir(id) + '/maps/' + blobId + '.' + (IMAGE_EXT[type] || 'bin');
   // The old whole-campaign file of a campaign, and where the split moves it.
@@ -473,6 +475,21 @@
     }
   }
 
+  // Step 3b: the table library (js/tables.js), shared by every campaign. Like
+  // the seeds: a pull replaces it; both changed → merged, then upload.
+  async function syncTables(listing) {
+    const lib = OSR.tableLib;
+    if (!lib.tables.length && !Object.keys(lib.deleted).length && !listing.has(TABLES_PATH)) return;
+    const r = await syncFile(TABLES_PATH, JSON.stringify(lib), listing);
+    if (!r.text) return;
+    let remoteLib;
+    try { remoteLib = JSON.parse(r.text); } catch (e) { return; }
+    const next = r.action === 'pull' ? remoteLib : OSR.mergeTableLibs(lib, remoteLib);
+    await OSR.setTableLibrary(next);
+    const text = JSON.stringify(OSR.tableLib);
+    recordFile(TABLES_PATH, r.action === 'pull' ? r.remote : await uploadText(TABLES_PATH, text, r.remote), hashText(text));
+  }
+
   // Step 4: the current campaign's documents (js/store.js's splitState).
   // Pulled documents replace their part of OSR.state together; documents
   // changed on both sides (or found in Dropbox before this browser synced
@@ -543,6 +560,7 @@
       if (legacy === 'moved') listing = await listAll();
       await syncIndex(listing);
       await syncSeeds(listing);
+      await syncTables(listing);
       // The index step may have given the current campaign a new id.
       if ((await syncDocs(OSR.currentCampaign(), listing)) === 'conflict') { setStatus('conflict'); openDropboxModal(); return; }
       await syncBlobs(OSR.currentCampaign(), listing);

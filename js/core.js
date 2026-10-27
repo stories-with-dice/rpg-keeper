@@ -28,7 +28,7 @@
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
     monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
     compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false,
-    scenes: [], activeSceneIds: {}, tables: [],
+    scenes: [], activeSceneIds: {},
     settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
@@ -184,17 +184,9 @@
       en.system = SYSTEMS.indexOf(en.system) === -1 ? 'osr' : en.system;
       if (!en.createdAt) en.createdAt = Date.now();
     });
-    // User-made random tables (Tables tab, js/tables.js). Built-in ones are OSR.data.tables.
-    if (!Array.isArray(state.tables)) state.tables = [];
-    state.tables = state.tables.filter(t => t && typeof t === 'object');
-    state.tables.forEach(t => {
-      if (!t.id) t.id = uid();
-      t.name = t.name == null ? '' : String(t.name);
-      t.tag = t.tag == null || String(t.tag).trim() === '' ? 'Custom' : String(t.tag).trim();
-      t.source = t.source == null ? '' : String(t.source);
-      t.system = SYSTEMS.indexOf(t.system) === -1 ? 'osr' : t.system;
-      if (!t.createdAt) t.createdAt = Date.now();
-    });
+    // A campaign's own random tables (older saves) move to the table library
+    // that every campaign shares (js/tables.js).
+    if (OSR.adoptCampaignTables) OSR.adoptCampaignTables(state);
     if (!state.combat || typeof state.combat !== 'object') state.combat = {};
     state.combat = Object.assign({ round: 1, activeId: null, selectedId: null, entries: [] }, state.combat);
     if (!Array.isArray(state.combat.entries)) state.combat.entries = [];

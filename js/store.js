@@ -11,6 +11,8 @@
  *            '<campaignId>/<system>'  that system's characters, monsters,
  *                                     Compendium entries, map scenes, and the
  *                                     HP/Wounds/Madness trackers of its characters
+ *          'library/tables'         the random tables every campaign shares
+ *                                     (js/tables.js)
  *   blobs  binary data by blob id: { bytes: ArrayBuffer, type, width, height }
  *          (map images; token icons from PR 9 on)
  *   meta   per-device values: 'campaigns' ([{ id, name, createdAt, primary }])
@@ -124,14 +126,13 @@
   // Every system gets a document, even an empty one.
   function splitState(state) {
     const docs = {};
-    OSR.SYSTEMS.forEach(s => { docs[s] = { characters: [], monsters: [], compendium: [], consumables: [], scenes: [], tables: [] }; });
+    OSR.SYSTEMS.forEach(s => { docs[s] = { characters: [], monsters: [], compendium: [], consumables: [], scenes: [] }; });
     const sysOf = x => (OSR.SYSTEMS.indexOf(x) === -1 ? 'osr' : x);
     const characters = state.characters || [];
     characters.forEach(ch => docs[sysOf(OSR.charSystemKey(ch))].characters.push(ch));
     (state.monsters || []).forEach(m => docs[sysOf(m.system)].monsters.push(m));
     (state.compendium || []).forEach(e => docs[sysOf(e.system)].compendium.push(e));
     (state.scenes || []).forEach(sc => docs[sysOf(sc.system)].scenes.push(sc));
-    (state.tables || []).forEach(t => docs[sysOf(t.system)].tables.push(t));
     const owners = trackerOwners(characters);
     const shared = [];
     (state.consumables || []).forEach(c => {
@@ -139,7 +140,7 @@
       if (sys) docs[sysOf(sys)].consumables.push(c); else shared.push(c);
     });
     const campaign = Object.assign({}, state);
-    delete campaign.characters; delete campaign.monsters; delete campaign.compendium; delete campaign.scenes; delete campaign.tables;
+    delete campaign.characters; delete campaign.monsters; delete campaign.compendium; delete campaign.scenes;
     campaign.consumables = shared;
     campaign.order = {
       characters: characters.map(c => c.id),
@@ -169,7 +170,10 @@
     state.monsters = all('monsters');
     state.compendium = all('compendium');
     state.scenes = all('scenes');
-    state.tables = all('tables');
+    // Random tables are in the table library now (js/tables.js); an old
+    // save's are handed to it by ensureStateShape().
+    const tables = all('tables');
+    if (tables.length) state.tables = tables;
     state.consumables = byOrder((campaign.consumables || []).concat(all('consumables')), order.consumables);
     return state;
   }

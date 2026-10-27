@@ -257,6 +257,12 @@ async function savedState(T) {
   return T.joinState(T.parseDocs(raw));
 }
 
+// The table library (js/tables.js) as saved in IndexedDB.
+async function savedTables(T) {
+  const raw = await T.store.getDocs('library');
+  return raw.tables ? JSON.parse(raw.tables) : null;
+}
+
 // A small Silent Legions content pack in the shape that the Silent Legions
 // Foundry VTT importer writes (made-up text). Keeper has no built-in
 // Silent Legions data.
@@ -264,4 +270,4 @@ function slPack() {
   return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'sl-pack.json'), 'utf8'));
 }
 
-module.exports = { savedState, boot, blankSave, rigRandom, face, fire, click, setValue, key, slPack };
+module.exports = { savedState, savedTables, boot, blankSave, rigRandom, face, fire, click, setValue, key, slPack };

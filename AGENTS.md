@@ -5,11 +5,11 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 
 | Note | Covers |
 |---|---|
-| [storage.md](docs/agents/storage.md) | `OSR.state`, IndexedDB, campaigns, Export/Import, content packs, seeding, the seed store, Dropbox sync |
+| [storage.md](docs/agents/storage.md) | `OSR.state`, IndexedDB, campaigns, Export/Import, content packs, seeding, the seed store, the table library, Dropbox sync |
 | [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions |
 | [compendium.md](docs/agents/compendium.md) | Compendium entries, hover popups (also the map's), `[`/`$` autocomplete, the sheet-selection menu |
 | [dice.md](docs/agents/dice.md) | the dice engine, `annotate()`, sheet variables and `$Name`, the roll-with-modifiers popup |
-| [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab and user tables |
+| [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab and the table library |
 | [combat.md](docs/agents/combat.md) | the Combat tracker: entries, statuses, the right-click menu, the detail panel |
 | [maps.md](docs/agents/maps.md) | Maps tab: scenes, view, tokens, drawings, pins, hexcrawl, toolbar, hotkeys, pop-out, undo |
 
@@ -98,7 +98,8 @@ npm run convert-tables       # data/tables/*.csv → data/tables.json
   `osr_dropbox_*`).
 - **System scoping**: lists of characters, monsters, Compendium entries, and trackers go through
   the per-system helpers (`charactersForSystem`, `monstersForSystem`, `compendiumForSystem`,
-  `consumablesForSystem`, `tablesForSystem`), never the bare `state` arrays. Scenes use `scene.system`. See systems.md.
+  `consumablesForSystem`), never the bare `state` arrays. Scenes use `scene.system`. Random tables
+  are the exception: they are shared by every campaign and System (`OSR.tableLib`). See systems.md.
 - **Shared data**: `OSR.data` and `OSR.seeds` are read-only. Deep-clone before you put a def in `state`.
 
 ## Checklist for a change

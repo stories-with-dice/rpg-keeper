@@ -45,7 +45,7 @@ test('every data/tables/*.csv converts to a complete, gapless, non-overlapping t
   assert.ok(CSV_FILES.length >= 20, 'expected the full set of table CSVs');
   for (const f of CSV_FILES) {
     const t = convertFile(path.join(TABLES_DIR, f));
-    assert.ok(t.id && t.name && t.tag && t.formula, f + ': missing a field');
+    assert.ok(t.id && t.name && t.origin && t.setting && t.output && t.formula, f + ': missing a field');
     assert.ok(t.entries.length > 0, f + ': no entries');
     // Every table so far rolls a single die (d100, or d20 for the Silent
     // Legions monster qualities) — its rows must cover 1..sides exactly once.
@@ -64,12 +64,10 @@ test('every data/tables/*.csv converts to a complete, gapless, non-overlapping t
   }
 });
 
-test('table ids are unique and every tag is used by at least one table', () => {
+test('table ids are unique', () => {
   const tables = CSV_FILES.map(f => convertFile(path.join(TABLES_DIR, f)));
   const ids = tables.map(t => t.id);
   assert.equal(new Set(ids).size, ids.length, 'duplicate table id');
-  const tags = new Set(tables.map(t => t.tag));
-  assert.ok(tags.size <= 10, 'more than 10 tags: ' + Array.from(tags).join(', '));
 });
 
 test('data/tables.json matches a fresh conversion of data/tables/*.csv', () => {

@@ -1,10 +1,16 @@
 /* js/tables.js — the Tables tab: a filterable, rollable list of random
- * tables. Two kinds:
+ * tables. Every campaign and every System sees the same tables. Two kinds:
  *   built-in  OSR.data.tables (loaded by js/data.js from data/tables.json,
  *             converted from data/tables/*.csv by scripts/convert-tables.js).
  *             Read-only; Duplicate copies one into a user table.
- *   user      state.tables ({ id, name, tag, system, source }), one System
- *             each. `source` is the text format of js/table-syntax.js.
+ *   user      the table library OSR.tableLib.tables
+ *             ({ id, name, origin, setting, output, source }). `source` is
+ *             the text format of js/table-syntax.js; `origin` is where the
+ *             table comes from (shown as "Source").
+ * The table library is not part of a campaign: it lives in IndexedDB as the
+ * document 'library/tables' (js/store.js) and in Dropbox as /tables.json
+ * (js/dropbox.js). OSR.tableLib.deleted ({ id: time }) remembers deleted
+ * tables, so a merge with another copy does not bring them back.
  * A table's entries can roll on other tables by name ([Name], [Name.Col],
  * [2x Name], [2d6]). A user table hides a built-in one with the same name.
  */
@@ -12,12 +18,133 @@
   'use strict';
   const { $, escapeHtml } = OSR;
   const TS = window.TableSyntax;
-  const DEFAULT_TAG = 'Custom';
+  const TABLE_SETTINGS = ['Fantasy', 'Modern', 'Horror'];
+  const TABLE_OUTPUTS = ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other'];
+  const DEFAULT_ORIGIN = 'Homebrew';
+  // The setting a table gets when it has none: from the System it was made in.
+  const SYSTEM_SETTING = { osr: 'Fantasy', brp: 'Fantasy', ua3e: 'Modern', sl: 'Horror' };
+  const FILTERS = ['origin', 'setting', 'output'];
 
-  function tablesForSystem() {
-    const sys = OSR.currentSystem();
-    return OSR.state.tables.filter(t => (t.system || 'osr') === sys);
+  /* ---- the table library ---- */
+
+  OSR.tableLib = { tables: [], deleted: {} };
+  let libLoaded = false;
+
+  // "horror" → "Horror", "Encounters" → "Encounter"; null when not in the list.
+  function pick(list, v) {
+    const s = String(v == null ? '' : v).trim().toLowerCase();
+    return list.find(x => x.toLowerCase() === s || x.toLowerCase() + 's' === s) || null;
   }
+
+  // A table as the library keeps it. `system` (a campaign table, a pack) only
+  // gives the default setting; `origin` is the default source.
+  function cleanTable(t, opts) {
+    const o = opts || {};
+    const now = Date.now();
+    return {
+      id: t.id ? String(t.id) : OSR.uid(),
+      name: String(t.name == null ? '' : t.name).trim(),
+      origin: String(t.origin || '').trim() || o.origin || DEFAULT_ORIGIN,
+      setting: pick(TABLE_SETTINGS, t.setting) || SYSTEM_SETTING[t.system || o.system] || 'Fantasy',
+      output: pick(TABLE_OUTPUTS, t.output) || 'Other',
+      source: String(t.source == null ? '' : t.source),
+      createdAt: t.createdAt || now,
+      updatedAt: t.updatedAt || t.createdAt || now
+    };
+  }
+
+  function cleanLib(lib) {
+    lib = lib && typeof lib === 'object' ? lib : {};
+    const deleted = lib.deleted && typeof lib.deleted === 'object' ? lib.deleted : {};
+    const tables = (Array.isArray(lib.tables) ? lib.tables : [])
+      .filter(t => t && typeof t === 'object' && !deleted[t.id]).map(t => cleanTable(t));
+    return { tables, deleted };
+  }
+
+  const isNameTaken = (name, exceptId) => OSR.tableLib.tables.some(x => x.id !== exceptId && x.name.toLowerCase() === name.toLowerCase());
+
+  // Adds tables to the library (import, content packs, old campaign tables).
+  // A table without text, a deleted one, one the library has (same id), or
+  // one whose name the library has is skipped. Returns the added ids; the
+  // caller saves.
+  function addTables(list, opts) {
+    const added = [];
+    (Array.isArray(list) ? list : []).forEach(t => {
+      if (!t || typeof t !== 'object' || typeof t.source !== 'string') return;
+      if (t.id && (OSR.tableLib.deleted[t.id] || OSR.tableLib.tables.some(x => x.id === t.id))) return;
+      const item = cleanTable(t, opts);
+      if (!item.name || /[[\]]/.test(item.name) || isNameTaken(item.name)) return;
+      OSR.tableLib.tables.push(item);
+      added.push(item.id);
+    });
+    return added;
+  }
+
+  function removeTables(ids) {
+    const set = new Set(ids);
+    OSR.tableLib.tables = OSR.tableLib.tables.filter(t => !set.has(t.id));
+  }
+
+  // Writes the library. Resolves to whether the write reached the storage.
+  async function saveTables() {
+    if (OSR.dropboxNoteSave) OSR.dropboxNoteSave();
+    try { await OSR.store.putDocs('library', { tables: JSON.stringify(OSR.tableLib) }); return true; }
+    catch (e) { console.warn('table library write failed', e); return false; }
+  }
+
+  // At boot (before load()). The first time, the tables of every campaign on
+  // this device (they used to belong to one campaign and System) go in.
+  async function loadTables() {
+    const raw = await OSR.store.getDocs('library');
+    let lib = null;
+    try { lib = raw.tables ? JSON.parse(raw.tables) : null; } catch (e) { console.warn('table library unreadable', e); }
+    OSR.tableLib = cleanLib(lib);
+    libLoaded = true;
+    if (lib) return;
+    const campaigns = (await OSR.store.getMeta('campaigns')) || [];
+    for (const c of campaigns) {
+      const docs = await OSR.store.getDocs(c.id);
+      OSR.SYSTEMS.forEach(sys => {
+        let doc = null;
+        try { doc = docs[sys] ? JSON.parse(docs[sys]) : null; } catch (e) { /* skipped */ }
+        if (doc && Array.isArray(doc.tables)) addTables(doc.tables, { system: sys });
+      });
+    }
+    await saveTables();
+  }
+
+  // ensureStateShape() (js/core.js) hook: a campaign's own tables (an old
+  // save, an old export, a Dropbox pull of an old file) move to the library.
+  function adoptCampaignTables(state) {
+    if (!('tables' in state)) return;
+    const list = state.tables;
+    delete state.tables;
+    if (libLoaded && addTables(list).length) saveTables();
+  }
+
+  // Two copies of the library (this device and Dropbox, both changed): every
+  // table of both, the later edit winning on the same id, minus the deleted ones.
+  function mergeTableLibs(a, b) {
+    a = cleanLib(a); b = cleanLib(b);
+    const deleted = Object.assign({}, a.deleted);
+    Object.keys(b.deleted).forEach(id => { deleted[id] = Math.max(deleted[id] || 0, b.deleted[id]); });
+    const byId = new Map();
+    a.tables.concat(b.tables).forEach(t => {
+      const had = byId.get(t.id);
+      if (!had || (t.updatedAt || 0) > (had.updatedAt || 0)) byId.set(t.id, t);
+    });
+    return { tables: Array.from(byId.values()).filter(t => !deleted[t.id]), deleted };
+  }
+
+  // Replaces the library (a pull from Dropbox). Resolves when written.
+  async function setTableLibrary(lib) {
+    OSR.tableLib = cleanLib(lib);
+    libLoaded = true;
+    await OSR.store.putDocs('library', { tables: JSON.stringify(OSR.tableLib) });
+    renderTables();
+  }
+
+  /* ---- the list ---- */
 
   // Parsed user tables, cached by id while the source does not change.
   const parseCache = new Map();
@@ -27,18 +154,18 @@
       c = { source: t.source, parsed: TS.parseTable(t.source) };
       parseCache.set(t.id, c);
     }
-    return Object.assign({}, c.parsed, { id: t.id, name: t.name, tag: t.tag || DEFAULT_TAG, user: true, source: t.source });
+    return Object.assign({}, c.parsed, { id: t.id, name: t.name, origin: t.origin, setting: t.setting, output: t.output,
+      user: true, source: t.source });
   }
 
   function builtin(t) {
-    return { id: t.id, name: t.name, tag: t.tag, formula: t.formula, columns: [], user: false,
+    return { id: t.id, name: t.name, origin: t.origin, setting: t.setting, output: t.output, formula: t.formula, columns: [], user: false,
       entries: t.entries.map(en => Object.assign({ cells: [] }, en)), problems: [] };
   }
 
-  // Every table the current System sees: user tables first, then the built-in
-  // ones no user table hides.
+  // Every table: user tables first, then the built-in ones no user table hides.
   function library() {
-    const user = tablesForSystem().map(parsedUser);
+    const user = OSR.tableLib.tables.map(parsedUser);
     const names = new Set(user.map(t => t.name.toLowerCase()));
     return user.concat(OSR.data.tables.filter(t => !names.has(t.name.toLowerCase())).map(builtin));
   }
@@ -63,28 +190,46 @@
     };
   }
 
-  function tableTags() {
-    return Array.from(new Set(library().map(t => t.tag))).sort();
+  function tableOrigins() {
+    return Array.from(new Set(library().map(t => t.origin))).sort((a, b) => a.localeCompare(b));
   }
 
-  let tblTagOff = new Set();        // tags the user unticked
+  // The values each filter row shows: every source a table has, and the fixed
+  // settings and outputs.
+  function filterValues(key) {
+    return key === 'origin' ? tableOrigins() : key === 'setting' ? TABLE_SETTINGS : TABLE_OUTPUTS;
+  }
+
+  const noneOff = () => ({ origin: new Set(), setting: new Set(), output: new Set() });
+  let tblOff = noneOff();           // filter values the user unticked, by filter
   let tblOpenIds = new Set();       // ids of currently-expanded <details> rows
   let tblLastRoll = Object.create(null); // id -> { tree } (js/table-syntax.js node)
 
-  // Cleared by the test seam's reset() — see js/main.js.
-  function resetTableFilters() { tblTagOff = new Set(); tblOpenIds = new Set(); tblLastRoll = Object.create(null); }
+  // Cleared by the test seam's reset() and a campaign switch.
+  function resetTableFilters() { tblOff = noneOff(); tblOpenIds = new Set(); tblLastRoll = Object.create(null); }
 
-  function renderTableTags() {
-    $('#tbl-tags').innerHTML = tableTags().map(t =>
-      '<label class="comp-cat"><input type="checkbox" data-tag="' + escapeHtml(t) + '"' +
-      (tblTagOff.has(t) ? '' : ' checked') + ' /> ' + escapeHtml(t) + '</label>').join('');
+  function renderTableFilters() {
+    const counts = noneOff();
+    FILTERS.forEach(k => { counts[k] = new Map(); });
+    library().forEach(t => FILTERS.forEach(k => counts[k].set(t[k], (counts[k].get(t[k]) || 0) + 1)));
+    FILTERS.forEach(k => {
+      $('#tbl-f-' + k + 's').innerHTML = filterValues(k).map(v =>
+        '<label class="comp-cat"><input type="checkbox" data-filter="' + k + '" data-value="' + escapeHtml(v) + '"' +
+        (tblOff[k].has(v) ? '' : ' checked') + ' /> ' + escapeHtml(v) +
+        ' <span class="hint">' + (counts[k].get(v) || 0) + '</span></label>').join('');
+    });
   }
 
   function tblMatches(list) {
-    list = list.filter(t => !tblTagOff.has(t.tag));
+    list = list.filter(t => FILTERS.every(k => !tblOff[k].has(t[k])));
     const term = $('#tbl-search').value.trim().toLowerCase();
     if (term) list = list.filter(t => t.name.toLowerCase().indexOf(term) !== -1);
-    return list.slice().sort((a, b) => a.tag.localeCompare(b.tag) || a.name.localeCompare(b.name));
+    return list.slice().sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // Ticks every filter value of table `t`, so it shows.
+  function showTable(t) {
+    if (t) FILTERS.forEach(k => tblOff[k].delete(t[k]));
   }
 
   // Entry text with each [ref] as a chip; a chip to a listed table opens it.
@@ -178,8 +323,10 @@
       '<details' + (open ? ' open' : '') + '>' +
         '<summary>' +
           '<span class="tbl-name">' + escapeHtml(t.name) + '</span>' +
-          '<span class="badge">' + escapeHtml(t.tag) + '</span>' +
-          (t.user ? '<span class="badge tbl-mine" title="Your table (this campaign)">mine</span>' : '') +
+          '<span class="badge" title="Output">' + escapeHtml(t.output) + '</span>' +
+          '<span class="badge tbl-setting" title="Setting">' + escapeHtml(t.setting) + '</span>' +
+          '<span class="hint tbl-origin" title="Source">' + escapeHtml(t.origin) + '</span>' +
+          (t.user ? '<span class="badge tbl-mine" title="Your table">mine</span>' : '') +
           (subs ? '<span class="hint tbl-subs" title="Rolls on other tables"><i class="fa-solid fa-diagram-project"></i> ' + subs + '</span>' : '') +
           '<span class="hint tbl-formula">' + escapeHtml(t.formula) + ' &middot; ' + t.entries.length + ' entries</span>' +
         '</summary>' +
@@ -202,7 +349,7 @@
   }
 
   function renderTables() {
-    renderTableTags();
+    renderTableFilters();
     const all = library();
     const list = tblMatches(all);
     const resolve = resolver();
@@ -263,16 +410,21 @@
     hl.scrollLeft = ta.scrollLeft;
   }
 
-  // opts: { name, tag, source } prefills a new table (Duplicate).
+  const optionsHtml = (list, value) => list.map(v =>
+    '<option value="' + escapeHtml(v) + '"' + (v === value ? ' selected' : '') + '>' + escapeHtml(v) + '</option>').join('');
+
+  // opts: { name, origin, setting, output, source } prefills a new table (Duplicate).
   function openTableEditor(id, opts) {
-    const t = id ? OSR.state.tables.find(x => x.id === id) : null;
+    const t = id ? OSR.tableLib.tables.find(x => x.id === id) : null;
     editId = t ? t.id : null;
-    const o = opts || {};
+    const o = t || Object.assign(cleanTable({ source: '', system: OSR.currentSystem() }), opts || {});
     $('#tbl-modal-title').textContent = t ? 'Edit table' : 'New table';
-    $('#tbl-f-name').value = t ? t.name : (o.name || '');
-    $('#tbl-f-tag').value = t ? (t.tag || DEFAULT_TAG) : (o.tag || DEFAULT_TAG);
+    $('#tbl-f-name').value = o.name || '';
+    $('#tbl-f-origin').value = o.origin;
+    $('#tbl-f-setting').innerHTML = optionsHtml(TABLE_SETTINGS, o.setting);
+    $('#tbl-f-output').innerHTML = optionsHtml(TABLE_OUTPUTS, o.output);
     $('#tbl-f-src').value = t ? t.source : (o.source || 'd6\n1: \n');
-    $('#tbl-tag-list').innerHTML = tableTags().map(g => '<option value="' + escapeHtml(g) + '"></option>').join('');
+    $('#tbl-origin-list').innerHTML = tableOrigins().map(g => '<option value="' + escapeHtml(g) + '"></option>').join('');
     $('#tbl-f-delete').hidden = !t;
     $('#tbl-msg').textContent = '';
     $('#tbl-test-out').innerHTML = '';
@@ -300,42 +452,49 @@
 
   function saveTable() {
     const name = $('#tbl-f-name').value.trim();
-    const tag = $('#tbl-f-tag').value.trim() || DEFAULT_TAG;
+    const origin = $('#tbl-f-origin').value.trim() || DEFAULT_ORIGIN;
+    const setting = pick(TABLE_SETTINGS, $('#tbl-f-setting').value) || TABLE_SETTINGS[0];
+    const output = pick(TABLE_OUTPUTS, $('#tbl-f-output').value) || 'Other';
     const source = $('#tbl-f-src').value;
     const msg = $('#tbl-msg');
     if (!name) { msg.textContent = 'Give the table a name.'; $('#tbl-f-name').focus(); return; }
     if (/[[\]]/.test(name)) { msg.textContent = 'A name cannot contain [ or ].'; return; }
-    const clash = tablesForSystem().find(x => x.id !== editId && x.name.toLowerCase() === name.toLowerCase());
+    const clash = OSR.tableLib.tables.find(x => x.id !== editId && x.name.toLowerCase() === name.toLowerCase());
     if (clash) { msg.textContent = 'You already have a table named "' + clash.name + '".'; return; }
     const parsed = TS.parseTable(source);
     if (parsed.problems.some(p => p.level === 'error')) { msg.textContent = 'Fix the errors first.'; return; }
     const now = Date.now();
-    let t = editId ? OSR.state.tables.find(x => x.id === editId) : null;
+    let t = editId ? OSR.tableLib.tables.find(x => x.id === editId) : null;
     if (t) {
       const old = t.name;
       if (old.toLowerCase() !== name.toLowerCase()) {
         // Keep the tables that roll on this one working.
-        tablesForSystem().forEach(x => { if (x !== t) x.source = TS.renameRefs(x.source, old, name); });
+        OSR.tableLib.tables.forEach(x => {
+          if (x === t) return;
+          const next = TS.renameRefs(x.source, old, name);
+          if (next !== x.source) Object.assign(x, { source: next, updatedAt: now });
+        });
       }
-      Object.assign(t, { name, tag, source: TS.renameRefs(source, old, name), updatedAt: now });
+      Object.assign(t, { name, origin, setting, output, source: TS.renameRefs(source, old, name), updatedAt: now });
     } else {
-      t = { id: OSR.uid(), name, tag, system: OSR.currentSystem(), source, createdAt: now, updatedAt: now };
-      OSR.state.tables.push(t);
+      t = { id: OSR.uid(), name, origin, setting, output, source, createdAt: now, updatedAt: now };
+      OSR.tableLib.tables.push(t);
     }
-    OSR.save();
+    saveTables();
     closeTableEditor();
     tblOpenIds.add(t.id);
-    tblTagOff.delete(tag);
+    showTable(t);
     renderTables();
   }
 
   function deleteTable(id) {
-    const t = OSR.state.tables.find(x => x.id === id);
-    if (!t || !confirm('Delete the table "' + t.name + '"?')) return;
-    OSR.state.tables = OSR.state.tables.filter(x => x.id !== id);
+    const t = OSR.tableLib.tables.find(x => x.id === id);
+    if (!t || !confirm('Delete the table "' + t.name + '"? Every campaign loses it.')) return;
+    removeTables([id]);
+    OSR.tableLib.deleted[id] = Date.now();
     delete tblLastRoll[id];
     tblOpenIds.delete(id);
-    OSR.save();
+    saveTables();
     if (editId === id) closeTableEditor();
     renderTables();
   }
@@ -344,9 +503,8 @@
     const t = findTable(id);
     if (!t) return;
     let name = t.name + ' (copy)', n = 2;
-    const taken = new Set(tablesForSystem().map(x => x.name.toLowerCase()));
-    while (taken.has(name.toLowerCase())) name = t.name + ' (copy ' + n++ + ')';
-    openTableEditor(null, { name, tag: t.tag, source: t.user ? t.source : TS.toSource(t) });
+    while (isNameTaken(name)) name = t.name + ' (copy ' + n++ + ')';
+    openTableEditor(null, { name, origin: t.origin, setting: t.setting, output: t.output, source: t.user ? t.source : TS.toSource(t) });
   }
 
   // "[" autocomplete items for the editor (js/compendium-popups.js shows them):
@@ -370,19 +528,21 @@
     });
     const byName = (a, b) => a.name.localeCompare(b.name);
     return starts.sort(byName).concat(has.sort(byName)).slice(0, 8)
-      .map(x => ({ name: x.name, badge: x.tag, insert: x.name + (x.columns.length ? '.' : ']') }));
+      .map(x => ({ name: x.name, badge: x.output, insert: x.name + (x.columns.length ? '.' : ']') }));
   }
 
   function wireTables() {
     $('#tbl-search').addEventListener('input', renderTables);
     $('#tbl-new').addEventListener('click', () => openTableEditor(null));
-    $('#tbl-tags').addEventListener('change', e => {
-      const cb = e.target.closest('input[data-tag]');
+    $('#tbl-filters').addEventListener('change', e => {
+      const cb = e.target.closest('input[data-filter]');
       if (!cb) return;
-      if (cb.checked) tblTagOff.delete(cb.dataset.tag); else tblTagOff.add(cb.dataset.tag);
+      const off = tblOff[cb.dataset.filter];
+      if (cb.checked) off.delete(cb.dataset.value); else off.add(cb.dataset.value);
       renderTables();
     });
-    // Right-click a tag to isolate it: only that one stays ticked. See the
+    // Right-click a value to isolate it: only that one stays ticked in its
+    // row; the other rows do not change. See the
     // matching comment in js/compendium.js's wireCompendiumEntries() — some
     // input methods (e.g. a trackpad's two-finger-tap right-click) also fire
     // this checkbox's own native toggle + 'change', racing this isolate
@@ -390,13 +550,13 @@
     // final word regardless: every event from a single physical gesture
     // (however it's reported) dispatches synchronously in the same task,
     // before this callback's task runs.
-    $('#tbl-tags').addEventListener('contextmenu', e => {
+    $('#tbl-filters').addEventListener('contextmenu', e => {
       const lbl = e.target.closest('label.comp-cat');
-      const cb = lbl && lbl.querySelector('input[data-tag]');
+      const cb = lbl && lbl.querySelector('input[data-filter]');
       if (!cb) return;
       e.preventDefault();
-      const target = cb.dataset.tag;
-      setTimeout(() => { tblTagOff = new Set(tableTags().filter(g => g !== target)); renderTables(); }, 0);
+      const key = cb.dataset.filter, target = cb.dataset.value;
+      setTimeout(() => { tblOff[key] = new Set(filterValues(key).filter(g => g !== target)); renderTables(); }, 0);
     });
     $('#tbl-list').addEventListener('click', e => {
       const copy = e.target.closest('.tbl-copy');
@@ -413,7 +573,7 @@
       if (ref) {
         const rid = ref.dataset.refId;
         tblOpenIds.add(rid);
-        tblTagOff.delete((findTable(rid) || {}).tag);
+        showTable(findTable(rid));
         $('#tbl-search').value = '';
         renderTables();
         const li = Array.from(document.querySelectorAll('#tbl-list .tbl-row')).find(x => x.dataset.id === rid);
@@ -430,7 +590,7 @@
     // <details>'s "toggle" event doesn't bubble — a capture listener on an
     // ancestor still sees it (capture doesn't require bubbling). Keeps
     // tblOpenIds in sync with rows the user expands/collapses by hand, so a
-    // re-render from search/tag filtering (or another row's roll) doesn't
+    // re-render from search/filter changes (or another row's roll) doesn't
     // collapse rows the user left open.
     $('#tbl-list').addEventListener('toggle', e => {
       const det = e.target.closest('details');
@@ -456,5 +616,8 @@
     $('#tbl-f-delete').addEventListener('click', () => { if (editId) deleteTable(editId); });
   }
 
-  Object.assign(OSR, { tablesForSystem, renderTables, wireTables, resetTableFilters, openTableEditor, closeTableEditor, tableAcItems });
+  Object.assign(OSR, {
+    TABLE_SETTINGS, TABLE_OUTPUTS, loadTables, saveTables, addTables, removeTables, adoptCampaignTables,
+    mergeTableLibs, setTableLibrary, renderTables, wireTables, resetTableFilters, openTableEditor, closeTableEditor, tableAcItems
+  });
 })(window.OSR = window.OSR || {});

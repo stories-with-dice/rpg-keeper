@@ -126,7 +126,7 @@
       marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
     }
     let had;
-    try { await OSR.loadSeeds(); had = await OSR.load(); }
+    try { await OSR.loadSeeds(); await OSR.loadTables(); had = await OSR.load(); }
     catch (e) { showLoadError(new Error('The browser storage (IndexedDB) did not open: ' + e.message)); return; }
     OSR.applyTheme();
     OSR.buildDiceGrid();
@@ -185,6 +185,8 @@
       OSR.lastRoll = null;
       OSR.mode = 'view';
       OSR.resetCompendiumFilters();
+      OSR.tableLib = { tables: [], deleted: {} };
+      OSR.saveTables();
       OSR.resetTableFilters();
       OSR.closeTableEditor();
       OSR.closeCompEntry();

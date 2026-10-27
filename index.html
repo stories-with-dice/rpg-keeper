@@ -173,7 +173,11 @@
           <span class="comp-count" id="tbl-count"></span>
           <button id="tbl-new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New table</button>
         </div>
-        <div class="comp-filter-row"><span class="comp-filter-label">Tags</span><div class="comp-cats" id="tbl-tags"></div></div>
+        <div id="tbl-filters">
+          <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="tbl-f-origins"></div></div>
+          <div class="comp-filter-row"><span class="comp-filter-label">Setting</span><div class="comp-cats" id="tbl-f-settings"></div></div>
+          <div class="comp-filter-row"><span class="comp-filter-label">Output</span><div class="comp-cats" id="tbl-f-outputs"></div></div>
+        </div>
         <p id="tbl-empty" class="hint" hidden>No tables yet.</p>
         <ul class="comp-list tbl-list" id="tbl-list"></ul>
       </section>
@@ -654,10 +658,18 @@
           <span>Name</span>
           <input id="tbl-f-name" type="text" autocomplete="off" />
         </label>
-        <label class="field tbl-f-tag">
-          <span>Tag</span>
-          <input id="tbl-f-tag" type="text" list="tbl-tag-list" autocomplete="off" />
-          <datalist id="tbl-tag-list"></datalist>
+        <label class="field tbl-f-origin">
+          <span>Source</span>
+          <input id="tbl-f-origin" type="text" list="tbl-origin-list" autocomplete="off" placeholder="Homebrew" />
+          <datalist id="tbl-origin-list"></datalist>
+        </label>
+        <label class="field tbl-f-setting">
+          <span>Setting</span>
+          <select id="tbl-f-setting"></select>
+        </label>
+        <label class="field tbl-f-output">
+          <span>Output</span>
+          <select id="tbl-f-output"></select>
         </label>
       </div>
       <div class="tbl-editor">

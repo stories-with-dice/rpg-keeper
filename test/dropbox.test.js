@@ -719,6 +719,29 @@ test('Dropbox sync: seeds changed on both devices are merged without a question'
   window.close();
 });
 
+test('Dropbox sync: the table library is one file for every campaign; tables changed on both devices are merged, and a deleted one stays deleted', async () => {
+  const env = await setup();
+  const { T, window, dbx } = env;
+  T.addTables([{ id: 'a', name: 'Alpha', source: 'd1\n1: a\n' }, { id: 'gone', name: 'Gone', source: 'd1\n1: g\n' }]);
+  await T.saveTables();
+  await connect(env);
+  assert.deepEqual(dbx.json('/tables.json').tables.map(t => t.name), ['Alpha', 'Gone']);
+
+  const remote = dbx.json('/tables.json');
+  remote.tables.push({ id: 'r', name: 'Remote', source: 'd1\n1: r\n', updatedAt: 5 });
+  dbx.edit(dbx.file('/tables.json').id, JSON.stringify(remote));
+  T.removeTables(['gone']);
+  T.tableLib.deleted.gone = Date.now();
+  await T.saveTables();
+  await T.dropboxFlush();
+  await settle();
+  assert.deepEqual(T.tableLib.tables.map(t => t.name), ['Alpha', 'Remote']);
+  assert.deepEqual(dbx.json('/tables.json').tables.map(t => t.name), ['Alpha', 'Remote']);
+  assert.ok(window.document.querySelector('#tbl-list .tbl-row[data-id="r"]'), 'the Tables tab shows the pulled table');
+  assert.strictEqual(T.dropboxState().status, 'synced');
+  window.close();
+});
+
 test('Dropbox sync: the flat sync record of the oldest version and the per-campaign records of the previous one move to meta.legacy', async () => {
   const env = await boot({
     extraStorage: {

@@ -102,7 +102,8 @@ Crit (1), Fumble (100), Matched Success/Failure (doubles). It sets `OSR.lastPerc
 - Nothing Silent Legions is bundled except the pregens. The content pack comes from the
   Silent Legions Foundry VTT system (`module/import/keeper-pack.mjs` in that repo): Compendium
   entries with `slpdf:` refs, monsters in the shape above (`abilities` as `{ name, text }`,
-  `attacksText` as `2 claw +3 (1d4)`), and `tables` in the `js/table-syntax.js` format.
+  `attacksText` as `2 claw +3 (1d4)`), and `tables` in the `js/table-syntax.js` format
+  (they go to the shared table library with setting Horror and the pack name as source).
   `test/fixtures/sl-pack.json` (made-up text, `slPack()` in `test/helpers/boot.js`) has that shape;
   that repo's `tools/keeper-fixture.mjs` writes it.
   The pregens' `[Name]` links are names of that pack (`SL_PREGEN_LINKS` in `test/logic.test.js`).

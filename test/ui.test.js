@@ -12,7 +12,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, fire, click, setValue, key, savedState: readSaved, slPack } = require('./helpers/boot.js');
+const { boot, rigRandom, face, fire, click, setValue, key, savedState: readSaved, savedTables, slPack } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -1295,16 +1295,22 @@ test('Compendium editor: Enter (incl. in the body) saves; Shift+Enter in the bod
 /* Tables tab                                                         */
 /* ================================================================== */
 
-test('Tables tab: lists every seeded table, with a tag filter (≤10 tags) and a name search', () => {
+test('Tables tab: lists every seeded table, with Source, Setting, and Output filters and a name search', () => {
   tab('tables');
   const total = window.OSR.data.tables.length;
   assert.ok(total >= 20, 'expected the bundled table library to be loaded');
   assert.equal($$('#tbl-list .tbl-row').length, total);
   assert.match($('#tbl-count').textContent, new RegExp(total + ' / ' + total));
 
-  const tagBoxes = $$('#tbl-tags input[data-tag]');
-  assert.ok(tagBoxes.length > 0 && tagBoxes.length <= 10, 'expected 1-10 tags, got ' + tagBoxes.length);
-  assert.ok(tagBoxes.every(cb => cb.checked), 'every tag starts enabled');
+  const values = f => $$('#tbl-filters input[data-filter="' + f + '"]').map(cb => cb.dataset.value);
+  assert.deepEqual(values('origin'), ['Shadowdark']);
+  assert.deepEqual(values('setting'), ['Fantasy', 'Modern', 'Horror']);
+  assert.deepEqual(values('output'), ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other']);
+  assert.ok($$('#tbl-filters input').every(cb => cb.checked), 'every value starts enabled');
+  const arctic = $('#tbl-list .tbl-row[data-id="arctic"] summary').textContent;
+  assert.match(arctic, /Encounter/);
+  assert.match(arctic, /Fantasy/);
+  assert.match(arctic, /Shadowdark/);
 
   setValue($('#tbl-search'), 'arctic');
   assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arctic']);
@@ -1312,26 +1318,30 @@ test('Tables tab: lists every seeded table, with a tag filter (≤10 tags) and a
   assert.equal($$('#tbl-list .tbl-row').length, total);
 });
 
-test('Tables tab: unticking a tag hides its tables; right-clicking a tag isolates it', async () => {
+test('Tables tab: unticking a filter value hides its tables; right-clicking a value isolates it in its row', async () => {
   tab('tables');
-  const wildernessCb = $('#tbl-tags input[data-tag="Wilderness"]');
-  assert.ok(wildernessCb, 'expected a Wilderness tag checkbox');
-  const wildernessCount = window.OSR.data.tables.filter(t => t.tag === 'Wilderness').length;
+  makeTable('Ghost', 'd1\n1: boo\n', { origin: 'My Notes', setting: 'Horror', output: 'Entity' });
+  makeTable('Mall', 'd1\n1: shops\n', { setting: 'Modern', output: 'Location' });
+  const total = window.OSR.data.tables.length + 2;
+  const box = (f, v) => $('#tbl-filters input[data-filter="' + f + '"][data-value="' + v + '"]');
+  const toggle = (f, v) => { const cb = box(f, v); cb.checked = !cb.checked; cb.dispatchEvent(new window.Event('change', { bubbles: true })); };
+  assert.deepEqual($$('#tbl-filters input[data-filter="origin"]').map(cb => cb.dataset.value), ['Homebrew', 'My Notes', 'Shadowdark']);
 
-  wildernessCb.checked = false;
-  wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
-  assert.equal($$('#tbl-list .tbl-row[data-id="arctic"]').length, 0);
-  assert.equal($$('#tbl-list .tbl-row').length, window.OSR.data.tables.length - wildernessCount);
-
-  wildernessCb.checked = true;
-  wildernessCb.dispatchEvent(new window.Event('change', { bubbles: true }));
+  toggle('origin', 'Shadowdark');
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Ghost', 'Mall']);
+  toggle('output', 'Entity');
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Mall']);
+  toggle('origin', 'Shadowdark');
+  toggle('output', 'Entity');
+  assert.equal($$('#tbl-list .tbl-row').length, total);
 
   // The isolate handler applies on a deferred setTimeout(…, 0) — see
   // js/tables.js's wireTables().
-  const tavernLabel = $('#tbl-tags input[data-tag="Tavern"]').closest('label');
-  tavernLabel.dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  box('setting', 'Horror').closest('label').dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
   await new Promise(r => setTimeout(r, 10));
-  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Tavern']);
+  assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Ghost']);
+  assert.deepEqual($$('#tbl-filters input[data-filter="setting"]').filter(cb => cb.checked).map(cb => cb.dataset.value), ['Horror']);
+  assert.ok($$('#tbl-filters input[data-filter="output"]').every(cb => cb.checked), 'the other rows do not change');
 });
 
 test('Tables tab: expanding a table and clicking Roll rolls its formula, highlights the matching row, and logs it', () => {
@@ -1364,24 +1374,43 @@ test('Tables tab: expanding a table and clicking Roll rolls its formula, highlig
   assert.deepEqual(copied, ['A starving human is trapped in an icy, natural pit']);
 });
 
-// Fills the table editor (#tbl-modal) and clicks Save.
-function makeTable(name, source, tag) {
+// Fills the table editor (#tbl-modal) and clicks Save. meta: { origin, setting, output }.
+function makeTable(name, source, meta) {
+  const m = meta || {};
   click($('#tbl-new'));
   setValue($('#tbl-f-name'), name);
-  if (tag) setValue($('#tbl-f-tag'), tag);
+  if (m.origin) setValue($('#tbl-f-origin'), m.origin);
+  if (m.setting) setValue($('#tbl-f-setting'), m.setting);
+  if (m.output) setValue($('#tbl-f-output'), m.output);
   setValue($('#tbl-f-src'), source);
   click($('#tbl-f-save'));
 }
 const tblRow = name => $$('#tbl-list .tbl-row').find(li => li.querySelector('.tbl-name').textContent === name);
 
-test('Tables tab: New table saves a user table (this system, persisted) that rolls on sub-tables', async () => {
+test('Tables tab: New table saves a user table (in the table library) that rolls on sub-tables', async () => {
   tab('tables');
+  click($('#tbl-new'));
+  assert.equal($('#tbl-f-origin').value, 'Homebrew', 'a new table starts as Homebrew');
+  assert.equal($('#tbl-f-setting').value, 'Fantasy', 'the OSR System gives Fantasy');
+  assert.equal($('#tbl-f-output').value, 'Other');
+  assert.deepEqual(Array.from($('#tbl-f-output').options).map(o => o.value), ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other']);
+  click($('#tbl-f-cancel'));
   makeTable('Color', 'd2\n1: red\n2: blue\n');
-  makeTable('Thing', 'd2 | Shape | Size\n1: cube | small\n2: orb | large\n');
-  makeTable('Omen', 'd2\n1: A [Color] [Thing.Shape]\n2: [2x Color] lights\n');
+  makeTable('Thing', 'd2 | Shape | Size\n1: cube | small\n2: orb | large\n', { origin: 'Old Zine', output: 'Entity' });
+  makeTable('Omen', 'd2\n1: A [Color] [Thing.Shape]\n2: [2x Color] lights\n', { setting: 'Horror' });
   assert.equal($('#tbl-modal').hidden, true, 'Save closes the editor');
-  const saved = (await savedState()).tables;
-  assert.deepEqual(saved.map(t => [t.name, t.system, t.tag]), [['Color', 'osr', 'Custom'], ['Thing', 'osr', 'Custom'], ['Omen', 'osr', 'Custom']]);
+  assert.equal('tables' in T.state, false, 'the campaign keeps no tables');
+  const saved = (await savedTables(T)).tables;
+  assert.deepEqual(saved.map(t => [t.name, t.origin, t.setting, t.output]), [
+    ['Color', 'Homebrew', 'Fantasy', 'Other'], ['Thing', 'Old Zine', 'Fantasy', 'Entity'], ['Omen', 'Homebrew', 'Horror', 'Other']]);
+
+  // Edit opens with the saved values.
+  click(tblRow('Thing').querySelector('.tbl-edit'));
+  assert.equal($('#tbl-f-origin').value, 'Old Zine');
+  assert.equal($('#tbl-f-output').value, 'Entity');
+  setValue($('#tbl-f-output'), 'Group');
+  click($('#tbl-f-save'));
+  assert.equal(T.tableLib.tables.find(t => t.name === 'Thing').output, 'Group');
 
   const omen = tblRow('Omen');
   assert.ok(omen.classList.contains('is-user'));
@@ -1433,7 +1462,7 @@ test('Tables tab: the editor highlights refs, lists problems, blocks errors, and
   click($('#tbl-f-save'));
   assert.match($('#tbl-msg').textContent, /already have a table named "Color"/);
   click($('#tbl-f-cancel'));
-  assert.equal(T.state.tables.length, 1);
+  assert.equal(T.tableLib.tables.length, 1);
 });
 
 test('Tables tab: "[" in the editor lists tables, then the columns of a table with columns', () => {
@@ -1463,8 +1492,10 @@ test('Tables tab: Duplicate copies a built-in table; renaming a table updates th
   click(arctic.querySelector('.tbl-dup'));
   assert.equal($('#tbl-f-name').value, 'Arctic (copy)');
   assert.match($('#tbl-f-src').value, /^d100\n01: /);
+  assert.equal($('#tbl-f-origin').value, 'Shadowdark', 'the copy keeps the source, setting, and output');
+  assert.equal($('#tbl-f-output').value, 'Encounter');
   click($('#tbl-f-save'));
-  const copy = T.state.tables.find(t => t.name === 'Arctic (copy)');
+  const copy = T.tableLib.tables.find(t => t.name === 'Arctic (copy)');
   assert.ok(copy);
   assert.equal(window.TableSyntax.parseTable(copy.source).entries.length, window.OSR.data.tables.find(t => t.id === 'arctic').entries.length);
 
@@ -1473,14 +1504,14 @@ test('Tables tab: Duplicate copies a built-in table; renaming a table updates th
   click(tblRow('Weather').querySelector('.tbl-edit'));
   setValue($('#tbl-f-name'), 'Sky');
   click($('#tbl-f-save'));
-  assert.equal(T.state.tables.find(t => t.name === 'Day').source, 'd1\n1: [Sky] and [2x Sky]\n');
+  assert.equal(T.tableLib.tables.find(t => t.name === 'Day').source, 'd1\n1: [Sky] and [2x Sky]\n');
 
   click(tblRow('Sky').querySelector('.tbl-del'));
   assert.equal(tblRow('Sky'), undefined);
   assert.ok(tblRow('Day').querySelector('.tbl-ref.is-bad'), 'a ref to a deleted table shows as broken');
 });
 
-test('Tables tab: user tables belong to one System; a user table hides a built-in one with the same name', () => {
+test('Tables tab: every System sees every table; a user table hides a built-in one with the same name', () => {
   tab('tables');
   const builtins = window.OSR.data.tables.length;
   makeTable('Arctic', 'd1\n1: my own arctic\n');
@@ -1488,14 +1519,16 @@ test('Tables tab: user tables belong to one System; a user table hides a built-i
   assert.ok(tblRow('Arctic').classList.contains('is-user'));
 
   window.OSR.setSystem('sl');
-  assert.equal($$('#tbl-list .tbl-row').length, builtins);
-  assert.equal(tblRow('Arctic').classList.contains('is-user'), false, 'Silent Legions sees the built-in Arctic');
+  assert.ok(tblRow('Arctic').classList.contains('is-user'), 'Silent Legions sees the user Arctic');
+  click($('#tbl-new'));
+  assert.equal($('#tbl-f-setting').value, 'Horror', 'a new table under Silent Legions starts as Horror');
+  click($('#tbl-f-cancel'));
   makeTable('Cult', 'd1\n1: a cult\n');
   assert.ok(tblRow('Cult'));
 
   window.OSR.setSystem('osr');
-  assert.equal(tblRow('Cult'), undefined);
-  assert.deepEqual(T.state.tables.map(t => [t.name, t.system]), [['Arctic', 'osr'], ['Cult', 'sl']], 'nothing is deleted');
+  assert.ok(tblRow('Cult'), 'OSR sees the table made under Silent Legions');
+  assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.setting]), [['Arctic', 'Fantasy'], ['Cult', 'Horror']]);
 });
 
 /* ================================================================== */

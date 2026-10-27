@@ -54,19 +54,36 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   `MonsterParse.parseOne`, adds `actions` as abilities. Exports `{ convert, titleCase, slug,
   statLine, buildRaw }`. Flags `--dry-run`, `--no-merge`, `--out`, `--js-out`.
 - `scripts/convert-spells-from-shadowdark-resources.js`: `data/spell_data.json` → `data/spells.json`.
-- `scripts/convert-tables.js`: `data/tables/*.csv` → `data/tables.json`. `TAG_MAP` maps each file to
-  a tag (the script throws on a missing one). `parseRange`: `"00"` after `"98-99"` is 100.
+- `scripts/convert-tables.js`: `data/tables/*.csv` → `data/tables.json`. `DEFAULT_META` gives every
+  table `origin`, `setting`, `output`; `META[slug]` overrides one (the script throws on a setting or
+  output not in its `SETTINGS`/`OUTPUTS`, which match `js/tables.js`). `parseRange`: `"00"` after
+  `"98-99"` is 100.
 - `scripts/build-token-icons.js`, `scripts/build-icon-index.js`: see maps.md.
 
 ## Tables tab (`js/tables.js`, `js/table-syntax.js`)
 
-- Two kinds of table. Built-in: `OSR.data.tables`, `{ id, name, tag, formula, entries: [{ range, lo,
-  hi, text }] }`, read-only; tags come from the data (keep 10 or fewer). User: `state.tables`,
-  `{ id, name, tag, system, source, createdAt, updatedAt }`, saved in its system's document (see
-  storage.md). `tablesForSystem()` is the per-system list.
-- `library()` gives the current system's user tables (parsed, cached by `source`) and every built-in
-  table that no user table hides by name (case-insensitive). Both have the parsed shape
-  `{ id, name, tag, formula, columns, entries: [{ range, lo, hi, text, cells }], problems, user }`.
+- Tables are not scoped to a campaign or a System: every list shows every table.
+- Filter fields on every table: `origin` (the UI says "Source": free text, default `Homebrew`),
+  `setting` (one of `TABLE_SETTINGS`: Fantasy, Modern, Horror), `output` (one of `TABLE_OUTPUTS`:
+  Encounter, Entity, Location, Adventure, Group, Other). `cleanTable()` fixes case and plurals
+  (`encounters` → `Encounter`); a missing setting comes from the table's `system` (`SYSTEM_SETTING`:
+  ua3e Modern, sl Horror, else Fantasy). A table's text stays in `source` (the old field name, which
+  packs use), so the origin field is `origin`.
+- Two kinds of table. Built-in: `OSR.data.tables`, `{ id, name, origin, setting, output, formula,
+  entries: [{ range, lo, hi, text }] }`, read-only. User: the table library `OSR.tableLib =
+  { tables: [{ id, name, origin, setting, output, source, createdAt, updatedAt }], deleted: { id: time } }`.
+- The table library is shared by every campaign on the device: IndexedDB document `library/tables`,
+  Dropbox `/tables.json` (see storage.md). `loadTables()` runs at boot before `load()`; the first
+  time (no library document) it collects the `tables` of every campaign's system documents.
+  `adoptCampaignTables(state)` (called by `ensureStateShape()`) moves a campaign's old
+  `state.tables` (old save, old export, Dropbox pull) into the library and deletes the key.
+  `addTables(list, { system, origin })` skips a table without text, a deleted id, a known id, or a
+  known name. `saveTables()` writes and calls `dropboxNoteSave()`; callers do not await it, except
+  import. Delete adds the id to `deleted`, so `mergeTableLibs()` (union by id, later `updatedAt`
+  wins) does not bring it back.
+- `library()` gives the user tables (parsed, cached by `source`) and every built-in table that no
+  user table hides by name (case-insensitive). Both have the parsed shape
+  `{ id, name, origin, setting, output, formula, columns, entries: [{ range, lo, hi, text, cells }], problems, user }`.
 - `js/table-syntax.js` (`window.TableSyntax`, pure, also `module.exports`): `parseTable(source)`
   (the format is in its header comment and README.md), `rollTable(table, ctx)` → a node tree,
   `nodeText()`, `rerollAt(tree, path, ctx)`, `highlight(source, resolve)`, `refProblems()`,
@@ -82,11 +99,17 @@ on `#php-confirm-add`. `#php-total-hd` has no default.
   `quiet` skips `#dice-last`). `.tbl-copy` copies `TS.copyText(tree)` (an outline in a ``` fence) through `OSR.copyText()`. `tblLastRoll[id].tree` keeps the result;
   each sub-node renders as `.tbl-sub[data-path]` and a click calls `rerollAt` (logged as
   "Name (again: Sub)"). Rows are `<details>`; `tblOpenIds` keeps open rows across renders
-  (capture-phase `toggle` listener). `tblTagOff` holds the unticked tags, so a new tag shows.
+  (capture-phase `toggle` listener). `tblOff[filter]` holds the unticked values of each filter row
+  (`#tbl-f-origins`, `#tbl-f-settings`, `#tbl-f-outputs` in `#tbl-filters`), so a new source shows.
+  Right-click isolates one value in its row only. Save and a click on a ref tick the table's values.
 - Editor `#tbl-modal`: a transparent `<textarea id="tbl-f-src">` over `<pre id="tbl-hl">`; both must
   keep the same font, padding, border, and wrapping (css/app.css). `[` autocomplete is
   `OSR.acFromTableEditor` (mode `'table'` of `OSR.compAC` in js/compendium-popups.js, items from
   `OSR.tableAcItems`). Save is blocked by `error` problems, an empty name, `[`/`]` in the name, or a
-  name the system already has. A rename rewrites refs in the system's other user tables.
+  name the library already has. A rename rewrites refs in the other user tables. Fields:
+  `#tbl-f-origin` (datalist of the sources in use), `#tbl-f-setting`, `#tbl-f-output` (selects). A new
+  table starts as Homebrew, the current System's setting, and Other; Duplicate copies all three.
 - Tests: `test/table-syntax.test.js` (parser, roller), `test/ui.test.js` "Tables tab",
+  `test/logic.test.js` "Table library", `test/campaigns.test.js` (shared, first-boot move),
+  `test/dropbox.test.js` (`/tables.json`),
   `test/tables.test.js` (each built-in table covers 1..N of its die).

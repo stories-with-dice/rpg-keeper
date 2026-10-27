@@ -15,7 +15,7 @@
 
 const { test, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const { boot, rigRandom, face, savedState, slPack } = require('./helpers/boot.js');
+const { boot, rigRandom, face, savedState, savedTables, slPack } = require('./helpers/boot.js');
 
 let window, document, T;
 
@@ -848,13 +848,15 @@ test('Silent Legions pack: importPack adds Compendium entries, monsters in the S
   const tele = sl.find(e => e.name === 'Telepathy');
   assert.equal(tele.category, 'Powers');
   assert.equal(tele.source, 'Discipline');
-  assert.deepEqual(T.state.tables.filter(t => t.system === 'sl').map(t => t.name), slPack().tables.map(t => t.name));
+  assert.deepEqual(T.tableLib.tables.map(t => t.name), slPack().tables.map(t => t.name));
+  assert.ok(T.tableLib.tables.every(t => t.setting === 'Horror'), 'a Silent Legions pack table is set in Horror');
+  assert.ok(T.tableLib.tables.every(t => t.origin === slPack().pack.name), 'the pack name is the source');
   assert.deepEqual(T.seeds.sl.monsters.map(m => m.name), mons.map(m => m.name), 'the pack goes into the seed store too');
 
   await importSlPack();
   assert.equal(T.state.monsters.filter(m => m.system === 'sl').length, mons.length, 'a second import adds nothing');
   assert.equal(T.state.compendium.filter(e => e.system === 'sl').length, sl.length);
-  assert.equal(T.state.tables.filter(t => t.system === 'sl').length, slPack().tables.length);
+  assert.equal(T.tableLib.tables.length, slPack().tables.length);
   assert.equal(T.state.monsters.filter(m => m.system !== 'sl').length, 2, 'the OSR and BRP monsters stay');
 });
 
@@ -862,7 +864,7 @@ test('Silent Legions pack: a master table rolls on its sub-tables', async () => 
   await importSlPack();
   T.state.settings.system = 'sl';
   T.renderTables();
-  const gen = T.state.tables.find(t => t.name === 'Test Generator');
+  const gen = T.tableLib.tables.find(t => t.name === 'Test Generator');
   const restore = rigRandom(window, [face(1, 1), face(1, 4), face(2, 2)]);
   document.querySelector('.tbl-roll[data-id="' + gen.id + '"]').click();
   restore();
@@ -897,18 +899,16 @@ test('Silent Legions pack: every monster def is complete enough for Combat and P
   });
 });
 
-test('SL monsters are invisible under other systems, and vice versa (Compendium + Bestiary + Tables partition)', async () => {
+test('SL monsters are invisible under other systems, and vice versa (Compendium + Bestiary partition)', async () => {
   T.state.monsters = [];
   T.state.compendium = [];
   await importSlPack();
   T.state.settings.system = 'osr';
   assert.equal(T.monstersForSystem().length, 0);
   assert.equal(T.compendiumForSystem().length, 0);
-  assert.equal(T.tablesForSystem().length, 0);
   T.state.settings.system = 'sl';
   assert.equal(T.monstersForSystem().length, slPack().monsters.length);
   assert.equal(T.compendiumForSystem().length, slPack().compendium.length);
-  assert.equal(T.tablesForSystem().length, slPack().tables.length);
 });
 
 test('old built-in Silent Legions seed: an old campaign loses its unedited copies once; edited copies and pack items stay', () => {
@@ -1810,14 +1810,54 @@ test('importData: a content pack is only ever added — no Replace question — 
   assert.equal(T.state.monsters.filter(m => m.name === 'Night Clerk').length, 1);
 });
 
-test('importData: a content pack adds its tables to its system; a table name the system has is skipped', async () => {
+test('importData: a content pack adds its tables to the table library; a table name the library has is skipped', async () => {
   window.confirm = () => true;
-  const pack = Object.assign(uaPack(), { tables: [{ name: 'Omen', tag: 'Pack', source: 'd2\n1: [Sign]\n2: calm\n' }, { name: 'Sign', source: 'd1\n1: crow\n' }] });
-  T.state.tables.push({ id: 'x', name: 'sign', tag: 'Custom', system: 'ua3e', source: 'd1\n1: mine\n', createdAt: 1 });
+  const pack = Object.assign(uaPack(), { tables: [
+    { name: 'Omen', output: 'encounters', source: 'd2\n1: [Sign]\n2: calm\n' },
+    { name: 'Sign', source: 'd1\n1: crow\n' },
+    { name: 'Lair', origin: 'My Book', setting: 'fantasy', output: 'Location', source: 'd1\n1: cave\n' }] });
+  T.addTables([{ id: 'x', name: 'sign', source: 'd1\n1: mine\n', createdAt: 1 }]);
   await T.importData(new window.File([JSON.stringify(pack)], 'pack.json', { type: 'application/json' }));
-  assert.deepEqual(T.state.tables.map(t => [t.name, t.system, t.tag]), [['sign', 'ua3e', 'Custom'], ['Omen', 'ua3e', 'Pack']]);
-  const saved = await savedState(T);
-  assert.deepEqual(saved.tables.map(t => t.name), ['sign', 'Omen'], 'tables are saved in the system document');
+  assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.origin, t.setting, t.output]), [
+    ['sign', 'Homebrew', 'Fantasy', 'Other'],
+    ['Omen', 'Test UA pack', 'Modern', 'Encounter'],
+    ['Lair', 'My Book', 'Fantasy', 'Location']]);
+  assert.equal('tables' in T.state, false, 'no table goes into the campaign');
+  assert.deepEqual((await savedTables(T)).tables.map(t => t.name), ['sign', 'Omen', 'Lair'], 'the library is saved');
+});
+
+test('Table library: the tables of an old campaign or export move to the library once; Export carries the library', async () => {
+  T.addTables([{ id: 'keep', name: 'Kept', source: 'd1\n1: k\n' }]);
+  await T.replaceState({ characters: [], tables: [
+    { id: 'old1', name: 'Old', tag: 'Custom', system: 'ua3e', source: 'd1\n1: x\n', createdAt: 5 },
+    { id: 'old2', name: 'kept', system: 'osr', source: 'd1\n1: y\n' }] });
+  assert.equal('tables' in T.state, false);
+  assert.deepEqual(T.tableLib.tables.map(t => [t.id, t.name, t.origin, t.setting, t.output]),
+    [['keep', 'Kept', 'Homebrew', 'Fantasy', 'Other'], ['old1', 'Old', 'Homebrew', 'Modern', 'Other']],
+    'a name the library has is skipped; the System gives the setting');
+  const docs = T.splitState(Object.assign({}, T.state, { tables: [] }));
+  assert.equal('tables' in docs.osr, false, 'a system document has no tables');
+
+  // A table deleted from the library does not come back from the same old file.
+  T.removeTables(['old1']);
+  T.tableLib.deleted.old1 = Date.now();
+  await T.replaceState({ characters: [], tables: [{ id: 'old1', name: 'Old', source: 'd1\n1: x\n' }] });
+  assert.equal(T.tableLib.tables.some(t => t.id === 'old1'), false);
+
+  let blob = null;
+  const realCreate = window.URL.createObjectURL;
+  window.URL.createObjectURL = b => { blob = b; return 'blob:x'; };
+  try { T.exportJson(); } finally { window.URL.createObjectURL = realCreate; }
+  const text = await new Promise(r => { const fr = new window.FileReader(); fr.onload = () => r(fr.result); fr.readAsText(blob); });
+  assert.deepEqual(JSON.parse(text).tables.map(t => t.name), ['Kept']);
+});
+
+test('Table library: mergeTableLibs keeps every table, the later edit on the same id, and drops deleted ones', () => {
+  const a = { tables: [{ id: '1', name: 'One', source: 'd1\n1: a\n', updatedAt: 10 }, { id: '2', name: 'Two', source: 'd1\n1: b\n', updatedAt: 10 }], deleted: {} };
+  const b = { tables: [{ id: '1', name: 'One', source: 'd1\n1: newer\n', updatedAt: 20 }, { id: '3', name: 'Three', source: 'd1\n1: c\n', updatedAt: 5 }], deleted: { 2: 15 } };
+  const m = T.mergeTableLibs(a, b);
+  assert.deepEqual(m.tables.map(t => [t.id, t.source]), [['1', 'd1\n1: newer\n'], ['3', 'd1\n1: c\n']]);
+  assert.deepEqual(m.deleted, { 2: 15 });
 });
 
 test('importData: Cancel on a content pack adds nothing', async () => {

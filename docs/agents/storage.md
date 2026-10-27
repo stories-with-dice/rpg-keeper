@@ -6,11 +6,14 @@
   `OSR.campaigns`).
 - **IndexedDB** database `osr_store`:
   - `docs`: each campaign as JSON documents: `'<campaignId>/campaign'` plus `'<campaignId>/<system>'`
-    for each of `OSR.SYSTEMS` (`['osr','ua3e','brp','sl']`). Also `seeds/<system>`.
+    for each of `OSR.SYSTEMS` (`['osr','ua3e','brp','sl']`). Also `seeds/<system>` and
+    `library/tables` (the table library that every campaign shares, `OSR.tableLib`; see monsters.md).
   - `meta`: `'campaigns'` (`[{ id, name, createdAt, primary }]`) and `'activeCampaignId'`.
   - `blobs`: map images.
-- `splitState(state)`: characters (by `charSystemKey()`), monsters, Compendium entries, scenes, and
-  user tables (`state.tables`, by `system`), and each character's HP/Wounds/Madness trackers go to their system's document.
+- `splitState(state)`: characters (by `charSystemKey()`), monsters, Compendium entries, scenes,
+  and each character's HP/Wounds/Madness trackers go to their system's document. Random tables are
+  not in `state`; `joinState` still reads an old document's `tables` so `ensureStateShape()` can move
+  them to the table library.
   The rest goes to `campaign`, with `order: { characters, consumables }`. `joinState(docs)` reverses it.
 - `load()` is async (`init()` awaits it). The first run after the IndexedDB move migrates
   `localStorage['osr_manager_v1']` into a primary campaign "Default"; the old key goes only after
@@ -47,10 +50,11 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
   `system` (missing → `'osr'`); a duplicate in the same system (same `ref`, or same name + category
   for an entry) is skipped. An item with a `seedRef` replaces the campaign's item with that
   `seedRef` (`replaceSeeded()`). Scenes get new ids.
-- `mergeTables` (Merge and packs) skips a table whose name (case-insensitive) the system has.
+- Export adds `tables` (the table library). Import (Replace or Merge) and packs give tables to
+  `OSR.addTables()`, which skips a name (case-insensitive) or id the library has.
 - **Content packs**: a file with `pack: { name, system }` goes to `importPack`: merge only, one
   confirm, then `OSR.setSystem(pack.system)`. If `saveNow()` returns `false`, it removes what it
-  added and alerts. Pack tables go only into the campaign (not the seed store). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
+  added and alerts. Pack tables go to the table library (source = the pack name). Other pack items become seed copies, and `OSR.addToSeed()` adds the pack to the seed
   store.
 
 ## Seeding (`js/data.js`, `js/seeds.js`, `js/seed.js`)
@@ -93,13 +97,13 @@ Optional. One Dropbox file per document. No backend.
   `listAll()` lists the folder once per pass; `toRemote()` keeps `{ id, rev, hash, path, modified }`.
   Uploads use `mode: add` or `mode: update` with the rev (409 on a race).
 - Layout: `/campaigns/index.json`; `/campaigns/<id>/shared.json` and `/<system>.json`;
-  `/campaigns/<id>/maps/<blobId>.<ext>`; `/seeds/<system>.json`. Legacy whole-campaign files are
+  `/campaigns/<id>/maps/<blobId>.<ext>`; `/seeds/<system>.json`; `/tables.json`. Legacy whole-campaign files are
   moved to `… (before split).json` on the first pass.
 - Per-device keys (never in `state`): `sessionStorage['osr_dropbox_pending']`,
   `localStorage['osr_dropbox_token']`, `localStorage['osr_dropbox_v1']` (`enabled`, `appKey`,
   `files[path]` sync records, `legacy`, `migrated`, `hidden`).
 - **One pass** (`syncNow()`): `legacyStep()`, `syncIndex()`, `syncSeeds()` (never asks; union by
-  `seedRef`), `syncDocs()` (`decideSync()` → create, link, noop, upload, pull, conflict; pulls apply
+  `seedRef`), `syncTables()` (never asks; `mergeTableLibs()`), `syncDocs()` (`decideSync()` → create, link, noop, upload, pull, conflict; pulls apply
   together through `OSR.replaceState()`), `syncBlobs()` (uploads missing images; downloads happen in
   `dropboxFetchBlob()` when a scene shows).
 - A pull records the hash after `ensureStateShape` and writes no log line (else two devices loop).
