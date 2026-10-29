@@ -94,6 +94,8 @@
           '<label class="field"><span>Armor</span><input type="number" class="mf-f-brp-armor" step="1" /></label>' +
           '<label class="field"><span>Armor note</span><input type="text" class="mf-f-brp-armor-note" placeholder="hide, may wear armor" /></label>' +
           '<label class="field"><span>Damage Bonus</span><input type="text" class="mf-f-brp-db" placeholder="+1D4, None" /></label>' +
+          '<label class="field" title="Encounter Level: 1 is a fair fight for one starting Normal-level PC. Blank: not rated."><span>EL</span>' +
+            '<input type="number" class="mf-f-brp-el" step="0.5" min="0.5" placeholder="none" /></label>' +
         '</div>' +
         '<label class="field mf-desc"><span>Attacks</span><textarea class="mf-f-brp-attacks" rows="2" placeholder="Bite 45%, 1D6+dm; Claw 45%, 1D4+dm"></textarea></label>' +
         '<label class="field mf-desc"><span>Skills</span><textarea class="mf-f-brp-skills" rows="2" placeholder="Dodge 35%, Listen 60%, Spot 60%"></textarea></label>' +
@@ -164,6 +166,7 @@
     q('.mf-f-brp-armor').value = def.armor != null ? def.armor : '';
     q('.mf-f-brp-armor-note').value = def.armorNote || '';
     q('.mf-f-brp-db').value = def.damageBonus || '';
+    q('.mf-f-brp-el').value = schema === 'brp' && def.hd ? (def.hdNum != null ? def.hdNum : def.hd) : '';
     q('.mf-f-brp-attacks').value = def.attacksText && schema === 'brp' ? def.attacksText : '';
     q('.mf-f-brp-skills').value = def.skillsText || '';
     const isSl = schema === 'sl';
@@ -206,7 +209,7 @@
       const charLine = ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA']
         .filter(k => c[k] != null).map(k => k + ' ' + c[k]).join(', ');
       if (charLine) lines.push(charLine);
-      let line = 'HP ' + (def.hp || 0);
+      let line = (def.hd ? 'EL ' + def.hd + ', ' : '') + 'HP ' + (def.hp || 0);
       if (def.move) line += ', Move ' + def.move;
       if (def.damageBonus) line += ', Damage Bonus ' + def.damageBonus;
       if (def.armor != null) line += ', Armor ' + def.armor + (def.armorNote ? ' (' + def.armorNote + ')' : '');
@@ -319,6 +322,11 @@
       def.armorNote = q('.mf-f-brp-armor-note').value.trim();
       def.damageBonus = q('.mf-f-brp-db').value.trim() || 'None';
       def.skillsText = q('.mf-f-brp-skills').value.trim();
+      // The Encounter Level lives in hd/hdNum, so the Bestiary filter and
+      // Populate by EL (js/combat-populate.js) read it like Hit Dice.
+      const el = num('.mf-f-brp-el');
+      def.encounterLevel = el != null && el > 0 ? el : null;
+      def.hd = def.encounterLevel != null ? String(def.encounterLevel) : '';
     } else if (schema === 'sl') {
       def.ac.desc = num('.mf-f-sl-ac');
       def.mundaneImmune = q('.mf-f-sl-immune').checked;
@@ -348,7 +356,7 @@
         def.savesText = ['D', 'W', 'P', 'B', 'S'].filter(k => sv[k] != null).map(k => k + sv[k]).join(' ');
       }
     }
-    def.hdNum = schema === 'brp' ? 0 : (window.MonsterParse ? MonsterParse.hdNum(def.hd) : 0);
+    def.hdNum = schema === 'brp' ? def.encounterLevel : (window.MonsterParse ? MonsterParse.hdNum(def.hd) : 0);
     def.raw = buildRawFromDef(def);
     return def;
   }

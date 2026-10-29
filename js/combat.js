@@ -174,9 +174,10 @@
   }
   function charDetectHp(ch) {
     const body = ch && ch.body || '';
-    let m = body.match(/\bHP\b[^0-9\n]{0,4}(\d+)\s*\/\s*(\d+)/i);
+    // "HP 6/6" (OSR) or "Hit Points: 13/13" (BRP)
+    let m = body.match(/\b(?:HP|Hit Points)\b[^0-9\n]{0,4}(\d+)\s*\/\s*(\d+)/i);
     if (m) return { value: +m[1], max: +m[2] };
-    m = body.match(/\bHP\b[^0-9\n]{0,4}(\d+)/i);
+    m = body.match(/\b(?:HP|Hit Points)\b[^0-9\n]{0,4}(\d+)/i);
     if (m) return { value: +m[1], max: +m[1] };
     return null;
   }
@@ -239,6 +240,75 @@
       return term;
     });
   }
+  /* ---- BRP: DEX rank or INT rank (core book pp.123-124) ---- */
+  // A combat round goes in DEX rank order, highest first. Powers go before
+  // that, in INT rank order. Settings → BRP combat order picks which rank the
+  // tracker sorts by (state.settings.brpInitiative, 'dex' or 'int'). On a tie
+  // the higher relevant skill goes first, else both act at the same time: the
+  // GM drags the rows. A creature with no DEX acts on DEX rank 1 (core book
+  // p.222); a creature with no INT has no INT rank and goes last.
+  function isBrpEntry(e) {
+    if (e.kind === 'monster') return !!(e.monster && e.monster.source === 'brp');
+    const ch = combatCharFor(e);
+    return !!ch && OSR.charSystemKey(ch) === 'brp';
+  }
+  // A characteristic from a character sheet's "DEX: 9" text (also "DEX 9",
+  // "**DEX:** 9"); null when the sheet does not give it.
+  function charCharacteristic(ch, key) {
+    const m = String((ch && ch.body) || '').match(new RegExp('\\b' + key + '\\b[^0-9\\n|;]{0,4}(\\d+)'));
+    return m ? +m[1] : null;
+  }
+  function entryCharacteristic(e, key) {
+    if (e.kind === 'monster') {
+      const v = ((e.monster && e.monster.characteristics) || {})[key];
+      return v != null ? v : null;
+    }
+    return charCharacteristic(combatCharFor(e), key);
+  }
+  // 'DEX' or 'INT': the rank the tracker sorts by.
+  function brpRankKey() {
+    return OSR.state.settings && OSR.state.settings.brpInitiative === 'int' ? 'INT' : 'DEX';
+  }
+  const RANK_FIELD = { DEX: 'dexRank', INT: 'intRank' };
+  // The rank: the GM's override for this combat (e.dexRank / e.intRank),
+  // else the characteristic.
+  function entryRank(e, key) {
+    key = key || brpRankKey();
+    if (e[RANK_FIELD[key]] != null) return e[RANK_FIELD[key]];
+    const v = entryCharacteristic(e, key);
+    if (v != null) return v;
+    return e.kind === 'monster' && key === 'DEX' ? 1 : null;
+  }
+  const entryDexRank = e => entryRank(e, 'DEX');
+  // Highest rank first; an unknown rank goes last. The sort is stable, so
+  // tied rows keep the order the GM gave them.
+  function byRank(a, b) {
+    const ra = entryRank(a), rb = entryRank(b);
+    return (rb == null ? -Infinity : rb) - (ra == null ? -Infinity : ra);
+  }
+  function sortByRank() {
+    OSR.state.combat.entries.sort(byRank);
+    OSR.save();
+    renderCombat();
+  }
+  // A new entry: in a BRP combat, after the entries with the same or a higher
+  // rank; else at the end.
+  function insertEntry(e) {
+    const ents = OSR.state.combat.entries;
+    const i = OSR.currentSystem() === 'brp' && isBrpEntry(e) ? ents.findIndex(x => byRank(e, x) < 0) : -1;
+    if (i < 0) ents.push(e); else ents.splice(i, 0, e);
+  }
+  // The rank the tracker sorts by, editable; the other one as a plain chip.
+  function brpRankChips(e) {
+    const key = brpRankKey(), other = key === 'DEX' ? 'INT' : 'DEX';
+    const r = entryRank(e, key), o = entryRank(e, other);
+    const what = key === 'DEX' ? 'DEX rank: the order of actions' : 'INT rank: the order of powers';
+    return '<span class="chip cbt-step" title="' + what + ', highest first. Change it for this combat; clear it to use ' + key + ' again.">' +
+        '<span class="chip-l">' + key + '</span>' +
+        '<input class="cbt-rank" data-key="' + key + '" type="number" step="1" value="' + (r != null ? r : '') + '" placeholder="?" /></span>' +
+      (o != null ? '<span class="chip chip-dim" title="' + other + ' rank">' + other + ' ' + o + '</span>' : '');
+  }
+
   /* ---- Silent Legions: hit verdict, Skill / Slaughter / Madness rolls ---- */
   function isSlMonster(e) { return e.kind === 'monster' && !!e.monster && e.monster.source === 'sl'; }
   // An SL attack hits when 1d20 + bonus + the target's (descending) AC is 20
@@ -489,7 +559,7 @@
       OSR.renderConsumables();
     }
     const e = { id: uid(), kind: 'character', charId: ch.id, name: uniqueName(ch.name), hd: '', hp: 0, side: 'ally', statuses: [] };
-    OSR.state.combat.entries.push(e);
+    insertEntry(e);
     if (!OSR.state.combat.activeId) OSR.state.combat.activeId = e.id;
     OSR.state.combat.selectedId = e.id;
     OSR.save();
@@ -507,7 +577,7 @@
       e.wounds = 0;
       e.woundThreshold = wt != null ? wt : 0;
     }
-    OSR.state.combat.entries.push(e);
+    insertEntry(e);
     if (!OSR.state.combat.activeId) OSR.state.combat.activeId = e.id;
     OSR.state.combat.selectedId = e.id;
     OSR.save();
@@ -777,6 +847,11 @@
     const ua = OSR.currentSystem() === 'ua3e';
     $('#cb-populate-hd').hidden = ua;
     $('#cb-ua-hint').hidden = !ua;
+    const brp = OSR.currentSystem() === 'brp';
+    $('#cb-sort-rank').hidden = !brp;
+    $('#cb-sort-rank').textContent = 'Sort by ' + brpRankKey();
+    $('#cb-brp-hint').hidden = !brp;
+    OSR.applyLevelLabels();
   }
   function statusTagsHtml(e) {
     if (!Array.isArray(e.statuses) || !e.statuses.length) return '';
@@ -799,6 +874,7 @@
     const m = e.kind === 'monster' ? e.monster : null;
     const ch = e.kind === 'character' ? combatCharFor(e) : null;
     const isBrp = !!(m && m.source === 'brp');
+    const brpRow = isBrpEntry(e);
     const ac = m ? acDisplay(m) : (ch ? (charQuickAC(ch) || '—') : '—');
     const sv = m ? (m.savesText || '') : '';
     const atk = m ? (isBrp ? brpResolveDb(m.attacksText, m.damageBonus) : m.attacksText) || '' : '';
@@ -825,10 +901,11 @@
           '<input class="cbt-hp" type="number" step="1" value="' + entryHp(e) + '" />' +
           '<span class="cbt-max">/ ' + (maxHp || '—') + '</span>' +
           '<button class="cbt-stepbtn cbt-hp-inc" type="button" aria-label="HP +1">+</button></span>' +
+        (brpRow ? brpRankChips(e) : '') +
         (isBrp
           ? '<span class="chip">Armor ' + escapeHtml(String(m.armor != null ? m.armor : '—')) + '</span>' +
             (m.damageBonus ? '<span class="chip chip-dim">DB ' + escapeHtml(m.damageBonus) + '</span>' : '')
-          : '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
+          : brpRow ? '' : '<span class="chip">AC ' + escapeHtml(String(ac)) + '</span>' +
             (sv ? '<span class="chip chip-dim">Sv ' + escapeHtml(sv) + '</span>' : '')) +
         (m && m.source === 'sl' && m.madness && m.madness !== 'None'
           ? '<span class="chip chip-dim">Mad ' + escapeHtml(m.madness) + '</span>' : '') +
@@ -865,6 +942,19 @@
   function chip(l, v) {
     return '<span class="chip"><span class="chip-l">' + escapeHtml(l) + '</span> ' + escapeHtml(String(v)) + '</span>';
   }
+  // A BRP attacks text, one attack each: split at the ";" outside parentheses.
+  //   "Bite 50%, 1D10+1d4 (bleeding); Claw 25%, 1D6 (a; b)" → ["Bite 50%, 1D10+1d4 (bleeding)", "Claw 25%, 1D6 (a; b)"]
+  function splitAttacks(text) {
+    const out = [];
+    let depth = 0, cur = '';
+    for (const ch of String(text || '')) {
+      if (ch === '(') depth++;
+      else if (ch === ')') depth = Math.max(0, depth - 1);
+      if (ch === ';' && depth === 0) { out.push(cur); cur = ''; } else cur += ch;
+    }
+    out.push(cur);
+    return out.map(a => a.trim()).filter(Boolean);
+  }
   // A BRP monster: HP, Major Wound, Armor, DB, characteristics, then its
   // attacks, skills, and powers as plain text (annotate() makes the rolls).
   function brpDetailHtml(ent) {
@@ -874,6 +964,7 @@
     h += '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">brp</span></div>';
     const majorWound = entryMaxHp(ent) ? Math.ceil(entryMaxHp(ent) / 2) : null;
     h += '<div class="cd-stats">' +
+      (m.hd ? chip('EL', m.hd) : '') +
       chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
       (majorWound != null ? chip('Major Wound', majorWound) : '') +
       chip('Armor', m.armor != null ? m.armor : '—') +
@@ -882,7 +973,10 @@
       ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA'].filter(k => c[k] != null).map(k => chip(k, c[k])).join('') +
     '</div>';
     if (m.armorNote) h += '<p class="cd-desc"><i>Armor:</i> ' + escapeHtml(m.armorNote) + '</p>';
-    if (m.attacksText) h += '<div class="cd-sec"><span class="cd-lbl">Attacks</span><p>' + escapeHtml(brpResolveDb(m.attacksText, m.damageBonus)) + '</p></div>';
+    if (m.attacksText) {
+      h += '<div class="cd-sec cd-sec-lines"><span class="cd-lbl">Attacks</span><ul class="cd-lines">' +
+        splitAttacks(brpResolveDb(m.attacksText, m.damageBonus)).map(a => '<li>' + escapeHtml(a) + '</li>').join('') + '</ul></div>';
+    }
     if (m.skillsText) h += '<div class="cd-sec"><span class="cd-lbl">Skills</span><p>' + escapeHtml(m.skillsText) + '</p></div>';
     if (m.abilities && m.abilities.length) {
       h += '<div class="cd-abils">' + m.abilities.map(a =>
@@ -1092,9 +1186,16 @@
     else if (e.target.classList.contains('cbt-hp')) { setEntryHp(ent, e.target.value); }
     else if (e.target.classList.contains('cbt-wounds')) { setEntryWounds(ent, e.target.value); }
     else if (e.target.classList.contains('cbt-wt')) { ent.woundThreshold = Math.max(0, Math.round(Number(e.target.value) || 0)); saveDebounced(); }
+    else if (e.target.classList.contains('cbt-rank')) {
+      const key = e.target.dataset.key, field = RANK_FIELD[key];
+      const v = e.target.value.trim();
+      ent[field] = v === '' ? null : Math.round(Number(v) || 0);
+      if (ent[field] === entryCharacteristic(ent, key)) ent[field] = null;
+      saveDebounced();
+    }
   }
   function onTrackerChange(e) {
-    if (/\bcbt-(hd|hp|wounds|wt)\b/.test(e.target.className)) {
+    if (/\bcbt-(hd|hp|wounds|wt|rank)\b/.test(e.target.className)) {
       renderTracker();
       renderCombatantDetail();
     }
@@ -1144,6 +1245,7 @@
     $('#cb-round-inc').addEventListener('click', () => setRound(1));
     $('#cb-turn-prev').addEventListener('click', prevTurn);
     $('#cb-turn-next').addEventListener('click', nextTurn);
+    $('#cb-sort-rank').addEventListener('click', sortByRank);
     $('#cb-add-char').addEventListener('change', e => { if (e.target.value) { addCharEntry(e.target.value); e.target.value = ''; } });
     $('#cb-add-monster').addEventListener('click', OSR.openMonsterModal);
     $('#cb-clear').addEventListener('click', () => {
@@ -1191,7 +1293,8 @@
     shDie, updateApplyButton, setEntryHd, applyEntryDamage, applyDamageToSelected,
     combatCharFor, hpConsumable, entryHp, entryMaxHp, setEntryHp, entryDown,
     charQuickAC, charDetectHp, acDisplay, atkHitLabel, atkDmgLabel,
-    brpDbDiceTerm, brpHalveDiceTerm, brpResolveDb, selectedEntry,
+    brpDbDiceTerm, brpHalveDiceTerm, brpResolveDb, splitAttacks, selectedEntry,
+    isBrpEntry, charCharacteristic, entryCharacteristic, brpRankKey, entryRank, entryDexRank, sortByRank, insertEntry, brpRankChips,
     uniqueName, addCharEntry, addMonsterEntry, removeEntry, cycleSide, toggleSide, setSelected,
     statusIconOf, statusDescOf, toggleStatus, removeStatus, defineCondition,
     closeCtxMenu, openCtxMenu, onCtxMenuClick,

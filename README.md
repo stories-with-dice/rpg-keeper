@@ -5,7 +5,9 @@ Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, **Basic Rolepl
 **Silent Legions** — and running **basic combat**.
 Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
 at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
-sample NPCs from the *Basic Roleplaying: Universal Game Engine* core book), and Combat shows its
+sample NPCs). All bundled BRP data comes only from the *Basic Roleplaying: Universal Game Engine*
+core book (Chapters 4, 8, and 11), which is published under the ORC license; nothing comes from
+*Basic Roleplaying: Creatures*. Combat shows its
 characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions book content (Compendium,
 Bestiary, random tables) can be loaded from your own PDF; see [Silent Legions](#silent-legions)
 below. Unknown Armies Combat counts wounds up to
@@ -128,7 +130,9 @@ connect, which is enough for a gaming group.
 
 - Pick a character from the **Character** dropdown. Create one with **New blank**, **Paste from
   clipboard** (reads a sheet off your clipboard), or **New from text…** (paste into a box). The first
-  heading or line becomes the name; `[WWN]` / "Shadowdark" in the text sets a system badge.
+  heading or line becomes the name, without its `[WWN]` / `[BRP]` tag: pasting `# John [BRP]` makes
+  a character named **John**. The tag (or "Shadowdark" in the text) sets the system badge, and
+  View mode shows the heading without it. Keep the tag in the text: `[BRP]` is what marks a BRP sheet.
 - A campaign can hold several characters. The **Character B** dropdown puts a second character
   side by side, one per column. With **Character B** set to *— none —*, the single sheet is split
   into two columns at the first standalone `---` line in its Markdown (text before it on the left,
@@ -191,8 +195,20 @@ survives reloads.
 
 ### Consumables (right side)
 Campaign-wide trackers with **− / value / +** and an optional **max**, shared across every character.
+The list is grouped by character (every system): a heading with the character's name, then one line
+per tracker with its short label, for example **HP 24 / 24** and **PP 10 / 10** under **Edith Jensen**.
+A tracker named `Label (Character name)` belongs to that character; you can name your own that way
+(`Arrows (Leo Sato)`). Other trackers (Rations, Torches) follow under **Shared**. Editing a short
+label keeps the tracker in its group. A character's trackers show only while the System matches
+that character.
 Each character gets an **HP (Name)** line (starts `0 / 0`; auto-filled from that character's
 sheet `HP: x/y` when you add them to combat, and renamed if you rename the character).
+**Sheet resources**: every `Name: current/max` on a sheet gets its own line when you create or save
+the character, for example `HP: 13/13; PP: 17/17; FP: 27/27` makes **HP (Ada)**, **PP (Ada)**, and
+**FP (Ada)**. Write each resource on its own line, or separate them with `;` (also `|` or `,`).
+`HP` and `Hit Points` use the HP line. A new line starts at the sheet's values; after that the line
+holds the current value and the sheet sets only the max. A rename moves the lines, and deleting the
+character removes them.
 Add lines for rations, torches, arrows, rage uses… Delete a line with **✕**.
 Blank or `0` max means "no upper limit".
 Silent Legions characters also get a **Madness (Name)** line (`0 / 100`) — see
@@ -230,6 +246,14 @@ the round number). **Copy** puts the log on your clipboard; **Clear** empties it
   A second copy of the same name gets a `(1)`, `(2)`… suffix.
 - Combatants are shown top-to-bottom in initiative order. **Drag rows** to reorder. **Initiative is
   entered manually** — the app never rolls it.
+- **Basic Roleplaying**: the order is a rank, highest first. Settings → **BRP combat order** picks
+  which one: **DEX rank** (default; the order of actions, core book p.123) or **INT rank** (the
+  order of powers, which go before actions, p.124). A new combatant goes in at its rank: a
+  monster's DEX or INT, or the `DEX: N` / `INT: N` on a character's sheet. A creature with no DEX
+  acts on DEX rank 1 (core book p.222); one with no INT goes last in INT order. Each row has a box
+  for the active rank and a chip for the other one. Change the box for this combat (for example a
+  spell that delays the caster), then click **Sort by DEX** / **Sort by INT**. Clear the box to use
+  the characteristic again. On a tie the book lets the higher relevant skill go first: drag the rows.
 - **Round** counter with **− / +**. **Next ›** / **‹ Prev** move the active-turn marker (`◀ turn`)
   through the order; going past the end bumps the round.
 - **Hotkeys** (while the Combat tab is focused and you're not typing in a field):
@@ -260,6 +284,9 @@ All status add/removes are logged with the round they happened.
   rolls `1d20 + bonus`; a *damage* button rolls just the damage dice and enables **Apply damage**);
   clickable **saves** and a **Morale** roll; special abilities (dice inside them are clickable); and
   the raw stat block.
+- **BRP monster**: EL / HP / Major Wound / Armor / DB / Move / characteristic chips; **Attacks** one per
+  line, all at the same indent (the stat block's `;` separates them), with clickable `NN%` and damage
+  dice; skills, powers, and the description.
 - **Character**: the rendered character sheet, with its dice/modifiers clickable.
 
 ### Monster library
@@ -277,13 +304,32 @@ plus a couple of Old-School Essentials examples.
   to a structured form instead (see the **Bestiary** tab below) — the same toggle appears when you
   **Edit** a monster, so editing isn't raw-text-only either.
 
+### Populate by HD (Populate by EL for BRP)
+**+ Populate by HD…** spends a total Hit Dice budget on monsters from the current Bestiary. Type the
+**Total HD** and, if you want, the **Number of monsters**. Keeper always spends the whole budget
+exactly. It shows the proposal first: the dice icon on a row rerolls that one monster for another with
+the same HD, **Reroll** makes a new proposal, and **Add to Combat** adds them.
+
+For **Basic Roleplaying**, the button reads **+ Populate by EL…**. BRP has no Hit Dice, so it uses
+the monster's **Encounter Level** (EL). EL 1 is a fair fight for one starting Normal-level PC, and ELs
+add up. A BRP monster without an EL is never picked. A party calculator fills the total for you:
+
+- **PCs**: starts at the number of BRP characters (4 when there are none).
+- **Power level**: Normal 1, Heroic 1.25, Epic 2, Superhuman 3 per PC. Heroic and Epic come from
+  the core book p.246 (+25% and double the foes); Superhuman is an estimate.
+- **Difficulty**: Easy ×0.5, Standard ×1, Hard ×1.5, Deadly ×2.
+
+The bundled BRP Bestiary has no ELs. The BRP content pack from the `brp_character` repo
+(`tools/extract_monsters.py`) adds rated monsters from your own PDFs, or type an EL in the form.
+
 ---
 
 ## Bestiary tab
 
 A persistent, filterable view of the whole monster library — same idea as the Compendium tab, but for
 monsters. **+ New monster** and Combat's own **+ Add monster…** open the exact same modal described
-above; **Search** and **HD** min/max filter the list the same way the modal's own do. Per row:
+above; **Search** and **HD** min/max filter the list the same way the modal's own do (for BRP the filter
+reads **EL**, the Encounter Level). Per row:
 **Add to Combat**, **Edit**, **✕** (remove from library).
 
 ### Fill in fields
@@ -292,7 +338,8 @@ Instead of pasting a stat block, switch the add/edit modal to **Fill in fields**
 descending AC — the matching ascending AC is derived automatically — THAC0, D/W/P/B/S save targets,
 and Morale), **Basic Roleplaying (BRP)**, or **Silent Legions** (a descending AC, Morale, Skill, one
 Save target — leave it blank for the book's 15 − ½HD — Madness, Slaughter die, and an *AC\** box for
-creatures that ordinary harm doesn't work on). BRP and Silent Legions have no paste parser, so the
+creatures that ordinary harm doesn't work on). The BRP form has an **EL** field (Encounter Level; leave
+it blank for an unrated monster). BRP and Silent Legions have no paste parser, so the
 modal opens straight into the form when one of them is the active System. Add as many **Attacks**
 (label, count, to-hit, damage, note) and **Abilities**
 (name + description) rows as the monster needs with **+ Add**; **✕** removes a row. Saving builds the
@@ -585,7 +632,7 @@ Set Settings → **System** to **Silent Legions**.
   pregens**.
 - **Characters**: **New blank** makes a sheet with a ` ```sl ` block (attributes and a starting
   `Madness: N` line). That block is what marks a character as Silent Legions, the same way ` ```ua `
-  and ` ```brp ` do. Write skill checks as `Perception 2d6+1` and the attack bonus as `+1` so they
+  does for Unknown Armies. A BRP sheet has no block: `[BRP]` at the end of its first line marks it. Write skill checks as `Perception 2d6+1` and the attack bonus as `+1` so they
   stay clickable.
 - **Madness**: each Silent Legions character gets a **Madness (Name)** tracker, max 100, starting
   from the block's `Madness:` line. After that the tracker is what you update.
@@ -614,6 +661,9 @@ Set Settings → **System** to **Silent Legions**.
   **Fantasy** — parchment & gold on mahogany, serif type. **Sci-fi** — cyan on cold slate, wide
   caps. **Horror** — bone & blood on near-black. The choice is saved with your data and included in
   Export/Import.
+- **BRP combat order** (shown only while System is BRP; default **DEX rank**). Which rank the
+  Combat tracker sorts by: **DEX rank** (actions) or **INT rank** (powers). A change re-sorts the
+  running combat at once.
 - **Scarlet Heroes damage resolution** (default **off**). When on, **Apply damage** translates
   *each* damage die individually — `1 → 0`, `2–5 → 1`, `6–9 → 2`, `10+ → 4` — sums the results, and
   applies that to a **monster's HD** or a **character's HP**. A flat damage bonus is folded into the

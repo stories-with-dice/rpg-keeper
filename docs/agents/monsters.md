@@ -46,7 +46,11 @@ an outside `mousedown`, Escape (`closeMonsterGenerator`), and Generate close it.
 0.5). `buildHdPopulatePlan(monsters, totalHd, count)` (pure) → `{ ok, picks, … }` or
 `{ ok: false, reason }`: coin-change feasibility tables plus random backtracking. Each proposal row
 has a preview and a reroll (`rerollPick(idx)`: same HD, another monster). Monsters join combat only
-on `#php-confirm-add`. `#php-total-hd` has no default.
+on `#php-confirm-add`. `#php-total-hd` has no default. `monstersByUnit` also skips a BRP def without
+`hd` (no Encounter Level). For BRP (`OSR.levelLabel()` is `'EL'`) the modal shows `#php-hint-el` and
+the party calculator `#php-party` (`#php-pcs`, `#php-power`, `#php-difficulty`); an `input`/`change`
+there fills `#php-total-hd` with `partyElBudget(pcs, power, difficulty)` (pure; PCs × `POWER_LEVEL_EL`
+× `DIFFICULTY_EL`, rounded to 0.5, minimum 0.5). `#php-pcs` starts at the BRP character count, or 4.
 
 ## Converters
 

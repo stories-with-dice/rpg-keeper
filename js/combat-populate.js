@@ -12,6 +12,10 @@
  * "units" (HD * 2) so the planner is exact-integer coin-change, not floating
  * point: a monster whose own HD is literally "0" (Shadowdark/OSE's weakest
  * tier) still costs 1 unit = 0.5 HD, never 0 — see effectiveHdUnits().
+ *
+ * BRP has no Hit Dice: its monsters carry an Encounter Level (EL) in
+ * hd/hdNum, so for BRP the modal reads "Populate by EL" and shows a party
+ * calculator that fills the total (partyElBudget()).
  */
 (function (OSR) {
   'use strict';
@@ -19,6 +23,21 @@
 
   const MAX_BUDGET_UNITS = 1000; // 500 HD — generous, keeps the DP tables small
   const MAX_COUNT = 200;
+
+  // PC value per power level: core book p.246, Customizing Creatures (heroic
+  // parties meet +25% foes, epic parties double). Superhuman has no number in
+  // the book; 3 is an estimate. The brp_character repo's
+  // docs/encounter-level.md explains the EL model.
+  const POWER_LEVEL_EL = { normal: 1, heroic: 1.25, epic: 2, superhuman: 3 };
+  const DIFFICULTY_EL = { easy: 0.5, standard: 1, hard: 1.5, deadly: 2 };
+
+  // Total EL budget for a party, rounded to the planner's 0.5 steps (minimum 0.5).
+  function partyElBudget(pcs, power, difficulty) {
+    const n = Math.round(Number(pcs));
+    if (!(n > 0)) return null;
+    const total = n * (POWER_LEVEL_EL[power] || 1) * (DIFFICULTY_EL[difficulty] || 1);
+    return Math.max(0.5, Math.round(total * 2) / 2);
+  }
 
   function effectiveHdUnits(d) {
     const hd = d.hdNum != null ? d.hdNum : (window.MonsterParse ? MonsterParse.hdNum(d.hd) : 0);
@@ -30,6 +49,7 @@
     const map = new Map();
     monsters.forEach(d => {
       if (d.hdNum == null && !d.hd) return;
+      if (d.source === 'brp' && !d.hd) return; // a BRP monster without an EL
       const u = effectiveHdUnits(d);
       if (!map.has(u)) map.set(u, []);
       map.get(u).push(d);
@@ -90,22 +110,23 @@
   // Returns { ok:true, picks:[def, ...], totalHd, count } or { ok:false, reason }.
   function buildHdPopulatePlan(monsters, totalHd, count) {
     const budgetUnits = Math.round(Number(totalHd) * 2);
-    if (!(budgetUnits > 0)) return { ok: false, reason: 'Enter a total HD greater than 0.' };
-    if (budgetUnits > MAX_BUDGET_UNITS) return { ok: false, reason: 'Total HD is too large (max ' + (MAX_BUDGET_UNITS / 2) + ').' };
+    const L = OSR.levelLabel ? OSR.levelLabel() : 'HD';
+    if (!(budgetUnits > 0)) return { ok: false, reason: 'Enter a total ' + L + ' greater than 0.' };
+    if (budgetUnits > MAX_BUDGET_UNITS) return { ok: false, reason: 'Total ' + L + ' is too large (max ' + (MAX_BUDGET_UNITS / 2) + ').' };
     const countStr = String(count == null ? '' : count).trim();
     const countN = countStr === '' ? null : Math.round(Number(countStr));
     if (countN != null && !(countN > 0)) return { ok: false, reason: 'Number of monsters must be at least 1.' };
     if (countN != null && countN > MAX_COUNT) return { ok: false, reason: 'Number of monsters is too large (max ' + MAX_COUNT + ').' };
     const byUnit = monstersByUnit(monsters);
     const units = Array.from(byUnit.keys()).sort((a, b) => a - b);
-    if (!units.length) return { ok: false, reason: 'No monsters with HD in the current Bestiary to build from.' };
+    if (!units.length) return { ok: false, reason: 'No monsters with ' + L + ' in the current Bestiary to build from.' };
     const plan = pickUnitPlan(units, budgetUnits, countN);
     if (!plan) {
       return {
         ok: false,
         reason: countN != null
-          ? "Can't spend exactly " + (budgetUnits / 2) + ' HD across exactly ' + countN + ' monster(s) with the HD values currently in the Bestiary — try a different count.'
-          : "Can't spend exactly " + (budgetUnits / 2) + ' HD with the HD values currently in the Bestiary.'
+          ? "Can't spend exactly " + (budgetUnits / 2) + ' ' + L + ' across exactly ' + countN + ' monster(s) with the ' + L + ' values currently in the Bestiary — try a different count.'
+          : "Can't spend exactly " + (budgetUnits / 2) + ' ' + L + ' with the ' + L + ' values currently in the Bestiary.'
       };
     }
     const picks = plan.map(u => randomChoice(byUnit.get(u)));
@@ -120,6 +141,14 @@
     $('#php-setup').hidden = false;
     $('#php-confirm').hidden = true;
     $('#php-setup-msg').textContent = '';
+    const brp = OSR.currentSystem() === 'brp';
+    OSR.applyLevelLabels();
+    $('#php-hint-hd').hidden = brp;
+    $('#php-hint-el').hidden = !brp;
+    $('#php-party').hidden = !brp;
+    // The party size starts at the number of BRP characters; the total stays
+    // empty until the calculator changes (nothing is prefilled).
+    if (brp && !$('#php-pcs').value) $('#php-pcs').value = OSR.charactersForSystem().length || 4;
     $('#populate-hd-modal').hidden = false;
     $('#php-total-hd').focus();
   }
@@ -141,9 +170,9 @@
         '<div class="comp-row-head">' +
           '<span class="comp-name">' + escapeHtml(d.name) + '</span>' +
           '<button class="btn php-row-reroll" type="button"' + (canReroll ? '' : ' disabled') +
-            ' title="Reroll — replace with another monster of the same HD">' +
+            ' title="Reroll — replace with another monster of the same ' + OSR.levelLabel() + '">' +
             '<i class="fa-solid fa-dice-d20"></i></button>' +
-          '<span class="badge">HD ' + escapeHtml(String(d.hd || '?')) + '</span>' +
+          '<span class="badge">' + OSR.levelLabel() + ' ' + escapeHtml(String(d.hd || '?')) + '</span>' +
         '</div></li>';
     }).join('');
   }
@@ -181,8 +210,14 @@
   function confirmPlan() {
     if (!currentPlan) return;
     currentPlan.picks.forEach(d => OSR.addMonsterEntry(d));
-    OSR.pushNote('Populate by HD', 'added ' + currentPlan.count + ' monster(s), ' + currentPlan.totalHd + ' HD total');
+    const L = OSR.levelLabel();
+    OSR.pushNote('Populate by ' + L, 'added ' + currentPlan.count + ' monster(s), ' + currentPlan.totalHd + ' ' + L + ' total');
     closePopulateHdModal();
+  }
+
+  function fillPartyBudget() {
+    const total = partyElBudget($('#php-pcs').value, $('#php-power').value, $('#php-difficulty').value);
+    if (total != null) $('#php-total-hd').value = total;
   }
 
   function onPlanListClick(e) {
@@ -200,6 +235,8 @@
     $('#php-back').addEventListener('click', backToSetup);
     $('#php-confirm-add').addEventListener('click', confirmPlan);
     $('#php-list').addEventListener('click', onPlanListClick);
+    $('#php-party').addEventListener('input', fillPartyBudget);
+    $('#php-party').addEventListener('change', fillPartyBudget);
     $('#php-list').addEventListener('mouseover', e => {
       const li = e.target.closest('.php-row[data-id]');
       if (li && li.dataset.id) OSR.showLibPreview(li);
@@ -210,6 +247,6 @@
 
   Object.assign(OSR, {
     effectiveHdUnits, monstersByUnit, feasibleSums, feasibleSumsWithCount, pickUnitPlan,
-    buildHdPopulatePlan, openPopulateHdModal, closePopulateHdModal, wirePopulateHd
+    buildHdPopulatePlan, partyElBudget, POWER_LEVEL_EL, DIFFICULTY_EL, openPopulateHdModal, closePopulateHdModal, wirePopulateHd
   });
 })(window.OSR = window.OSR || {});

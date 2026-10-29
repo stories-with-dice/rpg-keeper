@@ -146,8 +146,14 @@ the description, `Type:`, `Book:`, `Wound Threshold:`, `Obsession:`, the identit
 
 The OSR shape, plus `characteristics` (an object such as `{ "STR": 25, "CON": 18, "SIZ": 25, "POW": 7 }`;
 leave out the ones the creature does not have), `armor` (a number), `armorNote`, `damageBonus`
-(`"+2D6"`), `attacksText` (`"Bite 50%, 1D10+dm"`), and `skillsText`. Leave `hd`, `ac`, `stats`, and
-`saveTargets` out. `data/seed-brp.json` has 73 examples.
+(`"+2D6"`), `attacksText` (`"Bite 50%, 1D10+dm"`), and `skillsText`. Leave `ac`, `stats`, and
+`saveTargets` out. `data/seed-brp.json` has 73 examples (without an Encounter Level).
+
+Optional **Encounter Level** (EL): put it in `hd` (text, `"1.5"`) and `hdNum` (the number, `1.5`), and
+also in `encounterLevel`. Use steps of 0.5; the lowest EL is 0.5. The Bestiary's EL filter and Combat's
+**Populate by EL** read `hdNum`. A monster without `hd` has no EL and Populate never picks it. The
+`brp_character` repo's `tools/extract_monsters.py` writes such a pack; its `docs/encounter-level.md`
+explains the EL model.
 
 ## Tables
 

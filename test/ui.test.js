@@ -437,13 +437,29 @@ test('Consumables: + Add appends a row; steppers bump and clamp; ✕ deletes', (
   assert.equal($$('#consumables-list .cons-row').length, 0);
 });
 
+test('Consumables: grouped by character, each with its short labels; Shared trackers last', () => {
+  T.state.settings.system = 'brp';
+  T.createCharacter('# Edith Jensen [BRP]\n\nHP: 24/24; PP: 10/10\n');
+  T.createCharacter('# Leo Sato [BRP]\n\nHP: 18/18\n');
+  T.state.consumables.push({ id: 'r1', name: 'Rations', value: 3, max: 3 });
+  T.renderAll();
+  const groups = $$('#consumables-list .cons-group').map(g =>
+    [g.querySelector('.cons-group-head').textContent].concat(Array.from(g.querySelectorAll('.cons-name')).map(i => i.value)));
+  assert.deepEqual(groups, [['Edith Jensen', 'HP', 'PP'], ['Leo Sato', 'HP'], ['Shared', 'Rations']]);
+
+  // Editing a short label keeps the tracker the character's.
+  const pp = $$('#consumables-list .cons-group')[0].querySelectorAll('.cons-name')[1];
+  setValue(pp, 'Power');
+  assert.ok(T.state.consumables.some(c => c.name === 'Power (Edith Jensen)'));
+});
+
 test('Consumables: HP/Wounds trackers only show for the active system; switching System toggles them without deleting either', () => {
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.createCharacter('```ua\nWound Threshold: 50\n\nShock\n```\n', { name: 'Kevin' });
   T.state.consumables.push({ id: 'r1', name: 'Rations', value: 3, max: 3 });
   T.renderAll();
 
-  const names = () => $$('#consumables-list .cons-name').map(i => i.value).sort();
+  const names = () => $$('#consumables-list .cons-row').map(r => r.dataset.name).sort();
   assert.deepEqual(names(), ['HP (Garrick)', 'Rations']);
 
   tab('settings');
@@ -542,6 +558,8 @@ test('Combat: a BRP monster shows Armor/DB/characteristics instead of the OSR AC
   assert.match(detail, /14/);
   assert.match(detail, /chain and a light helm/);
   assert.match(detail, /Battleaxe/);
+  assert.deepEqual($$('#combatant-detail .cd-lines li').map(li => li.textContent), ['Hammer 35%, 1D6+0', 'Battleaxe 50%, 1D8+2+0'],
+    'one attack per line');
   assert.match(detail, /Appraise/);
   assert.match(detail, /Dark Vision/);
   assert.doesNotMatch(detail, /THAC0/);
@@ -551,6 +569,64 @@ test('Combat: a BRP monster shows Armor/DB/characteristics instead of the OSR AC
   assert.doesNotMatch(detail, /dm\b/i);
   // The bare "50%"/"1D6+0" text is still auto-linked into clickable rolls.
   assert.ok($('#combatant-detail .roll'), 'attacks/skills text is annotated for clickable dice/percentage rolls');
+});
+
+test('Combat (BRP): rows show the DEX rank; an edited rank and Sort by DEX reorder the tracker', () => {
+  T.state.settings.system = 'brp';
+  tab('combat');
+  T.renderCombat();
+  assert.equal($('#cb-sort-rank').hidden, false);
+  assert.equal($('#cb-sort-rank').textContent, 'Sort by DEX');
+  assert.equal($('#cb-brp-hint').hidden, false);
+  const mon = (name, DEX) => ({ name, source: 'brp', system: 'brp', hp: 10, characteristics: { DEX, INT: 7 }, attacks: [], abilities: [] });
+  T.addMonsterEntry(mon('Wolf', 13));
+  T.addMonsterEntry(mon('Tiger', 19));
+  const rows = () => $$('#tracker-list .cbt-row .cbt-name').map(n => n.textContent);
+  assert.deepEqual(rows(), ['Tiger', 'Wolf']);
+  const wolfDex = $$('#tracker-list .cbt-row')[1].querySelector('.cbt-rank');
+  assert.equal(wolfDex.value, '13');
+  assert.match($$('#tracker-list .cbt-row')[1].textContent, /INT 7/);
+  setValue(wolfDex, '20');
+  assert.equal(T.state.combat.entries.find(e => e.name === 'Wolf').dexRank, 20);
+  click($('#cb-sort-rank'));
+  assert.deepEqual(rows(), ['Wolf', 'Tiger']);
+  setValue($$('#tracker-list .cbt-row')[0].querySelector('.cbt-rank'), '');
+  assert.equal(T.state.combat.entries.find(e => e.name === 'Wolf').dexRank, null, 'a blank rank goes back to DEX');
+
+  T.state.settings.system = 'osr';
+  T.renderCombat();
+  assert.equal($('#cb-sort-rank').hidden, true);
+});
+
+test('Settings (BRP): "BRP combat order" switches the tracker to INT rank and re-sorts it', () => {
+  T.state.settings.system = 'brp';
+  T.renderSettings();
+  assert.equal($('#set-brp-initiative-row').hidden, false);
+  assert.equal($('#set-brp-initiative').value, 'dex');
+  const mon = (name, DEX, INT) => ({ name, source: 'brp', system: 'brp', hp: 10, characteristics: { DEX, INT }, attacks: [], abilities: [] });
+  T.addMonsterEntry(mon('Sorcerer', 10, 18));
+  T.addMonsterEntry(mon('Wolf', 13, 4));
+  T.addMonsterEntry(mon('Rat Swarm', 12));                 // no INT
+  const rows = () => $$('#tracker-list .cbt-row .cbt-name').map(n => n.textContent);
+  assert.deepEqual(rows(), ['Wolf', 'Rat Swarm', 'Sorcerer']);
+  $('#set-brp-initiative').value = 'int';
+  fire($('#set-brp-initiative'), 'change');
+  assert.equal(T.state.settings.brpInitiative, 'int');
+  assert.deepEqual(rows(), ['Sorcerer', 'Wolf', 'Rat Swarm'], 'highest INT first; no INT goes last');
+  assert.equal($('#cb-sort-rank').textContent, 'Sort by INT');
+  const row = $$('#tracker-list .cbt-row')[0];
+  assert.equal(row.querySelector('.cbt-rank').dataset.key, 'INT');
+  assert.match(row.textContent, /DEX 10/);
+  setValue(row.querySelector('.cbt-rank'), '2');
+  assert.equal(T.state.combat.entries.find(e => e.name === 'Sorcerer').intRank, 2);
+  T.addMonsterEntry(mon('Elf', 14, 17));                  // goes in at its INT rank
+  assert.deepEqual(rows(), ['Elf', 'Sorcerer', 'Wolf', 'Rat Swarm'], 'a new entry is placed before the sort; the edited Sorcerer stays until Sort');
+  click($('#cb-sort-rank'));
+  assert.deepEqual(rows(), ['Elf', 'Wolf', 'Sorcerer', 'Rat Swarm']);
+
+  T.state.settings.system = 'osr';
+  T.renderSettings();
+  assert.equal($('#set-brp-initiative-row').hidden, true);
 });
 
 test('Combat: a BRP monster’s "+dm" attack text rolls as a single formula including its actual Damage Bonus (example: the Knight’s Long Sword)', () => {
@@ -1122,6 +1198,59 @@ test('Combat "+ Populate by HD…": an infeasible exact count shows an error and
   assert.equal($('#php-confirm').hidden, true, 'stays on the setup step');
   assert.match($('#php-setup-msg').textContent, /Can't spend exactly/);
   assert.equal(T.state.combat.entries.length, 0);
+});
+
+// A BRP monster as the BRP content pack writes it: the Encounter Level is in hd/hdNum.
+function brpMonster(id, name, el) {
+  return { id, name, source: 'brp', desc: '', raw: '', characteristics: { STR: 12, CON: 12, SIZ: 12 }, hp: 12,
+    move: '10', damageBonus: 'None', armor: 2, armorNote: '', attacksText: 'Club 50%, 1D6+dm', skillsText: '',
+    abilities: [], system: 'brp', ...(el != null ? { hd: String(el), hdNum: el, encounterLevel: el } : {}) };
+}
+
+test('Populate by EL (BRP): labels read EL, the party calculator fills the total, and only rated monsters are picked', () => {
+  T.state.settings.system = 'brp';
+  T.state.monsters = [brpMonster('b-orc', 'Orc', 1.5), brpMonster('b-troll', 'Troll', 2),
+    brpMonster('b-ghost', 'Ghost', null)];
+  T.state.combat.entries = [];
+  T.renderAll();
+  tab('combat');
+  assert.match($('#cb-populate-hd').textContent, /Populate by EL/);
+  click($('#cb-populate-hd'));
+  assert.equal($('#php-party').hidden, false, 'the party calculator shows for BRP');
+  assert.equal($('#php-hint-el').hidden, false);
+  assert.equal($('#php-hint-hd').hidden, true);
+  assert.equal($('#php-total-hd').value, '', 'nothing is prefilled');
+  setValue($('#php-pcs'), '4');
+  $('#php-power').value = 'heroic';
+  $('#php-difficulty').value = 'hard';
+  fire($('#php-difficulty'), 'change');
+  assert.equal($('#php-total-hd').value, '7.5', '4 Heroic PCs (1.25) x Hard (1.5)');
+  setValue($('#php-total-hd'), '3.5');
+  setValue($('#php-count'), '2');
+  click($('#php-generate'));
+  assert.equal($('#php-confirm').hidden, false);
+  assert.deepEqual($$('#php-list .comp-name').map(el => el.textContent).sort(), ['Orc', 'Troll']);
+  assert.deepEqual($$('#php-list .badge').map(el => el.textContent).sort(), ['EL 1.5', 'EL 2']);
+  click($('#php-confirm-add'));
+  assert.match(logText(), /Populate by EL/);
+
+  // The Bestiary filter reads EL too, and a monster without an EL is out of an EL range.
+  tab('bestiary');
+  assert.equal($$('#tab-bestiary .hd-label')[0].textContent, 'EL');
+  setValue($('#mb-hd-min'), '2');
+  assert.deepEqual($$('#mb-list .comp-name').map(el => el.textContent), ['Troll']);
+  setValue($('#mb-hd-min'), '');
+  assert.match($('#mb-list [data-id="b-orc"] .badge').textContent, /^EL 1\.5 · HP 12/);
+});
+
+test('Populate by HD: outside BRP the labels read HD and the party calculator is hidden', () => {
+  T.state.settings.system = 'osr';
+  T.renderAll();
+  tab('combat');
+  assert.match($('#cb-populate-hd').textContent, /Populate by HD/);
+  click($('#cb-populate-hd'));
+  assert.equal($('#php-party').hidden, true);
+  assert.equal($('#php-hint-hd').hidden, false);
 });
 
 /* ================================================================== */
@@ -1764,7 +1893,7 @@ test('System switch: Compendium, Bestiary, Character dropdown, Combat pickers, a
     assert.deepEqual($$('#mm-lib-list .mm-li-main b').map(b => b.textContent), ['Goblin']);
     click($('#mm-close'));
 
-    assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['HP (Garrick)', 'Rations']);
+    assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name).sort(), ['HP (Garrick)', 'Rations']);
   }
   function assertUaView() {
     tab('character');
@@ -1783,7 +1912,7 @@ test('System switch: Compendium, Bestiary, Character dropdown, Combat pickers, a
     assert.deepEqual($$('#mm-lib-list .mm-li-main b').map(b => b.textContent), ['Denizen']);
     click($('#mm-close'));
 
-    assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['Rations', 'Wounds (Kevin)']);
+    assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name).sort(), ['Rations', 'Wounds (Kevin)']);
   }
 
   assertOsrView(); // default System is 'osr'
@@ -1830,7 +1959,7 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Zombie']);
   assert.match($('#mb-list').textContent, /HD 2 · AC 7 · HP 9 · sl/);
   assert.equal($('#mb-gen').hidden, true, 'the Shadowdark PL generator is hidden for Silent Legions');
-  assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['HP (Mara)', 'Madness (Mara)']);
+  assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name).sort(), ['HP (Mara)', 'Madness (Mara)']);
   const madness = T.state.consumables.find(c => c.name === 'Madness (Mara)');
   assert.equal(madness.value, 12);
   assert.equal(madness.max, 100);
@@ -1839,7 +1968,7 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   setValue($('#set-system'), 'osr');
   tab('character');
   assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
-  assert.deepEqual($$('#consumables-list .cons-name').map(i => i.value).sort(), ['HP (Garrick)']);
+  assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name).sort(), ['HP (Garrick)']);
   assert.equal(T.state.characters.length, 2, 'nothing deleted by switching');
 });
 

@@ -29,14 +29,16 @@
   const DEFAULT_BLANK_UA = '# New Character [Unknown Armies]\n\n```ua\nIdentities\n\nWound Threshold: 50\n\n' +
     'Shock\nHelplessness: 0 hardened / 0 failed\nIsolation: 0 hardened / 0 failed\nSelf: 0 hardened / 0 failed\n' +
     'Unnatural: 0 hardened / 0 failed\nViolence: 0 hardened / 0 failed\n```\n';
-  // Has a ```brp fence (characteristics, quick-reference only — not rolled
-  // directly in BRP, so it's left as plain fenced text rather than clickable)
-  // so a blank character created while System is BRP is itself classified
-  // 'brp' by charSystemKey() below — same reasoning as DEFAULT_BLANK_UA above.
-  // Skills go below the fence as plain "Name NN%" text so they stay clickable
-  // percentile rolls (see annotate.js's PCT_RE).
-  const DEFAULT_BLANK_BRP = '# New Character [BRP]\n\n```brp\nSTR: 11\nCON: 11\nSIZ: 11\nINT: 11\nPOW: 11\nDEX: 11\nCHA: 11\n```\n\n' +
-    'Hit Points: 11/11 | Move: 10 | Damage Modifier: None\n\n## Skills\n\nDodge 22%, Brawl 25%\n';
+  // Has the "[BRP]" tag in its first heading so a blank character created
+  // while System is BRP is itself classified 'brp' by charSystemKey() below —
+  // same reasoning as DEFAULT_BLANK_UA above. Characteristics are "STR: 11"
+  // sheet variables (Combat reads DEX and INT, js/combat.js charCharacteristic);
+  // "HP: 11/11; PP: 11/11" are resources, each with its own tracker
+  // (OSR.syncResourceTrackers, js/core.js). Skills are plain "Name NN%" text so
+  // they stay clickable percentile rolls (see annotate.js's PCT_RE).
+  const DEFAULT_BLANK_BRP = '# New Character [BRP]\n\n' +
+    'STR: 11; CON: 11; SIZ: 11; INT: 11; POW: 11; DEX: 11; CHA: 11\n\n' +
+    'HP: 11/11; PP: 11/11\n\nMove: 10; Damage Modifier: None\n\n## Skills\n\nDodge 22%, Brawl 25%\n';
   // Has a ```sl fence (attributes + starting Madness, quick-reference only)
   // so a blank character created while System is Silent Legions is itself
   // classified 'sl' by charSystemKey() below — same reasoning as
@@ -52,7 +54,7 @@
     opts = opts || {};
     const state = OSR.state;
     const sys = OSR.currentSystem && OSR.currentSystem();
-    const usedBody = body != null ? body :
+    const usedBody = body != null ? OSR.migrateBrpSheet(body) :
       (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : sys === 'sl' ? DEFAULT_BLANK_SL : DEFAULT_BLANK_OSR);
     const det = detectNameSystem(usedBody);
     const ch = {
@@ -66,6 +68,7 @@
     };
     state.characters.push(ch);
     OSR.ensureHpTracker(ch);
+    OSR.syncResourceTrackers(ch);
     syncWoundTracker(ch);
     OSR.ensureMadnessTracker(ch);
     state.activeId = ch.id;
@@ -80,20 +83,23 @@
   // (it's just the plain textarea echoing ch.body). A malformed/absent fence
   // simply falls through to marked's normal <pre><code> rendering.
   const UA_FENCE_RE = /```ua[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
-  const BRP_FENCE_RE = /```brp[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
+  // A BRP sheet has no fence: "[BRP]" (or "[Basic Roleplaying]") ends its
+  // first line ("# Ada [BRP]", "**Ada [BRP]**").
+  const BRP_TAG_RE = /\[(?:BRP|Basic Roleplaying)\][\s*_]*$/i;
   const SL_FENCE_RE = /```sl[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
 
   // Which System bucket a character belongs to for the Character dropdown —
   // unlike the free-text `ch.system` display label (e.g. "Shadowdark",
   // "Unknown Armies"), this is derived from whether the sheet actually has a
-  // ```ua, ```brp, or ```sl fence, so it can't drift out of sync with what's
-  // actually rendered (a plain OSR sheet has none, and defaults to 'osr').
+  // ```ua or ```sl fence or the "[BRP]" tag of its first line, so it can't
+  // drift out of sync with the sheet (a plain OSR sheet has none, and
+  // defaults to 'osr').
   function charSystemKey(ch) {
     const body = (ch && ch.body) || '';
     UA_FENCE_RE.lastIndex = 0;
     if (UA_FENCE_RE.test(body)) return 'ua3e';
-    BRP_FENCE_RE.lastIndex = 0;
-    if (BRP_FENCE_RE.test(body)) return 'brp';
+    const first = body.split(/\r?\n/).find(l => l.trim());
+    if (first && BRP_TAG_RE.test(first)) return 'brp';
     SL_FENCE_RE.lastIndex = 0;
     if (SL_FENCE_RE.test(body)) return 'sl';
     return 'osr';
@@ -291,7 +297,16 @@
       return '\n\n' + uaStatblockHtml(window.UAStatblock.parseUAStatblock(inner), { fenceIndex: fenceIndex }) + '\n\n';
     });
   }
-  function renderCharMarkdown(body) { return marked.parse(renderUABlocks(body)); }
+  // View mode shows the name without its system tag ("# John [BRP]" → "John"),
+  // like the Character dropdown; the tag stays in the text, where it marks the
+  // system (charSystemKey) and sets the badge.
+  function stripTitleTag(body) {
+    const lines = String(body || '').split('\n');
+    const i = lines.findIndex(l => l.trim());
+    if (i >= 0) lines[i] = lines[i].replace(/\s*\[[^\]]+\]([ \t*_\r]*)$/, '$1');
+    return lines.join('\n');
+  }
+  function renderCharMarkdown(body) { return marked.parse(renderUABlocks(stripTitleTag(body))); }
 
   // Every ```ua fence's Wound Threshold (last one wins) syncs the
   // campaign-global "Wounds (Name)" tracker's max, mirroring how name/system
@@ -496,6 +511,17 @@
     OSR.ensureMadnessTracker(ch);
   }
 
+  // A rename moves each resource tracker ("PP (Old)" → "PP (New)"), so it
+  // keeps its current value. `oldLabels`: resource name → label before the edit.
+  function renameResourceTrackers(oldLabels, ch) {
+    oldLabels.forEach((oldLabel, name) => {
+      const label = OSR.resourceTrackerLabel(ch, name);
+      if (label === oldLabel || OSR.state.consumables.some(c => c.name === label)) return;
+      const c = OSR.state.consumables.find(x => x.name === oldLabel);
+      if (c) c.name = label;
+    });
+  }
+
   function saveEdit() {
     const areas = $$('#edit-host .edit-col-area');
     if (!areas.length) return;
@@ -505,6 +531,7 @@
       const oldLabel = OSR.hpTrackerLabel(ch);
       const oldWoundLabel = OSR.woundTrackerLabel(ch);
       const oldMadnessLabel = OSR.madnessTrackerLabel(ch);
+      const oldResources = new Map(OSR.sheetResources(ch.body).map(r => [r.name, OSR.resourceTrackerLabel(ch, r.name)]));
       ch.body = area.value;
       ch.updatedAt = Date.now();
       const det = detectNameSystem(ch.body);
@@ -513,6 +540,8 @@
       renameHpTracker(oldLabel, ch);
       renameWoundTracker(oldWoundLabel, ch);
       renameMadnessTracker(oldMadnessLabel, ch);
+      renameResourceTrackers(oldResources, ch);
+      OSR.syncResourceTrackers(ch);
       syncWoundTracker(ch);
     });
     OSR.save();
@@ -545,8 +574,9 @@
     const label = OSR.hpTrackerLabel(ch);
     const woundLabel = OSR.woundTrackerLabel(ch);
     const madnessLabel = OSR.madnessTrackerLabel(ch);
+    const own = new Set([label, woundLabel, madnessLabel].concat(OSR.resourceTrackerLabels(ch)));
     state.characters = state.characters.filter(c => c.id !== ch.id);
-    state.consumables = state.consumables.filter(c => c.name !== label && c.name !== woundLabel && c.name !== madnessLabel);
+    state.consumables = state.consumables.filter(c => !own.has(c.name));
     if (state.activeIdB === ch.id) state.activeIdB = null;
     state.activeId = state.characters.length ? state.characters[0].id : null;
     OSR.save();
@@ -779,7 +809,7 @@
     setMode, renameHpTracker, renameWoundTracker, renameMadnessTracker, saveEdit, renameChar, deleteChar,
     charViewTarget, linkifyInText, applyPendingCompLink,
     openSelMenu, closeSelMenu, linkSelToExisting, wireCharacters,
-    uaStatblockHtml, uaFeaturesHtml, renderUABlocks, renderCharMarkdown, syncWoundTracker,
+    uaStatblockHtml, uaFeaturesHtml, renderUABlocks, stripTitleTag, renderCharMarkdown, syncWoundTracker, renameResourceTrackers,
     patchUAFence, setUAShockValue,
     get selMenuData() { return selMenuData; }
   });

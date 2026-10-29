@@ -1,4 +1,4 @@
-/* js/settings.js — the Settings tab: system, style theme, Scarlet Heroes toggle,
+/* js/settings.js — the Settings tab: system, style theme, BRP combat order, Scarlet Heroes toggle,
  * monster-library reload, Compendium reseed/clear, add missing example characters.
  * The Dropbox sync row has its own file, js/dropbox.js.
  */
@@ -26,6 +26,8 @@
       });
     }
     if (sysSel) sysSel.value = OSR.currentSystem();
+    $('#set-brp-initiative-row').hidden = OSR.currentSystem() !== 'brp';
+    $('#set-brp-initiative').value = OSR.state.settings.brpInitiative === 'int' ? 'int' : 'dex';
     const mn = OSR.monstersForSystem().length;
     $('#set-lib-count').textContent = mn + ' monster' + (mn === 1 ? '' : 's') +
       ' in the ' + (OSR.SYSTEM_LABELS[OSR.currentSystem()] || OSR.currentSystem()) + ' library.';
@@ -68,6 +70,13 @@
       OSR.applyTheme();
       OSR.save();
       OSR.pushNote('Settings', 'Style theme → ' + (OSR.THEME_LABELS[t] || t));
+    });
+    // BRP combat order: re-sorts a running combat at once.
+    $('#set-brp-initiative').addEventListener('change', e => {
+      OSR.state.settings.brpInitiative = e.target.value === 'int' ? 'int' : 'dex';
+      OSR.save();
+      if (OSR.currentSystem() === 'brp') OSR.sortByRank(); else OSR.renderCombat();
+      OSR.pushNote('Settings', 'BRP combat order → ' + (e.target.value === 'int' ? 'INT rank' : 'DEX rank'));
     });
     $('#set-scarlet-heroes').addEventListener('change', e => {
       OSR.state.settings.scarletHeroes = e.target.checked;

@@ -19,7 +19,7 @@ const settle = async (n = 20) => { for (let i = 0; i < n; i++) await tick(); };
 function fourSystems(T) {
   T.createCharacter('# Aria\nHP 5/5');
   T.createCharacter('# Kevin\n```ua\nWound Threshold: 50\n```');
-  T.createCharacter('# Brakka\n```brp\nSTR 12\n```');
+  T.createCharacter('# Brakka [BRP]\n| STR |\n|---|\n| 12 |');
   T.createCharacter('# Dee\n```sl\nMadness: 4\n```');
   T.state.consumables.push({ id: 'rations', name: 'Rations', value: 3, max: 10 });
   ['osr', 'ua3e', 'brp', 'sl'].forEach(sys => {

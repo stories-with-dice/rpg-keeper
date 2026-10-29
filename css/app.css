@@ -538,6 +538,30 @@ button, input, textarea, select {
   border-bottom: 1px solid var(--border);
 }
 .cons-row:last-child { border-bottom: 0; }
+/* Trackers grouped by character: a name heading, then indented rows. */
+.cons-group + .cons-group { margin-top: 10px; }
+.cons-group-head {
+  color: var(--accent);
+  font-weight: 700;
+  padding: 4px 0 2px;
+  border-bottom: 1px solid var(--border);
+}
+/* A character's tracker is one line: short label, − value / max +, ✕ (the rail is 280px). */
+.cons-group[data-char-id] .cons-row {
+  grid-template-columns: 40px 1fr auto;
+  grid-template-areas: "name ctl del";
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 4px 8px;
+  border-bottom: 0;
+}
+.cons-group[data-char-id] .cons-name { grid-area: name; padding: 4px; font-size: 13px; }
+.cons-group[data-char-id] .cons-ctl { grid-area: ctl; grid-column: auto; gap: 4px; }
+.cons-group[data-char-id] .cons-del { grid-area: del; padding: 4px 7px; }
+.cons-group[data-char-id] .cons-btn { width: 26px; height: 26px; }
+.cons-group[data-char-id] .cons-val-input,
+.cons-group[data-char-id] .cons-max-input { width: 44px; padding: 4px 2px; font-size: 13px; }  /* room for 3 digits */
+.cons-group-shared .cons-group-head ~ .cons-row { padding-left: 8px; }
 .cons-name {
   background: var(--bg-3);
   border: 1px solid var(--border);
@@ -581,6 +605,10 @@ button, input, textarea, select {
   padding: 5px 4px;
 }
 .cons-val-input { font-weight: 700; color: var(--accent); }
+/* The − / + buttons step the value, so no browser spinner: it took the width of a digit. */
+.cons-val-input, .cons-max-input { appearance: textfield; -moz-appearance: textfield; font-variant-numeric: tabular-nums; }
+.cons-val-input::-webkit-inner-spin-button, .cons-val-input::-webkit-outer-spin-button,
+.cons-max-input::-webkit-inner-spin-button, .cons-max-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .cons-sep { color: var(--text-dim); }
 
 .dice-grid {
@@ -842,6 +870,7 @@ button, input, textarea, select {
   color: inherit; padding: 1px 3px; font: inherit;
 }
 .cbt-hd { width: 42px; text-align: center; }
+.cbt-rank { width: 42px; text-align: center; }
 .cbt-hp { width: 46px; text-align: center; }
 .cbt-step { gap: 3px; }
 .cbt-stepbtn {
@@ -958,6 +987,11 @@ button, input, textarea, select {
 .cd-sec { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
 .cd-lbl { color: var(--text-dim); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; min-width: 58px; }
 .cd-sec .btn { padding: 4px 9px; font-size: 12px; }
+/* BRP attacks: one per line, all lines at the same indent after the label. */
+.cd-sec-lines { align-items: flex-start; flex-wrap: nowrap; }
+.cd-sec-lines .cd-lbl { padding-top: 3px; flex: none; }
+.cd-lines { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 0; }
+.cd-lines li { margin: 0 0 2px; }
 .cd-atk-pair { display: inline-flex; gap: 2px; }
 .cd-atk-pair .cbt-atk { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 .cd-atk-pair .cbt-dmg {
@@ -1099,6 +1133,9 @@ button, input, textarea, select {
 .mb-gen-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .mb-gen-head i { color: var(--accent); }
 .mb-gen-row { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.mb-gen-row[hidden] { display: none; }
+#php-party .field { flex-basis: 150px; }
+#php-party .field:first-child { flex-basis: 70px; }
 .mb-gen-row .field { flex: 0 0 110px; min-width: 0; margin: 0; }
 .mb-gen-row input {
   background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);

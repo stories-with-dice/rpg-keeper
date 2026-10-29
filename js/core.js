@@ -29,7 +29,7 @@
     monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
     compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false,
     scenes: [], activeSceneIds: {},
-    settings: { scarletHeroes: false, theme: 'default', system: 'osr' },
+    settings: { scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
@@ -145,7 +145,7 @@
     if (!Array.isArray(state.characters)) state.characters = [];
     if (!Array.isArray(state.monsters)) state.monsters = [];
     if (!Array.isArray(state.log)) state.log = [];
-    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'osr' }, state.settings || {});
+    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex' }, state.settings || {});
     if (THEMES.indexOf(state.settings.theme) === -1) state.settings.theme = 'default';
     if (SYSTEMS.indexOf(state.settings.system) === -1) state.settings.system = 'osr';
     if (!Array.isArray(state.conditions) || !state.conditions.length) {
@@ -209,7 +209,79 @@
 
   // Backfill fields added in later versions so older saves keep working.
   function ensureCharShape(ch) {
+    if (ch && typeof ch.body === 'string') ch.body = migrateBrpSheet(ch.body);
     return ch;
+  }
+
+  // BRP sheets once held their characteristics in a ```brp fence (or, briefly,
+  // a Markdown table), which only marked the sheet as BRP. Now the "[BRP]" tag
+  // of the first line marks it (charSystemKey, js/characters.js) and the
+  // characteristics are one "STR: 12; DEX: 9" line, so each is a sheet
+  // variable ($STR) and Combat reads DEX from it. This rewrites an old sheet:
+  //   # Brakka\n```brp\nSTR: 12\nDEX 9\n```   → # Brakka [BRP]\nSTR: 12; DEX: 9
+  //   | STR | DEX |\n|---|---|\n| 12 | 9 |       → STR: 12; DEX: 9
+  // and adds " [BRP]" to the first line when it has no tag.
+  const OLD_BRP_FENCE_RE = /```brp[ \t]*\r?\n([\s\S]*?)\r?\n```/;
+  const CHARACTERISTIC_KEYS = ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA', 'EDU'];
+  const BRP_TABLE_RE = /^\|((?:\s*(?:STR|CON|SIZ|INT|POW|DEX|CHA|EDU)\s*\|)+)[ \t]*\r?\n\|[\s|:-]+\r?\n\|([^\n]*)\|[ \t]*$/m;
+  const charLine = pairs => pairs.map(p => p[0] + ': ' + p[1]).join('; ');
+  function migrateBrpSheet(body) {
+    const m = body.match(OLD_BRP_FENCE_RE);
+    if (m) {
+      const pairs = m[1].split(/\r?\n/).map(l => l.match(/^\s*([A-Za-z]+)\s*:?\s*(\S+)\s*$/)).filter(Boolean).map(x => [x[1], x[2]]);
+      body = body.replace(OLD_BRP_FENCE_RE, () => charLine(pairs));
+      const lines = body.split('\n');
+      const i = lines.findIndex(l => l.trim());
+      if (i >= 0 && !/\[(?:BRP|Basic Roleplaying)\]\W*$/i.test(lines[i])) lines[i] = lines[i].replace(/\s*$/, ' [BRP]');
+      body = lines.join('\n');
+    }
+    return body.replace(BRP_TABLE_RE, (all, head, row) => {
+      const keys = head.split('|').map(x => x.trim()).filter(Boolean);
+      const vals = row.split('|').map(x => x.trim());
+      return keys.length === vals.length && keys.every(k => CHARACTERISTIC_KEYS.includes(k))
+        ? charLine(keys.map((k, i) => [k, vals[i]])) : all;
+    });
+  }
+
+  // Sheet resources: every "Name: current/max" on a sheet ("HP: 13/13; PP: 17/17",
+  // one per line or separated by ";" "|" ","), outside code fences. Each one
+  // gets a "Name (Character)" tracker; "HP" and "Hit Points" use the HP tracker.
+  // Returns [{ name, value, max }].
+  const RESOURCE_RE = /(?:^|[;|,])[ \t]*\**[ \t]*([A-Za-z][A-Za-z .'()-]{0,29}?)[ \t]*\**[ \t]*:[ \t]*\**[ \t]*(\d+)[ \t]*\/[ \t]*(\d+)(?=[ \t]*\**[ \t]*(?:[;|,]|\r?$))/gm;
+  function sheetResources(body) {
+    const text = String(body || '').replace(/```[\s\S]*?```/g, '');
+    const out = [], seen = new Set();
+    let m;
+    RESOURCE_RE.lastIndex = 0;
+    while ((m = RESOURCE_RE.exec(text))) {
+      const name = m[1].replace(/^[-*>#\s]+/, '').trim();
+      if (!name || seen.has(name.toLowerCase())) continue;
+      seen.add(name.toLowerCase());
+      out.push({ name, value: +m[2], max: +m[3] });
+    }
+    return out;
+  }
+  const isHpName = name => /^(?:HP|Hit Points)$/i.test(name);
+  function resourceTrackerLabel(ch, name) {
+    return isHpName(name) ? hpTrackerLabel(ch) : name + ' (' + (ch ? ch.name : '') + ')';
+  }
+  // Creates a tracker for each sheet resource, starting at the sheet's values.
+  // After that the tracker holds the current value; the sheet sets only its
+  // max (an untouched 0/0 HP tracker takes both).
+  function syncResourceTrackers(ch) {
+    if (!ch || (OSR.charSystemKey && OSR.charSystemKey(ch) === 'ua3e')) return;
+    const state = OSR.state;
+    sheetResources(ch.body).forEach(r => {
+      const label = resourceTrackerLabel(ch, r.name);
+      const c = state.consumables.find(x => x.name === label);
+      if (!c) state.consumables.push({ id: uid(), name: label, value: Math.min(r.value, r.max || r.value), max: r.max });
+      else if (!c.value && !c.max) { c.value = r.value; c.max = r.max; }
+      else { c.max = r.max; clampConsumable(c); }
+    });
+  }
+  // The labels of a character's resource trackers, for rename and delete.
+  function resourceTrackerLabels(ch) {
+    return sheetResources(ch && ch.body).map(r => resourceTrackerLabel(ch, r.name));
   }
 
   // Trackers ("consumables") are campaign-global, not per-character. Every
@@ -388,8 +460,9 @@
     STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
     THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
-    applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape, fixAbilities,
+    applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape, migrateBrpSheet, fixAbilities,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
+    sheetResources, resourceTrackerLabel, syncResourceTrackers, resourceTrackerLabels,
     woundTrackerLabel, ensureWoundTracker, MADNESS_MAX, madnessTrackerLabel, ensureMadnessTracker,
     save, activeChar
   });

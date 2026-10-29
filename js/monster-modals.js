@@ -128,6 +128,17 @@
     }).sort((a, b) => (a.hdNum || 0) - (b.hdNum || 0) || String(a.name).localeCompare(b.name));
   }
 
+  // BRP has no Hit Dice: its monsters carry an Encounter Level in hd/hdNum
+  // (written by the BRP content pack or the form's EL field), so every "HD"
+  // label reads "EL" while the System is BRP.
+  function levelLabel(system) {
+    return (system || OSR.currentSystem()) === 'brp' ? 'EL' : 'HD';
+  }
+  function applyLevelLabels() {
+    const label = levelLabel();
+    document.querySelectorAll('.hd-label').forEach(el => { el.textContent = label; });
+  }
+
   // One-line summary for a library row — shared by this modal's list and the
   // Bestiary tab's (js/monster-browser.js). BRP has no HD/AC; Silent Legions
   // shows its descending AC (acDisplay) instead of an ascending one.
@@ -138,7 +149,8 @@
         (st.identities || []).length + ' identit' + ((st.identities || []).length === 1 ? 'y' : 'ies')].join(' · ');
     }
     if (d.source === 'brp') {
-      return ['HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'), 'DB ' + (d.damageBonus || 'None'), 'brp'].join(' · ');
+      return [d.hd ? 'EL ' + d.hd : '', 'HP ' + (d.hp || '?'), 'Armor ' + (d.armor != null ? d.armor : '?'),
+        'DB ' + (d.damageBonus || 'None'), 'brp'].filter(Boolean).join(' · ');
     }
     const ac = d.source === 'sl' ? OSR.acDisplay(d) : (d.ac && d.ac.asc != null ? d.ac.asc : '?');
     return ['HD ' + (d.hd || '?'), 'AC ' + ac, 'HP ' + (d.hp || '?'), d.source].join(' · ');
@@ -157,6 +169,7 @@
     libFiltered = libMatches();
     // Unknown Armies has no Hit Dice: hide the HD range filter.
     document.querySelectorAll('#monster-modal .mm-hd-field').forEach(el => { el.hidden = OSR.currentSystem() === 'ua3e'; });
+    applyLevelLabels();
     const list = $('#mm-lib-list');
     $('#mm-roll').disabled = libFiltered.length < 1;
     $('#mm-count').textContent = libFiltered.length + ' / ' + OSR.monstersForSystem().length;
@@ -184,7 +197,7 @@
     renderLibrary();
     const li = $('#mm-lib-list [data-id="' + d.id + '"]');
     if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const what = d.source === 'ua3e' ? monsterMetaLine(d) : 'HD ' + (d.hd || '?');
+    const what = d.source === 'ua3e' ? monsterMetaLine(d) : levelLabel(d.source === 'brp' ? 'brp' : 'osr') + ' ' + (d.hd || '?');
     $('#mm-msg').textContent = 'Rolled → ' + d.name + '  (' + what + ', ' + libFiltered.length + ' options)';
     OSR.pushNote('Library', 'rolled → ' + d.name, what + ', ' + libFiltered.length + ' options');
   }
@@ -231,10 +244,11 @@
     if (d.source === 'ua3e' && window.UAStatblock) return uaMonsterCardHtml(d);
     const isBrp = d.source === 'brp';
     const bits = isBrp ? [
+      d.hd ? 'EL ' + d.hd : '',
       'HP ' + (d.hp || '?'),
       'Armor ' + (d.armor != null ? d.armor : '?'),
       'DB ' + (d.damageBonus || 'None')
-    ] : [
+    ].filter(Boolean) : [
       'AC ' + (d.ac ? OSR.acDisplay(d) : '?'),
       'HD ' + (d.hd || '?'),
       'HP ' + (d.hp || '?')
@@ -395,7 +409,7 @@
 
   Object.assign(OSR, {
     filterMonsters, openMonsterModal, closeMonsterModal, libMatches, renderLibrary, rollLibrary, onLibClick,
-    monsterMetaLine, monsterCardHtml, uaMonsterCardHtml, splitUaMonsters, showLibPreview, hideLibPreview,
+    levelLabel, applyLevelLabels, monsterMetaLine, monsterCardHtml, uaMonsterCardHtml, splitUaMonsters, showLibPreview, hideLibPreview,
     openMonsterEdit, closeMonsterEdit, saveMonsterEdit, parseAndAdd, wireMonsterModals
   });
 })(window.OSR = window.OSR || {});

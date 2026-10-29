@@ -623,6 +623,18 @@ test('brpHalveDiceTerm: halves the die count (min 1), approximating "half damage
   assert.equal(T.brpHalveDiceTerm('-1d6'), '-1d6');
 });
 
+test('splitAttacks: one BRP attack per item, split at the ";" outside parentheses', () => {
+  assert.deepEqual(T.splitAttacks('Bite 50%, 1D10 (bleeding); Claw 25%, 1D6 (a; b);  '), ['Bite 50%, 1D10 (bleeding)', 'Claw 25%, 1D6 (a; b)']);
+  assert.deepEqual(T.splitAttacks(''), []);
+});
+
+test('trackerOwner: "<label> (<character>)" belongs to that character; the longest name wins', () => {
+  const chars = [{ id: 'a', name: 'Vance' }, { id: 'b', name: 'Ada Vance' }];
+  assert.deepEqual(T.trackerOwner({ name: 'HP (Ada Vance)' }, chars), { ch: chars[1], label: 'HP' });
+  assert.equal(T.trackerOwner({ name: 'Rations' }, chars), null);
+  assert.equal(T.trackerOwner({ name: '(Vance)' }, chars), null, 'no label: not a character tracker');
+});
+
 test('brpResolveDb: "+dm"/"+½dm" in a BRP creature’s attacks text become its actual Damage Bonus dice (example: the Knight’s Long Sword)', () => {
   assert.equal(T.brpResolveDb('Long Sword 75%, 1D8+dm', '+1D4'), 'Long Sword 75%, 1D8+1d4');
   assert.equal(T.brpResolveDb('Bite 45%, 1D6+½dm', '+2D6'), 'Bite 45%, 1D6+1d6', 'half-damage-bonus weapons halve the die count');
@@ -1190,6 +1202,26 @@ test('monster-form: populate -> collect round-trips a Shadowdark def', () => {
   host.remove();
 });
 
+test('monster-form: a BRP def keeps its Encounter Level (hd/hdNum) through populate -> collect', () => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  host.innerHTML = T.monsterFormHtml();
+  T.wireMonsterForm(host);
+  T.populateMonsterForm(host, { name: 'Troll', source: 'brp', hd: '2', hdNum: 2, encounterLevel: 2, hp: 20,
+    characteristics: { STR: 25, SIZ: 22 }, armor: 3, damageBonus: '+2D6', attacksText: 'Club 45%, 1D10+1+dm' });
+  assert.equal(host.querySelector('.mf-f-brp-el').value, '2');
+  let d = T.collectMonsterForm(host);
+  assert.equal(d.hd, '2');
+  assert.equal(d.hdNum, 2);
+  assert.equal(d.encounterLevel, 2);
+  assert.match(d.raw, /^EL 2, HP 20/m);
+  host.querySelector('.mf-f-brp-el').value = '';
+  d = T.collectMonsterForm(host);
+  assert.equal(d.hd, '');
+  assert.equal(d.hdNum, null, 'no EL: Populate by EL skips the monster');
+  host.remove();
+});
+
 test('monster-form: OSE schema derives ascending AC from descending, and savesText from save targets', () => {
   const host = document.createElement('div');
   document.body.appendChild(host);
@@ -1256,6 +1288,25 @@ function hdLibrary() {
     { name: 'Ogre', hd: '4', hdNum: 4 },
   ];
 }
+
+test('partyElBudget: PCs x power level x difficulty, in 0.5 steps', () => {
+  assert.equal(T.partyElBudget(4, 'normal', 'standard'), 4);
+  assert.equal(T.partyElBudget(4, 'heroic', 'hard'), 7.5);
+  assert.equal(T.partyElBudget(3, 'epic', 'easy'), 3);
+  assert.equal(T.partyElBudget(3, 'heroic', 'standard'), 4, '3.75 rounds to 4');
+  assert.equal(T.partyElBudget(1, 'normal', 'easy'), 0.5);
+  assert.equal(T.partyElBudget('', 'normal', 'standard'), null);
+});
+
+test('monstersByUnit: a BRP monster without an Encounter Level is never planned', () => {
+  const byUnit = T.monstersByUnit([
+    { name: 'Orc', source: 'brp', hd: '1.5', hdNum: 1.5 },
+    { name: 'Old form save', source: 'brp', hd: '', hdNum: 0 },
+    { name: 'Seed', source: 'brp' },
+  ]);
+  assert.deepEqual(Array.from(byUnit.keys()), [3]);
+  assert.deepEqual(byUnit.get(3).map(d => d.name), ['Orc']);
+});
 
 test('effectiveHdUnits: a monster with HD "0" still costs 0.5 HD (1 unit), not 0', () => {
   assert.equal(T.effectiveHdUnits({ hd: '0', hdNum: 0 }), 1);
@@ -1337,9 +1388,101 @@ test('charSystemKey: classified by the presence of a ```ua fence, not the free-t
   assert.equal(T.charSystemKey({}), 'osr');
 });
 
-test('charSystemKey: also classified by a ```brp fence', () => {
-  assert.equal(T.charSystemKey({ body: '# Plain\n```brp\nSTR: 11\n```\n' }), 'brp');
-  assert.equal(T.charSystemKey({ body: '# Plain\nSTR: 11 (no fence)' }), 'osr');
+test('charSystemKey: also classified by a "[BRP]" tag at the end of the first line', () => {
+  assert.equal(T.charSystemKey({ body: '# Ada Vance [BRP]\n\n| STR |\n|---|\n| 11 |\n' }), 'brp');
+  assert.equal(T.charSystemKey({ body: '\n# Ada [Basic Roleplaying]\nSTR 11' }), 'brp');
+  assert.equal(T.charSystemKey({ body: '# Plain\nSee [BRP] rules' }), 'osr', 'only the first line counts');
+  assert.equal(T.charSystemKey({ body: '# Plain\nSTR: 11' }), 'osr');
+});
+
+test('migrateBrpSheet: an old ```brp fence or characteristics table becomes one "STR: 12; DEX: 9" line, and the sheet gets the [BRP] tag', () => {
+  assert.equal(T.migrateBrpSheet('# Brakka [BRP]\n\n```brp\nSTR: 12\nDEX 9\n```\n\nDodge 22%'),
+    '# Brakka [BRP]\n\nSTR: 12; DEX: 9\n\nDodge 22%');
+  assert.equal(T.migrateBrpSheet('# Brakka\n```brp\nSTR: 12\n```'), '# Brakka [BRP]\nSTR: 12');
+  assert.equal(T.migrateBrpSheet('# Ada [BRP]\n\n| STR | DEX |\n|---|---|\n| 10 | 14 |\n\nHP: 12/12'), '# Ada [BRP]\n\nSTR: 10; DEX: 14\n\nHP: 12/12');
+  assert.equal(T.migrateBrpSheet('# Plain\n| Item | Cost |\n|---|---|\n| Rope | 1 |'), '# Plain\n| Item | Cost |\n|---|---|\n| Rope | 1 |', 'other tables stay');
+  assert.equal(T.migrateBrpSheet('# Plain\nHP 4/4'), '# Plain\nHP 4/4', 'no fence: unchanged');
+  T.createCharacter('# Old\n```brp\nDEX: 13\n```');
+  const ch = T.state.characters[T.state.characters.length - 1];
+  assert.equal(T.charSystemKey(ch), 'brp', 'a pasted old sheet is migrated too');
+  assert.doesNotMatch(ch.body, /```/);
+});
+
+test('charCharacteristic: reads "DEX: N" text', () => {
+  const body = '# Ada [BRP]\n\nSTR: 10; CON: 12; DEX: 14; INT: 15\n';
+  assert.equal(T.charCharacteristic({ body }, 'DEX'), 14);
+  assert.equal(T.charCharacteristic({ body }, 'INT'), 15);
+  assert.equal(T.charCharacteristic({ body }, 'POW'), null);
+  assert.equal(T.charCharacteristic({ body: '**DEX:** 9' }, 'DEX'), 9);
+  assert.equal(T.charCharacteristic({ body: 'Dexterity 9' }, 'DEX'), null);
+});
+
+test('sheetResources: every "Name: current/max", one per line or separated by ; | ,', () => {
+  assert.deepEqual(T.sheetResources('HP: 13/13; PP: 17/17\nFatigue Points: 20/27  \n**SAN:** 70/70 | Move: 10'), [
+    { name: 'HP', value: 13, max: 13 }, { name: 'PP', value: 17, max: 17 },
+    { name: 'Fatigue Points', value: 20, max: 27 }, { name: 'SAN', value: 70, max: 70 }
+  ]);
+  assert.deepEqual(T.sheetResources('HP 6/6\nSTR: 12\nDamage 1d6/2\n```ua\nX: 1/2\n```'), [], 'no colon, no slash, or inside a fence: none');
+  assert.deepEqual(T.sheetResources('HP: 5/5\r\nWP: 3/4\r\n').map(r => r.name), ['HP', 'WP']);
+});
+
+test('sheet resources: a new character gets one tracker each; a rename moves them; delete removes them', () => {
+  T.state.settings.system = 'brp';
+  T.createCharacter('# Ada [BRP]\n\nHP: 12/13; PP: 17/17\nWP: 3/4\n');
+  const ch = T.state.characters[T.state.characters.length - 1];
+  const tracker = name => T.state.consumables.find(c => c.name === name);
+  assert.deepEqual([tracker('HP (Ada)').value, tracker('HP (Ada)').max], [12, 13], 'HP uses the HP tracker');
+  assert.deepEqual([tracker('PP (Ada)').value, tracker('PP (Ada)').max], [17, 17]);
+  assert.ok(tracker('WP (Ada)'));
+  tracker('PP (Ada)').value = 5;                       // spent in play
+  ch.body = ch.body.replace('PP: 17/17', 'PP: 17/20');
+  T.syncResourceTrackers(ch);
+  assert.deepEqual([tracker('PP (Ada)').value, tracker('PP (Ada)').max], [5, 20], 'the sheet sets the max, the tracker keeps the value');
+  const old = new Map(T.sheetResources(ch.body).map(r => [r.name, T.resourceTrackerLabel(ch, r.name)]));
+  ch.name = 'Ada Vance';
+  T.renameResourceTrackers(old, ch);
+  assert.equal(tracker('PP (Ada Vance)').value, 5);
+  assert.equal(tracker('PP (Ada)'), undefined);
+  window.confirm = () => true;
+  T.state.activeId = ch.id;
+  T.deleteChar();
+  assert.ok(!T.state.consumables.some(c => /Ada Vance/.test(c.name)));
+});
+
+test('stripTitleTag: View mode drops the system tag of the first line only', () => {
+  assert.equal(T.stripTitleTag('# John [BRP]\nUses [Longsword]'), '# John\nUses [Longsword]');
+  assert.equal(T.stripTitleTag('**John [BRP]**\n'), '**John**\n');
+  assert.equal(T.charSystemKey({ body: '## **John [BRP]**\n' }), 'brp', 'a bold title keeps its tag');
+});
+
+test('charDetectHp: reads BRP "Hit Points: N/N" as well as OSR "HP N/N"', () => {
+  assert.deepEqual(T.charDetectHp({ body: 'Hit Points: 13/13 | Major Wound: 7' }), { value: 13, max: 13 });
+  assert.deepEqual(T.charDetectHp({ body: '**HP** 6/8' }), { value: 6, max: 8 });
+});
+
+test('BRP combat: new combatants go in at their DEX rank, and Sort by DEX restores the order after an edit', () => {
+  T.state.settings.system = 'brp';
+  const brpMon = (name, chars) => ({ name, source: 'brp', system: 'brp', hp: 10, characteristics: chars, attacks: [], abilities: [] });
+  T.createCharacter('# Ada [BRP]\n\nSTR: 10; DEX: 14\n\nHP: 12/12\n');
+  T.addCharEntry(T.activeChar().id);
+  T.addMonsterEntry(brpMon('Wolf', { STR: 13, DEX: 13 }));
+  T.addMonsterEntry(brpMon('Ghost', { POW: 14 }));       // no DEX: rank 1
+  T.addMonsterEntry(brpMon('Tiger', { STR: 23, DEX: 19 }));
+  T.addMonsterEntry(brpMon('Wolf', { STR: 13, DEX: 13 })); // a tie goes after the first Wolf
+  const names = () => T.state.combat.entries.map(e => e.name);
+  assert.deepEqual(names(), ['Tiger', 'Ada', 'Wolf (1)', 'Wolf (2)', 'Ghost']);
+  assert.equal(T.entryDexRank(T.state.combat.entries[1]), 14, 'a character’s DEX comes from its sheet');
+  assert.equal(T.charDetectHp(T.activeChar()).max, 12);
+  T.state.combat.entries.find(e => e.name === 'Ghost').dexRank = 20;
+  T.sortByRank();
+  assert.deepEqual(names(), ['Ghost', 'Tiger', 'Ada', 'Wolf (1)', 'Wolf (2)']);
+});
+
+test('combat outside BRP: new combatants still go at the end', () => {
+  T.state.settings.system = 'osr';
+  T.addMonsterEntry({ name: 'Orc', hd: '1', hp: 5, attacks: [], abilities: [] });
+  T.addMonsterEntry({ name: 'Tiger', source: 'brp', system: 'brp', hp: 10, characteristics: { DEX: 19 }, attacks: [], abilities: [] });
+  assert.deepEqual(T.state.combat.entries.map(e => e.name), ['Orc', 'Tiger']);
 });
 
 test('createCharacter: "New blank" (body=null) while System is brp creates a brp-classified character with an HP tracker', () => {

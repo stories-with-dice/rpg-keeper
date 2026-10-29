@@ -9,7 +9,9 @@ expects). `uniqueName()` numbers duplicates.
 
 - HP: `entryHp`/`entryMaxHp`/`setEntryHp`. A character's HP is its `HP (Name)` tracker
   (`hpConsumable`); while that tracker is 0/0 it comes from the sheet (`charDetectHp`).
-- `entryDown(e)`, `acDisplay(m)`, `charQuickAC(ch)`.
+- `entryDown(e)`, `acDisplay(m)`, `charQuickAC(ch)`. `charDetectHp` reads `HP N/N` or `Hit Points: N/N`.
+- New entries go through `insertEntry()`: at the end, except BRP entries while System is BRP (DEX
+  or INT rank order, systems.md). An entry may carry `dexRank` and `intRank` (BRP only).
 - `removeEntry()` and **Clear** call `OSR.unlinkTokens(ids)` first (maps.md).
 - Scarlet Heroes damage (`applyDamageToSelected`, `shDie`) turns damage into HD loss; not for BRP.
 - System-specific rows and details: systems.md.

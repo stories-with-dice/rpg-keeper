@@ -1,6 +1,6 @@
 {
   "system": "brp",
-  "version": 1,
+  "version": 4,
   "compendium": [
     {
       "name": "Blast",
@@ -2051,7 +2051,8 @@
         "STR": 25,
         "CON": 18,
         "SIZ": 25,
-        "POW": 7
+        "POW": 10,
+        "DEX": 7
       },
       "hp": 22,
       "move": "Walk 7, Swim 6",
@@ -2071,7 +2072,8 @@
         "STR": 20,
         "CON": 13,
         "SIZ": 20,
-        "POW": 10
+        "POW": 10,
+        "DEX": 10
       },
       "hp": 17,
       "move": "Walk 12, Swim 2",
@@ -2088,10 +2090,11 @@
       "name": "Brontosaur",
       "desc": "A gigantic herbivorous dinosaur. Attacks once a round with a tail lash (an area sweep) or a trample against prone or much smaller targets.",
       "characteristics": {
-        "STR": 72,
+        "STR": 62,
         "CON": 41,
-        "SIZ": 62,
-        "POW": 3
+        "SIZ": 72,
+        "POW": 11,
+        "DEX": 3
       },
       "hp": 57,
       "move": "Walk 7",
@@ -2108,9 +2111,9 @@
       "name": "Condor, Eagle, etc.",
       "desc": "A large bird of prey.",
       "characteristics": {
-        "STR": 10,
-        "CON": 16,
-        "SIZ": 22,
+        "STR": 22,
+        "CON": 10,
+        "SIZ": 16,
         "POW": 13,
         "DEX": 19
       },
@@ -2132,10 +2135,10 @@
         "STR": 7,
         "CON": 10,
         "SIZ": 4,
-        "POW": 13,
+        "POW": 7,
         "DEX": 13
       },
-      "hp": 8,
+      "hp": 7,
       "move": "Walk 10, Swim 6",
       "damageBonus": "−1D4",
       "armor": 0,
@@ -2153,7 +2156,8 @@
         "STR": 55,
         "CON": 26,
         "SIZ": 63,
-        "POW": 13
+        "POW": 13,
+        "DEX": 10
       },
       "hp": 45,
       "move": "Walk 10, Swim 2",
@@ -2171,9 +2175,10 @@
       "desc": "Attacks twice a round: two fists, bite and strike, or bite and grapple. Females are smaller than males.",
       "characteristics": {
         "STR": 26,
-        "CON": 17,
+        "CON": 16,
         "SIZ": 19,
-        "POW": 17
+        "POW": 7,
+        "DEX": 16
       },
       "hp": 16,
       "move": "Walk 12, Swim 2",
@@ -2192,9 +2197,9 @@
       "characteristics": {
         "STR": 2,
         "CON": 5,
-        "SIZ": 2,
+        "SIZ": 1,
         "POW": 7,
-        "DEX": 29
+        "DEX": 28
       },
       "hp": 4,
       "move": "Fly 12, Walk 1",
@@ -2211,10 +2216,11 @@
       "name": "Horse",
       "desc": "Untrained horses flee from blood, fire, gunfire, screams, or explosions. Warhorses hold ground with a successful Ride check and are tougher.",
       "characteristics": {
-        "STR": 29,
+        "STR": 28,
         "CON": 13,
         "SIZ": 26,
-        "POW": 11
+        "POW": 10,
+        "DEX": 10
       },
       "hp": 20,
       "move": "Walk 12, Swim 2",
@@ -2247,9 +2253,10 @@
       "desc": "Can make one claw and one bite each round; if both hit, it hangs on and keeps biting next round, raking with hind claws instead of clawing.",
       "characteristics": {
         "STR": 19,
-        "CON": 11,
-        "SIZ": 17,
-        "POW": 13
+        "CON": 10,
+        "SIZ": 16,
+        "POW": 13,
+        "DEX": 19
       },
       "hp": 14,
       "move": "Walk 10, Swim 2",
@@ -2281,10 +2288,11 @@
       "name": "Shark",
       "desc": "If its bite misses or is dodged, it attempts a fin slash 5 DEX ranks later. After a hit, some sharks keep biting and thrashing round after round.",
       "characteristics": {
-        "STR": 23,
+        "STR": 22,
         "CON": 16,
-        "SIZ": 23,
-        "POW": 11
+        "SIZ": 22,
+        "POW": 10,
+        "DEX": 10
       },
       "hp": 23,
       "move": "Swim 10",
@@ -2301,12 +2309,13 @@
       "name": "Snake (Constrictor)",
       "desc": "Bites, then attempts to constrict 5 DEX ranks later. A constricted target takes chest damage each round and must break free with a STR resistance roll.",
       "characteristics": {
-        "STR": 23,
+        "STR": 22,
         "CON": 13,
-        "SIZ": 18,
-        "POW": 13
+        "SIZ": 17,
+        "POW": 10,
+        "DEX": 13
       },
-      "hp": 16,
+      "hp": 15,
       "move": "Slither 6, Swim 4",
       "damageBonus": "+1D6",
       "armor": 1,
@@ -2324,7 +2333,8 @@
         "STR": 5,
         "CON": 7,
         "SIZ": 5,
-        "POW": 5
+        "POW": 4,
+        "DEX": 10
       },
       "hp": 6,
       "move": "Slither 6, Swim 4",
@@ -2344,7 +2354,8 @@
         "STR": 33,
         "CON": 13,
         "SIZ": 33,
-        "POW": 19
+        "POW": 10,
+        "DEX": 19
       },
       "hp": 23,
       "move": "Swim 10, \"Walk\" 4",
@@ -2361,12 +2372,13 @@
       "name": "Tiger",
       "desc": "Makes two simultaneous claws and a bite (5 DEX ranks later); if both claws hit, it hangs on and rips with hind claws next round.",
       "characteristics": {
-        "STR": 23,
-        "CON": 11,
-        "SIZ": 17,
-        "POW": 11
+        "STR": 22,
+        "CON": 10,
+        "SIZ": 16,
+        "POW": 10,
+        "DEX": 19
       },
-      "hp": 19,
+      "hp": 13,
       "move": "Walk 12",
       "damageBonus": "+1D6",
       "armor": 2,
@@ -2384,7 +2396,8 @@
         "STR": 67,
         "CON": 35,
         "SIZ": 53,
-        "POW": 13
+        "POW": 13,
+        "DEX": 16
       },
       "hp": 44,
       "move": "Walk 12",
@@ -2402,11 +2415,12 @@
       "desc": "Hunts in packs of a dozen to 40 or more, fighting cooperatively; a large wolf may try to knock a target prone so the pack can tear at it.",
       "characteristics": {
         "STR": 13,
-        "CON": 11,
+        "CON": 10,
         "SIZ": 8,
-        "POW": 13
+        "POW": 10,
+        "DEX": 13
       },
-      "hp": 10,
+      "hp": 9,
       "move": "Walk 10",
       "damageBonus": "None",
       "armor": 2,
@@ -2421,13 +2435,13 @@
       "name": "Centaur",
       "desc": "Half-human, half-horse. Wise and pastoral, keepers of lore, fine craftsmen, musicians, and warriors; freely intermingle with humans.",
       "characteristics": {
-        "STR": 17,
-        "CON": 11,
+        "STR": 16,
+        "CON": 10,
         "SIZ": 26,
         "INT": 13,
-        "POW": 11,
-        "DEX": 14,
-        "CHA": 11
+        "POW": 10,
+        "DEX": 13,
+        "CHA": 10
       },
       "hp": 19,
       "move": "12",
@@ -2454,7 +2468,7 @@
         "SIZ": 70,
         "INT": 10,
         "POW": 20,
-        "DEX": 11
+        "DEX": 10
       },
       "hp": 53,
       "move": "4 (10 flying)",
@@ -2462,7 +2476,7 @@
       "armor": 12,
       "armorNote": "scales",
       "attacksText": "Breathe Flame 75%, 4D6+special; Bite 65%, 3D6+dm; Claw 50%, 1D6+dm; Tail 50%, 1D6+½dm",
-      "skillsText": "Climb 65%, Dodge 55%, First Aid 45%, Hide 35%, Jump 45%, Sense 30%, Spot 45%, Stealth 45%, Swim 35%, Track 40%",
+      "skillsText": "Dodge 35%, Fly 100%, Listen 65%, Sense 50%, Spot 60%, Track 45%",
       "abilities": [
         {
           "name": "Powers",
@@ -2505,12 +2519,12 @@
       "desc": "Traditionally forest dwellers with a strong connection to nature; long-lived, aloof, and mysterious. Half-elves average both parents’ characteristics.",
       "characteristics": {
         "STR": 9,
-        "CON": 11,
+        "CON": 10,
         "SIZ": 9,
-        "INT": 17,
+        "INT": 16,
         "POW": 13,
-        "DEX": 14,
-        "CHA": 11
+        "DEX": 13,
+        "CHA": 10
       },
       "hp": 10,
       "move": "11",
@@ -2534,7 +2548,7 @@
       "characteristics": {
         "INT": 13,
         "POW": 14,
-        "CHA": 11
+        "CHA": 10
       },
       "hp": 0,
       "move": "14 (equal to POW)",
@@ -2557,10 +2571,10 @@
       "desc": "Hideously deformed humans who feed on the dead, caught between life and death; bestial and barely intelligent. Formed when a malignant spirit possesses a fresh corpse.",
       "characteristics": {
         "STR": 14,
-        "CON": 11,
+        "CON": 10,
         "SIZ": 13,
-        "INT": 11,
-        "DEX": 11
+        "INT": 10,
+        "DEX": 10
       },
       "hp": 12,
       "move": "8",
@@ -2611,11 +2625,11 @@
       "desc": "A chimerical flying predator: the body and hindquarters of a lion with the head, forelegs, and wings of an eagle. Traditionally nests on mountaintops.",
       "characteristics": {
         "STR": 35,
-        "CON": 23,
+        "CON": 22,
         "SIZ": 35,
         "INT": 6,
-        "POW": 17,
-        "DEX": 23
+        "POW": 16,
+        "DEX": 22
       },
       "hp": 29,
       "move": "8 (12 flying)",
@@ -2643,7 +2657,7 @@
         "INT": 13,
         "POW": 10,
         "DEX": 17,
-        "CHA": 11
+        "CHA": 10
       },
       "hp": 12,
       "move": "6",
@@ -2665,12 +2679,12 @@
       "name": "Minotaur",
       "desc": "Bull-headed, hoofed humanoids; surly and violent, with little civilization of their own, dwelling in ruins or the wild. Some speak; others are bestial.",
       "characteristics": {
-        "STR": 23,
-        "CON": 16,
-        "SIZ": 23,
+        "STR": 22,
+        "CON": 15,
+        "SIZ": 22,
         "INT": 7,
-        "POW": 11,
-        "DEX": 11,
+        "POW": 10,
+        "DEX": 10,
         "CHA": 7
       },
       "hp": 19,
@@ -2696,8 +2710,8 @@
         "STR": 21,
         "CON": 17,
         "SIZ": 13,
-        "INT": 11,
-        "POW": 16,
+        "INT": 10,
+        "POW": 15,
         "DEX": 7
       },
       "hp": 15,
@@ -2721,9 +2735,9 @@
       "desc": "Savage, bestial humanoids who despise humans, elves, and dwarves; grayish skin, fangs, pointed ears. Prefer darkness; enslave and cannibalize captives.",
       "characteristics": {
         "STR": 14,
-        "CON": 11,
+        "CON": 10,
         "SIZ": 9,
-        "INT": 11,
+        "INT": 10,
         "POW": 10,
         "DEX": 14,
         "CHA": 7
@@ -2748,11 +2762,11 @@
       "name": "Skeleton",
       "desc": "Animated bones created or summoned by magic or an ancient curse, usually guarding treasure or a tomb. Move at their living speed but cannot swim, and never tire.",
       "characteristics": {
-        "STR": 11,
+        "STR": 10,
         "SIZ": 13,
-        "INT": 11,
+        "INT": 10,
         "POW": 1,
-        "DEX": 11
+        "DEX": 10
       },
       "hp": 13,
       "move": "10",
@@ -2774,13 +2788,13 @@
       "name": "Troll",
       "desc": "Huge, flesh-eating humanoids with greenish-black hide and long claws; dwell in caves, mountains, or under bridges, nocturnal and shunning sunlight. Trollwives are smaller but smarter and faster.",
       "characteristics": {
-        "STR": 23,
+        "STR": 22,
         "CON": 13,
         "SIZ": 26,
         "INT": 7,
         "POW": 7,
         "DEX": 10,
-        "CHA": 4
+        "CHA": 3
       },
       "hp": 20,
       "move": "6",
@@ -2832,11 +2846,11 @@
       "characteristics": {
         "STR": 21,
         "CON": 21,
-        "SIZ": 11,
+        "SIZ": 10,
         "INT": 13,
         "POW": 13,
-        "DEX": 11,
-        "CHA": 11
+        "DEX": 10,
+        "CHA": 10
       },
       "hp": 16,
       "move": "12",
@@ -2864,7 +2878,7 @@
       "characteristics": {
         "STR": 21,
         "CON": 13,
-        "SIZ": 11,
+        "SIZ": 10,
         "INT": 13,
         "POW": 13,
         "DEX": 13
@@ -2895,7 +2909,7 @@
         "INT": 6,
         "POW": 1,
         "DEX": 7,
-        "CHA": 4
+        "CHA": 3
       },
       "hp": 14,
       "move": "4",
@@ -2945,15 +2959,15 @@
       "name": "Demon, Greater",
       "desc": "An infernal being summoned or manifest for terrible purpose; may be bestial or urbane and persuasive. This represents a combat-oriented, clawed and horned demon.",
       "characteristics": {
-        "STR": 35,
-        "CON": 23,
-        "SIZ": 23,
-        "INT": 11,
-        "POW": 17,
-        "DEX": 17,
+        "STR": 34,
+        "CON": 22,
+        "SIZ": 22,
+        "INT": 10,
+        "POW": 16,
+        "DEX": 16,
         "CHA": 21
       },
-      "hp": 23,
+      "hp": 22,
       "move": "10 (12 flying)",
       "damageBonus": "+2D6",
       "armor": 8,
@@ -2974,12 +2988,12 @@
       "desc": "A smaller demon summoned by a sorcerer or sent as an emissary; a grotesque, emaciated, gargoyle-like creature. Not cowardly, but prefers non-combat means.",
       "characteristics": {
         "STR": 10,
-        "CON": 11,
-        "SIZ": 10,
+        "CON": 10,
+        "SIZ": 9,
         "INT": 10,
         "POW": 13,
-        "DEX": 14,
-        "CHA": 7
+        "DEX": 13,
+        "CHA": 6
       },
       "hp": 10,
       "move": "8 (12 flying)",
@@ -3001,15 +3015,15 @@
       "name": "Elemental, Air",
       "desc": "Floating, transparent, beautiful humanoid spirits of surpassing beauty surrounded by a whirlwind, mischievous with a short attention span. Often called sylphs.",
       "characteristics": {
-        "STR": 11,
-        "CON": 11,
+        "STR": 10,
+        "CON": 10,
         "SIZ": 7,
         "INT": 14,
-        "POW": 11,
+        "POW": 10,
         "DEX": 14,
-        "CHA": 14
+        "CHA": 13
       },
-      "hp": 18,
+      "hp": 17,
       "move": "10 (12 flying)",
       "damageBonus": "None",
       "armor": 0,
@@ -3029,13 +3043,13 @@
       "name": "Elemental, Earth",
       "desc": "Thick-bodied humanoid forms of stone, earth, and minerals with mossy hair or beards; slow-witted, grumpy, but obedient. Often called gnomes.",
       "characteristics": {
-        "STR": 30,
-        "CON": 17,
-        "SIZ": 11,
+        "STR": 29,
+        "CON": 16,
+        "SIZ": 10,
         "INT": 7,
-        "POW": 11,
+        "POW": 10,
         "DEX": 7,
-        "CHA": 7
+        "CHA": 6
       },
       "hp": 27,
       "move": "6",
@@ -3058,12 +3072,12 @@
       "desc": "Four-legged reptiles made of fiery plasma; irritable, quick-tempered, scorching the ground and smoking as they speak. Often called salamanders.",
       "characteristics": {
         "STR": 13,
-        "CON": 11,
-        "SIZ": 17,
+        "CON": 10,
+        "SIZ": 16,
         "INT": 7,
-        "POW": 11,
+        "POW": 10,
         "DEX": 14,
-        "CHA": 7
+        "CHA": 6
       },
       "hp": 27,
       "move": "10",
@@ -3085,15 +3099,15 @@
       "name": "Elemental, Water",
       "desc": "Beautiful, translucent aquatic humanoid females, greenish-blue, alluring, leaving wet footprints and dripping constantly. Often called undines.",
       "characteristics": {
-        "STR": 17,
-        "CON": 17,
+        "STR": 16,
+        "CON": 16,
         "SIZ": 7,
         "INT": 14,
-        "POW": 11,
-        "DEX": 11,
-        "CHA": 14
+        "POW": 10,
+        "DEX": 10,
+        "CHA": 13
       },
-      "hp": 24,
+      "hp": 23,
       "move": "10 (12 swimming)",
       "damageBonus": "None",
       "armor": 0,
@@ -3113,13 +3127,13 @@
       "name": "Alien, Grey",
       "desc": "Frail, emotionless beings who visit Earth for research and experimentation, relying on sophisticated technology to immobilize captive subjects.",
       "characteristics": {
-        "STR": 7,
+        "STR": 6,
         "CON": 7,
-        "SIZ": 7,
+        "SIZ": 6,
         "INT": 19,
-        "POW": 11,
-        "DEX": 14,
-        "CHA": 5
+        "POW": 10,
+        "DEX": 13,
+        "CHA": 4
       },
       "hp": 7,
       "move": "7",
@@ -3141,15 +3155,15 @@
       "name": "Alien, Xenomorph",
       "desc": "Ravenous, vaguely insectile aliens that devour any living being encountered; reproduce by implanting eggs in hosts. A brood queen is said to lead each hive.",
       "characteristics": {
-        "STR": 14,
-        "CON": 11,
-        "SIZ": 14,
+        "STR": 13,
+        "CON": 10,
+        "SIZ": 13,
         "INT": 7,
         "POW": 7,
-        "DEX": 17,
-        "CHA": 4
+        "DEX": 16,
+        "CHA": 3
       },
-      "hp": 13,
+      "hp": 12,
       "move": "12",
       "damageBonus": "+1D4",
       "armor": 2,
@@ -3173,8 +3187,8 @@
         "CON": 42,
         "SIZ": 84,
         "INT": 7,
-        "POW": 11,
-        "DEX": 4
+        "POW": 10,
+        "DEX": 3
       },
       "hp": 63,
       "move": "10",
@@ -3199,9 +3213,9 @@
         "STR": 88,
         "CON": 88,
         "SIZ": 88,
-        "INT": 11,
+        "INT": 10,
         "POW": 7,
-        "DEX": 11
+        "DEX": 10
       },
       "hp": 188,
       "move": "24 (176 flying)",
@@ -3228,8 +3242,8 @@
         "SIZ": 16,
         "INT": 13,
         "POW": 7,
-        "DEX": 11,
-        "CHA": 11
+        "DEX": 10,
+        "CHA": 10
       },
       "hp": 21,
       "move": "10",
@@ -3252,11 +3266,11 @@
       "desc": "A humble, humble servant robot engineered to aid humans with mechanical, electrical, diplomatic, or personal-assistance work; programmed to avoid harming living beings.",
       "characteristics": {
         "STR": 13,
-        "SIZ": 11,
+        "SIZ": 10,
         "INT": 13,
-        "DEX": 11
+        "DEX": 10
       },
-      "hp": 11,
+      "hp": 10,
       "move": "8",
       "damageBonus": "None",
       "armor": 4,
@@ -3605,7 +3619,7 @@
       "damageBonus": "+1D4",
       "armor": 0,
       "attacksText": "Cutlass (Saber) 55%, 1D8+1+dm; Knife 45%, 1D4+2+dm; Flintlock Pistol 50%, 1D6+1; Musket 40%, 1D10+4; Fist 50%, 1D3+dm",
-      "skillsText": "Artillery 30%, Brawl 50%, Climb 80%, Craft (Carpentry) 55%, Dodge 40%, Fine Manipulation 45%, Gaming 35%, Grapple 50%, Jump 45%, Knowledge (Region: Local) 40%, Language (Local) 40%, Language (Own) 55%, Listen 45%, Navigate 50%, Perform (Sea Chantey) 45%, Pilot (Ship) 35%, Sense 30%, Sleight of Hand 35%, Spot 50%, Swim 45%, Throw 50%",
+      "skillsText": "Artillery 30%, Brawl 50%, Climb 80%, Craft (Carpentry) 55%, Dodge 40%, Fine Manipulation 45%, Gaming 35%, Grapple 50%, Jump 45%, Knowledge (Region: Local) 40%, Language (Local) 40%, Language (Own) 55%, Listen 45%, Navigate 50%, Perform (Sing Sea Chantey) 45%, Pilot (Ship) 35%, Sense 30%, Sleight of Hand 35%, Spot 50%, Swim 45%, Throw 50%",
       "abilities": [
         {
           "name": "Powers",
@@ -3802,7 +3816,7 @@
       "armor": 12,
       "armorNote": "Armor (Kinetic, Radiation)",
       "attacksText": "Lightning Bolt 45%, 6D6 electric; Brawl 50%, 1D3+dm",
-      "skillsText": "Art (Photography) 70%, Brawl 50%, Dodge 50%, Drive (Car) 35%, Fly 80%, Grapple 35%, Knowledge (Region: Local) 35%, Language (Own) 85%, Perform (News) 50%, Research 45%, Science (Meteorology) 25%, Status 25%, Technical Skill (Use Computer) 35%",
+      "skillsText": "Art (Photography) 70%, Brawl 50%, Dodge 50%, Drive (Car) 35%, Fly 80%, Grapple 35%, Knowledge (Region: Local) 35%, Language (other) 00%, Language (Own) 85%, Perform (News) 50%, Research 45%, Science (Meteorology) 25%, Status 25%, Technical Skill (Use Computer) 35%",
       "abilities": [
         {
           "name": "Powers",
