@@ -38,10 +38,14 @@
     const total = OSR.data.pregens.length;
     const missing = OSR.missingPregens();
     $('#set-pregen-count').textContent = (total - missing.length) + ' of ' + total +
-      ' example characters (OSR, Unknown Armies, Silent Legions) are in this campaign' +
+      ' example characters (OSR, Unknown Armies, Silent Legions, Fate) are in this campaign' +
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
     OSR.renderSeedNotice();
+    // The System sets the dice presets (Fate rolls 4dF, js/dice-ui.js). Every
+    // load path (boot, a campaign switch, an import) calls renderSettings().
+    OSR.buildDiceGrid();
+    OSR.renderFateDiceActions();
     if (OSR.renderTokenCredits) OSR.renderTokenCredits();
     OSR.renderDropbox();
   }
@@ -95,7 +99,7 @@
       OSR.pushNote('Settings', 'Monster library reloaded (' + OSR.monstersForSystem().length + ')');
     });
     $('#set-reseed-compendium').addEventListener('click', () => {
-      const added = OSR.seedCompendium();
+      const added = OSR.currentSystem() === 'fate' ? OSR.seedFateCompendium() : OSR.seedCompendium();
       renderSettings();
       OSR.pushNote('Settings', 'Compendium reseeded — ' + added + ' added, ' + OSR.state.compendium.length + ' total');
       alert(added

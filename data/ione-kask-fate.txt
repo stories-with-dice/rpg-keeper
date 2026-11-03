@@ -1,0 +1,32 @@
+# Ione Kask [Fate]
+
+*Fate Core — science fiction*
+
+Fate Points: 3/3
+
+```fate
+High Concept: Salvage Engineer on the Long Dark Run
+Trouble: The Union Still Wants Its Ship Back
+Aspect: If It Has a Panel, I Can Open It
+Aspect: Patch Is the Best Crewmate I Ever Built
+Aspect: Nobody Gets Left in Vacuum
+
+Great (+4): Crafts
+Good (+3): Investigate, Physique
+Fair (+2): Will, Notice, Resources
+Average (+1): Drive, Shoot, Rapport, Lore
+
+Stunt: Jury-Rig. +2 to overcome with Crafts when you repair a machine with parts it was not built for.
+Stunt: Hard Vacuum Habits. +2 to defend with Physique against cold, decompression, and toxic air.
+Stunt: Patch. Your repair drone is an extra with Good (+3) Crafts and Fair (+2) Notice; it can act when you spend a fate point.
+Refresh: 3
+
+Physical Stress: [ ] [ ] [ ] [ ]
+Mental Stress: [ ] [ ] [ ]
+
+Mild:
+Moderate:
+Severe:
+```
+
+Ione strips dead hulks for parts at the edge of charted space, and keeps a list of every crew she could not save.

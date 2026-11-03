@@ -33,7 +33,7 @@ test('splitState: each item goes to its system document; shared data and order g
   const { T, window } = await boot();
   fourSystems(T);
   const docs = T.splitState(T.state);
-  assert.deepEqual(Object.keys(docs).sort(), ['brp', 'campaign', 'osr', 'sl', 'ua3e']);
+  assert.deepEqual(Object.keys(docs).sort(), ['brp', 'campaign', 'fate', 'osr', 'sl', 'ua3e']);
   const names = (sys, key) => docs[sys][key].map(x => x.name);
   assert.deepEqual(names('osr', 'characters'), ['Aria']);
   assert.deepEqual(names('ua3e', 'characters'), ['Kevin']);

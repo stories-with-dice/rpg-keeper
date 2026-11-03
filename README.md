@@ -1,8 +1,8 @@
 # Character Keeper
 
 A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
-Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**, and
-**Silent Legions** — and running **basic combat**.
+Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**,
+**Silent Legions**, and **Fate Core** — and running **basic combat**.
 Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
 at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
 sample NPCs). All bundled BRP data comes only from the *Basic Roleplaying: Universal Game Engine*
@@ -12,7 +12,8 @@ characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions book
 Bestiary, random tables) can be loaded from your own PDF; see [Silent Legions](#silent-legions)
 below. Unknown Armies Combat counts wounds up to
 the wound threshold, and its book content can be loaded from your own PDFs; see
-[Unknown Armies](#unknown-armies). Plain
+[Unknown Armies](#unknown-armies). Fate Core rolls Fate dice, tracks aspects, stress, and
+consequences, and generates NPCs and encounters; see [Fate Core](#fate-core). Plain
 HTML/CSS/JS — no build step, no backend, no account, nothing leaves your browser
 (unless you turn on the optional [Dropbox sync](#dropbox-sync-optional)).
 
@@ -655,6 +656,53 @@ Set Settings → **System** to **Silent Legions**.
 
 ---
 
+## Fate Core
+
+Set Settings → **System** to **Fate Core**.
+
+- **Pregens**: a fresh install includes three characters: Mara Venn (fantasy hedge-witch), Dex
+  Okonjo (1930s pulp pilot), and Ione Kask (science-fiction salvage engineer). On an existing
+  campaign, use Settings → **Add missing pregens**.
+- **Characters**: **New blank** makes a sheet with a ` ```fate ` block. That block marks the
+  character as Fate. One `Key: value` per line:
+  - `High Concept:`, `Trouble:`, `Aspect:` (any number) are the aspects.
+  - `Great (+4): Fight` (a ladder line, any number of skills) or `Notice: +2` (one skill) are the
+    skills. View mode shows each skill as a roll of **4dF + rank**.
+  - `Stunt: Name. Text`, `Refresh: 3`.
+  - `Physical Stress: [ ] [ ] [ ]` and `Mental Stress: [ ] [ ]`: click a box in View mode to check
+    it, and click it again to clear it. The block keeps `[x]` for a checked box.
+  - `Mild:`, `Moderate:`, `Severe:`: type the consequence in View mode. The text goes into the block.
+  - Put `Fate Points: 3/3` outside the block: it becomes a **Fate Points (Name)** tracker. A Fate
+    character has no HP tracker.
+- **Dice**: the Dice Roller has only Fate dice (**4dF−1** to **4dF+6**). A bare modifier (`+2`) and a
+  `Skill: +N` line roll **4dF + N** in Fate. The result shows on the ladder (`→ Good (+3)`). After a
+  Fate roll, **Invoke +2** adds 2 to it and **Reroll** rolls it again. Random tables still roll their
+  own dice.
+- **Aspects** (above the trackers, only in Fate): the aspects in play, each with a kind —
+  *Situation*, *Scene*, *Boost*, or *Game* (an issue that stays from scene to scene) — and its free
+  invokes. **Invoke** uses a free invoke if the aspect has one (a boost then goes away), else a fate
+  point, and adds 2 to the last Fate roll. **New scene** removes the scene and situation aspects and
+  the boosts, and sets **GM fate points** to 1 per PC in the scene (the Fate characters in Combat,
+  else all Fate characters).
+- **Compendium**: about 600 stunts (each with its skill and settings) and about 900 aspect ideas
+  (high concepts, troubles, scene and situation aspects). Filter them with **Skill / kind** and
+  **Setting**. A new entry in Fate has the same two fields.
+- **Bestiary**: **Fate NPC…** generates an NPC from a genre (fantasy, horror, science fiction,
+  cyberpunk, modern, pulp, western, post-apocalyptic, superhero, generic), an importance (nameless,
+  supporting, main), a threat (weaker, peer, strong, deadly) compared with the PCs' peak skill, and a
+  role. The same seed always makes the same NPC. You can also paste an NPC: its name on the first
+  line, then the same lines as a ` ```fate ` block; put a line of `---` between two. The **Peak**
+  filter is the NPC's highest skill rank.
+- **Combat**: a Fate row shows the stress boxes (click to check), the consequences in use, the peak
+  skill, a mob size, and **In / Taken out**. The detail panel shows the whole sheet: click a skill to
+  roll it, type a consequence. **Clear stress** empties every Fate combatant's boxes at the end of a
+  conflict. A character's boxes and consequences are written to its sheet; a monster's stay in its
+  Combat copy. The GM sets the turn order (drag the rows). **+ Populate encounter…** generates an
+  easy, standard, or climactic encounter for your number of PCs and adds it to Combat; it also sets
+  the GM fate points.
+
+---
+
 ## Settings tab
 
 - **Style theme** (default **Default**). Recolours and re-fonts the whole app; dark mode only.
@@ -724,6 +772,22 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
   DarkZaitzev, Cathelineau, Faithtoken, Caro Asercion, and the other artists of icons you
   download, under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (some CC0) — see
   `data/token-icons.json`. Settings lists the authors of the icons your campaign uses.
+- Fate Core: this work is based on Fate Core System and Fate Accelerated Edition
+  (found at https://fate-srd.com/), products of Evil Hat Productions, LLC, developed, authored, and
+  edited by Leonard Balsera, Brian Engard, Jeremy Keller, Ryan Macklin, Mike Olson, Clark Valentine,
+  Amanda Valentine, Fred Hicks, and Rob Donoghue, and licensed for our use under the
+  [Creative Commons Attribution 3.0 Unported license](https://creativecommons.org/licenses/by/3.0/).
+  Fate™ is a trademark of Evil Hat Productions, LLC.
+  - The NPC generator and its data (`js/fate-npc.js`, `data/fate/`) come from the Fate NPC
+    Generator (the `fate-rpg-foundry` repo). Its rules summary follows the Fate Core, Fate
+    Condensed, Fate Accelerated, Adversary Toolkit, and System Toolkit SRDs (CC BY 3.0); its
+    archetypes and genres are original.
+  - The stunts (`data/fate/stunts.json`) come from the Evil Hat wiki page "Fate Core Stunts": 123 are
+    CC BY 3.0 (Evil Hat Productions), 475 are CC BY-SA 2.5 (Evil Hat Productions Wiki contributors,
+    among them Peter Blake, the DFRPG resources wiki, and Spirit of the Century SRD adaptations).
+    Each Compendium entry names its source and license.
+  - The aspect ideas (`data/fate/aspect-lists.json`) come from the RPGnet wiki page "Aspects
+    List". The saved page did not state a license.
 - Bundled libraries (no CDN): [marked](https://marked.js.org/) for Markdown,
   [Font Awesome Free 6.5.2](https://fontawesome.com/) for icons.
 

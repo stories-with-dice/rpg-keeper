@@ -166,6 +166,9 @@
       system: sys, body: e.body || '', createdAt: Date.now(), updatedAt: Date.now()
     };
     if (e.ref) item.ref = String(e.ref);
+    // Fate stunts and aspects: the skill (or aspect kind) and the settings.
+    if (e.skill) item.skill = String(e.skill);
+    if (Array.isArray(e.settings) && e.settings.length) item.settings = e.settings.map(String);
     item.seedRef = e.seedRef || refOf(sys, 'c', e);
     item.seedHash = contentHash(item);
     return item;

@@ -21,10 +21,20 @@
     { label: '4d6kh3', f: '4d6kh3' }
   ];
 
+  // Fate Core rolls only Fate dice: 4dF plus a skill rank.
+  const FATE_PRESETS = [
+    { label: '4dF−1', f: '4dF-1' }, { label: '4dF', f: '4dF' }, { label: '4dF+1', f: '4dF+1' }, { label: '4dF+2', f: '4dF+2' },
+    { label: '4dF+3', f: '4dF+3' }, { label: '4dF+4', f: '4dF+4' }, { label: '4dF+5', f: '4dF+5' }, { label: '4dF+6', f: '4dF+6' }
+  ];
+
+  // Rebuilt on a System change (js/settings.js setSystem).
   function buildDiceGrid() {
     const grid = $('#dice-grid');
     grid.innerHTML = '';
-    DICE_PRESETS.forEach(p => {
+    const fate = OSR.currentSystem && OSR.currentSystem() === 'fate';
+    const input = $('#custom-formula');
+    if (input) input.placeholder = fate ? 'e.g. 4dF+3, +2, $Fight' : 'e.g. 2d6+3, 4d6kh3, 2d20kl1';
+    (fate ? FATE_PRESETS : DICE_PRESETS).forEach(p => {
       const b = document.createElement('button');
       b.className = 'btn';
       b.textContent = p.label;
@@ -164,7 +174,7 @@
   }
 
   Object.assign(OSR, {
-    DICE_PRESETS, buildDiceGrid, openRollPopup, closeRollPopup, wireRollPopup, wireDicePanel,
+    DICE_PRESETS, FATE_PRESETS, buildDiceGrid, openRollPopup, closeRollPopup, wireRollPopup, wireDicePanel,
     get rollPop() { return rollPop; }
   });
 })(window.OSR = window.OSR || {});

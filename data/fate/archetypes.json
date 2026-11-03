@@ -1,0 +1,367 @@
+{
+  "version": 1,
+  "source": "Original content for this project. License: CC BY 4.0 (suggested in docs/design.md). Skill names are the Fate Core / Fate Condensed default skills.",
+  "notes": "skills: priority order of skills (Fate Core / Condensed names; 'Academics' falls back to 'Lore' in Fate Core). approaches: priority order of Fate Accelerated approaches. concepts: high concept nouns per genre; 'generic' is the fallback. skilledAt/badAt: phrases for Fate Accelerated nameless NPCs.",
+  "archetypes": [
+    {
+      "id": "soldier", "label": "Soldier / Guard", "group": "combat", "role": "threat",
+      "skills": ["Fight", "Shoot", "Physique", "Athletics", "Notice", "Will", "Drive", "Provoke"],
+      "approaches": ["Forceful", "Careful", "Quick", "Clever", "Sneaky", "Flashy"],
+      "skilledAt": "fighting in formation", "badAt": "thinking outside orders",
+      "concepts": {
+        "generic": ["Soldier", "Guard", "Sentry", "Veteran", "Sergeant"],
+        "fantasy": ["Pikeman", "Castle Guard", "Sellsword", "Shieldbearer", "Knight-Errant"],
+        "horror": ["Night Watchman", "Asylum Orderly", "Survivalist", "Security Guard"],
+        "scifi": ["Space Marine", "Station Security Officer", "Clone Trooper", "Boarding Specialist"],
+        "cyberpunk": ["Corporate Security Grunt", "Chromed Bodyguard", "Private Military Contractor"],
+        "modern": ["Police Officer", "Private Security Contractor", "Ex-Army Ranger", "SWAT Officer"],
+        "pulp": ["Jungle Mercenary", "Legionnaire", "Uniformed Henchman"],
+        "western": ["Cavalry Trooper", "Deputy", "Hired Gun", "Pinkerton Agent"],
+        "postapoc": ["Wasteland Raider", "Bunker Guard", "Convoy Escort", "Wall Sentry"],
+        "supers": ["Power-Armored Trooper", "Henchman in Uniform", "Agency Field Agent"]
+      }
+    },
+    {
+      "id": "brute", "label": "Brute / Bruiser", "group": "combat", "role": "threat",
+      "skills": ["Physique", "Fight", "Provoke", "Athletics", "Will", "Notice", "Drive"],
+      "approaches": ["Forceful", "Flashy", "Quick", "Careful", "Sneaky", "Clever"],
+      "skilledAt": "smashing things", "badAt": "anything subtle",
+      "concepts": {
+        "generic": ["Bruiser", "Thug", "Enforcer", "Heavy", "Muscle"],
+        "fantasy": ["Ogre Brawler", "Pit Fighter", "Berserker", "Half-Giant Mercenary", "Orc Warchief's Champion"],
+        "horror": ["Hulking Groundskeeper", "Backwoods Butcher", "Stitched Brute"],
+        "scifi": ["Heavy-Gravity Bruiser", "Gene-Modded Enforcer", "Dockyard Loader Jockey"],
+        "cyberpunk": ["Borg Bouncer", "Gang Enforcer with Gorilla Arms", "Street Samurai Muscle"],
+        "modern": ["Biker Enforcer", "Nightclub Bouncer", "Mob Leg-Breaker", "Prison Yard Heavy"],
+        "pulp": ["Strongman", "Two-Fisted Dockworker", "Wrestling Champion"],
+        "western": ["Saloon Brawler", "Railroad Bruiser", "Bare-Knuckle Champion"],
+        "postapoc": ["Mutant Brute", "Arena Champion", "Scrap-Armored Ravager"],
+        "supers": ["Super-Strong Thug", "Living Wrecking Ball", "Rampaging Juggernaut"]
+      }
+    },
+    {
+      "id": "marksman", "label": "Sharpshooter", "group": "combat", "role": "hitter",
+      "skills": ["Shoot", "Notice", "Stealth", "Athletics", "Will", "Crafts"],
+      "approaches": ["Careful", "Sneaky", "Quick", "Clever", "Forceful", "Flashy"],
+      "skilledAt": "picking off targets from afar", "badAt": "fighting up close",
+      "concepts": {
+        "generic": ["Sharpshooter", "Sniper", "Hunter", "Marksman"],
+        "fantasy": ["Elven Archer", "Crossbow Assassin", "Ranger", "Royal Huntsman"],
+        "horror": ["Hunter in the Treeline", "Deer Hunter Gone Wrong", "Silver-Bullet Slayer"],
+        "scifi": ["Rail-Gun Sniper", "Orbital Spotter", "Recon Drone Operator"],
+        "cyberpunk": ["Smartlinked Sniper", "Rooftop Shooter", "Wired Gunslinger"],
+        "modern": ["Police Sniper", "Hitman with a Rifle", "Trophy Hunter"],
+        "pulp": ["Big-Game Hunter", "Trick Shooter", "Gangland Tommy-Gunner"],
+        "western": ["Gunslinger", "Buffalo Hunter", "Bounty Hunter"],
+        "postapoc": ["Scavenger Sniper", "Tower Lookout", "Crossbow Stalker"],
+        "supers": ["Never-Miss Marksman", "Energy-Blaster", "Trick-Arrow Archer"]
+      }
+    },
+    {
+      "id": "assassin", "label": "Assassin / Killer", "group": "combat", "role": "hitter",
+      "skills": ["Fight", "Stealth", "Deceive", "Athletics", "Notice", "Shoot", "Burglary"],
+      "approaches": ["Sneaky", "Quick", "Careful", "Clever", "Forceful", "Flashy"],
+      "skilledAt": "striking from the shadows", "badAt": "fighting fair",
+      "concepts": {
+        "generic": ["Assassin", "Killer", "Knife Artist", "Cutthroat"],
+        "fantasy": ["Guild Assassin", "Poisoner", "Shadow Blade", "Temple Executioner"],
+        "horror": ["Masked Slasher", "Serial Killer", "Cult Executioner"],
+        "scifi": ["Synthetic Assassin", "Cloaked Killer", "Bounty Contractor"],
+        "cyberpunk": ["Mantis-Blade Killer", "Corporate Wetworks Agent", "Ghost-Protocol Assassin"],
+        "modern": ["Contract Killer", "Cartel Sicario", "Former Special Forces Operator"],
+        "pulp": ["Silent Ninja", "Strangler in the Fog", "Thuggee Cultist"],
+        "western": ["Knife-Throwing Drifter", "Back-Shooter", "Hired Killer"],
+        "postapoc": ["Wasteland Stalker", "Raider Knife-Man", "Night Hunter"],
+        "supers": ["Shadow-Stepping Assassin", "Living Weapon", "Masked Vigilante Gone Bad"]
+      }
+    },
+    {
+      "id": "thief", "label": "Rogue / Thief", "group": "skulduggery", "role": "hitter",
+      "skills": ["Burglary", "Stealth", "Athletics", "Deceive", "Notice", "Contacts", "Fight"],
+      "approaches": ["Sneaky", "Quick", "Clever", "Flashy", "Careful", "Forceful"],
+      "skilledAt": "stealing things", "badAt": "standing and fighting",
+      "concepts": {
+        "generic": ["Thief", "Burglar", "Pickpocket", "Rogue", "Scoundrel"],
+        "fantasy": ["Cutpurse", "Guild Burglar", "Tomb Robber", "Halfling Pickpocket"],
+        "horror": ["Grave Robber", "Looter", "Desperate Junkie"],
+        "scifi": ["Cargo Smuggler", "Data Thief", "Cat Burglar of the Spires"],
+        "cyberpunk": ["Netrunner Burglar", "Chop-Shop Scav", "Street Kid Lifter"],
+        "modern": ["Car Thief", "Jewel Thief", "Pickpocket", "Fence"],
+        "pulp": ["Gentleman Thief", "Cat Burglar", "Museum Robber"],
+        "western": ["Horse Thief", "Train Robber", "Card Sharp"],
+        "postapoc": ["Scavenger", "Supply Thief", "Junk Rat"],
+        "supers": ["Super-Thief", "Phasing Burglar", "Speedster Snatcher"]
+      }
+    },
+    {
+      "id": "spy", "label": "Spy / Infiltrator", "group": "skulduggery", "role": "support",
+      "skills": ["Deceive", "Stealth", "Empathy", "Contacts", "Investigate", "Shoot", "Notice", "Rapport"],
+      "approaches": ["Sneaky", "Clever", "Careful", "Flashy", "Quick", "Forceful"],
+      "skilledAt": "lying convincingly", "badAt": "being honest",
+      "concepts": {
+        "generic": ["Spy", "Infiltrator", "Informant", "Double Agent"],
+        "fantasy": ["Court Spy", "Spymaster's Eye", "Changeling Infiltrator", "Whisperer of the Guild"],
+        "horror": ["Cult Infiltrator", "Pod Person", "Thing That Wears a Friend's Face"],
+        "scifi": ["Shapeshifter Infiltrator", "Imperial Intelligence Agent", "Sleeper Android"],
+        "cyberpunk": ["Corporate Mole", "Fixer's Plant", "Deep-Cover Netrunner"],
+        "modern": ["Intelligence Officer", "Industrial Spy", "Undercover Cop", "Double Agent"],
+        "pulp": ["Femme Fatale Spy", "Foreign Agent", "Man in the Trench Coat"],
+        "western": ["Railroad Company Spy", "Pinkerton Undercover", "Saloon Informant"],
+        "postapoc": ["Settlement Mole", "Raider Scout in Disguise"],
+        "supers": ["Shapeshifting Spy", "Telepathic Infiltrator", "Agency Mole"]
+      }
+    },
+    {
+      "id": "scholar", "label": "Scholar / Expert", "group": "knowledge", "role": "support",
+      "skills": ["Academics", "Investigate", "Crafts", "Notice", "Will", "Rapport", "Lore"],
+      "approaches": ["Careful", "Clever", "Sneaky", "Flashy", "Quick", "Forceful"],
+      "skilledAt": "knowing obscure facts", "badAt": "physical danger",
+      "concepts": {
+        "generic": ["Scholar", "Professor", "Archivist", "Expert"],
+        "fantasy": ["Sage", "Monastery Archivist", "Royal Astronomer", "Cartographer"],
+        "horror": ["Antiquarian", "Folklore Professor", "Doomed Researcher", "Museum Curator"],
+        "scifi": ["Xenobiologist", "Ship's Science Officer", "Archaeologist of Dead Worlds"],
+        "cyberpunk": ["Burned-Out Data Analyst", "Black-Clinic Researcher"],
+        "modern": ["Professor", "Forensic Analyst", "Think-Tank Consultant", "Librarian"],
+        "pulp": ["Absent-Minded Professor", "Lost-City Archaeologist", "Brilliant Inventor"],
+        "western": ["Traveling Naturalist", "Schoolteacher", "Newspaper Editor"],
+        "postapoc": ["Keeper of Old Books", "Pre-War Scientist", "Settlement Teacher"],
+        "supers": ["Super-Genius", "Lab Coat Consultant", "Metahuman Researcher"]
+      }
+    },
+    {
+      "id": "mystic", "label": "Mystic / Spellcaster", "group": "knowledge", "role": "hitter",
+      "skills": ["Lore", "Will", "Provoke", "Empathy", "Notice", "Deceive", "Academics"],
+      "approaches": ["Clever", "Flashy", "Careful", "Forceful", "Sneaky", "Quick"],
+      "skilledAt": "working magic", "badAt": "mundane chores",
+      "concepts": {
+        "generic": ["Mystic", "Occultist", "Seer", "Psychic"],
+        "fantasy": ["Hedge Witch", "Battle Mage", "Necromancer", "Druid of the Old Grove", "Court Wizard"],
+        "horror": ["Medium", "Witch of the Hollow", "Exorcist", "Cult Sorcerer"],
+        "scifi": ["Psionic Adept", "Void Mystic", "Telepath of the Order"],
+        "cyberpunk": ["Techno-Shaman", "AI Oracle Channeler", "Street Witch"],
+        "modern": ["Fortune Teller", "Urban Shaman", "Occult Bookseller"],
+        "pulp": ["Hypnotist", "Tibetan Mystic", "Stage Magician with Real Powers"],
+        "western": ["Medicine Show Mesmerist", "Hoodoo Conjurer", "Spirit Talker"],
+        "postapoc": ["Radiation Prophet", "Mutant Psychic", "Wasteland Seer"],
+        "supers": ["Sorcerer Supreme Hopeful", "Chaos Mage", "Mind Reader"]
+      }
+    },
+    {
+      "id": "leader", "label": "Leader / Commander", "group": "social", "role": "boss",
+      "skills": ["Will", "Rapport", "Provoke", "Contacts", "Fight", "Notice", "Resources", "Shoot"],
+      "approaches": ["Forceful", "Careful", "Flashy", "Clever", "Quick", "Sneaky"],
+      "skilledAt": "giving orders", "badAt": "admitting a mistake",
+      "concepts": {
+        "generic": ["Commander", "Captain", "Gang Boss", "Chief"],
+        "fantasy": ["Warlord", "Bandit King", "Knight-Commander", "Orc Warchief", "Pirate Captain"],
+        "horror": ["Cult Leader", "Sheriff Who Knows Too Much", "Town Patriarch"],
+        "scifi": ["Starship Captain", "Fleet Admiral", "Rebel Cell Leader", "Mining Colony Overseer"],
+        "cyberpunk": ["Gang Boss", "Corporate Security Chief", "Fixer Queen"],
+        "modern": ["Crime Boss", "Police Captain", "Special Forces Commander", "Union Boss"],
+        "pulp": ["Gangland Kingpin", "Mad General", "Expedition Leader"],
+        "western": ["Cattle Baron", "Outlaw Gang Leader", "Cavalry Colonel", "Town Marshal"],
+        "postapoc": ["Warlord", "Settlement Mayor", "Convoy Boss"],
+        "supers": ["Villain Team Leader", "Agency Director", "Hero Team Captain"]
+      }
+    },
+    {
+      "id": "noble", "label": "Noble / Power Broker", "group": "social", "role": "support",
+      "skills": ["Resources", "Rapport", "Contacts", "Deceive", "Will", "Empathy", "Academics"],
+      "approaches": ["Flashy", "Clever", "Careful", "Sneaky", "Forceful", "Quick"],
+      "skilledAt": "pulling strings", "badAt": "getting their hands dirty",
+      "concepts": {
+        "generic": ["Aristocrat", "Power Broker", "Patron", "Politician"],
+        "fantasy": ["Duchess", "Scheming Courtier", "Merchant Prince", "High Priest"],
+        "horror": ["Old-Money Patriarch", "Decadent Heir", "Mayor with a Secret"],
+        "scifi": ["Senator", "Corporate Heir", "Noble House Scion", "Colonial Governor"],
+        "cyberpunk": ["Megacorp Executive", "Arcology Heiress", "City Councilor on the Payroll"],
+        "modern": ["CEO", "Senator", "Socialite", "Lobbyist"],
+        "pulp": ["Millionaire Playboy", "Decadent Count", "Robber Baron"],
+        "western": ["Railroad Magnate", "Land Baron", "Territorial Governor"],
+        "postapoc": ["Water Baron", "Bunker Aristocrat", "Fuel King"],
+        "supers": ["Billionaire Industrialist", "Shadowy Council Member", "Mayor"]
+      }
+    },
+    {
+      "id": "face", "label": "Charmer / Diplomat", "group": "social", "role": "support",
+      "skills": ["Rapport", "Deceive", "Empathy", "Contacts", "Provoke", "Will", "Resources"],
+      "approaches": ["Flashy", "Clever", "Sneaky", "Careful", "Quick", "Forceful"],
+      "skilledAt": "charming people", "badAt": "being alone",
+      "concepts": {
+        "generic": ["Diplomat", "Charmer", "Con Artist", "Negotiator", "Celebrity"],
+        "fantasy": ["Silver-Tongued Bard", "Envoy", "Courtesan", "Smooth-Talking Swindler"],
+        "horror": ["Charismatic Preacher", "Too-Friendly Neighbor", "Smiling Salesman"],
+        "scifi": ["Ambassador", "First-Contact Specialist", "Holo-Star"],
+        "cyberpunk": ["Media Influencer", "Club Owner", "Corporate Negotiator"],
+        "modern": ["Lawyer", "PR Fixer", "Con Artist", "Talk Show Host"],
+        "pulp": ["Nightclub Singer", "Charming Rogue", "Society Columnist"],
+        "western": ["Snake-Oil Salesman", "Saloon Owner", "Riverboat Gambler"],
+        "postapoc": ["Trade Caravan Talker", "Settlement Envoy"],
+        "supers": ["Mind-Influencing Charmer", "Celebrity Hero", "Villain's Spokesperson"]
+      }
+    },
+    {
+      "id": "investigator", "label": "Investigator", "group": "knowledge", "role": "balanced",
+      "skills": ["Investigate", "Notice", "Empathy", "Contacts", "Shoot", "Will", "Athletics"],
+      "approaches": ["Careful", "Clever", "Sneaky", "Quick", "Forceful", "Flashy"],
+      "skilledAt": "finding clues", "badAt": "letting things go",
+      "concepts": {
+        "generic": ["Investigator", "Detective", "Inspector", "Tracker"],
+        "fantasy": ["Inquisitor", "Witch Hunter", "City Watch Inspector", "Tracker"],
+        "horror": ["Paranormal Investigator", "Small-Town Sheriff", "Haunted Detective"],
+        "scifi": ["Colonial Marshal", "Forensic AI", "Bounty Tracker"],
+        "cyberpunk": ["Burned-Out Cop", "Data Forensics Tech", "Corporate Investigator"],
+        "modern": ["Homicide Detective", "Investigative Journalist", "Private Eye", "FBI Agent"],
+        "pulp": ["Hard-Boiled Private Eye", "Plucky Reporter", "Scotland Yard Inspector"],
+        "western": ["U.S. Marshal", "Pinkerton Detective", "Tracker"],
+        "postapoc": ["Settlement Lawkeeper", "Wasteland Tracker"],
+        "supers": ["Detective Hero", "Agency Investigator", "Super-Senses Sleuth"]
+      }
+    },
+    {
+      "id": "healer", "label": "Healer / Medic", "group": "civilian", "role": "support",
+      "skills": ["Academics", "Empathy", "Will", "Rapport", "Crafts", "Notice", "Lore"],
+      "approaches": ["Careful", "Clever", "Quick", "Flashy", "Sneaky", "Forceful"],
+      "skilledAt": "patching people up", "badAt": "hurting anyone",
+      "concepts": {
+        "generic": ["Medic", "Healer", "Doctor", "Nurse"],
+        "fantasy": ["Temple Healer", "Herbalist", "Battlefield Surgeon", "Plague Doctor"],
+        "horror": ["Country Doctor", "Asylum Psychiatrist", "Mad Surgeon"],
+        "scifi": ["Ship's Medic", "Gene Doctor", "Med-Bay Android"],
+        "cyberpunk": ["Ripperdoc", "Street Medic", "Trauma Team Paramedic"],
+        "modern": ["ER Doctor", "Paramedic", "Field Medic", "Therapist"],
+        "pulp": ["Jungle Doctor", "Kindly Physician", "Sinister Doctor"],
+        "western": ["Frontier Doctor", "Medicine Woman", "Barber-Surgeon"],
+        "postapoc": ["Rad-Doc", "Settlement Herbalist", "Scavenged-Pills Medic"],
+        "supers": ["Healing Touch Hero", "Hospital Doctor for Heroes"]
+      }
+    },
+    {
+      "id": "tech", "label": "Engineer / Tinkerer", "group": "knowledge", "role": "support",
+      "skills": ["Crafts", "Academics", "Notice", "Drive", "Resources", "Shoot", "Investigate"],
+      "approaches": ["Clever", "Careful", "Quick", "Sneaky", "Flashy", "Forceful"],
+      "skilledAt": "fixing machines", "badAt": "talking to people",
+      "concepts": {
+        "generic": ["Engineer", "Mechanic", "Tinkerer", "Inventor"],
+        "fantasy": ["Dwarven Smith", "Gnome Artificer", "Siege Engineer", "Clockwork Maker"],
+        "horror": ["Reclusive Inventor", "Handyman Who Saw Something", "Ham Radio Operator"],
+        "scifi": ["Ship's Engineer", "Drone Wrangler", "Terraformer", "AI Programmer"],
+        "cyberpunk": ["Netrunner", "Gearhead", "Black-Market Cyber-Tech", "Drone Rigger"],
+        "modern": ["Hacker", "Mechanic", "Bomb Technician", "Electrician"],
+        "pulp": ["Gadgeteer", "Mad Scientist", "Rocket Engineer"],
+        "western": ["Gunsmith", "Blacksmith", "Railroad Engineer"],
+        "postapoc": ["Scrap Engineer", "Water-Purifier Tech", "Junk Mechanic"],
+        "supers": ["Power-Armor Builder", "Gadget Genius", "Techno-Path"]
+      }
+    },
+    {
+      "id": "pilot", "label": "Driver / Pilot", "group": "combat", "role": "balanced",
+      "skills": ["Drive", "Notice", "Athletics", "Shoot", "Crafts", "Will", "Contacts"],
+      "approaches": ["Quick", "Flashy", "Careful", "Clever", "Forceful", "Sneaky"],
+      "skilledAt": "driving fast", "badAt": "sitting still",
+      "concepts": {
+        "generic": ["Driver", "Pilot", "Wheelman", "Courier"],
+        "fantasy": ["Cavalry Rider", "Chariot Driver", "Griffon Rider", "Riverboat Pilot"],
+        "horror": ["Long-Haul Trucker", "Hearse Driver", "Lost Bus Driver"],
+        "scifi": ["Starfighter Ace", "Freighter Pilot", "Mech Pilot"],
+        "cyberpunk": ["Getaway Driver", "AV Pilot", "Bike Courier"],
+        "modern": ["Getaway Driver", "Helicopter Pilot", "Street Racer"],
+        "pulp": ["Barnstormer", "Flying Ace", "Zeppelin Captain"],
+        "western": ["Stagecoach Driver", "Pony Express Rider", "Riverboat Captain"],
+        "postapoc": ["War-Rig Driver", "Road Warrior", "Gyrocopter Scout"],
+        "supers": ["Speedster", "Jet Pilot", "Vehicle Specialist"]
+      }
+    },
+    {
+      "id": "merchant", "label": "Merchant / Fixer", "group": "civilian", "role": "support",
+      "skills": ["Resources", "Contacts", "Rapport", "Deceive", "Empathy", "Notice", "Will"],
+      "approaches": ["Clever", "Careful", "Flashy", "Sneaky", "Quick", "Forceful"],
+      "skilledAt": "making a deal", "badAt": "giving anything away",
+      "concepts": {
+        "generic": ["Merchant", "Fixer", "Broker", "Shopkeeper"],
+        "fantasy": ["Caravan Master", "Innkeeper", "Black-Market Dealer", "Guild Factor"],
+        "horror": ["Antique Dealer", "Pawnshop Owner", "General Store Clerk"],
+        "scifi": ["Free Trader", "Spaceport Fixer", "Salvage Broker"],
+        "cyberpunk": ["Fixer", "Fence", "Ripper Clinic Broker"],
+        "modern": ["Fixer", "Arms Dealer", "Bar Owner", "Fence"],
+        "pulp": ["Bazaar Merchant", "Smuggler Captain", "Antiquities Dealer"],
+        "western": ["General Store Owner", "Gun Runner", "Trading Post Keeper"],
+        "postapoc": ["Trader", "Barterer", "Bullet Merchant"],
+        "supers": ["Villain Supplier", "Information Broker", "Tech Fence"]
+      }
+    },
+    {
+      "id": "zealot", "label": "Cultist / Zealot", "group": "social", "role": "threat",
+      "skills": ["Will", "Lore", "Provoke", "Fight", "Deceive", "Rapport", "Physique"],
+      "approaches": ["Forceful", "Flashy", "Careful", "Sneaky", "Clever", "Quick"],
+      "skilledAt": "believing", "badAt": "doubting",
+      "concepts": {
+        "generic": ["Zealot", "Cultist", "Fanatic", "True Believer"],
+        "fantasy": ["Inquisitor of the Flame", "Death Cultist", "Crusader", "Demon-Worshipper"],
+        "horror": ["Robed Cultist", "Snake-Handling Preacher", "Deep One Hybrid"],
+        "scifi": ["Machine-God Acolyte", "Purity Crusader", "Hive-Mind Convert"],
+        "cyberpunk": ["Anti-Tech Terrorist", "Transhumanist Cultist", "Corporate True Believer"],
+        "modern": ["Militia Fanatic", "Cult Recruiter", "Radicalized Activist"],
+        "pulp": ["Cultist of the Serpent", "Mad Monk", "Fanatical Henchman"],
+        "western": ["Hellfire Preacher", "Doomsday Prophet", "Vigilante Committee Man"],
+        "postapoc": ["Atom Cultist", "Bomb Worshipper", "Purifier"],
+        "supers": ["Villain Cult Devotee", "Anti-Mutant Zealot"]
+      }
+    },
+    {
+      "id": "beast", "label": "Beast / Creature", "group": "creature", "role": "threat", "monster": true,
+      "skills": ["Fight", "Physique", "Athletics", "Stealth", "Notice", "Provoke"],
+      "approaches": ["Forceful", "Quick", "Sneaky", "Careful", "Flashy", "Clever"],
+      "skilledAt": "tearing prey apart", "badAt": "reasoning",
+      "concepts": {
+        "generic": ["Wild Beast", "Pack Hunter", "Apex Predator", "Guard Beast"],
+        "fantasy": ["Dire Wolf", "Owlbear", "Young Dragon", "Giant Spider", "Basilisk"],
+        "horror": ["Werewolf", "Rabid Hound", "Thing in the Woods", "Swarm of Rats"],
+        "scifi": ["Xenomorph Hunter", "Hive Drone", "Void Leviathan", "Feral Bio-Weapon"],
+        "cyberpunk": ["Cyber-Hound", "Escaped Lab Mutant", "Security Drone Swarm"],
+        "modern": ["Guard Dog", "Grizzly Bear", "Escaped Zoo Tiger", "Alligator"],
+        "pulp": ["Giant Ape", "Dinosaur", "Man-Eating Tiger", "Giant Squid"],
+        "western": ["Mountain Lion", "Wolf Pack", "Rattlesnake Nest", "Thunderbird"],
+        "postapoc": ["Rad-Wolf", "Mutant Roach Swarm", "Two-Headed Bear"],
+        "supers": ["Kaiju", "Mutated Animal", "Lab-Grown Monstrosity"]
+      }
+    },
+    {
+      "id": "horror", "label": "Abomination / Supernatural", "group": "creature", "role": "boss", "monster": true,
+      "skills": ["Provoke", "Physique", "Fight", "Stealth", "Will", "Lore", "Deceive"],
+      "approaches": ["Sneaky", "Forceful", "Flashy", "Clever", "Careful", "Quick"],
+      "skilledAt": "terrifying the living", "badAt": "crossing a threshold uninvited",
+      "concepts": {
+        "generic": ["Abomination", "Spirit", "Undying Thing", "Shapeshifter"],
+        "fantasy": ["Lich", "Vampire Lord", "Wraith", "Demon", "Troll"],
+        "horror": ["Vengeful Ghost", "Vampire", "Wendigo", "Possessed Child", "Eldritch Spawn"],
+        "scifi": ["Rogue AI", "Psychic Parasite", "Nanite Swarm", "Thing from Outside"],
+        "cyberpunk": ["Rogue AI Construct", "Data Ghost", "Cyberpsycho"],
+        "modern": ["Urban Legend Made Real", "Skinwalker", "Poltergeist"],
+        "pulp": ["Mummy", "Fishman", "Brain in a Jar"],
+        "western": ["Wendigo", "Revenant Gunslinger", "Skinwalker"],
+        "postapoc": ["Glowing One", "Bunker Experiment", "Ash Wraith"],
+        "supers": ["Cosmic Entity", "Demonic Villain", "Living Shadow"]
+      }
+    },
+    {
+      "id": "commoner", "label": "Commoner / Bystander", "group": "civilian", "role": "support",
+      "skills": ["Contacts", "Crafts", "Notice", "Rapport", "Athletics", "Resources", "Empathy"],
+      "approaches": ["Careful", "Clever", "Quick", "Sneaky", "Flashy", "Forceful"],
+      "skilledAt": "knowing the local gossip", "badAt": "danger of any kind",
+      "concepts": {
+        "generic": ["Shopkeeper", "Laborer", "Clerk", "Townsperson", "Bartender"],
+        "fantasy": ["Tavern-Keeper", "Farmer", "Town Crier", "Stable Hand", "Fishwife"],
+        "horror": ["Nervous Local", "Gas Station Attendant", "Hotel Night Clerk"],
+        "scifi": ["Dock Worker", "Hydroponics Tech", "Colonist", "Bar Droid"],
+        "cyberpunk": ["Noodle Vendor", "Wage Slave", "Street Kid"],
+        "modern": ["Barista", "Cab Driver", "Office Worker", "Janitor"],
+        "pulp": ["Newsboy", "Porter", "Hotel Bellhop"],
+        "western": ["Homesteader", "Bartender", "Stable Boy", "Telegraph Operator"],
+        "postapoc": ["Farmer", "Water Carrier", "Refugee"],
+        "supers": ["Bystander", "Reporter in Distress", "Diner Waitress"]
+      }
+    }
+  ]
+}

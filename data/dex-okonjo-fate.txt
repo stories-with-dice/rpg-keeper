@@ -1,0 +1,32 @@
+# Dex Okonjo [Fate]
+
+*Fate Core — pulp, 1930s*
+
+Fate Points: 3/3
+
+```fate
+High Concept: Barnstorming Ace with a Borrowed Plane
+Trouble: Every Debt Collector from Lagos to Lisbon Knows My Face
+Aspect: The Dragonfly Never Lets Me Down
+Aspect: Old Comrades in Strange Places
+Aspect: I Laugh at the Worst Possible Moment
+
+Great (+4): Drive
+Good (+3): Shoot, Athletics
+Fair (+2): Notice, Provoke, Contacts
+Average (+1): Physique, Fight, Crafts, Will
+
+Stunt: Barrel Roll. +2 to defend with Drive when you fly an aircraft.
+Stunt: Quick Draw. +2 to Shoot on the first exchange of a conflict.
+Stunt: A Friend in Every Port. Once per session, declare that a contact of yours is nearby; Contacts rolls with that contact get +2.
+Refresh: 3
+
+Physical Stress: [ ] [ ] [ ]
+Mental Stress: [ ] [ ] [ ]
+
+Mild:
+Moderate:
+Severe:
+```
+
+Dex flew mail runs until the airline folded. Now Dex flies anything for anyone who pays in advance.

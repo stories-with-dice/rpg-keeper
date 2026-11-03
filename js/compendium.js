@@ -47,8 +47,35 @@
   /* ---- Compendium tab ---- */
   let compCatFilter = null;          // Set of enabled categories (lazily = all)
   const compSrcOff = new Set();      // Set of DISABLED sources (new sources default on)
+  // Fate stunts and aspects (optional fields): one skill / kind ('' = all),
+  // and the DISABLED settings ("Fantasy", "Sci-fi"; an entry with no
+  // settings always shows).
+  let compSkill = '';
+  const compSettingOff = new Set();
   // Cleared by the test seam's reset() — see js/main.js.
-  function resetCompendiumFilters() { compCatFilter = null; compSrcOff.clear(); }
+  function resetCompendiumFilters() { compCatFilter = null; compSrcOff.clear(); compSkill = ''; compSettingOff.clear(); }
+  function compSkills() {
+    return Array.from(new Set(compendiumForSystem().map(e => e.skill).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  }
+  function compSettings() {
+    const all = new Set();
+    compendiumForSystem().forEach(e => (e.settings || []).forEach(x => all.add(x)));
+    return Array.from(all).sort((a, b) => a.localeCompare(b));
+  }
+  // The Skill / kind and Setting filter rows show only when an entry of the system has the field.
+  function renderCompFateFilters() {
+    const skills = compSkills(), settings = compSettings();
+    if (compSkill && skills.indexOf(compSkill) === -1) compSkill = '';
+    $('#comp-skill-row').hidden = !skills.length;
+    $('#comp-skill').innerHTML = '<option value="">All</option>' + skills.map(k =>
+      '<option value="' + escapeHtml(k) + '"' + (k === compSkill ? ' selected' : '') + '>' + escapeHtml(k) + '</option>').join('');
+    $('#comp-setting-row').hidden = !settings.length;
+    $('#comp-settings').innerHTML = settings.map(x =>
+      '<label class="comp-cat"><input type="checkbox" data-setting="' + escapeHtml(x) + '"' +
+      (compSettingOff.has(x) ? '' : ' checked') + ' /> ' + escapeHtml(x) + '</label>').join('');
+  }
+  // An entry passes the Setting filter when one of its settings is on.
+  const settingOn = e => !e.settings || !e.settings.length || e.settings.some(x => !compSettingOff.has(x));
   function compCats() {
     if (!compCatFilter) compCatFilter = new Set(COMPENDIUM_CATEGORIES);
     return compCatFilter;
@@ -76,7 +103,8 @@
   function compListMatches() {
     const on = compCats();
     let list = compendiumForSystem().filter(e =>
-      on.has(e.category) && !compSrcOff.has(e.source || COMPENDIUM_DEFAULT_SOURCE));
+      on.has(e.category) && !compSrcOff.has(e.source || COMPENDIUM_DEFAULT_SOURCE) &&
+      (!compSkill || e.skill === compSkill) && settingOn(e));
     const term = $('#comp-search').value.trim();
     if (term) {
       const fullText = $('#comp-fulltext').checked;
@@ -94,6 +122,7 @@
   }
   function renderCompendium() {
     renderCompCats();
+    renderCompFateFilters();
     updateCompSrcDatalist();
     const list = compListMatches();
     const total = compendiumForSystem().length;
@@ -105,6 +134,7 @@
           '<span class="comp-name">' + escapeHtml(e.name || '(unnamed)') + '</span>' +
           '<span class="badge">' + escapeHtml(e.category) + '</span>' +
           '<span class="badge comp-src-badge">' + escapeHtml(e.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>' +
+          (e.skill ? '<span class="badge comp-skill-badge">' + escapeHtml(e.skill) + '</span>' : '') +
           '<button class="btn comp-row-edit">Edit</button>' +
           '<button class="btn btn-danger comp-row-del" title="Delete">&times;</button>' +
         '</div>' +
@@ -141,6 +171,13 @@
       '<option' + ((en ? en.category : 'Other') === c ? ' selected' : '') + '>' + escapeHtml(c) + '</option>').join('');
     updateCompSrcDatalist();
     $('#comp-f-src').value = en ? (en.source || COMPENDIUM_DEFAULT_SOURCE) : COMPENDIUM_DEFAULT_SOURCE;
+    // Skill / kind and Settings: in Fate, or on an entry that has them.
+    const fateFields = currentSystem() === 'fate' || !!(en && (en.skill || (en.settings && en.settings.length)));
+    $('#comp-f-skill-field').hidden = !fateFields;
+    $('#comp-f-settings-field').hidden = !fateFields;
+    $('#comp-skill-list').innerHTML = compSkills().map(k => '<option value="' + escapeHtml(k) + '"></option>').join('');
+    $('#comp-f-skill').value = en && en.skill ? en.skill : '';
+    $('#comp-f-settings').value = en && en.settings ? en.settings.join(', ') : '';
     $('#comp-msg').textContent = '';
     $('#comp-delete').hidden = !en;
     $('#comp-modal').hidden = false;
@@ -156,6 +193,9 @@
     const category = $('#comp-f-cat').value;
     const source = $('#comp-f-src').value.trim() || COMPENDIUM_DEFAULT_SOURCE;
     const body = compEditorValue();
+    const skill = $('#comp-f-skill-field').hidden ? null : $('#comp-f-skill').value.trim();
+    const settings = $('#comp-f-settings-field').hidden ? null
+      : $('#comp-f-settings').value.split(',').map(x => x.trim()).filter(Boolean);
     let en = compEditId ? OSR.state.compendium.find(e => e.id === compEditId) : null;
     const creating = !en;
     if (en) {
@@ -164,6 +204,8 @@
       en = { id: uid(), name: name, category: category, source: source, body: body, system: currentSystem(), createdAt: Date.now(), updatedAt: Date.now() };
       OSR.state.compendium.push(en);
     }
+    if (skill != null) { if (skill) en.skill = skill; else delete en.skill; }
+    if (settings != null) { if (settings.length) en.settings = settings; else delete en.settings; }
     OSR.save();
     renderCompendium();
     OSR.refreshCompPop();
@@ -215,6 +257,13 @@
       if (!cb) return;
       const on = compCats();
       if (cb.checked) on.add(cb.dataset.cat); else on.delete(cb.dataset.cat);
+      renderCompendium();
+    });
+    $('#comp-skill').addEventListener('change', e => { compSkill = e.target.value; renderCompendium(); });
+    $('#comp-settings').addEventListener('change', e => {
+      const cb = e.target.closest('input[data-setting]');
+      if (!cb) return;
+      if (cb.checked) compSettingOff.delete(cb.dataset.setting); else compSettingOff.add(cb.dataset.setting);
       renderCompendium();
     });
     $('#comp-sources').addEventListener('change', e => {

@@ -126,6 +126,11 @@
           skill goes first &mdash; drag the rows. A new combatant goes in at its rank; change a rank for this combat
           (for example after a spell), then <b>Sort by</b>.
         </p>
+        <p id="cb-fate-hint" class="hint cb-hint" hidden>
+          Fate: the GM picks the turn order (drag the rows). Click a stress box to check it;
+          type a consequence in the panel below. <b>Taken out</b> marks a combatant out of the conflict;
+          <b>Clear stress</b> empties every box at the end of the conflict.
+        </p>
         <ol class="tracker-list" id="tracker-list"></ol>
         <p id="tracker-empty" class="hint">No combatants yet. Add a character or monster above.</p>
         <div id="combatant-detail" class="combatant-detail"></div>
@@ -152,6 +157,7 @@
               </div>
             </div>
           </div>
+          <button id="fate-gen-open" class="btn" type="button" hidden title="Generate a Fate NPC"><i class="fa-solid fa-dice"></i> Fate NPC&hellip;</button>
           <span class="comp-count" id="mb-count"></span>
         </div>
         <p id="mb-empty" class="hint">No monsters in the library yet. Use <strong>+ New monster</strong>, <strong>Random monster&hellip;</strong>, or paste a stat block.</p>
@@ -169,6 +175,8 @@
         </div>
         <div class="comp-filter-row"><span class="comp-filter-label">Category</span><div class="comp-cats" id="comp-cats"></div></div>
         <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="comp-sources"></div></div>
+        <div class="comp-filter-row" id="comp-skill-row" hidden><span class="comp-filter-label">Skill / kind</span><select id="comp-skill"></select></div>
+        <div class="comp-filter-row" id="comp-setting-row" hidden><span class="comp-filter-label">Setting</span><div class="comp-cats" id="comp-settings"></div></div>
         <p id="comp-empty" class="hint">No entries yet. Use <strong>+ New entry</strong>, or hover a <code>[bracketed]</code> item on a character sheet and create one.</p>
         <ul class="comp-list" id="comp-list"></ul>
       </section>
@@ -453,9 +461,38 @@
           <button type="submit" class="btn btn-primary">Roll</button>
         </form>
         <div class="dice-last" id="dice-last" aria-live="polite"></div>
+        <div id="dice-fate-actions" class="dice-fate-actions" hidden>
+          <button id="dice-fate-invoke" class="btn" type="button" title="Invoke an aspect: +2 to the last Fate roll">Invoke +2</button>
+          <button id="dice-fate-reroll" class="btn" type="button" title="Invoke an aspect: roll the last Fate roll again">Reroll</button>
+        </div>
         <button id="dice-apply" class="btn dice-apply" hidden></button>
         <div id="dice-apply-ua" class="dice-apply-ua" hidden></div>
       </aside>
+
+      <section class="fate-aspects-panel" id="fate-aspects-panel" hidden>
+        <div class="panel-head">
+          <h2>Aspects</h2>
+          <button id="fate-new-scene" class="btn" type="button" title="Remove the scene and situation aspects and the boosts; GM fate points = 1 per PC">New scene</button>
+        </div>
+        <div class="fate-gm-row" title="The GM's fate points for this scene (1 per PC at the start of a scene)">
+          <span class="fate-gm-label">GM fate points</span>
+          <button id="fate-gm-dec" class="cons-btn" type="button" aria-label="GM fate points −1">&minus;</button>
+          <input id="fate-gm-points" class="cons-val-input" type="number" min="0" step="1" value="0" />
+          <button id="fate-gm-inc" class="cons-btn" type="button" aria-label="GM fate points +1">+</button>
+        </div>
+        <ul id="fate-aspect-list" class="fate-aspect-list"></ul>
+        <p id="fate-aspect-empty" class="hint">No aspects in play. Add the scene's aspects, advantages, and boosts here.</p>
+        <form id="fate-aspect-add" class="fate-aspect-add">
+          <input id="fate-aspect-text" type="text" placeholder="New aspect&hellip;" autocomplete="off" />
+          <select id="fate-aspect-kind" title="Kind">
+            <option value="situation">Situation</option>
+            <option value="scene">Scene</option>
+            <option value="boost">Boost</option>
+            <option value="game">Game</option>
+          </select>
+          <button class="btn" type="submit">Add</button>
+        </form>
+      </section>
 
       <section class="consumables-panel">
         <div class="panel-head">
@@ -629,6 +666,98 @@
     </div>
   </div>
 
+  <div class="modal" id="fate-gen-modal" hidden>
+    <div class="modal-box modal-box-lg">
+      <div class="mm-head">
+        <h3>Fate NPC generator</h3>
+        <button id="fg-close" class="btn">&times;</button>
+      </div>
+      <p class="hint">Fate has no challenge rating: an NPC's difficulty is its peak skill compared with the PCs' peak skill.
+        The same seed always makes the same NPC.</p>
+      <div class="mb-gen-row">
+        <label class="field"><span>Genre</span><select id="fg-genre"></select></label>
+        <label class="field"><span>Importance</span><select id="fg-importance">
+          <option value="nameless">Nameless</option>
+          <option value="supporting" selected>Supporting</option>
+          <option value="main">Main</option>
+        </select></label>
+        <label class="field" id="fg-quality-field"><span>Quality</span><select id="fg-quality">
+          <option value="average">Average</option>
+          <option value="fair" selected>Fair</option>
+          <option value="good">Good</option>
+        </select></label>
+        <label class="field"><span>Threat</span><select id="fg-threat">
+          <option value="auto">Auto</option>
+          <option value="weaker">Weaker</option>
+          <option value="peer">Peer</option>
+          <option value="strong">Strong</option>
+          <option value="deadly">Deadly</option>
+        </select></label>
+        <label class="field"><span>Role</span><select id="fg-role">
+          <option value="auto">Auto</option>
+          <option value="threat">Threat</option>
+          <option value="hitter">Hitter</option>
+          <option value="boss">Boss</option>
+          <option value="balanced">Balanced</option>
+          <option value="support">Support</option>
+        </select></label>
+        <label class="field"><span>Archetype</span><select id="fg-archetype"></select></label>
+        <label class="field"><span>Disposition</span><select id="fg-disposition">
+          <option value="hostile">Hostile</option>
+          <option value="rival">Rival</option>
+          <option value="neutral">Neutral</option>
+          <option value="ally">Ally</option>
+        </select></label>
+        <label class="field"><span>PC peak</span><input id="fg-pcpeak" type="number" min="1" max="8" step="1" value="4" /></label>
+        <label class="field" id="fg-mob-field"><span>Mob size</span><input id="fg-mob" type="number" min="1" max="12" step="1" value="1" /></label>
+        <label class="field"><span>Seed</span><input id="fg-seed" type="text" placeholder="random" autocomplete="off" /></label>
+        <button id="fg-generate" class="btn btn-primary"><i class="fa-solid fa-dice"></i> Generate</button>
+      </div>
+      <div id="fg-preview" class="fate-preview"></div>
+      <div class="modal-actions" id="fg-actions" hidden>
+        <button id="fg-add-lib" class="btn btn-primary">Add to Bestiary</button>
+        <button id="fg-add-combat" class="btn">Add to Bestiary and Combat</button>
+        <button id="fg-reroll" class="btn">Reroll</button>
+        <span id="fg-msg" class="hint"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="fate-enc-modal" hidden>
+    <div class="modal-box modal-box-lg">
+      <div class="mm-head">
+        <h3>Populate a Fate encounter</h3>
+        <button id="fe-close" class="btn">&times;</button>
+      </div>
+      <p class="hint">Easy: one threat and a mob of nameless NPCs. Standard: two or three threats, a hitter, and a mob.
+        Climactic: a boss, four or five threats, a hitter, and a mob. Fewer threats for 1&ndash;2 PCs.</p>
+      <div class="mb-gen-row">
+        <label class="field"><span>Genre</span><select id="fe-genre"></select></label>
+        <label class="field"><span>Level</span><select id="fe-level">
+          <option value="easy">Easy</option>
+          <option value="standard" selected>Standard</option>
+          <option value="climactic">Climactic</option>
+        </select></label>
+        <label class="field"><span>PCs</span><input id="fe-pcs" type="number" min="1" max="8" step="1" value="3" /></label>
+        <label class="field"><span>PC peak</span><input id="fe-pcpeak" type="number" min="1" max="8" step="1" value="4" /></label>
+        <label class="field"><span>Monsters</span><select id="fe-monster">
+          <option value="auto">Auto</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select></label>
+        <label class="field"><span>Seed</span><input id="fe-seed" type="text" placeholder="random" autocomplete="off" /></label>
+        <button id="fe-generate" class="btn btn-primary"><i class="fa-solid fa-dice"></i> Generate</button>
+      </div>
+      <div id="fe-preview" class="fate-preview"></div>
+      <div class="modal-actions" id="fe-actions" hidden>
+        <button id="fe-add" class="btn btn-primary">Add to Combat</button>
+        <label class="comp-check"><input type="checkbox" id="fe-add-lib" /> Also add to the Bestiary</label>
+        <button id="fe-reroll" class="btn">Reroll</button>
+        <span id="fe-msg" class="hint"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="populate-hd-modal" hidden>
     <div class="modal-box">
       <div class="mm-head">
@@ -692,6 +821,15 @@
           <span>Source</span>
           <input id="comp-f-src" type="text" list="comp-src-list" autocomplete="off" />
           <datalist id="comp-src-list"></datalist>
+        </label>
+        <label class="field comp-f-skill" id="comp-f-skill-field" hidden>
+          <span>Skill / kind</span>
+          <input id="comp-f-skill" type="text" list="comp-skill-list" autocomplete="off" />
+          <datalist id="comp-skill-list"></datalist>
+        </label>
+        <label class="field comp-f-settings" id="comp-f-settings-field" hidden>
+          <span>Settings</span>
+          <input id="comp-f-settings" type="text" placeholder="Fantasy, Sci-fi" autocomplete="off" />
         </label>
       </div>
       <textarea id="comp-f-body"></textarea>
@@ -781,6 +919,8 @@
   <script src="vendor/easymde/easymde.min.js"></script>
   <script src="js/monsters.js"></script>
   <script src="js/ua-statblock.js"></script>
+  <script src="js/fate.js"></script>
+  <script src="js/fate-npc.js"></script>
   <script src="js/table-syntax.js"></script>
   <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
        all attach to window.OSR, so load order only requires core.js first. -->
@@ -814,6 +954,7 @@
   <script src="js/io.js"></script>
   <script src="js/campaigns.js"></script>
   <script src="js/dice-ui.js"></script>
+  <script src="js/fate-ui.js"></script>
   <script src="js/seed.js"></script>
   <script src="js/brp-seed.js"></script>
   <script src="js/main.js"></script>

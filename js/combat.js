@@ -30,7 +30,8 @@
     const btn = $('#dice-apply');
     if (!btn) return;
     renderUaDamage();
-    if (!OSR.lastRoll || !applyTabActive()) { btn.hidden = true; return; }
+    // Fate has no damage roll: shifts become stress boxes and consequences (the row's boxes).
+    if (!OSR.lastRoll || !applyTabActive() || OSR.currentSystem() === 'fate') { btn.hidden = true; return; }
     btn.hidden = false;
     const ent = damageTarget();
     const sh = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
@@ -162,6 +163,7 @@
     OSR.save();
   }
   function entryDown(e) {
+    if (isFateEntry(e)) return !!e.takenOut;
     if (isUaEntry(e)) {
       const t = entryWoundThreshold(e);
       return t > 0 && entryWounds(e) >= UAStatblock.woundBand(t, 0.9); // unconscious or dead (p.63)
@@ -370,6 +372,97 @@
   }
 
   /* ---- Unknown Armies: wounds count up to the wound threshold ---- */
+  /* ---- Fate Core ---- */
+  // A Fate combatant: a 'fate' Bestiary NPC (its own copy of the NPC text in
+  // e.monster.raw, so boxes checked in one combat do not change the
+  // Bestiary), or a character whose sheet has a ```fate fence (the boxes and
+  // consequences are written to the sheet). No HP, HD, or AC.
+  function isFateEntry(e) {
+    if (!e) return false;
+    if (e.kind === 'monster') return !!e.monster && e.monster.source === 'fate';
+    const ch = combatCharFor(e);
+    return !!ch && OSR.charSystemKey(ch) === 'fate';
+  }
+  // The parsed Fate text of an entry (FateSheet.parse shape), or null.
+  function fateDefOf(e) {
+    if (!window.FateSheet || !isFateEntry(e)) return null;
+    if (e.kind === 'monster') return FateSheet.parseNpc(e.monster.raw || '');
+    return OSR.fateFenceDefs(combatCharFor(e))[0] || null;
+  }
+  // Check or clear a stress box of an entry (fence 0 for a character).
+  function setFateEntryStress(e, track, box, checked) {
+    if (e.kind === 'character') { OSR.setFateStress(combatCharFor(e), 0, track, box, checked); return; }
+    const def = fateDefOf(e), t = def && def.stress[track];
+    e.monster.raw = FateSheet.setStressBox(e.monster.raw || '', track, box, checked);
+    OSR.save();
+    OSR.pushNote(e.name, (t ? t.name : 'Stress') + ' box ' + (box + 1) + (checked ? ' checked' : ' cleared'));
+    renderTracker();
+    renderCombatantDetail();
+  }
+  function setFateEntryConsequence(e, index, value) {
+    if (e.kind === 'character') { OSR.setFateConsequence(combatCharFor(e), 0, index, value); return; }
+    const def = fateDefOf(e), c = def && def.consequences[index];
+    e.monster.raw = FateSheet.setConsequence(e.monster.raw || '', index, value);
+    OSR.save();
+    if (c && c.text !== String(value || '').trim()) OSR.pushNote(e.name, c.label + ' consequence: ' + (String(value || '').trim() || '(cleared)'));
+    renderTracker();
+    renderCombatantDetail();
+  }
+  function toggleTakenOut(e) {
+    e.takenOut = !e.takenOut;
+    OSR.save();
+    OSR.pushNote(e.name, e.takenOut ? 'Taken out' : 'Back in the conflict');
+    renderTracker();
+    renderCombatantDetail();
+  }
+  // The end of a conflict: every Fate combatant's stress boxes empty
+  // (consequences stay: they need recovery).
+  function clearCombatFateStress() {
+    OSR.state.combat.entries.forEach(e => {
+      if (!isFateEntry(e)) return;
+      if (e.kind === 'monster') e.monster.raw = FateSheet.clearStress(e.monster.raw || '');
+      else OSR.clearFateStress(combatCharFor(e));
+    });
+    OSR.save();
+    OSR.pushNote('Combat', 'Stress cleared for every Fate combatant');
+    OSR.refreshCharUI();
+    renderCombat();
+  }
+  // A Fate row: the stress boxes (click to check), the consequences in use,
+  // the peak skill, a mob size, and the Taken out toggle.
+  function fateRowLine2(e) {
+    const def = fateDefOf(e);
+    if (!def) return statusTagsHtml(e);
+    const tracks = def.stress.map((t, ti) =>
+      '<span class="chip cbt-fate-track"><span class="chip-l">' + escapeHtml(t.name.replace(/\s*stress$/i, '') || 'Stress') + '</span>' +
+      (t.boxes.length ? t.boxes.map((b, bi) =>
+        '<button type="button" class="cbt-fate-box' + (b ? ' is-checked' : '') + '" data-track="' + ti + '" data-box="' + bi + '" title="' +
+        (b ? 'Clear' : 'Check') + ' the ' + (bi + 1) + '-shift box">' + (bi + 1) + '</button>').join('') : '<span class="cbt-max">—</span>') +
+      '</span>').join('');
+    const used = def.consequences.filter(c => c.text).length;
+    const cons = def.consequences.length
+      ? '<span class="chip' + (used ? '' : ' chip-dim') + '" title="' + escapeHtml(def.consequences.map(c => c.label + ': ' + (c.text || '—')).join('\n')) + '">Cons ' + used + '/' + def.consequences.length + '</span>'
+      : '';
+    const peak = def.skills.length ? '<span class="chip chip-dim">' + escapeHtml(def.skills[0].name + ' ' + FateSheet.fmtRank(def.skills[0].rank)) + '</span>' : '';
+    return tracks + cons + peak + (def.mob ? '<span class="chip chip-dim">Mob ' + def.mob + '</span>' : '') +
+      '<button type="button" class="btn cbt-takenout' + (e.takenOut ? ' is-on' : '') + '" title="Mark as taken out of the conflict">' +
+      (e.takenOut ? 'Taken out' : 'In') + '</button>' + statusTagsHtml(e);
+  }
+  function fateDetailHtml(ent) {
+    const def = fateDefOf(ent);
+    let h = '<div class="cd-head"><b>' + escapeHtml(ent.name) + '</b> <span class="cd-src">fate' +
+      (ent.kind === 'monster' && ent.monster.importance ? ' · ' + escapeHtml(ent.monster.importance) : '') + '</span></div>';
+    h += '<div class="cd-sec"><button class="btn cbt-takenout' + (ent.takenOut ? ' is-on' : '') + '">' + (ent.takenOut ? 'Taken out' : 'Mark taken out') + '</button>' +
+      '<button class="btn cbt-fate-clear" title="Empty every Fate combatant\'s stress boxes (the end of a conflict)">Clear stress</button></div>';
+    if (ent.kind === 'monster') h += def ? FateSheet.sheetHtml(def, { fence: 0 }) : '';
+    else {
+      const ch = combatCharFor(ent);
+      h += ch ? '<div class="cd-sheet markdown-body">' + OSR.renderCharMarkdown(ch.body) + '</div>' : '<p class="hint">Character not found — it may have been deleted.</p>';
+    }
+    if (ent.kind === 'monster' && ent.monster.desc) h += '<p class="cd-desc">' + escapeHtml(ent.monster.desc) + '</p>';
+    return h;
+  }
+
   // A UA combatant — a 'ua3e' Bestiary GMC, or a character whose sheet has a
   // ```ua fence — tracks wounds taken (0 up to its Wound Threshold) instead of
   // HP and HD. A monster keeps them on its entry (`e.wounds`,
@@ -550,7 +643,7 @@
       OSR.renderConsumables();
     }
     // Seed the linked HP tracker from the sheet if it's still the untouched 0/0 default.
-    const det = isUa ? null : charDetectHp(ch);
+    const det = isUa || OSR.charSystemKey(ch) === 'fate' ? null : charDetectHp(ch);
     if (det) {
       OSR.ensureHpTracker(ch);
       const hpc = hpConsumable(ch);
@@ -845,8 +938,12 @@
     sel.value = '';
     // Unknown Armies has no Hit Dice to spend, and no initiative roll (p.62).
     const ua = OSR.currentSystem() === 'ua3e';
+    const fate = OSR.currentSystem() === 'fate';
     $('#cb-populate-hd').hidden = ua;
     $('#cb-ua-hint').hidden = !ua;
+    $('#cb-fate-hint').hidden = !fate;
+    // Fate: "+ Populate encounter…" opens the Fate encounter generator (js/fate-ui.js).
+    $('#cb-populate-hd').innerHTML = fate ? '+ Populate encounter&hellip;' : '+ Populate by <span class="hd-label">HD</span>&hellip;';
     const brp = OSR.currentSystem() === 'brp';
     $('#cb-sort-rank').hidden = !brp;
     $('#cb-sort-rank').textContent = 'Sort by ' + brpRankKey();
@@ -879,7 +976,7 @@
     const sv = m ? (m.savesText || '') : '';
     const atk = m ? (isBrp ? brpResolveDb(m.attacksText, m.damageBonus) : m.attacksText) || '' : '';
     const maxHp = entryMaxHp(e);
-    const line2 = isUaEntry(e) ? uaRowLine2(e) : null;
+    const line2 = isFateEntry(e) ? fateRowLine2(e) : isUaEntry(e) ? uaRowLine2(e) : null;
     return '<li class="' + cls.join(' ') + '" data-id="' + e.id + '" draggable="true">' +
       '<div class="cbt-line1">' +
         '<span class="cbt-drag" title="Drag to reorder">⠿</span>' +
@@ -996,6 +1093,7 @@
       return ch ? '<div class="markdown-body">' + OSR.renderCharMarkdown(ch.body) + '</div>' : '<p class="hint">Character not found.</p>';
     }
     const m = ent.monster || {};
+    if (m.source === 'fate' && window.FateSheet) return FateSheet.sheetHtml(FateSheet.parseNpc(m.raw || ''), { readOnly: true });
     if (m.source === 'ua3e') return noHead(uaMonsterDetailHtml(ent));
     if (m.source === 'brp') return noHead(brpDetailHtml(ent));
     const line = (label, v) => v ? '<p><b>' + label + ':</b> ' + escapeHtml(v) + '</p>' : '';
@@ -1030,7 +1128,9 @@
     const ent = selectedEntry();
     if (!ent) { host.innerHTML = '<p class="hint">Select a combatant for details, attacks &amp; saves.</p>'; return; }
     let h = '';
-    if (ent.kind === 'monster' && ent.monster.source === 'ua3e') {
+    if (isFateEntry(ent)) {
+      h += fateDetailHtml(ent);
+    } else if (ent.kind === 'monster' && ent.monster.source === 'ua3e') {
       h += uaMonsterDetailHtml(ent);
     } else if (ent.kind === 'monster' && ent.monster.source === 'brp') {
       h += brpDetailHtml(ent);
@@ -1157,6 +1257,14 @@
     if (e.target.closest('.cbt-hd-dec')) { stepEntry(id, 'hd', -1); return; }
     if (e.target.closest('.cbt-wd-inc')) { stepEntry(id, 'wounds', +1); return; }
     if (e.target.closest('.cbt-wd-dec')) { stepEntry(id, 'wounds', -1); return; }
+    const ent = OSR.state.combat.entries.find(x => x.id === id);
+    const fbox = e.target.closest('.cbt-fate-box');
+    if (fbox && ent) {
+      OSR.state.combat.selectedId = id;
+      setFateEntryStress(ent, +fbox.dataset.track, +fbox.dataset.box, !fbox.classList.contains('is-checked'));
+      return;
+    }
+    if (e.target.closest('.cbt-takenout') && ent) { OSR.state.combat.selectedId = id; toggleTakenOut(ent); return; }
     setSelected(id);
   }
   function stepEntry(id, field, delta) {
@@ -1207,6 +1315,13 @@
       removeStatus(ent.id, e.target.closest('.status-tag').dataset.name);
       return;
     }
+    const fbox = e.target.closest('.fate-box');
+    if (fbox && isFateEntry(ent)) {
+      setFateEntryStress(ent, +fbox.dataset.track, +fbox.dataset.box, !fbox.classList.contains('is-checked'));
+      return;
+    }
+    if (e.target.closest('.cbt-takenout')) { toggleTakenOut(ent); return; }
+    if (e.target.closest('.cbt-fate-clear')) { clearCombatFateStress(); return; }
     const dmgBtn = e.target.closest('.cbt-dmg');
     if (dmgBtn && ent.monster) {
       const a = ent.monster.attacks[+dmgBtn.dataset.i];
@@ -1268,6 +1383,12 @@
     list.addEventListener('dragend', onDragEnd);
 
     $('#combatant-detail').addEventListener('click', onDetailClick);
+    // A Fate consequence typed in the detail panel.
+    $('#combatant-detail').addEventListener('change', e => {
+      const inp = e.target.closest('.fate-cons');
+      const ent = selectedEntry();
+      if (inp && ent && isFateEntry(ent)) setFateEntryConsequence(ent, +inp.dataset.i, inp.value);
+    });
 
     // context menu
     $('#ctx-menu').addEventListener('click', onCtxMenuClick);
@@ -1301,6 +1422,7 @@
     turnIndex, nextTurn, prevTurn, setRound, moveSelection,
     rollEntryAttack, rollEntrySave, rollEntryMorale, rollEntrySkill, rollEntrySlaughter, rollEntryMadness,
     slHitNote, slMadnessDice, slSlaughterDie,
+    isFateEntry, fateDefOf, setFateEntryStress, setFateEntryConsequence, toggleTakenOut, clearCombatFateStress, fateRowLine2, fateDetailHtml,
     isUaEntry, entryWounds, entryWoundThreshold, setEntryWounds, applyWoundsToSelected, renderUaDamage, uaRowLine2, uaMonsterDetailHtml,
     renderCombat, renderCombatBar, statusTagsHtml, statusListHtml, rowHtml, renderTracker, chip, brpDetailHtml, actorStatHtml, renderCombatantDetail,
     onTrackerClick, stepEntry, onTrackerContextMenu, onTrackerInput, onTrackerChange, onDetailClick, onCombatKey,

@@ -2,12 +2,13 @@
   "name": "osr-characters",
   "version": "1.0.0",
   "private": true,
-  "description": "Character Keeper — tabletop RPG character store + combat tracker for OSR systems and Unknown Armies 3rd Edition (static HTML/CSS/JS app). No build step.",
+  "description": "Character Keeper — tabletop RPG character store + combat tracker for OSR systems, Unknown Armies 3rd Edition, BRP, Silent Legions, and Fate Core (static HTML/CSS/JS app). No build step.",
   "scripts": {
     "test": "node --test",
     "convert-bestiary": "node scripts/convert-bestiary.js",
     "convert-spells": "node scripts/convert-spells-from-shadowdark-resources.js",
-    "convert-tables": "node scripts/convert-tables.js"
+    "convert-tables": "node scripts/convert-tables.js",
+    "convert-fate": "node scripts/convert-fate.js"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.6",

@@ -1,0 +1,32 @@
+# Mara Venn [Fate]
+
+*Fate Core — fantasy*
+
+Fate Points: 3/3
+
+```fate
+High Concept: Hedge-Witch of the Salt Marsh
+Trouble: The Drowned King Remembers My Promise
+Aspect: My Brother Is the Reeve of Hollowmere
+Aspect: Every Herb Has a Story
+Aspect: I Never Leave a Stray Behind
+
+Great (+4): Lore
+Good (+3): Will, Empathy
+Fair (+2): Notice, Crafts, Rapport
+Average (+1): Physique, Stealth, Athletics, Investigate
+
+Stunt: Salt Circle. +2 to defend with Will against spirits and curses when you had a moment to draw a circle.
+Stunt: Hedge Remedies. Once per session, use Lore instead of Physique to begin recovery from a physical consequence.
+Stunt: Read the Weather. +2 to create an advantage with Lore about the marsh, the tide, or the sky.
+Refresh: 3
+
+Physical Stress: [ ] [ ] [ ]
+Mental Stress: [ ] [ ] [ ] [ ]
+
+Mild:
+Moderate:
+Severe:
+```
+
+Mara grew up between the reeds and the drowned chapels. She speaks to the marsh, and sometimes it answers.

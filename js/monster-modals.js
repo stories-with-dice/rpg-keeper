@@ -45,7 +45,10 @@
   // Unknown Armies GMCs are the opposite: pasted text only, in the same
   // statblock format as a PC's ```ua fence plus a short header (parsed by
   // UAStatblock.parseUAMonster, js/ua-statblock.js) — there is no fields form.
-  const PASTE_ONLY_SOURCES = ['ua3e'];
+  // Fate NPCs too: the same text as a character's ```fate fence, name first (js/fate.js).
+  const PASTE_ONLY_SOURCES = ['ua3e', 'fate'];
+  const FATE_PASTE_EXAMPLE = 'Harbor Thug\nHigh Concept: Dockside Muscle for Hire\nTrouble: Drinks Away the Pay\n' +
+    'Fair (+2): Fight\nAverage (+1): Physique, Provoke\nStress: [ ] [ ]\nMild:';
   const UA_PASTE_EXAMPLE = 'Night Clerk\nSees everything, says nothing\nType: GMC\nWound Threshold: 50\n' +
     'Obsession: Knowing who checks in.\n\nIdentities\nNight Clerk 55%* — Substitutes for Notice, Evaluates Isolation\n\n' +
     'Passions\nFear (Isolation): Being forgotten.\n\nShock\nViolence: 2 hardened / 0 failed';
@@ -55,13 +58,16 @@
     const b = root.querySelector('.mm-mode-btn[data-mode="fields"]');
     if (b) b.hidden = !allowed;
   }
-  function setPasteHelp(ua) {
+  // `sys`: the system whose paste help to show ('ua3e', 'fate', else the default).
+  function setPasteHelp(sys) {
     const hint = $('#mm-paste-hint'), area = $('#mm-paste-area');
     if (defaultPasteHint == null) { defaultPasteHint = hint.textContent; defaultPastePlaceholder = area.placeholder; }
-    hint.textContent = ua
+    hint.textContent = sys === 'ua3e'
       ? 'Paste a GMC or entity statblock: its name on the first line, then the same sections as a character\'s ```ua fence. Put a line of --- between two of them.'
-      : defaultPasteHint;
-    area.placeholder = ua ? UA_PASTE_EXAMPLE : defaultPastePlaceholder;
+      : sys === 'fate'
+        ? 'Paste a Fate NPC: its name on the first line, then the same lines as a character\'s ```fate fence (aspects, skills, stunts, stress, consequences). Put a line of --- between two of them.'
+        : defaultPasteHint;
+    area.placeholder = sys === 'ua3e' ? UA_PASTE_EXAMPLE : sys === 'fate' ? FATE_PASTE_EXAMPLE : defaultPastePlaceholder;
   }
   function splitUaMonsters(text) {
     return String(text || '').split(/^\s*-{3,}\s*$/m).map(t => t.trim()).filter(Boolean);
@@ -76,7 +82,7 @@
     ensureMonsterFormBuilt($('#mm-fields-host'));
     if (opts.prefill) {
       setFieldsModeAllowed($('#mm-mode'), true);
-      setPasteHelp(false);
+      setPasteHelp('');
       OSR.populateMonsterForm($('#mm-fields-host'), opts.prefill);
       setMonsterMode($('#mm-mode'), 'fields');
     } else {
@@ -85,7 +91,7 @@
       const fieldsOnly = FIELDS_ONLY_SOURCES.indexOf(sys) !== -1;
       const pasteOnly = PASTE_ONLY_SOURCES.indexOf(sys) !== -1;
       setFieldsModeAllowed($('#mm-mode'), !pasteOnly);
-      setPasteHelp(sys === 'ua3e');
+      setPasteHelp(sys);
       OSR.populateMonsterForm($('#mm-fields-host'), fieldsOnly ? { source: sys } : {});
       // BRP and Silent Legions have no "paste text" parser (see js/monsters.js)
       // — start in fields mode, with Format already set, when that's the
@@ -131,8 +137,10 @@
   // BRP has no Hit Dice: its monsters carry an Encounter Level in hd/hdNum
   // (written by the BRP content pack or the form's EL field), so every "HD"
   // label reads "EL" while the System is BRP.
+  // Fate NPCs carry their peak skill rank in hdNum: the label reads "Peak".
   function levelLabel(system) {
-    return (system || OSR.currentSystem()) === 'brp' ? 'EL' : 'HD';
+    const sys = system || OSR.currentSystem();
+    return sys === 'brp' ? 'EL' : sys === 'fate' ? 'Peak' : 'HD';
   }
   function applyLevelLabels() {
     const label = levelLabel();
@@ -143,6 +151,14 @@
   // Bestiary tab's (js/monster-browser.js). BRP has no HD/AC; Silent Legions
   // shows its descending AC (acDisplay) instead of an ascending one.
   function monsterMetaLine(d) {
+    if (d.source === 'fate' && window.FateSheet) {
+      const p = FateSheet.parseNpc(d.raw || '');
+      const peak = p.skills.length ? p.skills[0] : null;
+      const cap = s => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : '');
+      return [cap(d.importance), cap(d.importance === 'nameless' ? d.quality : d.threat), cap(d.role),
+        peak ? 'Peak ' + peak.name + ' ' + FateSheet.fmtRank(peak.rank) : '', p.mob ? 'Mob ' + p.mob : '', d.genre || 'fate']
+        .filter(Boolean).join(' · ');
+    }
     if (d.source === 'ua3e') {
       const st = window.UAStatblock ? UAStatblock.parseUAMonster(d.raw || '') : {};
       return [st.type || 'GMC', 'WT ' + (st.woundThreshold != null ? st.woundThreshold : (st.woundThresholdText ? 'special' : '?')),
@@ -197,7 +213,7 @@
     renderLibrary();
     const li = $('#mm-lib-list [data-id="' + d.id + '"]');
     if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const what = d.source === 'ua3e' ? monsterMetaLine(d) : levelLabel(d.source === 'brp' ? 'brp' : 'osr') + ' ' + (d.hd || '?');
+    const what = d.source === 'ua3e' || d.source === 'fate' ? monsterMetaLine(d) : levelLabel(d.source === 'brp' ? 'brp' : 'osr') + ' ' + (d.hd || '?');
     $('#mm-msg').textContent = 'Rolled → ' + d.name + '  (' + what + ', ' + libFiltered.length + ' options)';
     OSR.pushNote('Library', 'rolled → ' + d.name, what + ', ' + libFiltered.length + ' options');
   }
@@ -242,6 +258,10 @@
   }
   function monsterCardHtml(d) {
     if (d.source === 'ua3e' && window.UAStatblock) return uaMonsterCardHtml(d);
+    if (d.source === 'fate' && window.FateSheet) {
+      return '<div class="mmp-head"><b>' + escapeHtml(d.name) + '</b> <span>' + escapeHtml(monsterMetaLine(d)) + '</span></div>' +
+        FateSheet.sheetHtml(FateSheet.parseNpc(d.raw || ''), { readOnly: true });
+    }
     const isBrp = d.source === 'brp';
     const bits = isBrp ? [
       d.hd ? 'EL ' + d.hd : '',
@@ -329,7 +349,13 @@
     if (idx < 0) { closeMonsterEdit(); return; }
     let parsed;
     const orig = OSR.state.monsters[idx];
-    if (orig.source === 'ua3e') {
+    if (orig.source === 'fate') {
+      // The generator's metadata (importance, threat, genre…) is not in the text: keep it.
+      const keep = {};
+      ['importance', 'quality', 'threat', 'role', 'genre', 'archetype', 'seed', 'desc', 'ref'].forEach(k => { if (orig[k] != null) keep[k] = orig[k]; });
+      parsed = window.FateSheet ? FateSheet.npcDef($('#me-area').value, keep) : null;
+      if (!parsed) { $('#me-msg').textContent = 'Could not parse — the first line must be the name.'; return; }
+    } else if (orig.source === 'ua3e') {
       parsed = window.UAStatblock ? UAStatblock.uaMonsterDef($('#me-area').value) : null;
       if (!parsed) { $('#me-msg').textContent = 'Could not parse — the first line must be the name.'; return; }
       // The book text and the pack ref are not in the statblock: keep them.
@@ -358,11 +384,13 @@
   }
   function parseAndAdd(text, alsoCombat) {
     const ua = OSR.currentSystem() === 'ua3e';
+    const fate = OSR.currentSystem() === 'fate';
     const defs = ua
       ? (window.UAStatblock ? splitUaMonsters(text).map(UAStatblock.uaMonsterDef).filter(Boolean) : [])
-      : (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
+      : fate ? (window.FateSheet ? splitUaMonsters(text).map(t => FateSheet.npcDef(t)).filter(Boolean) : [])
+        : (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
     if (!defs.length) {
-      $('#mm-msg').textContent = ua
+      $('#mm-msg').textContent = ua || fate
         ? 'No statblock found — put the name on the first line (see the example in the box).'
         : 'No stat blocks found — each needs an "AC …" line, blank line between monsters.';
       return;

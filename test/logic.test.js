@@ -1768,7 +1768,7 @@ test('seed(): a fresh install creates the OSR examples plus the two Unknown Armi
   // Its own isolated jsdom instance — freshSeed:true lets init() run the real
   // first-run seeding instead of the shared T's blank-save short-circuit.
   const { T: T2 } = await boot({ freshSeed: true });
-  const names = T2.state.characters.filter(c => T2.charSystemKey(c) !== 'sl').map(c => c.name).sort();
+  const names = T2.state.characters.filter(c => ['sl', 'fate'].indexOf(T2.charSystemKey(c)) === -1).map(c => c.name).sort();
   assert.deepEqual(names, ['Garrick', 'Gulzund Blize', 'Kevin Johnson', 'Lucinda Adams']);
 
   const kevin = T2.state.characters.find(c => c.name === 'Kevin Johnson');
@@ -1815,16 +1815,16 @@ test('addMissingPregens: adds only the example characters the campaign lacks, ke
   T.createCharacter('# Garrick [WWN]\nMy own edited Garrick.');
   T.createCharacter('# Mara\nA homebrew character.');
   const mara = T.activeChar();
-  assert.equal(T.missingPregens().length, 7, 'Garrick is matched by name');
-  assert.equal(await T.addMissingPregens(), 7);
-  assert.equal(T.state.characters.length, 9);
+  assert.equal(T.missingPregens().length, 10, 'Garrick is matched by name');
+  assert.equal(await T.addMissingPregens(), 10);
+  assert.equal(T.state.characters.length, 12);
   assert.equal(T.state.characters.filter(c => c.name === 'Garrick').length, 1, 'no duplicate Garrick');
   assert.match(T.state.characters.find(c => c.name === 'Garrick').body, /My own edited Garrick/, 'the existing sheet is untouched');
   assert.equal(T.activeChar().id, mara.id, 'the active character stays selected');
   assert.ok(T.state.consumables.some(c => c.name === 'Madness (Miriam Castell)' && c.value === 10));
   assert.deepEqual(T.missingPregens(), []);
   assert.equal(await T.addMissingPregens(), 0, 'second run adds nothing');
-  assert.equal(T.state.characters.length, 9);
+  assert.equal(T.state.characters.length, 12);
 });
 
 // The Unknown Armies Compendium is not bundled (the UA3 data tools build it

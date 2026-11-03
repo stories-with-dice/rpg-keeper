@@ -13,11 +13,14 @@
  * Result, on OSR.data:
  *   monsters  the OSR (Shadowdark/OSE) bestiary
  *   tables    the random tables (Tables tab)
- *   seeds     { osr, brp, sl } → { version, compendium, monsters }; the OSR
+ *   seeds     { osr, brp, fate } → { version, compendium, monsters }; the OSR
  *             Compendium seed is the gear from data/seed-osr.json plus every
  *             spell from data/spells.json whose name is not already there
  *   pregens   [{ file, text }] in PREGEN_FILES order
  *   tokenIcons [{ id, name, author, paths }] — game-icons.net icons, path data only
+ *   fate      { rules, genres, archetypes, stunts, aspectLists } — data/fate/*.json,
+ *             the Fate NPC generator's data (js/fate-npc.js); data/seed-fate.json
+ *             (scripts/convert-fate.js) is the Fate Compendium seed
  */
 (function (OSR) {
   'use strict';
@@ -26,10 +29,13 @@
     'data/garrick-wwn.txt', 'data/gulzund-blize-shadowdark.txt',
     'data/kevin-johnson-ua3e.txt', 'data/lucinda-adams-ua3e.txt',
     'data/dee-okafor-sl.txt', 'data/miriam-castell-sl.txt',
-    'data/vivian-sato-sl.txt', 'data/ray-kowalczyk-sl.txt'
+    'data/vivian-sato-sl.txt', 'data/ray-kowalczyk-sl.txt',
+    'data/mara-venn-fate.txt', 'data/dex-okonjo-fate.txt', 'data/ione-kask-fate.txt'
   ];
+  // The Fate NPC generator's data (js/fate-npc.js), copied from the fate-rpg-foundry repo.
+  const FATE_FILES = { rules: 'rules.json', genres: 'genres.json', archetypes: 'archetypes.json', stunts: 'stunts.json', aspectLists: 'aspect-lists.json' };
 
-  OSR.data = { monsters: [], tables: [], seeds: {}, pregens: [], tokenIcons: [] };
+  OSR.data = { monsters: [], tables: [], seeds: {}, pregens: [], tokenIcons: [], fate: null };
 
   async function get(url, as) {
     let res;
@@ -53,7 +59,8 @@
   async function loadData() {
     const jobs = {
       monsters: get('data/monsters.json'), spells: get('data/spells.json'), tables: get('data/tables.json'),
-      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'),
+      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'), fateSeed: get('data/seed-fate.json'),
+      fate: Promise.all(Object.keys(FATE_FILES).map(k => get('data/fate/' + FATE_FILES[k]))),
       pregens: Promise.all(PREGEN_FILES.map(f => get(f, 'text'))),
       tokenIcons: get('data/token-icons.json')
     };
@@ -69,10 +76,12 @@
       tables: r.tables,
       seeds: {
         osr: seed(r.osr, { compendium: withSpells(r.osr.compendium || [], r.spells), monsters: r.monsters }),
-        brp: seed(r.brp)
+        brp: seed(r.brp),
+        fate: seed(r.fateSeed)
       },
       pregens: PREGEN_FILES.map((file, i) => ({ file, text: r.pregens[i] })),
-      tokenIcons: r.tokenIcons
+      tokenIcons: r.tokenIcons,
+      fate: Object.keys(FATE_FILES).reduce((acc, k, i) => { acc[k] = r.fate[i]; return acc; }, {})
     };
     return OSR.data;
   }

@@ -7,9 +7,20 @@
 
   function rollDie(sides) { return 1 + Math.floor(Math.random() * sides); }
 
-  // Roll one term: "2d10", "d20", "4d6kh3", "d%", or a plain integer.
+  // Fate dice faces as the log shows them.
+  const FATE_FACE = { '-1': '−', '0': '0', '1': '+' };
+
+  // Roll one term: "2d10", "d20", "4d6kh3", "d%", "4dF" (Fate dice: −1, 0,
+  // +1 each), or a plain integer.
   function rollTerm(token) {
     token = token.trim().toLowerCase();
+    const fm = token.match(/^(\d*)df$/);
+    if (fm) {
+      const count = Math.max(1, Math.min(parseInt(fm[1] || '4', 10), MAX_DICE));
+      const rolls = [];
+      for (let i = 0; i < count; i++) rolls.push(rollDie(3) - 2);
+      return { value: rolls.reduce((a, b) => a + b, 0), text: '[' + rolls.map(v => FATE_FACE[v]).join(' ') + ']', rolls: rolls, sides: 'F' };
+    }
     const dm = token.match(/^(\d*)d(\d+|%)((?:kh|kl|dh|dl)\d+)?$/);
     if (dm) {
       const count = Math.max(1, Math.min(parseInt(dm[1] || '1', 10), MAX_DICE));
@@ -36,17 +47,22 @@
     return null;
   }
 
-  // Evaluate a whole formula string -> { total, detail, normalized, dice, flat } or null.
-  //   dice: [{ value, sides, sign }] for every individual die kept
+  // The die a bare modifier ("+2") rolls: 4dF in Fate, else 1d20.
+  function defaultDie() { return OSR.currentSystem && OSR.currentSystem() === 'fate' ? '4dF' : '1d20'; }
+
+  // Evaluate a whole formula string -> { total, detail, normalized, dice, flat, fate } or null.
+  //   dice: [{ value, sides, sign }] for every individual die kept (sides 'F' for a Fate die)
   //   flat: signed sum of all constant terms
-  function evalFormula(formula) {
-    let expr = String(formula || '').trim().toLowerCase().replace(/\s+/g, '');
+  //   fate: true when the formula has Fate dice
+  // `base` is the die a bare modifier rolls (default 1d20; doRoll passes defaultDie()).
+  function evalFormula(formula, base) {
+    let expr = String(formula || '').trim().toLowerCase().replace(/\s+/g, '').replace(/−/g, '-');
     if (!expr) return null;
-    // Bare modifier (e.g. "+3", "-1", "2") -> roll a d20 modified by it.
-    if (!/d(\d+|%)/.test(expr)) {
-      expr = '1d20' + (/^[+-]/.test(expr) ? expr : '+' + expr);
+    // Bare modifier (e.g. "+3", "-1", "2") -> roll a d20 (or 4dF) modified by it.
+    if (!/d(\d+|%|f)/.test(expr)) {
+      expr = String(base || '1d20').toLowerCase() + (/^[+-]/.test(expr) ? expr : '+' + expr);
     }
-    const re = /([+-]?)(\d*d(?:\d+|%)(?:(?:kh|kl|dh|dl)\d+)?|\d+)/g;
+    const re = /([+-]?)(\d*d(?:\d+|%|f)(?:(?:kh|kl|dh|dl)\d+)?|\d+)/g;
     let m, total = 0, parts = [], matched = false;
     const dice = [];
     let flat = 0;
@@ -59,10 +75,11 @@
       if (r.rolls) r.rolls.forEach(v => dice.push({ value: v, sides: r.sides, sign: sign }));
       else flat += sign * r.value;
       const s = sign < 0 ? '-' : (parts.length ? '+' : '');
-      parts.push(/d/.test(m[2]) ? (s + m[2] + ' ' + r.text) : (s + r.text));
+      parts.push(/d/.test(m[2]) ? (s + m[2].replace(/df$/, 'dF') + ' ' + r.text) : (s + r.text));
     }
     if (!matched) return null;
-    return { total, detail: parts.join(' '), normalized: expr, dice, flat };
+    const fate = dice.some(d => d.sides === 'F');
+    return { total, detail: parts.join(' '), normalized: expr.replace(/df/g, 'dF'), dice, flat, fate };
   }
 
   // Case/whitespace-insensitive key for matching a $Token against a detected
@@ -109,6 +126,8 @@
   // The most recent percentile roll ({ roll, target, verdict, source }): an
   // Unknown Armies attack, whose wounds depend on the weapon (js/combat.js).
   OSR.lastPercent = null;
+  // The most recent Fate roll ({ formula, total, source }), for "Invoke +2" and "Reroll".
+  OSR.lastFate = null;
 
   // opts.quiet: log only, leave the Dice Roller's last-roll box (and its apply context) as it is.
   function pushLog(source, formula, total, detail, opts) {
@@ -123,7 +142,9 @@
     // Any roll that isn't from the Dice Roller replaces what's shown, so retire the apply context.
     OSR.lastRoll = null;
     OSR.lastPercent = null;
+    OSR.lastFate = null;
     OSR.updateApplyButton();
+    if (OSR.renderFateDiceActions) OSR.renderFateDiceActions();
     return entry;
   }
 
@@ -184,12 +205,17 @@
       resolved = sub.text;
     }
     if (resolved.charAt(0) === '%') return rollPercent(resolved, source);
-    const res = evalFormula(resolved);
+    const res = evalFormula(resolved, defaultDie());
     if (!res) { showLast('—', 'Invalid: ' + raw, ''); return null; }
-    const entry = pushLog(source || 'Roll', res.normalized, res.total, res.detail);
+    // A Fate roll shows its result on the ladder: "4dF [+ 0 − +] +3 → Good (+4)".
+    const detail = res.fate && window.FateSheet ? res.detail + ' → ' + FateSheet.ladderLabel(res.total) : res.detail;
+    const entry = pushLog(source || 'Roll', res.normalized, res.total, detail);
     // pushLog cleared lastRoll; a Dice Roller roll is applyable, so set it now.
     OSR.lastRoll = { total: res.total, dice: res.dice, flat: res.flat, normalized: res.normalized };
+    // The Fate dice actions (invoke +2, reroll) act on this roll (js/fate-ui.js).
+    if (res.fate) OSR.lastFate = { formula: res.normalized, total: res.total, source: source || 'Roll' };
     OSR.updateApplyButton();
+    if (OSR.renderFateDiceActions) OSR.renderFateDiceActions();
     return entry;
   }
 
@@ -262,7 +288,7 @@
   }
 
   Object.assign(OSR, {
-    rollDie, rollTerm, evalFormula, normVarKey, substituteVars, formatFormulaDisplay,
+    rollDie, rollTerm, evalFormula, defaultDie, normVarKey, substituteVars, formatFormulaDisplay,
     pushLog, pushNote, doRoll, rollPercent, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog, copyText
   });
 })(window.OSR = window.OSR || {});

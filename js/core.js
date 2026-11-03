@@ -27,16 +27,18 @@
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
     monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
-    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false,
+    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, fateCompendiumSeeded: false,
     scenes: [], activeSceneIds: {},
+    // Fate Core: the aspect tracker above Trackers (js/fate-ui.js) and the GM's fate points.
+    fateScene: { aspects: [], gmPoints: 0 },
     settings: { scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex' },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
   // Compendium entry categories. "Other" is the default for new entries.
   // "Powers" covers BRP's magic/mutations/psychic abilities/sorcery/superpowers.
-  // "Journal" holds the notes of map pins (js/pins.js).
-  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Powers', 'Abilities', 'Rules', 'Journal', 'Other'];
+  // "Journal" holds the notes of map pins (js/pins.js). "Aspects" and "Stunts" are Fate's.
+  const COMPENDIUM_CATEGORIES = ['Items', 'Spells', 'Powers', 'Abilities', 'Aspects', 'Stunts', 'Rules', 'Journal', 'Other'];
   const COMPENDIUM_DEFAULT_SOURCE = 'Unknown';
 
   // Style themes (dark only) — see the theme blocks in css/app.css.
@@ -46,8 +48,8 @@
   // Game system — set via Settings → System, partitions the Compendium
   // (state.compendium entries each carry a `system` field). Everything that
   // predates this feature is 'osr'. See AGENTS.md-style notes in js/settings.js.
-  const SYSTEMS = ['osr', 'ua3e', 'brp', 'sl'];
-  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions' };
+  const SYSTEMS = ['osr', 'ua3e', 'brp', 'sl', 'fate'];
+  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions', fate: 'Fate Core' };
 
   function applyTheme() {
     const t = (OSR.state.settings && OSR.state.settings.theme) || 'default';
@@ -182,6 +184,9 @@
       en.source = en.source == null || String(en.source).trim() === '' ? COMPENDIUM_DEFAULT_SOURCE : String(en.source).trim();
       en.body = en.body == null ? '' : String(en.body);
       en.system = SYSTEMS.indexOf(en.system) === -1 ? 'osr' : en.system;
+      // Optional (Fate stunts): the skill, and the settings ("Fantasy", "Sci-fi").
+      if (en.skill != null) en.skill = String(en.skill).trim();
+      if (en.settings != null) en.settings = Array.isArray(en.settings) ? en.settings.map(String).filter(Boolean) : [];
       if (!en.createdAt) en.createdAt = Date.now();
     });
     // A campaign's own random tables (older saves) move to the table library
@@ -192,6 +197,16 @@
     if (!Array.isArray(state.combat.entries)) state.combat.entries = [];
     if (OSR.dropLegacySlSeed) OSR.dropLegacySlSeed(state); // js/seeds.js
     if (OSR.linkSeeds && OSR.seeds && Object.keys(OSR.seeds).length) OSR.linkSeeds(state); // js/seeds.js
+    if (!state.fateScene || typeof state.fateScene !== 'object') state.fateScene = {};
+    state.fateScene = Object.assign({ aspects: [], gmPoints: 0 }, state.fateScene);
+    if (!Array.isArray(state.fateScene.aspects)) state.fateScene.aspects = [];
+    state.fateScene.aspects.forEach(a => {
+      if (!a.id) a.id = uid();
+      a.text = a.text == null ? '' : String(a.text);
+      if (['game', 'scene', 'situation', 'boost'].indexOf(a.kind) === -1) a.kind = 'situation';
+      a.invokes = Math.max(0, Math.round(Number(a.invokes) || 0));
+    });
+    state.fateScene.gmPoints = Math.max(0, Math.round(Number(state.fateScene.gmPoints) || 0));
     if (!Array.isArray(state.scenes)) state.scenes = [];
     if (!state.activeSceneIds || typeof state.activeSceneIds !== 'object') state.activeSceneIds = {};
     if (OSR.ensureSceneShape) state.scenes.forEach(OSR.ensureSceneShape); // js/maps.js
@@ -294,9 +309,10 @@
 
   function ensureHpTracker(ch) {
     if (!ch) return;
-    // BRP (from CON+SIZ) and Silent Legions characters use Hit Points too — only Unknown Armies
-    // (charSystemKey 'ua3e', tracked via ensureWoundTracker instead) opts out.
-    if (OSR.charSystemKey && OSR.charSystemKey(ch) === 'ua3e') return;
+    // BRP (from CON+SIZ) and Silent Legions characters use Hit Points too — Unknown Armies
+    // (charSystemKey 'ua3e', tracked via ensureWoundTracker instead) and Fate
+    // (stress boxes in the ```fate fence, no hit points) opt out.
+    if (OSR.charSystemKey && ['ua3e', 'fate'].indexOf(OSR.charSystemKey(ch)) !== -1) return;
     const state = OSR.state;
     const label = hpTrackerLabel(ch);
     if (!state.consumables.some(c => c.name === label)) {

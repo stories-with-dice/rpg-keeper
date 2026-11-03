@@ -77,6 +77,7 @@
         shared.map(c => consRowHtml(c, c.name)).join('') + '</div>';
     }
     list.innerHTML = h;
+    if (OSR.renderFateAspects) OSR.renderFateAspects(); // the Fate aspect tracker above (js/fate-ui.js)
   }
 
   function consFor(el) {

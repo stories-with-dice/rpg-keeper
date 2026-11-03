@@ -25,7 +25,7 @@
   const TABLE_OUTPUTS = ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other'];
   const DEFAULT_ORIGIN = 'Homebrew';
   // The settings a table gets when it has none: from the System it was made in.
-  const SYSTEM_SETTINGS = { osr: ['Fantasy'], brp: ['Fantasy'], ua3e: ['Modern'], sl: ['Modern', 'Horror'] };
+  const SYSTEM_SETTINGS = { osr: ['Fantasy'], brp: ['Fantasy'], ua3e: ['Modern'], sl: ['Modern', 'Horror'], fate: ['Fantasy', 'Modern'] };
   const FILTERS = ['origin', 'settings', 'output'];
   const FILTER_ROW = { origin: '#tbl-filter-origin', settings: '#tbl-filter-settings', output: '#tbl-filter-output' };
 

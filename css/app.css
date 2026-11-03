@@ -1655,3 +1655,134 @@ button, input, textarea, select {
 .imp-items label:has(input:disabled) { color: var(--text-dim); }
 .imp-have { font-size: 10px; }
 #import-summary { margin-left: auto; }
+
+/* ---------- Fate Core (js/fate.js, js/fate-ui.js) ---------- */
+/* The sheet panel: a ```fate fence, a Fate NPC card, a Combat detail. */
+.fate-sheet {
+  margin: .6em 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+}
+.fate-sheet h4 { margin: .5em 0 .25em; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-dim); }
+.fate-sheet .fate-sec:first-child h4 { margin-top: 0; }
+.fate-name { font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.fate-aspects, .fate-stunts { list-style: none; margin: 0; padding: 0; }
+.fate-aspects li { margin: 2px 0; }
+.fate-aspect-label { display: inline-block; min-width: 92px; font-size: 11px; color: var(--text-dim); }
+.fate-aspect { font-style: italic; font-weight: 600; }
+.fate-stunts li { margin: 3px 0; }
+.fate-skill-row { margin: 2px 0; }
+.fate-rank { display: inline-block; min-width: 110px; font-size: 12px; color: var(--text-dim); }
+.fate-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: .4em 0; }
+.fate-track { display: flex; align-items: center; gap: 4px; margin: 3px 0; }
+.fate-track-name { display: inline-block; min-width: 70px; font-size: 12px; }
+.fate-box, .cbt-fate-box {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--text-dim);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.fate-box:hover, .cbt-fate-box:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.fate-box.is-checked, .cbt-fate-box.is-checked { background: var(--danger); border-color: var(--danger); color: #fff; }
+.fate-box:disabled { cursor: default; }
+.fate-cons-row { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 6px; margin: 3px 0; }
+.fate-cons-label { font-size: 12px; }
+.fate-cons-val { color: var(--text-dim); }
+.fate-cons {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px 6px;
+  font-style: italic;
+  min-width: 0;
+}
+.fate-notes p { margin: .3em 0; font-size: 12px; color: var(--text-dim); }
+
+/* Combat rows. */
+.cbt-fate-track { gap: 3px; }
+.cbt-fate-box { width: 20px; height: 20px; }
+.cbt-takenout { padding: 2px 8px; font-size: 12px; }
+.cbt-takenout.is-on { border-color: var(--danger); color: var(--danger); }
+
+/* Dice Roller: Invoke +2 / Reroll after a Fate roll. */
+.dice-fate-actions { display: flex; gap: 6px; margin-top: 8px; }
+.dice-fate-actions[hidden] { display: none; }
+
+/* The aspect tracker above Trackers. */
+.fate-aspects-panel {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.fate-aspects-panel[hidden] { display: none; }
+.fate-aspects-panel h2 { color: var(--accent); }
+.fate-gm-row { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+.fate-gm-label { flex: 1; font-size: 13px; }
+.fate-gm-row .cons-btn { width: 26px; height: 26px; }
+.fate-gm-row .cons-val-input { width: 44px; padding: 4px 2px; }
+.fate-aspect-list { list-style: none; margin: 0; padding: 0; }
+.fate-asp {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "kind text del" "ctl ctl invoke";
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.fate-asp-kind {
+  grid-area: kind;
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.fate-asp-boost .fate-asp-kind { color: var(--accent-2); border-color: var(--accent-2); }
+.fate-asp-game .fate-asp-kind { color: var(--accent); border-color: var(--accent); }
+.fate-asp-text {
+  grid-area: text;
+  min-width: 0;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px 6px;
+  font-style: italic;
+}
+.fate-asp-del { grid-area: del; }
+.fate-asp-del {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px 7px;
+}
+.fate-asp-del:hover { border-color: var(--danger); color: var(--danger); }
+.fate-asp-ctl { grid-area: ctl; display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-dim); }
+.fate-asp-ctl::before { content: 'Free invokes'; margin-right: 2px; }
+.fate-asp-ctl .cons-btn { width: 22px; height: 22px; font-size: 13px; }
+.fate-asp-inv { min-width: 14px; text-align: center; color: var(--text); }
+.fate-asp-invoke { grid-area: invoke; padding: 2px 8px; font-size: 12px; }
+.fate-aspect-add { display: flex; gap: 4px; margin-top: 8px; }
+.fate-aspect-add input { flex: 1; min-width: 0; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 6px; }
+.fate-aspect-add select { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
+
+/* The NPC and encounter generator modals. */
+#fate-gen-modal .modal-box-lg, #fate-enc-modal .modal-box-lg { max-height: 92vh; overflow: auto; }
+.fate-preview { margin-top: 10px; }
+.fate-preview-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.comp-skill-badge { color: var(--accent-2); }
+#comp-skill { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 2px 6px; }
+.comp-filter-row[hidden], .field[hidden], #fg-actions[hidden], #fe-actions[hidden] { display: none; }

@@ -47,7 +47,7 @@ An import never deletes anything and never replaces the whole campaign.
 | Field | Required | Meaning |
 |---|---|---|
 | `pack.name` | yes | Shown in the picker and in the Session Log. It is also the default `origin` of a table. |
-| `pack.system` | yes | One of `osr`, `ua3e`, `brp`, `sl` (see "Systems"). An unknown value means the current System. |
+| `pack.system` | yes | One of `osr`, `ua3e`, `brp`, `sl`, `fate` (see "Systems"). An unknown value means the current System. |
 | `pack.version`, `pack.createdAt` | no | Keeper ignores them. Useful for your own tracking. |
 | `compendium` | no | List of Compendium entries. A missing list counts as empty. |
 | `monsters` | no | List of Bestiary monsters. |
@@ -63,6 +63,7 @@ Do not put a `characters` list in a pack. Keeper ignores it.
 | `ua3e` | Unknown Armies 3rd Ed | Modern |
 | `brp` | Basic Roleplaying | Fantasy |
 | `sl` | Silent Legions | Modern, Horror |
+| `fate` | Fate Core | Fantasy, Modern |
 
 A Compendium entry or a monster can carry its own `system`. A valid `system` on an item wins over
 `pack.system`. Leave it out, unless one pack must fill two systems.
@@ -82,10 +83,12 @@ A Compendium entry or a monster can carry its own `system`. A valid `system` on 
 | Field | Required | Meaning |
 |---|---|---|
 | `name` | yes | The title. Other text links to the entry by this name in `[Name]`. |
-| `category` | yes | One of `Items`, `Spells`, `Powers`, `Abilities`, `Rules`, `Journal`, `Other`. Keeper changes any other value to `Other` after the import. |
+| `category` | yes | One of `Items`, `Spells`, `Powers`, `Abilities`, `Aspects`, `Stunts`, `Rules`, `Journal`, `Other`. Keeper changes any other value to `Other` after the import. |
 | `source` | no | Free text, shown as a filter (for example "Weapon (Melee)" or "Spell Level 3"). Default `Unknown`. |
 | `body` | no | Markdown. `[Name]` links to another entry of the same system (a hover popup). Dice such as `1d6` or `2d8+1` roll when clicked. |
 | `ref` | recommended | A stable id that is unique in the pack, for example `<tool>:<kind>:<slug>`. Keep it the same between versions of your pack. |
+| `skill` | no | Fate: a stunt's skill (`"Fight"`), or an aspect's kind (`"Trouble"`). Shown as the **Skill / kind** filter. |
+| `settings` | no | Fate: a list such as `["Fantasy", "Sci-fi"]`. Shown as the **Setting** filter. |
 
 **Match rule** (an entry "you have"): same system, and the same `ref`, or else the same name (not
 case-sensitive) and the same category.
@@ -141,6 +144,16 @@ no `ref`.
 the description, `Type:`, `Book:`, `Wound Threshold:`, `Obsession:`, the identities, and an
 `Abilities` section in it, as a GMC stat block. `notes` (Markdown) is optional. Set `hd: ""`,
 `hdNum: 0`, `hp: 0`, `attacks: []`, `abilities: []`.
+
+### Fate Core (`source`: `fate`)
+
+`raw` is the only source of truth, as for Unknown Armies: the NPC's name on the first line, then
+one `Key: value` per line — the same lines as a character's ` ```fate ` block (see README "Fate
+Core"): aspects (`High Concept:`, `Trouble:`, `Aspect:`), skills (`Good (+3): Fight, Will` or
+`Notice: +2`), `Stunt: Name. Text`, stress tracks (`Physical Stress: [ ] [ ]`), consequences
+(`Mild:`), `Mob: 3`, `Note: …`. Set `hd: ""`, `hdNum` to the highest skill rank (the **Peak**
+filter), `hp: 0`, `attacks: []`, `abilities: []`. Optional metadata: `importance` (`nameless`,
+`supporting`, `main`), `quality`, `threat`, `role`, `genre`, `archetype`.
 
 ### Basic Roleplaying (`source`: `brp`)
 

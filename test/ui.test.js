@@ -1972,20 +1972,60 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   assert.equal(T.state.characters.length, 2, 'nothing deleted by switching');
 });
 
+test('System switch: Fate Core gets its own Character dropdown, Compendium, Bestiary, aspect tracker, and Fate Points tracker (no HP)', () => {
+  T.createCharacter('# Garrick [WWN]\nA warrior.');
+  T.createCharacter('# Wyn [Fate]\n\nFate Points: 3/3\n\n```fate\nHigh Concept: Knight\nGood (+3): Fight\nPhysical Stress: [ ] [ ]\n```\n');
+  T.state.compendium.push(
+    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'cf1', name: 'Shield Wall', category: 'Stunts', source: 'Fate Core', skill: 'Fight', settings: ['Generic'], body: '', system: 'fate' }
+  );
+  T.state.monsters.push(
+    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    Object.assign(window.FateSheet.npcDef('Harbor Thug\nHigh Concept: Dockside Muscle\nFair (+2): Fight\nStress: [ ]'), { id: 'mf1', system: 'fate' })
+  );
+  T.renderAll();
+
+  tab('settings');
+  setValue($('#set-system'), 'fate');
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Wyn (Fate)']);
+  tab('compendium');
+  assert.deepEqual($$('#comp-list .comp-name').map(n => n.textContent), ['Shield Wall']);
+  assert.equal($('#comp-skill-row').hidden, false, 'the Skill / kind filter shows for Fate stunts');
+  tab('bestiary');
+  assert.deepEqual($$('#mb-list .comp-name').map(n => n.textContent), ['Harbor Thug']);
+  assert.equal($('#mb-gen').hidden, true, 'the Shadowdark PL generator is hidden for Fate');
+  assert.equal($('#fate-gen-open').hidden, false, 'the Fate NPC generator shows');
+  assert.equal($('#fate-aspects-panel').hidden, false);
+  assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name), ['Fate Points (Wyn)']);
+  tab('combat');
+  assert.deepEqual($$('#cb-add-char option').map(o => o.textContent).slice(1), ['Wyn']);
+
+  tab('settings');
+  setValue($('#set-system'), 'osr');
+  tab('character');
+  assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
+  assert.equal($('#fate-aspects-panel').hidden, true);
+  assert.equal($('#comp-skill-row').hidden, true);
+  assert.equal(T.state.characters.length, 2, 'nothing deleted by switching');
+  assert.equal(T.state.monsters.length, 2);
+  assert.equal(T.state.compendium.length, 2);
+});
+
 test('Settings → "Add missing pregens": counts the example characters, adds the missing ones, then disables itself', async () => {
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.renderAll();
   tab('settings');
-  assert.match($('#set-pregen-count').textContent, /^1 of 8 example characters/);
-  assert.match($('#set-pregen-count').textContent, /missing: Gulzund Blize, Kevin Johnson, .*Ray Kowalczyk\./);
+  assert.match($('#set-pregen-count').textContent, /^1 of 11 example characters/);
+  assert.match($('#set-pregen-count').textContent, /missing: Gulzund Blize, Kevin Johnson, .*Ray Kowalczyk, Mara Venn, Dex Okonjo, Ione Kask\./);
   assert.equal($('#set-add-pregens').disabled, false);
   click($('#set-add-pregens'));
   await new Promise(r => setTimeout(r, 0)); // the handler awaits loadSeedSheets()
   await new Promise(r => setTimeout(r, 0));
-  assert.equal(T.state.characters.length, 8);
-  assert.match($('#set-pregen-count').textContent, /^8 of 8 example characters .* are in this campaign\.$/);
+  assert.equal(T.state.characters.length, 11);
+  assert.match($('#set-pregen-count').textContent, /^11 of 11 example characters .* are in this campaign\.$/);
   assert.equal($('#set-add-pregens').disabled, true, 'nothing left to add');
-  assert.match(logText(), /Example characters — 7 added/);
+  assert.match(logText(), /Example characters — 10 added/);
   tab('character');
   assert.equal($('#view-name').textContent, 'Garrick', 'the active character stays selected');
   setValue($('#set-system'), 'sl');

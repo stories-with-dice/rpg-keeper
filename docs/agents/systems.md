@@ -2,7 +2,7 @@
 
 ## The System switch
 
-- `state.settings.system`, one of `OSR.SYSTEMS` (`'osr'`, `'ua3e'`, `'brp'`, `'sl'`), set in
+- `state.settings.system`, one of `OSR.SYSTEMS` (`'osr'`, `'ua3e'`, `'brp'`, `'sl'`, `'fate'`), set in
   Settings → System. `OSR.setSystem(s)` (`js/settings.js`) is the change handler; a content pack of
   another system calls it too. It re-renders everything the setting gates: `refreshCharUI()` (also
   trackers), `renderMonsterBrowser()`, `renderCompendium()`, `renderCombat()`.
@@ -13,11 +13,11 @@
     "Add monster" modal, and Populate by HD. New monsters get `currentSystem()`; an edit keeps the
     original `system`. `seedMonsters()` replaces only the `'osr'` slice.
   - Characters: `charactersForSystem()` with `charSystemKey(ch)`: a ` ```ua ` fence, a `[BRP]` (or
-    `[Basic Roleplaying]`) tag at the end of the first line, or a ` ```sl ` fence in `ch.body`
-    (checked in that order), else `'osr'`. The free-text `ch.system`
+    `[Basic Roleplaying]`) tag at the end of the first line, a ` ```sl ` fence, or a ` ```fate `
+    fence in `ch.body` (checked in that order), else `'osr'`. The free-text `ch.system`
     label is never used for filtering. `refreshCharUI()` moves `activeId`/`activeIdB` to the first
     character of the system when they point outside it. **New blank** uses
-    `DEFAULT_BLANK_OSR/UA/BRP/SL` so the new character has the right fence or tag.
+    `DEFAULT_BLANK_OSR/UA/BRP/SL/FATE` so the new character has the right fence or tag.
   - Trackers: `consumablesForSystem()` hides a character's HP/Wounds/Madness tracker unless that
     character is in the current system. Other trackers always show.
   - Scenes: each has a `system`; `state.activeSceneIds[system]` is the open one.
@@ -40,7 +40,7 @@
   `.cons-group[data-char-id]` heading with the short label (`HP`, `PP`), one line each, then the
   other trackers under "Shared". Editing a short label keeps the `" (Name)"` suffix. Each row's
   `data-name` holds the full tracker name.
-- `ensureHpTracker(ch)`: every system except `ua3e`.
+- `ensureHpTracker(ch)`: every system except `ua3e` and `fate` (Fate has stress boxes in its fence).
 - UA: `"Wounds (Name)"` (`ensureWoundTracker`/`syncWoundTracker`), created only once the ` ```ua `
   fence has a Wound Threshold; its `max` follows the sheet, its `value` is never touched by the sheet.
 - SL: also `"Madness (Name)"` (`ensureMadnessTracker`, 0..`MADNESS_MAX` 100), started once from
@@ -156,3 +156,64 @@ Crit (1), Fumble (100), Matched Success/Failure (doubles). It sets `OSR.lastPerc
   (from `ensureStateShape()`) drops a campaign's unedited copies once, while the campaign still
   has `slCompendiumSeeded`/`slMonstersSeeded`, then deletes those flags. `fixAbilities()`
   (js/core.js) turns string abilities from early packs into `{ name: '', text }`.
+
+## Fate Core (`fate`)
+
+- **Text format** (`js/fate.js`, pure, `window.FateSheet`): one `Key: value` per line, shared by a
+  PC's ` ```fate ` fence and a Fate NPC's `raw` (name on the first line). `FateSheet.parse(text)` →
+  `{ aspects, skills (highest first), stunts, refresh, stress: [{ name, boxes: [bool] }],
+  consequences: [{ label, value, text }], mob, weapon, armor, notes, extra }`. Skills come from
+  ladder lines (`Good (+3): Fight, Will`, ladder names only) or `Name: ±N` pairs (several per line
+  with `;`). Keys with a number that are not skills: `NUMBER_KEYS`. A stress line is any key ending
+  in `Stress`; `[x]` is checked, `[ ]` / `[1]` empty. A consequence is a key starting with
+  Mild/Moderate/Severe/Extreme (`Mild (physical)` too). Rewriters: `setStressBox`, `setConsequence`,
+  `clearStress` (text in, text out). `sheetHtml(def, { fence, readOnly })` is the panel: skills are
+  `.roll` spans (`data-formula="4dF+N"`), boxes `.fate-box[data-track][data-box]`, consequences
+  `input.fate-cons[data-i]`, labels `.no-annotate` (annotate() skips them).
+- **PC**: `charSystemKey` → `'fate'` for a ` ```fate ` fence (checked after `sl`). `renderUABlocks`
+  also turns each fence into `sheetHtml` (with `fence` = its index). `#mode-view` click on
+  `.fate-box` → `setFateStress(ch, fence, track, box, checked)`; `change` on `.fate-cons` →
+  `setFateConsequence`. Both rewrite the fence (`patchFateFence`), log, and re-render; the fence is
+  the only source of truth. `fateFenceDefs(ch)` parses every fence; `charVars` adds the fence
+  skills as variables. No HP tracker (`ensureHpTracker` skips `fate`); `Fate Points: 3/3` outside the
+  fence is a sheet resource. `DEFAULT_BLANK_FATE`; pregens `data/*-fate.txt`.
+- **Dice** (`js/dice.js`): `rollTerm('4df')` rolls faces −1/0/+1 (`sides: 'F'`, text `[+ 0 − +]`).
+  `defaultDie()` is `4dF` in Fate, else `1d20`: `evalFormula(f, base)` uses it for a bare modifier,
+  and `annotate`'s `findMatches` for `+N` and `Name: N` rolls. `DICE_RE` accepts `NdF`. A Fate roll
+  adds `→ Ladder (+N)` to the detail and sets `OSR.lastFate { formula, total, source }` (cleared by
+  `pushLog`). `#dice-fate-actions`: `invokeLast()` (+2, logged) and `rerollLast()`.
+  `buildDiceGrid()` picks `FATE_PRESETS` in Fate; `renderSettings()` calls it (every load path does).
+  `updateApplyButton` hides **Apply damage** in Fate.
+- **Aspect tracker** (`js/fate-ui.js`, `#fate-aspects-panel` above Trackers, shown only in Fate,
+  rendered from `renderConsumables`): `state.fateScene = { aspects: [{ id, text, kind, invokes }],
+  gmPoints }`, kinds `situation | scene | boost | game`. `invokeAspect(a)`: a free invoke if any (a
+  boost at 0 is removed), else a fate point; `invokeLast` when there is a `lastFate`. `newScene()`
+  keeps `game` aspects and sets `gmPoints = scenePcCount()` (Fate characters in Combat, else all).
+- **NPC generator** (`js/fate-npc.js`, `window.FateNpc`): the Fate NPC Generator engine from the
+  `fate-rpg-foundry` repo (`src/engine.mjs`) without ES module syntax and the Foundry export. Data:
+  `OSR.data.fate = { rules, genres, archetypes, stunts, aspectLists }` from `data/fate/*.json`
+  (`js/data.js`). Copy a newer engine the same way: remove `export`, drop the
+  "Export: Fate Core Official" section, keep the UMD footer. `generateNpc(data, opts)`,
+  `generateEncounter(data, opts)`; seeded (same seed, same NPC). Keeper uses `ruleSet: 'core'`.
+- **Bestiary def** (`source: 'fate'`): `FateSheet.npcDef(text, extra)` → `{ name, source, raw, hdNum:
+  peak rank, hd: '', hp: 0, … }` plus the generator's `importance, quality, threat, role, genre,
+  archetype, seed`. `raw` is the only source of truth (like UA). `npcText(npc)` (js/fate-ui.js) writes
+  the generator's NPC as that text. `PASTE_ONLY_SOURCES` has `fate`; `parseAndAdd` splits on `---`;
+  `saveMonsterEdit` keeps the metadata. `levelLabel('fate')` is `Peak` (the HD filter reads `hdNum`).
+  `monsterMetaLine` / `monsterCardHtml` have a Fate branch.
+- **Combat** (`js/combat.js`): `isFateEntry(e)`, `fateDefOf(e)` (a monster: its own copy
+  `e.monster.raw`; a character: fence 0). `fateRowLine2` (`.cbt-fate-box`, Cons chip, peak, mob,
+  `.cbt-takenout`), `fateDetailHtml` (Taken out, **Clear stress** → `clearCombatFateStress()`, the
+  sheet). `setFateEntryStress` / `setFateEntryConsequence` write the character's fence or the
+  entry's `raw`. `entryDown` = `e.takenOut`. No turn-order sort. In Fate, `#cb-populate-hd` reads
+  "+ Populate encounter…" and a capture listener in js/fate-ui.js opens `#fate-enc-modal`
+  (`generateEncounter` → `addEncounter`: every member to Combat, optionally the Bestiary,
+  `gmPoints = gmFatePoints`). `#fate-gen-modal` is the Bestiary's single-NPC generator.
+- **Compendium**: categories `Aspects` and `Stunts`; optional entry fields `skill` (a stunt's skill,
+  or an aspect's kind such as `Trouble`) and `settings` (`['Fantasy', 'Sci-fi']`). The filter rows
+  **Skill / kind** (`#comp-skill`) and **Setting** (`#comp-settings`) show when an entry of the
+  system has the field; the editor shows the two fields in Fate. Seed: `data/seed-fate.json`, made
+  by `npm run convert-fate` (`scripts/convert-fate.js`) from `data/fate/stunts.json` and
+  `aspect-lists.json`; every entry has a `ref` (`fate-stunt:<id>`, `fate-aspect:<list>:<n>`) because
+  names repeat. `seedFateCompendium()` (from `seedMissing`, flag `fateCompendiumSeeded`) matches by
+  `seedRef`.

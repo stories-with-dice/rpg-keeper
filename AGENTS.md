@@ -6,7 +6,7 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 | Note | Covers |
 |---|---|
 | [storage.md](docs/agents/storage.md) | `OSR.state`, IndexedDB, campaigns, Export/Import, content packs, seeding, the seed store, the table library, Dropbox sync |
-| [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions |
+| [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions, Fate Core |
 | [compendium.md](docs/agents/compendium.md) | Compendium entries, hover popups (also the map's), `[`/`$` autocomplete, the sheet-selection menu |
 | [dice.md](docs/agents/dice.md) | the dice engine, `annotate()`, sheet variables and `$Name`, the roll-with-modifiers popup |
 | [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab and the table library |
@@ -39,14 +39,15 @@ the Compendium entry, the monster def, or the table fields change.
 - **No book text in the repo** (the repo is public). Silent Legions and Unknown Armies content comes
   only from the user's private content packs. `test/fixtures/sl-pack.json` has made-up text only.
 - **Generated files**: never edit `data/monsters.json`, `data/spells.json`, `data/tables.json`,
-  `data/game-icons-index.json` by hand. Edit the source data or the script, run it, commit both.
+  `data/game-icons-index.json`, `data/seed-fate.json` by hand. Edit the source data or the script,
+  run it, commit both. `data/fate/*.json` are copies of the fate-rpg-foundry repo's `data/`.
 
 ## Code layout
 
 Every `js/*.js` file (except vendored ones) is an IIFE: `(function (OSR) {…})(window.OSR = window.OSR || {})`.
 `js/core.js` loads first and `js/main.js` last (`index.html` order). Cross-file calls are `OSR.foo()`,
 resolved at call time. Keep a helper local to its file unless another file or a test calls it.
-Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
+Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/fate.js`, `js/fate-npc.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
 they also `module.exports` for Node.
 
 | File | Contents |
@@ -62,6 +63,7 @@ they also `module.exports` for Node.
 | `js/combat.js`, `js/combat-populate.js` | Combat tracker; Populate by HD |
 | `js/monsters.js`, `js/monster-form.js`, `js/monster-modals.js`, `js/monster-browser.js` | parser; fields form; add/edit modals; Bestiary tab and PL generator |
 | `js/ua-statblock.js`, `js/brp-seed.js`, `js/seed.js` | UA parser and rules; BRP/OSR seeding and pregens |
+| `js/fate.js`, `js/fate-npc.js`, `js/fate-ui.js` | Fate sheet text and panel; the NPC/encounter generator; aspect tracker, Fate dice actions, generator modals, Fate Compendium seed |
 | `js/compendium.js`, `js/compendium-popups.js` | Compendium CRUD and filters; hover popups and autocomplete |
 | `js/maps.js`, `js/grid.js`, `js/tokens.js`, `js/drawings.js`, `js/pins.js`, `js/history.js`, `js/icons.js` | Maps tab |
 | `js/tables.js`, `js/table-syntax.js` | Tables tab and table editor; table text parser and master-table roller |
@@ -78,6 +80,7 @@ npm test                     # node --test; also runs in CI (.github/workflows/t
 npm run convert-bestiary     # data/bestiary_data.json → data/monsters.json
 npm run convert-spells       # data/spell_data.json → data/spells.json
 npm run convert-tables       # data/tables/*.csv → data/tables.json
+npm run convert-fate         # data/fate/stunts.json + aspect-lists.json → data/seed-fate.json
 ```
 
 - `jsdom` and `fake-indexeddb` are the only (dev) dependencies.

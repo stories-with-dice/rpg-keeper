@@ -10,7 +10,8 @@
   // weapon's own damage, see combat.js's brpResolveDb) are each one
   // clickable formula; evalFormula (js/dice.js) already sums any number of
   // dice/flat terms, this just has to recognize the whole chain as one span.
-  const DICE_RE = /\b\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?(?:\s*[+-]\s*(?:\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?|\d+|\$[A-Za-z][A-Za-z0-9]*))*\b/gi;
+  // "4dF+2" (Fate dice) is a formula too.
+  const DICE_RE = /\b\d*d(?:\d+|F)(?:(?:kh|kl|dh|dl)\d+)?(?:\s*[+-]\s*(?:\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?|\d+|\$[A-Za-z][A-Za-z0-9]*))*\b/gi;
   const MOD_RE  = /(?<![\w.])[+-]\d+(?![\w.\d])/g;
   // A bare (optionally signed) $VarName reference not already consumed as
   // part of a dice chain above — e.g. "Melee bonus: $STR" rolls 1d20+STR
@@ -70,6 +71,8 @@
   function findMatches(text, opts) {
     const spans = [];
     let m;
+    // A bare modifier or a "Skill: +2" value rolls 1d20 — or 4dF in Fate (js/dice.js defaultDie).
+    const base = OSR.defaultDie ? OSR.defaultDie() : '1d20';
     if (!(opts && opts.noComp)) {
       COMP_RE.lastIndex = 0;
       while ((m = COMP_RE.exec(text))) {
@@ -93,7 +96,7 @@
         const valText = text.slice(v.valStart, v.valEnd).replace(/\s+/g, '');
         spans.push({
           kind: 'roll', start: v.valStart, end: v.valEnd,
-          formula: '1d20' + (/^[+-]/.test(valText) ? valText : '+' + valText),
+          formula: base + (/^[+-]/.test(valText) ? valText : '+' + valText),
           label: valText, isVar: true, varName: v.name
         });
       }
@@ -101,7 +104,7 @@
     DICE_RE.lastIndex = 0;
     while ((m = DICE_RE.exec(text))) {
       const raw = m[0];
-      if (!/d\d/i.test(raw)) continue;
+      if (!/d(?:\d|f)/i.test(raw)) continue;
       const s = m.index, e = m.index + raw.length;
       if (spans.some(sp => s < sp.end && e > sp.start)) continue;
       // Displayed label drops the "$" (data-formula keeps it, for rolling) —
@@ -112,7 +115,7 @@
     while ((m = MOD_RE.exec(text))) {
       const s = m.index, e = m.index + m[0].length;
       if (spans.some(sp => s < sp.end && e > sp.start)) continue;
-      spans.push({ kind: 'roll', start: s, end: e, formula: '1d20' + m[0], label: m[0] });
+      spans.push({ kind: 'roll', start: s, end: e, formula: base + m[0], label: m[0] });
     }
     VARREF_RE.lastIndex = 0;
     while ((m = VARREF_RE.exec(text))) {
@@ -184,7 +187,8 @@
         while (p && p !== root) {
           const t = p.nodeName;
           if (t === 'CODE' || t === 'PRE' || t === 'A') return NodeFilter.FILTER_REJECT;
-          if (p.classList && (p.classList.contains('roll') || p.classList.contains('comp-ref'))) return NodeFilter.FILTER_REJECT;
+          if (p.classList && (p.classList.contains('roll') || p.classList.contains('comp-ref') ||
+            p.classList.contains('no-annotate'))) return NodeFilter.FILTER_REJECT; // e.g. a Fate rank label "Good (+3)"
           p = p.parentNode;
         }
         return NodeFilter.FILTER_ACCEPT;
@@ -213,6 +217,10 @@
     walkAnnotatableTextNodes(host, node => {
       scanVariables(node.nodeValue).forEach(v => byKey.set(OSR.normVarKey(v.name), { name: v.name, value: v.value }));
     });
+    // The skills of a ```fate fence are variables too ($Fight), its text is in a code block.
+    if (OSR.fateFenceDefs) {
+      OSR.fateFenceDefs(ch).forEach(d => d.skills.forEach(s => byKey.set(OSR.normVarKey(s.name), { name: s.name, value: s.rank })));
+    }
     return Array.from(byKey.values());
   }
 

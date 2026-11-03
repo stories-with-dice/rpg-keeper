@@ -130,6 +130,8 @@
         source: en.source || OSR.COMPENDIUM_DEFAULT_SOURCE, system: system,
         body: String(en.body || ''), createdAt: en.createdAt || Date.now(), updatedAt: Date.now() };
       if (en.ref) item.ref = String(en.ref);
+      if (en.skill) item.skill = String(en.skill);
+      if (Array.isArray(en.settings) && en.settings.length) item.settings = en.settings.map(String);
       if (fromPack) { item.seedRef = OSR.seedRefOf(system, 'c', en); item.seedHash = OSR.contentHash(item); }
       else if (en.seedRef) { item.seedRef = en.seedRef; if (en.seedHash) item.seedHash = en.seedHash; }
       if (at === -1) { state.compendium.push(item); added.push(item.id); }

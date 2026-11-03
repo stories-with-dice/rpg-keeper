@@ -16,7 +16,7 @@
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
         OSR.closePopulateHdModal(); OSR.closeDropboxModal(); OSR.closeMonsterGenerator();
         OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal(); OSR.closeMapMenu();
-        OSR.closeTableEditor(); OSR.closeImportModal();
+        OSR.closeTableEditor(); OSR.closeImportModal(); OSR.closeFateGenerator(); OSR.closeFateEncounter();
       }
     });
   }
@@ -74,6 +74,7 @@
     OSR.wireNotes();
     OSR.wireCombat();
     OSR.wirePopulateHd();
+    OSR.wireFate();
     OSR.wireMonsterBrowser();
     OSR.wireCompendiumEntries();
     OSR.wireCompendiumPopups();
@@ -181,6 +182,7 @@
       OSR.state.compendiumSeeded = true;
       OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
       OSR.state.brpCompendiumSeeded = true;
+      OSR.state.fateCompendiumSeeded = true;
       OSR.ensureStateShape();
       OSR.lastRoll = null;
       OSR.mode = 'view';
@@ -195,6 +197,8 @@
       OSR.closeAC();
       OSR.closeRollPopup();
       OSR.closePopulateHdModal();
+      OSR.closeFateGenerator();
+      OSR.closeFateEncounter();
       ['#comp-search', '#comp-fulltext', '#comp-fuzzy', '#custom-formula',
         '#notes-area', '#paste-area', '#mm-search', '#mm-hd-min', '#mm-hd-max',
         '#mb-search', '#mb-hd-min', '#mb-hd-max', '#tbl-search',

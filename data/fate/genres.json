@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "source": "Original content for this project. License: CC BY 4.0 (suggested in docs/design.md). Scale steps follow the Fate System Toolkit idea (3 or 4 steps).",
+  "notes": "Templates in 'aspects' use {faction}, {place}, {person}, {thing}. The generator fills them from the same genre. stuntTags picks stunts from data/stunts.json by tag.",
+  "common": {
+    "adjectives": ["Ruthless", "Weary", "Ambitious", "Loyal", "Cunning", "Grim", "Charming", "Paranoid", "Reckless", "Disgraced", "Cold-Eyed", "Zealous", "Greedy", "Honorable", "Scarred", "Desperate", "Smiling", "Veteran", "Brash", "Quiet", "Notorious", "Ageing", "Young", "Wealthy", "Exiled", "Haunted", "Vain", "Pragmatic", "Fearless", "Twitchy"],
+    "troubles": ["Can't Resist a Bet", "Never Leaves a Debt Unpaid", "Trusts the Wrong People", "Temper Like a Lit Fuse", "Too Proud to Back Down", "Owes Everyone Money", "Haunted by an Old Mistake", "Wanted for a Crime I Did Commit", "Loyal to a Fault", "Greed Is My Compass", "Cannot Abide Injustice", "Secretly Terrified", "Talks Too Much", "Old Wounds Ache", "Everyone Knows My Face", "My Family Comes First", "Addicted to the Thrill", "Never Trust a Smile", "Bitter Rivalry with {person}", "In Over My Head with {faction}"],
+    "motivations": ["Wants Revenge on {person}", "Protect {place} at Any Cost", "Climb the Ranks of {faction}", "One Last Big Score", "Prove Them All Wrong", "Keep the Secret Buried", "Pay Off the Debt to {faction}", "Find {thing}", "Get Out of This Life", "Serve {faction} Faithfully", "Nobody Takes What's Mine", "Order Above All", "Survive Another Day", "Bring Down {faction}"],
+    "relationships": ["Owes {person} a Favor", "Sworn Enemy of {faction}", "Informant for {faction}", "Old Friend of {person}", "Protégé of {person}", "Blackmailed by {person}", "On the Payroll of {faction}", "Knows Where {thing} Is Hidden"],
+    "bossTroubles": ["Secretly Dying", "Cannot Forgive Betrayal", "Fears Losing Control", "Haunted by the One Who Got Away", "My Pride Will Be My Downfall", "Loves {person} Despite Everything", "Bound by an Old Oath", "Underestimates the Common Folk"]
+  },
+  "genres": [
+    {
+      "id": "generic",
+      "label": "Generic",
+      "summary": "No genre flavor. Uses the common tables only.",
+      "stuntTags": ["generic"],
+      "names": {
+        "first": ["Alex", "Morgan", "Sam", "Jordan", "Casey", "Robin", "Quinn", "Avery", "Rene", "Dana", "Kit", "Lee", "Ari", "Jules", "Noor", "Sasha"],
+        "last": ["Gray", "Hale", "Stone", "Vance", "Marsh", "Cole", "Reyes", "Novak", "Price", "Rook", "Holt", "Lane", "Moss", "Pike"]
+      },
+      "adjectives": [],
+      "troubles": [],
+      "motivations": [],
+      "relationships": [],
+      "factions": ["the Syndicate", "the Council", "the Guild", "the Old Families", "the Authorities"],
+      "places": ["the Old Quarter", "the Harbor", "the Capital", "the Border Town"],
+      "people": ["the Boss", "an Old Partner", "a Former Lover", "the Informant"],
+      "things": ["the Ledger", "the Key", "the Stolen Shipment", "the Map"],
+      "instincts": ["Protect the Territory", "Hunger Without End", "Hunt the Weak"],
+      "weaknesses": ["Fire", "Bright Light", "Its True Name", "A Specific Sound"],
+      "scale": ["Personal", "Group", "Organization", "Nation"],
+      "hazards": ["Collapsing Floor", "Spreading Fire", "Rising Water"]
+    },
+    {
+      "id": "fantasy",
+      "label": "Fantasy",
+      "summary": "Swords, sorcery, kingdoms, monsters. Lore covers magic.",
+      "stuntTags": ["generic", "fantasy", "nautical"],
+      "names": {
+        "first": ["Aldric", "Brenna", "Corwin", "Dain", "Elara", "Fenwick", "Gwyn", "Hask", "Isolde", "Jorvik", "Kael", "Lysa", "Merek", "Nessa", "Orin", "Rhosyn", "Sorcha", "Thane", "Ulric", "Vesna", "Wyll", "Ysolde"],
+        "last": ["Blackthorn", "of the Vale", "Ironhand", "Ashdown", "Greymantle", "the Red", "Stormborn", "Duskwater", "Halloway", "Brightblade", "Mournwood", "the Unbroken", "Crowley", "Fairwind"]
+      },
+      "adjectives": ["Oath-Bound", "Cursed", "Elven", "Dwarven", "Exiled", "Battle-Scarred", "God-Touched", "Fallen", "Wandering", "Highborn", "Half-Orc", "Hedge-Born"],
+      "troubles": ["Bound by a Geas", "The Curse Spreads Each Night", "Debt to the Fae", "Hunted by the Inquisition", "Magic Has a Price", "Sworn to a Dead King", "The Dragon Remembers My Name"],
+      "motivations": ["Restore the Fallen Throne", "Steal the Crown Jewels of {place}", "Awaken the Sleeping God", "Avenge the Burning of {place}", "Hoard Every Scrap of Magic"],
+      "relationships": ["Sworn Sword of {person}", "Apprentice of the Black Tower", "Blood-Debt to the Clan of {person}"],
+      "factions": ["the Thieves' Guild", "the Silver Inquisition", "the Collegia Arcana", "the Orc Hordes", "the Crown", "the Cult of the Void", "the Merchant League"],
+      "places": ["the Sunken Citadel", "Raven's Ford", "the Ashen Wastes", "the Capital", "the Elfwood", "the Dwarven Halls"],
+      "people": ["the Regent", "the Lich of Morrow", "a Rival Knight", "the Queen's Spymaster", "the Old Hermit"],
+      "things": ["the Shattered Crown", "the Book of Ash", "the Dragon's Egg", "a Runeblade"],
+      "instincts": ["Hoard Gold and Glory", "Devour the Living", "Guard the Ancient Tomb", "Spread the Blight", "Serve the Summoner"],
+      "weaknesses": ["Cold Iron", "Holy Water", "Sunlight", "Its True Name", "Running Water", "Silver", "Dragonglass"],
+      "scale": ["Mortal", "Heroic", "Monstrous", "Legendary"],
+      "hazards": ["Arrow Slits", "Pit Trap", "Rune of Warding", "Collapsing Bridge", "Dragonfire"]
+    },
+    {
+      "id": "horror",
+      "label": "Horror",
+      "summary": "Dread, isolation, monsters that break the rules. Monsters get instinct aspects and weaknesses.",
+      "stuntTags": ["generic", "modern"],
+      "monsterBias": 0.35,
+      "names": {
+        "first": ["Agnes", "Silas", "Martha", "Ezra", "Lenore", "Abel", "Hester", "Ambrose", "Delia", "Jebediah", "Irene", "Cyrus", "Opal", "Virgil", "Mercy", "Tobias"],
+        "last": ["Whateley", "Graves", "Marsh", "Blackwood", "Crane", "Ashby", "Thorne", "Pickman", "Vale", "Harrow", "Wicke", "Mortlake", "Gilman", "Holloway"]
+      },
+      "adjectives": ["Pale", "Sleepless", "Whispering", "Twitching", "Hollow-Eyed", "Too-Calm", "Bloodstained", "Smiling", "Possessed", "Gaunt"],
+      "troubles": ["I've Seen What's Under the Lake", "The Voices Are Getting Louder", "Nobody Believes Me", "Bitten", "Cannot Sleep Without the Light On", "Marked by the Thing in the Woods", "Drinks to Forget"],
+      "motivations": ["Open the Door Between Worlds", "Keep the Town's Secret", "Feed It So It Won't Feed on Us", "Find My Missing Child", "Burn It All Clean"],
+      "relationships": ["Promised to the Old One", "Last Survivor of {place}", "Keeps the Key to {place}"],
+      "factions": ["the Esoteric Order", "the Town Council", "the Church of the Drowned", "the Watchers", "the Federal Agents"],
+      "places": ["Innsmouth Harbor", "the Abandoned Asylum", "Black Pine Lake", "the Old Mill", "Room 237", "the Family Crypt"],
+      "people": ["the Missing Girl", "the Preacher", "Grandmother", "the Thing Wearing My Brother's Face", "the Sheriff"],
+      "things": ["the Necronomicon", "the Black Tape", "the Idol", "the Diary"],
+      "instincts": ["Hungry for Flesh", "Return to the Grave Each Dawn", "Punish the Trespassers", "Wear Their Faces", "Feed on Fear", "Finish the Ritual"],
+      "weaknesses": ["Silver", "Sunlight", "Fire", "Salt Lines", "Holy Symbols", "Its Own Reflection", "Remembering Its Human Name", "Iron Nails"],
+      "scale": ["Human", "Monstrous", "Eldritch"],
+      "hazards": ["Darkness Where Things Move", "Flooding Basement", "Rotten Floorboards", "Ritual Circle"]
+    },
+    {
+      "id": "scifi",
+      "label": "Science fiction",
+      "summary": "Starships, colonies, aliens, androids. Drive covers piloting, Crafts covers engineering.",
+      "stuntTags": ["generic", "scifi", "modern"],
+      "names": {
+        "first": ["Ash", "Jax", "Kira", "Orrin", "Talia", "Vex", "Zane", "Nyx", "Rho", "Sela", "Daxx", "Ilya", "Mira", "Cass", "T'Vel", "Juno", "Ren", "Oko"],
+        "last": ["Voss", "Kade", "Okonkwo", "Tanaka", "Rourke", "Valis", "Xi", "Draven", "Nakamura", "Solaris", "Krell", "Mbeki", "Petrova", "Ardent"]
+      },
+      "adjectives": ["Android", "Augmented", "Exiled", "Clone", "Void-Born", "Alien", "Cybernetic", "Rogue", "Imperial", "Frontier", "Gene-Modified", "Disgraced"],
+      "troubles": ["Bounty on My Head", "My Programming Is Fraying", "The Empire Wants Me Back", "Spaced My Last Crew", "Addicted to Stim", "Wanted on Six Worlds", "Memory Wipe Gaps"],
+      "motivations": ["Seize the Jump Gate", "Smuggle the Cargo Past the Blockade", "Free the Colony from {faction}", "Reach the Edge of Known Space", "Upload Myself Before the Body Fails"],
+      "relationships": ["Former Crewmate of {person}", "Contract with {faction}", "Owes the Hutt-Lords a Shipment"],
+      "factions": ["the Empire", "the Rebel Alliance", "the Mining Consortium", "the Free Traders", "the Hive", "the Colonial Marines", "the Syndicate"],
+      "places": ["Station Kepler", "the Outer Rim", "Mars Dome 7", "the Derelict", "the Jump Gate", "the Asteroid Belt"],
+      "people": ["the Admiral", "the Ship's AI", "a Former Captain", "the Bounty Hunter", "the Alien Ambassador"],
+      "things": ["the Navigation Codes", "the Alien Artifact", "the Prototype Drive", "the Data Core"],
+      "instincts": ["Protect the Hive", "Consume and Replicate", "Execute Directive Zero", "Hunt Warm Bodies", "Assimilate"],
+      "weaknesses": ["EMP", "Hard Vacuum", "Extreme Cold", "Its Override Code", "Sonic Frequencies", "Hive-Queen's Death"],
+      "scale": ["Personal", "Vehicle", "Starship", "Capital Ship"],
+      "hazards": ["Hull Breach", "Automated Turret", "Radiation Leak", "Airlock Cycling", "Reactor Overload"]
+    },
+    {
+      "id": "cyberpunk",
+      "label": "Cyberpunk",
+      "summary": "Neon megacities, megacorps, chrome and code. Crafts covers hacking.",
+      "stuntTags": ["generic", "modern", "scifi"],
+      "names": {
+        "first": ["Razor", "Kenji", "Mox", "Dex", "Lux", "Rook", "Yuki", "Sable", "Cipher", "Nova", "Viktor", "Jinx", "Chrome", "Wren", "Tomas", "Ines"],
+        "last": ["Takeda", "Kruger", "Vasquez", "Okafor", "Lindqvist", "Ng", "Holloway", "Arasaka", "Brandt", "Moreau", "Silva", "Kovac"]
+      },
+      "adjectives": ["Chromed", "Burned-Out", "Wired", "Corporate", "Street-Level", "Glitching", "Neon-Lit", "Black-Market", "Over-Augmented", "Freelance"],
+      "troubles": ["Cyberpsychosis Creeping In", "The Corp Owns My Arm", "Flatlined Once Already", "Owes the Ripperdoc", "Can't Afford the Meds", "Blacklisted by Every Fixer", "Lost My Face in a Deal"],
+      "motivations": ["Burn Down {faction}", "Get the Payday and Get Out", "Climb to the Top Floor of the Arcology", "Free the Rogue AI", "Protect My Block"],
+      "relationships": ["Fixer Contact of {person}", "On Retainer with {faction}", "Ex-Partner of {person}"],
+      "factions": ["Arasaka-Kline", "the Maelstrom Gang", "NetWatch", "the Nomad Clans", "Night City PD", "the Voodoo Boys"],
+      "places": ["the Combat Zone", "the Arcology", "the Net", "the Undercity Market", "Pacifica"],
+      "people": ["the Fixer", "a Rogue AI", "the Corpo Exec", "an Old Choomba"],
+      "things": ["the Data Shard", "the Prototype Implant", "the Black ICE Key", "the Biochip"],
+      "instincts": ["Purge the Intruders", "Self-Replicate Across the Net", "Kill Everything with Chrome"],
+      "weaknesses": ["EMP", "Kill-Switch Code", "Firewall Isolation", "Overload Feedback"],
+      "scale": ["Street", "Gang", "Corporation", "Megacorp"],
+      "hazards": ["Black ICE", "Security Turret", "Drone Swarm", "Toxic Smog"]
+    },
+    {
+      "id": "modern",
+      "label": "Modern / Urban",
+      "summary": "Today's world: cops, criminals, spies, journalists. Works for thrillers and urban fantasy.",
+      "stuntTags": ["generic", "modern"],
+      "names": {
+        "first": ["Mike", "Sarah", "Tony", "Elena", "Marcus", "Jess", "Darnell", "Priya", "Victor", "Hannah", "Luis", "Grace", "Derek", "Mei", "Omar", "Katie", "Frank", "Aisha"],
+        "last": ["Russo", "Kowalski", "Chen", "Ramirez", "O'Brien", "Washington", "Patel", "Murphy", "Novak", "Ortiz", "Brennan", "Kim", "Fischer", "Diaz"]
+      },
+      "adjectives": ["Crooked", "Burned-Out", "Ex-Military", "Undercover", "Corrupt", "Rookie", "Washed-Up", "Ambitious", "Connected", "Off-the-Books"],
+      "troubles": ["Internal Affairs Is Watching", "Gambling Debts to the Mob", "Can't Say No to Family", "Burned Agent", "Pills Keep Me Going", "Sold Out My Partner", "Viral Video Ruined Me"],
+      "motivations": ["Take Over the Docks", "Bury the Evidence", "Protect My Neighborhood", "Expose {faction}", "Get My Kid Back"],
+      "relationships": ["Cousin of {person}", "Snitch for {faction}", "Old Army Buddy of {person}"],
+      "factions": ["the Russo Family", "the Feds", "the Cartel", "Internal Affairs", "the Union", "the Gang Task Force"],
+      "places": ["the Docks", "Precinct 13", "Chinatown", "the Projects", "the Penthouse", "the Old Factory"],
+      "people": ["the Commissioner", "Big Tony", "the Witness", "a Crooked Senator", "the Informant"],
+      "things": ["the Hard Drive", "the Shipment", "the Ledger", "the Tape"],
+      "instincts": ["Defend the Den", "Hunt at Night", "Protect the Young"],
+      "weaknesses": ["Fire", "Silver", "Bright Light", "Loud Noise"],
+      "scale": ["Individual", "Crew", "Organization", "Government"],
+      "hazards": ["Traffic", "Security Cameras", "Burning Building", "Live Wires"]
+    },
+    {
+      "id": "pulp",
+      "label": "Pulp adventure",
+      "summary": "1930s two-fisted action: jungle temples, mad scientists, dastardly villains.",
+      "stuntTags": ["generic", "modern", "nautical"],
+      "names": {
+        "first": ["Jack", "Doc", "Lola", "Clyde", "Vivian", "Max", "Rex", "Dolores", "Baron", "Ace", "Nadia", "Hugo", "Ruby", "Felix", "Ingrid", "Sid"],
+        "last": ["Savage", "Stone", "Valentine", "Steel", "von Strucker", "Malone", "Fortune", "Lamont", "Carver", "Drake", "Kensington", "Moreau", "Sterling"]
+      },
+      "adjectives": ["Dastardly", "Two-Fisted", "Mad", "Dashing", "Mysterious", "Diabolical", "Plucky", "Square-Jawed", "Sinister", "Daredevil"],
+      "troubles": ["Can't Resist a Dare", "The Professor's Rival", "Wanted by Interpol", "A Dame Will Be My Undoing", "Cursed by the Idol", "Monologues at the Worst Time"],
+      "motivations": ["Conquer the World with the Death Ray", "Find the Lost City of {place}", "Steal the Idol Before the Expedition", "Prove My Theories to the Academy"],
+      "relationships": ["Nemesis of {person}", "Henchman of {faction}", "Old Flame of {person}"],
+      "factions": ["the Thule Society", "the Explorers' Club", "the Red Hand Tong", "the Mob", "the Brotherhood of the Serpent"],
+      "places": ["the Lost Temple", "Shanghai", "the Zeppelin", "the Skull Island", "Cairo Bazaar"],
+      "people": ["Doctor Zero", "the Professor", "the Dragon Lady", "the Baron"],
+      "things": ["the Death Ray", "the Idol of Kali", "the Lost Map", "the Radium Crystal"],
+      "instincts": ["Protect the Temple", "Crush the Intruders", "Obey the Master"],
+      "weaknesses": ["Fire", "Ancient Amulet", "Electricity", "The Master's Death"],
+      "scale": ["Man", "Gang", "Army", "Doomsday Device"],
+      "hazards": ["Rolling Boulder", "Spike Pit", "Death Ray Turret", "Crocodile Moat"]
+    },
+    {
+      "id": "western",
+      "label": "Western",
+      "summary": "Frontier towns, outlaws, railroads, dusty gunfights. Weird West works with monsters on.",
+      "stuntTags": ["generic"],
+      "names": {
+        "first": ["Jesse", "Clem", "Hattie", "Wyatt", "Calamity", "Eli", "Rosa", "Bart", "Josiah", "Belle", "Ike", "Abigail", "Hank", "Lupe", "Amos", "Nell"],
+        "last": ["McCready", "Holliday", "Callahan", "Doolin", "Santos", "Jackson", "Pruitt", "Hardin", "Starr", "Bickford", "Cole", "Vargas", "Thornton"]
+      },
+      "adjectives": ["Dust-Covered", "Trail-Worn", "Notorious", "Gun-Slinging", "Lawless", "God-Fearing", "One-Eyed", "Drunken", "Silver-Tongued", "Wanted"],
+      "troubles": ["Wanted Dead or Alive", "Whiskey Is My Only Friend", "Fastest Gun Draws Challengers", "Owes the Railroad", "Rides with a Price on My Head", "Can't Outrun the Past"],
+      "motivations": ["Run the Homesteaders Off {place}", "Rob the Payroll Train", "Bring {person} to Justice", "Strike It Rich", "Clean Up This Town"],
+      "relationships": ["Rode with {person}", "Hired by {faction}", "Sworn to Protect {place}"],
+      "factions": ["the Railroad Company", "the Dalton Gang", "the Cavalry", "the Cattle Barons", "the Pinkertons"],
+      "places": ["Tombstone", "the Silver Mine", "Dead Man's Gulch", "the Reservation", "the Saloon"],
+      "people": ["the Sheriff", "the Kid", "the Railroad Boss", "the Preacher"],
+      "things": ["the Payroll", "the Deed", "the Gold Shipment", "the Silver Bullet"],
+      "instincts": ["Hunt Across the Plains", "Defend the Sacred Ground", "Never Stop Coming"],
+      "weaknesses": ["Silver Bullets", "Consecrated Ground", "Fire", "Dawn Light"],
+      "scale": ["Gunslinger", "Posse", "Cavalry", "Railroad Empire"],
+      "hazards": ["Stampede", "Rattlesnake Nest", "Runaway Train", "Dust Storm"]
+    },
+    {
+      "id": "postapoc",
+      "label": "Post-apocalyptic",
+      "summary": "After the fall: scavengers, warlords, mutants, scarce water and fuel.",
+      "stuntTags": ["generic", "modern"],
+      "names": {
+        "first": ["Rust", "Ash", "Bolt", "Mags", "Splice", "Dutch", "Wren", "Gravel", "Tink", "Hex", "Crow", "Jolene", "Patch", "Sarge", "Echo", "Rook"],
+        "last": ["of the Dunes", "Halfhand", "Two-Rivers", "the Burned", "Scrapper", "Deadeye", "Gasser", "of Bunker 9", "Saltwater", "Cinder"]
+      },
+      "adjectives": ["Mutated", "Rad-Scarred", "Scavenger", "Feral", "Grizzled", "Raider", "Bunker-Born", "Starving", "Chem-Addled", "Road-Hardened"],
+      "troubles": ["Radiation Sickness", "Hunted by the Warlord", "Hoards Everything", "Mutation Getting Worse", "Can't Trust Outsiders", "Last of My Tribe"],
+      "motivations": ["Control the Water Supply", "Find the Clean Zone", "Rebuild the Old World", "Collect Tribute from {place}", "Survive the Coming Winter"],
+      "relationships": ["War-Boy of {person}", "Trades with {faction}", "Exiled from {place}"],
+      "factions": ["the Iron Convoy", "the Bunker Council", "the Atom Children", "the Raiders of the Long Road", "the Free Settlements"],
+      "places": ["the Dead City", "Bunker 9", "the Glass Desert", "the Last Oasis", "the Fortress Refinery"],
+      "people": ["the Warlord", "the Doc", "the Water Baron", "the Prophet"],
+      "things": ["the Pre-War Seeds", "the Water Chip", "the Fuel Cache", "the Working Radio"],
+      "instincts": ["Hungry for Meat", "Swarm the Weak", "Guard the Nest", "Seek the Radiation"],
+      "weaknesses": ["Fire", "Clean Water", "Bright Light", "Sonic Pulse"],
+      "scale": ["Survivor", "Gang", "Settlement", "War-Horde"],
+      "hazards": ["Rad Zone", "Minefield", "Collapsing Ruin", "Acid Rain"]
+    },
+    {
+      "id": "supers",
+      "label": "Superhero",
+      "summary": "Capes, powers, secret identities. Use scale for power tiers and stunts for powers.",
+      "stuntTags": ["generic", "modern", "scifi"],
+      "names": {
+        "first": ["Captain", "Doctor", "Lady", "The", "Mister", "Professor", "Black", "Iron", "Crimson", "Silver", "Night", "Quantum"],
+        "last": ["Vortex", "Nemesis", "Blaze", "Shadow", "Titan", "Spectre", "Havoc", "Mirage", "Volt", "Gravity", "Phantom", "Tempest", "Rampage", "Glacier"]
+      },
+      "adjectives": ["Super-Powered", "Masked", "Gamma-Mutated", "Alien", "Armored", "Reformed", "Unstable", "Mind-Controlled", "Legacy", "Cosmic"],
+      "troubles": ["Secret Identity at Risk", "Powers Out of Control", "Arch-Nemesis of {person}", "With Great Power…", "Everyone Fears Mutants", "Cannot Kill"],
+      "motivations": ["Rule the City", "Prove Mutants Are Superior", "Avenge My Origin", "Steal the Cosmic Gem", "Protect the Innocent"],
+      "relationships": ["Former Sidekick of {person}", "Member of {faction}", "Created by {person}"],
+      "factions": ["the Legion of Doom", "the Agency", "the Guardians", "the Brotherhood", "the Underworld Council"],
+      "places": ["Metro City", "the Orbital Base", "the Secret Lair", "Stark Tower"],
+      "people": ["the Hero", "the Mad Scientist", "the Mayor", "a Former Teammate"],
+      "things": ["the Cosmic Gem", "the Serum", "the Power Armor Blueprints", "the Doomsday Device"],
+      "instincts": ["Destroy Everything", "Absorb More Power", "Protect the Creator"],
+      "weaknesses": ["Kryptonite-Like Mineral", "Magic", "Electricity", "Sonic Attacks", "Their True Name"],
+      "scale": ["Street-Level", "Superhuman", "World-Class", "Cosmic"],
+      "hazards": ["Falling Debris", "Runaway Subway", "Energy Barrier", "Laser Grid"]
+    }
+  ]
+}

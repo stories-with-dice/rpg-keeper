@@ -37,6 +37,9 @@
     // sheet as PCs), so hide it rather than let it add nonsense 'ua3e' monsters.
     const gen = $('#mb-gen');
     if (gen) gen.hidden = (OSR.currentSystem ? OSR.currentSystem() : 'osr') !== 'osr';
+    // Fate has its own NPC generator (js/fate-ui.js).
+    const fateGen = $('#fate-gen-open');
+    if (fateGen) fateGen.hidden = OSR.currentSystem() !== 'fate';
     // Unknown Armies GMCs have no Hit Dice: hide the HD range filter.
     document.querySelectorAll('#tab-bestiary .mb-hd-field').forEach(el => { el.hidden = OSR.currentSystem() === 'ua3e'; });
     OSR.applyLevelLabels();

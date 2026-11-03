@@ -50,12 +50,23 @@
     '## Saving throws\n\nPhysical Effect 15 · Mental Effect 15 · Evasion 15 · Magic 15 · Luck 15\n\n' +
     '## Skills\n\nPerception 2d6+0, Research 2d6+0\n';
 
+  // Has a ```fate fence so a blank character created while System is Fate is
+  // itself classified 'fate' by charSystemKey() below — same reasoning as
+  // DEFAULT_BLANK_UA above. "Fate Points: 3/3" sits outside the fence: it is a
+  // sheet resource with its own tracker (OSR.syncResourceTrackers, js/core.js).
+  // The text format is in js/fate.js.
+  const DEFAULT_BLANK_FATE = '# New Character [Fate]\n\nFate Points: 3/3\n\n' +
+    '```fate\nHigh Concept:\nTrouble:\nAspect:\nAspect:\nAspect:\n\n' +
+    'Great (+4): Fight\nGood (+3): Athletics, Notice\nFair (+2): Physique, Will, Empathy\nAverage (+1): Rapport, Lore, Stealth, Provoke\n\n' +
+    'Stunt:\nRefresh: 3\n\nPhysical Stress: [ ] [ ] [ ]\nMental Stress: [ ] [ ] [ ]\n\nMild:\nModerate:\nSevere:\n```\n';
+
   function createCharacter(body, opts) {
     opts = opts || {};
     const state = OSR.state;
     const sys = OSR.currentSystem && OSR.currentSystem();
     const usedBody = body != null ? OSR.migrateBrpSheet(body) :
-      (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : sys === 'sl' ? DEFAULT_BLANK_SL : DEFAULT_BLANK_OSR);
+      (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : sys === 'sl' ? DEFAULT_BLANK_SL :
+        sys === 'fate' ? DEFAULT_BLANK_FATE : DEFAULT_BLANK_OSR);
     const det = detectNameSystem(usedBody);
     const ch = {
       id: uid(),
@@ -87,6 +98,8 @@
   // first line ("# Ada [BRP]", "**Ada [BRP]**").
   const BRP_TAG_RE = /\[(?:BRP|Basic Roleplaying)\][\s*_]*$/i;
   const SL_FENCE_RE = /```sl[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
+  // A Fate Core sheet: a ```fate fence (js/fate.js has the format).
+  const FATE_FENCE_RE = /```fate[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
 
   // Which System bucket a character belongs to for the Character dropdown —
   // unlike the free-text `ch.system` display label (e.g. "Shadowdark",
@@ -102,6 +115,8 @@
     if (first && BRP_TAG_RE.test(first)) return 'brp';
     SL_FENCE_RE.lastIndex = 0;
     if (SL_FENCE_RE.test(body)) return 'sl';
+    FATE_FENCE_RE.lastIndex = 0;
+    if (FATE_FENCE_RE.test(body)) return 'fate';
     return 'osr';
   }
   // The starting Madness score from the first ```sl fence's "Madness: N" line
@@ -121,6 +136,61 @@
     const m = UA_FENCE_RE.exec((ch && ch.body) || '');
     return m ? window.UAStatblock.parseUAStatblock(m[1]) : null;
   }
+  // Every ```fate fence of a character, parsed ([] without one).
+  function fateFenceDefs(ch) {
+    if (!window.FateSheet) return [];
+    const out = [];
+    let m;
+    FATE_FENCE_RE.lastIndex = 0;
+    while ((m = FATE_FENCE_RE.exec((ch && ch.body) || ''))) out.push(window.FateSheet.parse(m[1]));
+    return out;
+  }
+  // Rewrites the Nth ```fate fence of a character with transform(inner).
+  function patchFateFence(body, fenceIndex, transform) {
+    let idx = -1;
+    FATE_FENCE_RE.lastIndex = 0;
+    return String(body || '').replace(FATE_FENCE_RE, (whole, inner) => {
+      idx++;
+      return idx === fenceIndex ? whole.replace(inner, transform(inner)) : whole;
+    });
+  }
+  // A stress box or consequence changed from View mode or Combat: the fence
+  // text is the only source of truth, as for the Unknown Armies Shock dots.
+  //   setFateStress(ch, 0, 0, 1, true): "Physical Stress: [ ] [ ]" → "Physical Stress: [ ] [x]"
+  function setFateStress(ch, fenceIndex, track, box, checked) {
+    if (!ch || !window.FateSheet) return;
+    ch.body = patchFateFence(ch.body, fenceIndex, inner => window.FateSheet.setStressBox(inner, track, box, checked));
+    ch.updatedAt = Date.now();
+    const def = fateFenceDefs(ch)[fenceIndex];
+    const t = def && def.stress[track];
+    OSR.save();
+    OSR.pushNote(ch.name, (t ? t.name : 'Stress') + ' box ' + (box + 1) + (checked ? ' checked' : ' cleared'));
+    refreshCharUI();
+    if (OSR.renderCombat) OSR.renderCombat();
+  }
+  //   setFateConsequence(ch, 0, 1, 'Cracked Ribs'): "Moderate:" → "Moderate: Cracked Ribs"
+  function setFateConsequence(ch, fenceIndex, index, value) {
+    if (!ch || !window.FateSheet) return;
+    const before = fateFenceDefs(ch)[fenceIndex];
+    const c = before && before.consequences[index];
+    ch.body = patchFateFence(ch.body, fenceIndex, inner => window.FateSheet.setConsequence(inner, index, value));
+    ch.updatedAt = Date.now();
+    OSR.save();
+    if (c && c.text !== String(value || '').trim()) {
+      OSR.pushNote(ch.name, c.label + ' consequence: ' + (String(value || '').trim() || '(cleared)'));
+    }
+    refreshCharUI();
+    if (OSR.renderCombat) OSR.renderCombat();
+  }
+  // Every stress box of a character empty (the end of a conflict).
+  function clearFateStress(ch) {
+    if (!ch || !window.FateSheet) return;
+    FATE_FENCE_RE.lastIndex = 0;
+    ch.body = String(ch.body || '').replace(FATE_FENCE_RE, (whole, inner) => whole.replace(inner, window.FateSheet.clearStress(inner)));
+    ch.updatedAt = Date.now();
+    OSR.save();
+  }
+
   function charactersForSystem() {
     const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
     return OSR.state.characters.filter(c => charSystemKey(c) === sys);
@@ -289,13 +359,24 @@
   // untouched. Used instead of a bare marked.parse(ch.body) everywhere a
   // character body is rendered, so the statblock renders consistently in the
   // sheet view, the two-character split, and Combat's combatant detail.
+  // A ```fate fence becomes the Fate sheet panel (FateSheet.sheetHtml) the same way.
   function renderUABlocks(body) {
-    if (!window.UAStatblock) return String(body || '');
-    let fenceIndex = -1;
-    return String(body || '').replace(UA_FENCE_RE, (whole, inner) => {
-      fenceIndex++;
-      return '\n\n' + uaStatblockHtml(window.UAStatblock.parseUAStatblock(inner), { fenceIndex: fenceIndex }) + '\n\n';
-    });
+    let out = String(body || '');
+    if (window.UAStatblock) {
+      let fenceIndex = -1;
+      out = out.replace(UA_FENCE_RE, (whole, inner) => {
+        fenceIndex++;
+        return '\n\n' + uaStatblockHtml(window.UAStatblock.parseUAStatblock(inner), { fenceIndex: fenceIndex }) + '\n\n';
+      });
+    }
+    if (window.FateSheet) {
+      let fateIndex = -1;
+      out = out.replace(FATE_FENCE_RE, (whole, inner) => {
+        fateIndex++;
+        return '\n\n' + window.FateSheet.sheetHtml(window.FateSheet.parse(inner), { fence: fateIndex }) + '\n\n';
+      });
+    }
+    return out;
   }
   // View mode shows the name without its system tag ("# John [BRP]" → "John"),
   // like the Character dropdown; the tag stays in the text, where it marks the
@@ -760,11 +841,30 @@
         setUAShockValue(tgt.ch, parseInt(wrap.dataset.fence, 10) || 0, wrap.dataset.meter, wrap.dataset.field, n === cur ? n - 1 : n);
         return;
       }
+      // A Fate stress box: click to check it, click a checked box to clear it.
+      const box = e.target.closest('.fate-box');
+      if (box) {
+        const sheet = box.closest('.fate-sheet');
+        const tgt = charViewTarget(e.target);
+        if (!sheet || !tgt || !tgt.ch) return;
+        setFateStress(tgt.ch, parseInt(sheet.dataset.fence, 10) || 0, +box.dataset.track, +box.dataset.box, !box.classList.contains('is-checked'));
+        return;
+      }
       const el = e.target.closest('.roll');
       if (!el) return;
       const tgt = charViewTarget(e.target);
       const ch = tgt && tgt.ch;
       OSR.doRoll(el.dataset.formula, ch ? ch.name : 'Character', OSR.charVars(ch));
+    });
+
+    // A Fate consequence typed in View mode (Enter or leaving the field).
+    $('#mode-view').addEventListener('change', e => {
+      const inp = e.target.closest('.fate-cons');
+      if (!inp) return;
+      const sheet = inp.closest('.fate-sheet');
+      const tgt = charViewTarget(e.target);
+      if (!sheet || !tgt || !tgt.ch) return;
+      setFateConsequence(tgt.ch, parseInt(sheet.dataset.fence, 10) || 0, +inp.dataset.i, inp.value);
     });
 
     // Right-click a text selection in View mode → "Add … to Compendium".
@@ -810,7 +910,7 @@
     charViewTarget, linkifyInText, applyPendingCompLink,
     openSelMenu, closeSelMenu, linkSelToExisting, wireCharacters,
     uaStatblockHtml, uaFeaturesHtml, renderUABlocks, stripTitleTag, renderCharMarkdown, syncWoundTracker, renameResourceTrackers,
-    patchUAFence, setUAShockValue,
+    patchUAFence, setUAShockValue, fateFenceDefs, patchFateFence, setFateStress, setFateConsequence, clearFateStress, DEFAULT_BLANK_FATE,
     get selMenuData() { return selMenuData; }
   });
 })(window.OSR = window.OSR || {});

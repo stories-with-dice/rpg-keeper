@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "source": "Fate Core SRD, Fate Condensed SRD, Fate Accelerated SRD, Fate Adversary Toolkit SRD, Fate System Toolkit SRD (fate-srd.com). CC BY 3.0, Evil Hat Productions. Numbers are condensed in knowledge/fate-npc-rules.md.",
+  "ladder": {
+    "-4": "Horrifying",
+    "-3": "Abysmal",
+    "-2": "Terrible",
+    "-1": "Poor",
+    "0": "Mediocre",
+    "1": "Average",
+    "2": "Fair",
+    "3": "Good",
+    "4": "Great",
+    "5": "Superb",
+    "6": "Fantastic",
+    "7": "Epic",
+    "8": "Legendary",
+    "9": "Mythic",
+    "10": "Godlike"
+  },
+  "ruleSets": {
+    "core": {
+      "label": "Fate Core",
+      "skillList": "core",
+      "defaultPcPeak": 4,
+      "stress": {
+        "style": "escalating",
+        "tracks": [
+          { "id": "physical", "name": "Physical Stress", "skill": "Physique" },
+          { "id": "mental", "name": "Mental Stress", "skill": "Will" }
+        ],
+        "baseBoxes": 2,
+        "skillBonus": [
+          { "minRank": 1, "boxes": 3 },
+          { "minRank": 3, "boxes": 4 },
+          { "minRank": 5, "boxes": 4, "extraMild": true }
+        ],
+        "namelessBoxes": { "average": 0, "fair": 1, "good": 2 }
+      }
+    },
+    "condensed": {
+      "label": "Fate Condensed",
+      "skillList": "condensed",
+      "defaultPcPeak": 4,
+      "stress": {
+        "style": "single",
+        "tracks": [
+          { "id": "physical", "name": "Physical Stress", "skill": "Physique" },
+          { "id": "mental", "name": "Mental Stress", "skill": "Will" }
+        ],
+        "baseBoxes": 3,
+        "skillBonus": [
+          { "minRank": 1, "boxes": 4 },
+          { "minRank": 3, "boxes": 5 },
+          { "minRank": 5, "boxes": 6, "extraMild": true }
+        ],
+        "namelessBoxes": { "average": 1, "fair": 2, "good": 3 }
+      }
+    },
+    "accelerated": {
+      "label": "Fate Accelerated",
+      "skillList": "approaches",
+      "defaultPcPeak": 3,
+      "stress": {
+        "style": "escalating",
+        "tracks": [{ "id": "stress", "name": "Stress", "skill": null }],
+        "baseBoxes": 3,
+        "skillBonus": [],
+        "namelessBoxes": { "average": 0, "fair": 1, "good": 2 }
+      }
+    }
+  },
+  "skillLists": {
+    "core": ["Athletics", "Burglary", "Contacts", "Crafts", "Deceive", "Drive", "Empathy", "Fight", "Investigate", "Lore", "Notice", "Physique", "Provoke", "Rapport", "Resources", "Shoot", "Stealth", "Will"],
+    "condensed": ["Academics", "Athletics", "Burglary", "Contacts", "Crafts", "Deceive", "Drive", "Empathy", "Fight", "Investigate", "Lore", "Notice", "Physique", "Provoke", "Rapport", "Resources", "Shoot", "Stealth", "Will"],
+    "approaches": ["Careful", "Clever", "Flashy", "Forceful", "Quick", "Sneaky"]
+  },
+  "skillFallbacks": {
+    "core": { "Academics": "Lore" },
+    "condensed": {}
+  },
+  "consequences": [
+    { "id": "mild", "name": "Mild Consequence", "value": 2 },
+    { "id": "moderate", "name": "Moderate Consequence", "value": 4 },
+    { "id": "severe", "name": "Severe Consequence", "value": 6 }
+  ],
+  "importance": {
+    "nameless": {
+      "label": "Nameless",
+      "srd": "Fate Core, Creating and Playing the Opposition: nameless NPCs",
+      "summary": "Mooks, guards, bystanders. One encounter, then gone. Use them like a low-difficulty roll: they show off the PCs.",
+      "qualities": {
+        "average": {
+          "label": "Average",
+          "rank": 1,
+          "purpose": "Mostly there to make the PCs look more awesome.",
+          "skills": [1],
+          "extraAverage": [0, 1],
+          "aspects": [1, 2]
+        },
+        "fair": {
+          "label": "Fair",
+          "rank": 2,
+          "purpose": "Drain a few PC resources: one or two fate points, stress boxes, maybe a mild consequence.",
+          "skills": [2],
+          "extraAverage": [1, 2],
+          "aspects": [1, 2]
+        },
+        "good": {
+          "label": "Good",
+          "rank": 3,
+          "purpose": "Tough opposition, especially in numbers. A stumbling block before a bigger encounter.",
+          "skills": [3, 2],
+          "extraAverage": [1, 2],
+          "aspects": [1, 2]
+        }
+      },
+      "stunts": 0,
+      "consequences": [],
+      "concedes": "Flees when the mob is reduced to one member."
+    },
+    "supporting": {
+      "label": "Supporting",
+      "srd": "Fate Core, Creating and Playing the Opposition: supporting NPCs",
+      "summary": "Named lieutenants, rivals, contacts, mentors. High concept, trouble, one more aspect, one stunt, four or five skills in a column.",
+      "aspects": 3,
+      "stunts": 1,
+      "maxColumnSkills": 5,
+      "consequences": ["mild"],
+      "toughConsequences": ["mild", "moderate"],
+      "concedes": "Concedes often, especially early in a story, and especially with a concession like 'they get away'."
+    },
+    "main": {
+      "label": "Main",
+      "srd": "Fate Core, Creating and Playing the Opposition: main NPCs",
+      "summary": "The big bad or a crucial ally. Full sheet: five aspects, a full skill pyramid, several stunts, PC-level stress and consequences.",
+      "aspects": 5,
+      "stunts": 3,
+      "consequences": ["mild", "moderate", "severe"],
+      "concedes": "Fights to the bitter end if need be. A boss can still concede to return later."
+    }
+  },
+  "threatLevels": {
+    "weaker": { "label": "Weaker", "offset": -1, "summary": "Peak skill one step below the best PC. Outnumber the PCs only with NPCs like these." },
+    "peer": { "label": "Peer", "offset": 0, "summary": "Peak skill equal to the best PC. Right for allies and rivals (SRD: allied supporting NPCs are rough peers)." },
+    "strong": { "label": "Strong", "offset": 1, "summary": "Peak skill one step above the best PC. Adversary Toolkit default for threats and hitters." },
+    "deadly": { "label": "Deadly", "offset": 2, "summary": "Peak skill two steps above the best PC. SRD: use this when the whole group teams up against one opponent, and for superior main NPCs." }
+  },
+  "roles": {
+    "auto": { "label": "Auto (from archetype)" },
+    "threat": {
+      "label": "Threat (tank)",
+      "srd": "Fate Adversary Toolkit, Enemies: threats",
+      "summary": "Soaks up hits and holds attention. Large stress track, at least a mild consequence, defensive skills, a stunt that makes the PCs deal with it.",
+      "tactics": "Get in the PCs' faces. Attack constantly and relentlessly. Protect the boss or hitter. Do not be cautious.",
+      "preferSkills": ["Physique", "Will", "Fight", "Shoot", "Athletics"],
+      "minConsequences": ["mild"]
+    },
+    "hitter": {
+      "label": "Hitter (glass cannon)",
+      "srd": "Fate Adversary Toolkit, Enemies: hitters",
+      "summary": "Hits hard, cannot take punishment. Weapon:2 on the main attack, minimum stress, no consequences unless important.",
+      "tactics": "Stay unseen or ignored. Get into position, then strike without remorse. Spend a fate point or two to make the hit count. Once spotted, let the PCs take it down.",
+      "preferSkills": ["Fight", "Shoot", "Stealth", "Deceive", "Athletics", "Provoke"],
+      "avoidSkills": ["Physique", "Will"],
+      "minConsequences": []
+    },
+    "balanced": {
+      "label": "Balanced",
+      "srd": "Fate Core, supporting NPCs (column of skills)",
+      "summary": "A plain Fate Core NPC: skills follow the archetype, no role bias.",
+      "tactics": "Create advantages before you attack. Use the venue of conflict where the NPC is strongest (physical, social, or mental).",
+      "preferSkills": [],
+      "minConsequences": []
+    },
+    "support": {
+      "label": "Support (non-combat)",
+      "srd": "Fate Core, creating advantages for NPCs",
+      "summary": "Contacts, informants, schemers. Creates advantages and passes free invokes to the others.",
+      "tactics": "Do not fight directly. Gather information, stack free invokes, and pass them to allies. Flee or bargain when threatened.",
+      "preferSkills": ["Empathy", "Rapport", "Contacts", "Investigate", "Notice", "Lore", "Academics"],
+      "minConsequences": []
+    },
+    "boss": {
+      "label": "Boss",
+      "srd": "Fate Adversary Toolkit, Enemies: bosses",
+      "summary": "The lynchpin. Five aspects (the trouble is a secret weakness), many high skills, one to three stunts, at least mild and moderate consequences.",
+      "tactics": "Act on personality: an aggressive boss charges in, a cautious one hides behind minions. Bring at least two threats. Concede to return later if the story needs it.",
+      "preferSkills": [],
+      "minConsequences": ["mild", "moderate"]
+    },
+    "filler": {
+      "label": "Filler (mook)",
+      "srd": "Fate Adversary Toolkit, Enemies: fillers",
+      "summary": "Color and numbers. The name is the only aspect. Good at one thing. No stunts, no consequences.",
+      "tactics": "Swarm in mobs. Create advantages (covering fire, flanking) and pass the free invokes to stronger enemies.",
+      "preferSkills": [],
+      "minConsequences": []
+    }
+  },
+  "mobs": {
+    "srd": "Fate Core, Mobs and Teamwork; Fate Adversary Toolkit, Grouping Fillers",
+    "bonusPerExtraMember": 1,
+    "toolkitCap": 4,
+    "overflow": "Shifts beyond what takes out one member carry over to the next member. When a mob drops to one member, it joins another mob or flees."
+  },
+  "encounters": {
+    "srd": "Fate Adversary Toolkit (threat counts); Fate Core, Right-sizing",
+    "levels": {
+      "easy": { "label": "Easy", "threats": [1, 1], "hitters": 0, "boss": false, "fillerMobs": 1, "summary": "One threat and a mob of fillers." },
+      "standard": { "label": "Standard", "threats": [2, 3], "hitters": 1, "boss": false, "fillerMobs": 1, "summary": "Two or three threats, one hitter, fillers." },
+      "climactic": { "label": "Climactic", "threats": [4, 5], "hitters": 1, "boss": true, "fillerMobs": 1, "summary": "A boss, four or five threats, a hitter, fillers." }
+    },
+    "rules": [
+      "Do not outnumber the PCs unless your NPCs have lower skills.",
+      "Against one big opponent that the whole group fights, give it a peak skill two steps above the best PC.",
+      "Use one main NPC per scene, except in the climax of an arc.",
+      "A hitter in a fight means a PC probably takes a consequence. Two hitters hurt. Three can take a PC out.",
+      "Any conflict with a boss needs at least two threats to take the heat off the boss.",
+      "The GM starts each scene with one fate point per PC."
+    ]
+  },
+  "passiveDifficulty": {
+    "srd": "Fate Condensed, Setting Difficulty and Opposition",
+    "levels": [
+      { "id": "low", "label": "Low", "offset": -2, "summary": "Below the PC skill. Lets the PC show off." },
+      { "id": "moderate", "label": "Moderate", "offset": 0, "summary": "Near the PC skill. Tension, not overwhelm." },
+      { "id": "high", "label": "High", "offset": 2, "summary": "Well above the PC skill. Dire circumstances. Expect fate points and help." }
+    ],
+    "ruleOfThumb": "Not tough: Mediocre (+0). At least one reason it is tough: Fair (+2). Add +2 for each extra factor."
+  },
+  "monsters": {
+    "srd": "Fate System Toolkit, Monsters",
+    "instinctInvoke": 3,
+    "abilities": [
+      { "id": "hard-to-kill", "name": "Hard to Kill", "text": "Survives much more harm than others: longer stress tracks or fast regeneration.", "effect": { "extraBoxes": 2 } },
+      { "id": "immune", "name": "Immune to Harm", "text": "Ignores all harm except from its weakness, or until a condition is met.", "effect": {} },
+      { "id": "prone-to-change", "name": "Prone to Change", "text": "Transforms itself or the scene: shape-shifts to flee, summons more minions, changes the terrain.", "effect": {} }
+    ],
+    "weaknessRules": {
+      "none": "The ability costs a fate point each time it is used.",
+      "lesser": "Pay one fate point at the start of each scene where the monster uses the ability. If the PCs exploit the weakness, the monster must pay each time it uses the ability.",
+      "greater": "The ability is free. If the PCs exploit the weakness, the monster loses the ability."
+    }
+  },
+  "scale": {
+    "srd": "Fate System Toolkit, Scale",
+    "effects": [
+      "+1 to the attack roll or +1 to the defense roll of the larger side, per step of difference",
+      "Or: +2 shifts of harm on a successful attack, or reduce incoming harm by 2, per step of difference"
+    ]
+  },
+  "quickEnemyStunts": {
+    "srd": "Fate Adversary Toolkit, Quick-and-Dirty Enemy Stunts and examples",
+    "license": "CC BY 3.0 (Evil Hat Productions, Fate Adversary Toolkit SRD)",
+    "stunts": [
+      { "id": "apex-weapon", "name": "Deadly Strike", "text": "When you attack with {apex}, you get Weapon:2.", "roles": ["hitter", "boss", "balanced"], "apex": true, "attack": true, "weapon": 2 },
+      { "id": "apex-armor", "name": "Hard to Hurt", "text": "When you defend with {apex}, you get Armor:2.", "roles": ["threat", "boss"], "apex": true, "defend": true, "armor": 2 },
+      { "id": "apex-any", "name": "Jack of All Trades", "text": "Twice per session, you can use {apex} in place of any other skill.", "roles": ["boss", "balanced", "support"], "apex": true },
+      { "id": "apex-zone", "name": "Sweeping Attack", "text": "Once per session, you can attack everyone in a zone with {apex}.", "roles": ["threat", "boss"], "apex": true, "attack": true },
+      { "id": "grenadier", "name": "Grenadier", "text": "By spending a fate point, you can physically attack everyone in a zone.", "roles": ["threat"], "genres": ["modern", "scifi", "cyberpunk", "pulp", "postapoc", "supers", "generic"] },
+      { "id": "bodyguard", "name": "Bodyguard", "text": "Designate a character, place, or object to guard. Whenever that thing is attacked and you are in the same zone, you can spend a fate point to redirect the attack to yourself. You gain Armor:1 against this attack.", "roles": ["threat"] },
+      { "id": "naysayer", "name": "Naysayer", "text": "+2 to create advantages with Provoke by fomenting arguments that undermine the PCs or make them look foolish.", "roles": ["threat", "support"], "skill": "Provoke", "caa": true, "bonus": 2 },
+      { "id": "sniper", "name": "Sniper", "text": "When you attack with Shoot and invoke an aspect representing careful aim, you gain Weapon:2 on the attack.", "roles": ["hitter"], "skill": "Shoot", "attack": true, "weapon": 2 },
+      { "id": "sneak-attack", "name": "Sneak Attack", "text": "Provided you haven't been spotted by your target yet, you can attack with Stealth instead of Fight.", "roles": ["hitter"], "skill": "Stealth", "attack": true },
+      { "id": "ninja-vanish", "name": "Vanish", "text": "By spending a fate point, you can vanish from the scene entirely. At the end of any later turn, spend another fate point to reappear anywhere in the scene and immediately attack.", "roles": ["hitter"] },
+      { "id": "connected", "name": "Connected", "text": "Once per session, you can draw on your contacts to bring in reinforcements: one hitter with an apex skill equal to your Contacts, two threats with apex skills one step lower than your Contacts, or Fair (+2) fillers equal in number to your Contacts. Spend one fate point to gain +2 to Contacts for this, to a maximum of Great (+4).", "roles": ["boss"], "skill": "Contacts" },
+      { "id": "escape-plan", "name": "Escape Plan", "text": "Once per session, if you would be taken out, you can spend a fate point to concede instead.", "roles": ["boss"] },
+      { "id": "mook-shield", "name": "Mook Shield", "text": "Whenever you are attacked, you can spend a fate point to divert the attack to nearby filler enemies.", "roles": ["boss"] }
+    ]
+  }
+}
