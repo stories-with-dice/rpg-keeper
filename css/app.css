@@ -1140,6 +1140,8 @@ button, input, textarea, select {
 .mb-gen-row[hidden] { display: none; }
 #php-party .field { flex-basis: 150px; }
 #php-party .field:first-child { flex-basis: 70px; }
+#php-party #php-setting-field { flex-basis: 200px; }
+#php-setting-field[hidden] { display: none; }
 .mb-gen-row .field { flex: 0 0 110px; min-width: 0; margin: 0; }
 .mb-gen-row input {
   background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
@@ -1152,6 +1154,20 @@ button, input, textarea, select {
   padding: 6px 8px; color: inherit;
 }
 .mb-row { cursor: default; }
+.mb-hd-field select {
+  background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 6px 8px; color: inherit; max-width: 220px;
+}
+/* "Pick random" (BRP): the picked monster, above the list. */
+.mb-pick {
+  border: 1px solid var(--accent); border-radius: var(--radius); background: var(--bg-2);
+  padding: 8px 10px; margin-bottom: 10px;
+}
+.mb-pick[hidden] { display: none; }
+.mb-pick .comp-row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mb-pick .comp-row-head > i { color: var(--accent); }
+.mb-pick-settings { margin: 6px 0 0; font-size: 12px; }
+#mb-pick-random[hidden] { display: none; }
 
 /* ---------- Compendium tab ---------- */
 .comp-toolbar {

@@ -136,6 +136,14 @@
   /* ---- modal ---- */
   let currentPlan = null;
 
+  // The monsters Populate may pick: the System's library, limited to the
+  // chosen setting (#php-setting, BRP only; '' = any setting).
+  function populatePool() {
+    const all = OSR.monstersForSystem();
+    const sel = $('#php-setting');
+    return sel && sel.value && !$('#php-setting-field').hidden ? OSR.filterMonsters(all, { setting: sel.value }) : all;
+  }
+
   function openPopulateHdModal() {
     currentPlan = null;
     $('#php-setup').hidden = false;
@@ -149,6 +157,14 @@
     // The party size starts at the number of BRP characters; the total stays
     // empty until the calculator changes (nothing is prefilled).
     if (brp && !$('#php-pcs').value) $('#php-pcs').value = OSR.charactersForSystem().length || 4;
+    // The Setting choice starts at the Bestiary tab's Setting filter.
+    if (brp) {
+      OSR.fillSettingSelect($('#php-setting'), $('#php-setting-field'), OSR.monstersForSystem());
+      const tabSetting = $('#mb-setting').value;
+      if (tabSetting && Array.from($('#php-setting').options).some(o => o.value === tabSetting)) $('#php-setting').value = tabSetting;
+    } else {
+      $('#php-setting-field').hidden = true;
+    }
     $('#populate-hd-modal').hidden = false;
     $('#php-total-hd').focus();
   }
@@ -163,7 +179,7 @@
   // shared with the "Add monster" modal's library hover card) keys off.
   function renderPlanList() {
     if (!currentPlan) return;
-    const byUnit = monstersByUnit(OSR.monstersForSystem());
+    const byUnit = monstersByUnit(populatePool());
     $('#php-list').innerHTML = currentPlan.picks.map((d, i) => {
       const canReroll = (byUnit.get(effectiveHdUnits(d)) || []).length > 1;
       return '<li class="comp-row php-row" data-idx="' + i + '" data-id="' + escapeHtml(String(d.id || '')) + '">' +
@@ -185,7 +201,7 @@
     $('#php-confirm').hidden = false;
   }
   function generatePlan() {
-    const plan = buildHdPopulatePlan(OSR.monstersForSystem(), $('#php-total-hd').value, $('#php-count').value);
+    const plan = buildHdPopulatePlan(populatePool(), $('#php-total-hd').value, $('#php-count').value);
     if (!plan.ok) { $('#php-setup-msg').textContent = plan.reason; return; }
     $('#php-setup-msg').textContent = '';
     renderPlanPreview(plan);
@@ -195,7 +211,7 @@
   function rerollPick(idx) {
     if (!currentPlan || !currentPlan.picks[idx]) return;
     const d = currentPlan.picks[idx];
-    const byUnit = monstersByUnit(OSR.monstersForSystem());
+    const byUnit = monstersByUnit(populatePool());
     const candidates = (byUnit.get(effectiveHdUnits(d)) || []).filter(x => x !== d);
     if (!candidates.length) return;
     currentPlan.picks[idx] = randomChoice(candidates);
@@ -215,7 +231,8 @@
     closePopulateHdModal();
   }
 
-  function fillPartyBudget() {
+  function fillPartyBudget(e) {
+    if (e && e.target && e.target.id === 'php-setting') return; // the setting is not part of the budget
     const total = partyElBudget($('#php-pcs').value, $('#php-power').value, $('#php-difficulty').value);
     if (total != null) $('#php-total-hd').value = total;
   }

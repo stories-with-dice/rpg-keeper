@@ -126,12 +126,16 @@
   // Shared by this modal's library list and the Bestiary tab
   // (js/monster-browser.js) — each has its own search/HD inputs but the same
   // filter+sort logic.
+  // opts.setting: keep only the monsters whose `settings` list has it (a
+  // monster without the list is left out); '' or absent = every monster.
   function filterMonsters(list, opts) {
     opts = opts || {};
     const q = String(opts.q || '').toLowerCase().trim();
     const mn = opts.hdMin, mx = opts.hdMax;
+    const setting = opts.setting || '';
     return list.filter(d => {
       if (q && !(d.name || '').toLowerCase().includes(q)) return false;
+      if (setting && !(Array.isArray(d.settings) && d.settings.includes(setting))) return false;
       const h = d.hdNum != null ? d.hdNum : MonsterParse.hdNum(d.hd);
       if (!isNaN(mn) && h < mn) return false;
       if (!isNaN(mx) && h > mx) return false;

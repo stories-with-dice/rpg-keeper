@@ -319,6 +319,8 @@ add up. A BRP monster without an EL is never picked. A party calculator fills th
 - **Power level**: Normal 1, Heroic 1.25, Epic 2, Superhuman 3 per PC. Heroic and Epic come from
   the core book p.246 (+25% and double the foes); Superhuman is an estimate.
 - **Difficulty**: Easy ×0.5, Standard ×1, Hard ×1.5, Deadly ×2.
+- **Setting**: picks only monsters that fit one of the core book's 23 campaign settings (Chapter 10,
+  Prehistoric Age to Space Opera). It starts at the Bestiary tab's **Setting** filter.
 
 The bundled BRP Bestiary has no ELs. The BRP content pack from the `brp_character` repo
 (`tools/extract_monsters.py`) adds rated monsters from your own PDFs, or type an EL in the form.
@@ -332,6 +334,17 @@ monsters. **+ New monster** and Combat's own **+ Add monster…** open the exact
 above; **Search** and **HD** min/max filter the list the same way the modal's own do (for BRP the filter
 reads **EL**, the Encounter Level). Per row:
 **Add to Combat**, **Edit**, **✕** (remove from library).
+
+For **Basic Roleplaying**, two more controls:
+
+- **Setting** lists the core book's campaign settings (Chapter 10) that the monsters have. Pick one to
+  see only the monsters that fit it. The bundled BRP Bestiary and the `brp_character` content pack tag
+  every monster; which monster fits which setting is the `brp_character` repo's judgment
+  (`tools/monster_settings.py`), not the book's. A monster without settings (one you made) shows only
+  under **Any setting**.
+- **Pick random** picks one monster at random from the list as it is filtered now: the search, the
+  **EL** min/max (the monster's power level), and the **Setting**. The pick shows above the list with
+  **Add to Combat**, **Pick again** (another monster with the same filters), and **✕**.
 
 ### Fill in fields
 Instead of pasting a stat block, switch the add/edit modal to **Fill in fields** and pick a **Format**

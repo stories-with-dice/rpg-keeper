@@ -102,13 +102,18 @@ Crit (1), Fumble (100), Matched Success/Failure (doubles). It sets `OSR.lastPerc
   value (10), in characteristics and hit points. The Creatures book is for the user's own
   content pack only (the `brp_character` repo's `tools/extract_monsters.py`).
 - Monster def: the OSR `def` shape plus `source: 'brp'`, `characteristics` (omitted ones left out),
-  `armor`, `armorNote`, `damageBonus`, `attacksText`, `skillsText`. `ac`/`stats`/`saveTargets`
+  `armor`, `armorNote`, `damageBonus`, `attacksText`, `skillsText`, and optional `settings` (names of
+  the core book's Chapter 10 settings, `BRP_SETTINGS` in js/monster-browser.js; the Bestiary's Setting
+  filter, Pick random, and Populate by EL read it). `ac`/`stats`/`saveTargets`
   are empty; generic code already guards on them. `hd`/`hdNum` hold the optional Encounter Level
   (also `encounterLevel`; `''`/`null` = unrated). `OSR.levelLabel()` (js/monster-modals.js) is `'EL'`
   for BRP, else `'HD'`; `applyLevelLabels()` writes it into every `.hd-label` (Bestiary and modal
   filters, the Populate button and modal), called from `renderMonsterBrowser`, `renderLibrary`,
   `renderCombatBar`, and `openPopulateHdModal`. The meta line, hover card, and `brpDetailHtml()` show
   `EL` when set.
+- `data/seed-brp.json` powers have the full Chapter 4 text, and the monsters their `settings`. The
+  `brp_character` repo's `tools/update_keeper_seed.py` writes both from the core book PDF and raises
+  `version`. Run it there; do not edit those fields by hand.
 - Seeding: `js/brp-seed.js`, from `data/seed-brp.json` (73 monsters; Compendium `source` is the
   power or equipment type; category `'Powers'`).
 - Form: `.mf-schema-block[data-schema="brp"]`; `.mf-nonbrp` hides OSR-only fields. `.mf-f-brp-el`

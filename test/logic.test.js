@@ -783,6 +783,36 @@ test('seedBrpMonsters: reseeding only ever replaces the brp-tagged slice (other 
   assert.equal(T.state.monsters.filter(m => m.system === 'brp').length, brpCount);
 });
 
+test('BRP seed: every power has the full book text, and every monster has its settings', () => {
+  const seed = T.seeds.brp;
+  const powers = seed.compendium.filter(e => e.category === 'Powers');
+  assert.equal(powers.length, 160);
+  powers.forEach(p => assert.match(p.body, /\*Core book p\.\d+\.\*$/, p.name + ': ends with its page'));
+  const lift = powers.find(p => p.name === 'Lift');
+  assert.match(lift.body, /^\*\*Range:\*\* 100 meters  \n\*\*Duration:\*\* 15 minutes/);
+  assert.match(lift.body, /Difficult\* roll of the caster’s Throw skill\./, 'the last paragraph of the entry');
+  const cloak = powers.find(p => p.name === 'Cloak of Night');
+  assert.match(cloak.body, /^\*\*Type:\*\* Augmentation  \n\*\*Levels:\*\* 1–4/, 'sorcery: type and levels from the summary');
+  const known = new Set(T.BRP_SETTINGS);
+  seed.monsters.forEach(m => {
+    assert.ok(Array.isArray(m.settings) && m.settings.length, m.name + ': has settings');
+    m.settings.forEach(x => assert.ok(known.has(x), m.name + ': ' + x + ' is a Chapter 10 setting'));
+  });
+  assert.deepEqual(seed.monsters.find(m => m.name === 'Galactic Knight').settings, ['Space Opera']);
+});
+
+test('filterMonsters: the setting option keeps the monsters whose settings list has it', () => {
+  const list = [
+    { name: 'Orc', hdNum: 1, settings: ['High Fantasy'] },
+    { name: 'Robot', hdNum: 2, settings: ['Space Opera'] },
+    { name: 'Mine', hdNum: 1 },
+  ];
+  assert.deepEqual(T.filterMonsters(list, { setting: 'High Fantasy' }).map(d => d.name), ['Orc']);
+  assert.deepEqual(T.filterMonsters(list, { setting: '' }).map(d => d.name), ['Mine', 'Orc', 'Robot']);
+  assert.deepEqual(T.monsterSettings(list.concat([{ settings: ['Zeta World', 'Ancient World'] }])),
+    ['Ancient World', 'High Fantasy', 'Space Opera', 'Zeta World'], 'book order, then A to Z');
+});
+
 test('seedBrpCompendium: adds Powers + Equipment tagged system:brp, using each entry\'s own category/source', () => {
   T.state.compendium = [];
   const added = T.seedBrpCompendium();

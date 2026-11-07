@@ -17,7 +17,13 @@ Pure (no DOM, no state). `MonsterParse` on `window` and `module.exports`:
 ## Bestiary tab and modals
 
 - `js/monster-browser.js`: the Bestiary tab (`filterMonsters()`, shared with the modal's list) over
-  `monstersForSystem()`. **+ New monster** and Combat's **+ Add monster…** open the same
+  `monstersForSystem()`. `filterMonsters(list, { q, hdMin, hdMax, setting })`: `setting` keeps the defs
+  whose `settings` list has it (a def without the list is out). `#mb-setting` (in `#mb-setting-field`,
+  hidden when no monster of the System has `settings`) is filled by `fillSettingSelect(select, field,
+  list)` from `monsterSettings(list)` (`BRP_SETTINGS` order, then A to Z). **Pick random**
+  (`#mb-pick-random`, BRP only) → `pickRandomMonster()`: one def from `browserMatches()`, not the last
+  pick when another matches; `#mb-pick` shows it (`renderMonsterPick()`, hover card on the name, Add to
+  Combat, Pick again, close) or "No monster matches the filters.". The pick is not saved. **+ New monster** and Combat's **+ Add monster…** open the same
   `#monster-modal` (`OSR.openMonsterModal()`).
 - `js/monster-modals.js`: `.mm-mode-toggle` switches paste (`MonsterParse`) and fields
   (`js/monster-form.js`) modes, with `setMonsterMode(root, mode)` for `#mm-mode` (add) and
@@ -51,6 +57,9 @@ on `#php-confirm-add`. `#php-total-hd` has no default. `monstersByUnit` also ski
 the party calculator `#php-party` (`#php-pcs`, `#php-power`, `#php-difficulty`); an `input`/`change`
 there fills `#php-total-hd` with `partyElBudget(pcs, power, difficulty)` (pure; PCs × `POWER_LEVEL_EL`
 × `DIFFICULTY_EL`, rounded to 0.5, minimum 0.5). `#php-pcs` starts at the BRP character count, or 4.
+`#php-setting` (BRP, in `#php-setting-field`, filled like `#mb-setting` and set from it on open) limits
+the pool: `populatePool()` is what `generatePlan`, `rerollPick`, and `renderPlanList` plan against. A
+`#php-setting` change does not refill the total.
 
 ## Converters
 

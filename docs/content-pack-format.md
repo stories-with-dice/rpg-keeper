@@ -191,6 +191,11 @@ also in `encounterLevel`. Use steps of 0.5; the lowest EL is 0.5. The Bestiary's
 `brp_character` repo's `tools/extract_monsters.py` writes such a pack; its `docs/encounter-level.md`
 explains the EL model.
 
+Optional `settings`: a list of the core book's Chapter 10 setting names the monster fits
+(`["Early Medieval", "High Fantasy"]`). Use the book's names (`BRP_SETTINGS` in
+`js/monster-browser.js`); another name also works and sorts after them. The Bestiary's **Setting**
+filter, **Pick random**, and **Populate by EL** read it.
+
 ## Tables
 
 ```json

@@ -1243,6 +1243,90 @@ test('Populate by EL (BRP): labels read EL, the party calculator fills the total
   assert.match($('#mb-list [data-id="b-orc"] .badge').textContent, /^EL 1\.5 · HP 12/);
 });
 
+test('Bestiary (BRP): the Setting filter and "Pick random" pick one monster from the filtered list', () => {
+  T.state.settings.system = 'brp';
+  T.state.monsters = [
+    { ...brpMonster('b-orc', 'Orc', 1.5), settings: ['High Fantasy'] },
+    { ...brpMonster('b-troll', 'Troll', 2), settings: ['Early Medieval', 'High Fantasy'] },
+    { ...brpMonster('b-robot', 'Robot, Killer', 3), settings: ['Space Opera'] },
+    brpMonster('b-mine', 'My Monster', 1),
+  ];
+  T.state.combat.entries = [];
+  tab('bestiary');
+  T.renderAll();
+  assert.equal($('#mb-setting-field').hidden, false, 'shown: the monsters have settings');
+  assert.equal($('#mb-pick-random').hidden, false, 'shown for BRP');
+  assert.deepEqual(Array.from($('#mb-setting').options).map(o => o.value),
+    ['', 'Early Medieval', 'High Fantasy', 'Space Opera'], 'the book order');
+
+  $('#mb-setting').value = 'High Fantasy';
+  fire($('#mb-setting'), 'change');
+  assert.deepEqual($$('#mb-list .comp-name').map(el => el.textContent), ['Orc', 'Troll'], 'a monster without settings is left out');
+
+  // Pick random uses every filter: the setting and the EL range ("power level").
+  setValue($('#mb-hd-min'), '2');
+  rig(0.99);
+  click($('#mb-pick-random'));
+  assert.equal($('#mb-pick').hidden, false);
+  assert.equal($('#mb-pick .comp-name').textContent, 'Troll');
+  assert.match($('#mb-pick .mb-pick-settings').textContent, /Early Medieval, High Fantasy/);
+  click($('#mb-pick .mb-pick-add'));
+  assert.deepEqual(T.state.combat.entries.map(e => e.name), ['Troll']);
+  assert.match(logText(), /picked Troll at random/);
+
+  // No match: a message, no monster.
+  setValue($('#mb-hd-min'), '9');
+  click($('#mb-pick .mb-pick-again'));
+  assert.equal($('#mb-pick .comp-name'), null);
+  assert.match($('#mb-pick').textContent, /No monster matches the filters/);
+  click($('#mb-pick .mb-pick-close'));
+  assert.equal($('#mb-pick').hidden, true);
+  setValue($('#mb-hd-min'), '');
+
+  // Pick again never repeats the last pick while another monster matches.
+  rig(0);
+  click($('#mb-pick-random'));
+  const first = $('#mb-pick .comp-name').textContent;
+  click($('#mb-pick .mb-pick-again'));
+  assert.notEqual($('#mb-pick .comp-name').textContent, first);
+
+  // Other systems: no Pick random, no Setting filter, no pick box.
+  T.state.settings.system = 'osr';
+  T.renderAll();
+  assert.equal($('#mb-pick-random').hidden, true);
+  assert.equal($('#mb-setting-field').hidden, true);
+  assert.equal($('#mb-pick').hidden, true);
+  T.state.settings.system = 'brp';
+  $('#mb-setting').value = '';
+  T.renderAll();
+});
+
+test('Populate by EL (BRP): the Setting choice limits the monsters, and starts at the Bestiary filter', () => {
+  T.state.settings.system = 'brp';
+  T.state.monsters = [
+    { ...brpMonster('b-orc', 'Orc', 1), settings: ['High Fantasy'] },
+    { ...brpMonster('b-robot', 'Robot, Killer', 1), settings: ['Space Opera'] },
+  ];
+  T.state.combat.entries = [];
+  tab('bestiary');
+  T.renderAll();
+  $('#mb-setting').value = 'Space Opera';
+  fire($('#mb-setting'), 'change');
+  tab('combat');
+  click($('#cb-populate-hd'));
+  assert.equal($('#php-setting-field').hidden, false);
+  assert.equal($('#php-setting').value, 'Space Opera', 'from the Bestiary filter');
+  setValue($('#php-total-hd'), '3');
+  $('#php-setting').value = 'High Fantasy';
+  fire($('#php-setting'), 'change');
+  assert.equal($('#php-total-hd').value, '3', 'a setting change keeps the typed total');
+  click($('#php-generate'));
+  assert.deepEqual($$('#php-list .comp-name').map(el => el.textContent), ['Orc', 'Orc', 'Orc']);
+  click($('#php-close'));
+  $('#mb-setting').value = '';
+  T.renderAll();
+});
+
 test('Populate by HD: outside BRP the labels read HD and the party calculator is hidden', () => {
   T.state.settings.system = 'osr';
   T.renderAll();

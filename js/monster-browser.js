@@ -26,12 +26,97 @@
       (sd && (d.system || 'osr') === 'osr' && d.source === 'shadowdark'));
   }
 
+  // The BRP core book's Chapter 10 settings (pp.205-210), in the book's order.
+  // A BRP monster's `settings` list holds some of these names (the brp_character
+  // repo's tools/monster_settings.py writes them into the content pack and into
+  // data/seed-brp.json). A setting not in this list sorts after them, A to Z.
+  const BRP_SETTINGS = ['Prehistoric Age', 'Ancient World', 'Early Medieval', 'High Medieval', 'High Fantasy',
+    'Imperial Asia', 'Arabian Nights', 'Enlightenment and Renaissance', 'Age of Exploration', 'Age of Sail',
+    'Industrial Age', 'Victorian Age', 'Wild West', 'Pulp Era', 'Planetary Adventure', 'World War II', 'Noir',
+    'Modern', 'Superworld', 'Postapocalyptic', 'Near-Future/Cyberpunk', 'Space Exploration', 'Space Opera'];
+
+  // Every setting that a monster of `list` has, in BRP_SETTINGS order.
+  function monsterSettings(list) {
+    const have = new Set();
+    list.forEach(d => { if (Array.isArray(d.settings)) d.settings.forEach(x => { if (x) have.add(String(x)); }); });
+    const rank = x => { const i = BRP_SETTINGS.indexOf(x); return i < 0 ? BRP_SETTINGS.length : i; };
+    return Array.from(have).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  }
+
+  // Refill a "Setting" <select> with the settings of `list`. Keeps the chosen
+  // value while the list still has it; hides `field` when no monster has one.
+  function fillSettingSelect(select, field, list) {
+    const settings = monsterSettings(list);
+    const cur = settings.includes(select.value) ? select.value : '';
+    select.innerHTML = '<option value="">Any setting</option>' +
+      settings.map(x => '<option value="' + escapeHtml(x) + '">' + escapeHtml(x) + '</option>').join('');
+    select.value = cur;
+    field.hidden = !settings.length;
+  }
+
   function browserMatches() {
     return OSR.filterMonsters(monstersForSystem(), {
       q: $('#mb-search').value,
       hdMin: parseFloat($('#mb-hd-min').value),
-      hdMax: parseFloat($('#mb-hd-max').value)
+      hdMax: parseFloat($('#mb-hd-max').value),
+      setting: $('#mb-setting').value
     });
+  }
+
+  // "Pick random" (BRP only): one monster at random from the monsters that
+  // match the toolbar filters (search, EL range, Setting). The pick shows in
+  // #mb-pick above the list until it is closed or no longer in the library.
+  let pickedId = null;
+  let pickMsg = '';
+  function pickRandomMonster() {
+    const pool = browserMatches();
+    if (!pool.length) {
+      pickedId = null;
+      pickMsg = 'No monster matches the filters.';
+    } else {
+      // Another monster than the last pick, when the pool has one.
+      const others = pool.length > 1 ? pool.filter(d => d.id !== pickedId) : pool;
+      pickedId = others[Math.floor(Math.random() * others.length)].id;
+      pickMsg = '';
+    }
+    renderMonsterPick();
+    const d = pickedId && OSR.state.monsters.find(x => x.id === pickedId);
+    if (d) OSR.pushNote('Bestiary', 'picked ' + d.name + ' at random');
+  }
+  function renderMonsterPick() {
+    const box = $('#mb-pick');
+    const d = pickedId && monstersForSystem().find(x => x.id === pickedId);
+    const brp = OSR.currentSystem() === 'brp';
+    if (!brp || (!d && !pickMsg)) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    if (!d) {
+      box.innerHTML = '<span class="hint">' + escapeHtml(pickMsg) + '</span>' +
+        '<button class="btn mb-pick-close" type="button" title="Close">&times;</button>';
+      return;
+    }
+    const list = Array.isArray(d.settings) ? d.settings : [];
+    const settings = BRP_SETTINGS.every(x => list.includes(x)) ? 'Every setting' : list.join(', ');
+    box.innerHTML =
+      '<div class="comp-row-head mb-row" data-id="' + escapeHtml(d.id) + '">' +
+        '<i class="fa-solid fa-dice"></i> ' +
+        '<span class="comp-name">' + escapeHtml(d.name) + '</span>' +
+        '<span class="badge">' + escapeHtml(OSR.monsterMetaLine(d)) + '</span>' +
+        '<button class="btn mb-pick-add" type="button">Add to Combat</button>' +
+        '<button class="btn mb-pick-again" type="button" title="Pick another monster with the same filters">Pick again</button>' +
+        '<button class="btn mb-pick-close" type="button" title="Close">&times;</button>' +
+      '</div>' +
+      (settings ? '<div class="hint mb-pick-settings">' + escapeHtml(settings) + '</div>' : '');
+  }
+  function onPickClick(e) {
+    const d = pickedId && OSR.state.monsters.find(x => x.id === pickedId);
+    if (e.target.closest('.mb-pick-close')) {
+      pickedId = null; pickMsg = ''; OSR.hideLibPreview(); renderMonsterPick();
+    } else if (e.target.closest('.mb-pick-again')) {
+      OSR.hideLibPreview(); pickRandomMonster();
+    } else if (e.target.closest('.mb-pick-add') && d) {
+      OSR.addMonsterEntry(d);
+      OSR.pushNote('Bestiary', 'added ' + d.name + ' to combat');
+    }
   }
 
   function renderMonsterBrowser() {
@@ -47,6 +132,10 @@
     if (fateGen) fateGen.hidden = OSR.currentSystem() !== 'fate';
     // Unknown Armies GMCs have no Hit Dice: hide the HD range filter.
     document.querySelectorAll('#tab-bestiary .mb-hd-field').forEach(el => { el.hidden = OSR.currentSystem() === 'ua3e'; });
+    // The Setting filter shows when a monster of this System has settings (BRP).
+    fillSettingSelect($('#mb-setting'), $('#mb-setting-field'), monstersForSystem());
+    $('#mb-pick-random').hidden = OSR.currentSystem() !== 'brp';
+    renderMonsterPick();
     OSR.applyLevelLabels();
     const filtered = browserMatches();
     const total = monstersForSystem().length;
@@ -167,6 +256,14 @@
     $('#mb-search').addEventListener('input', renderMonsterBrowser);
     $('#mb-hd-min').addEventListener('input', renderMonsterBrowser);
     $('#mb-hd-max').addEventListener('input', renderMonsterBrowser);
+    $('#mb-setting').addEventListener('change', renderMonsterBrowser);
+    $('#mb-pick-random').addEventListener('click', pickRandomMonster);
+    $('#mb-pick').addEventListener('click', onPickClick);
+    $('#mb-pick').addEventListener('mouseover', e => {
+      const row = e.target.closest('.mb-row[data-id]');
+      if (row && e.target.closest('.comp-name')) OSR.showLibPreview(row);
+    });
+    $('#mb-pick').addEventListener('mouseleave', OSR.hideLibPreview);
     $('#mb-list').addEventListener('click', onBrowserListClick);
     $('#mb-gen-open').addEventListener('click', () => setGeneratorOpen($('#mb-gen-pop').hidden));
     $('#mb-generate').addEventListener('click', () => {
@@ -189,5 +286,6 @@
   }
   function closeMonsterGenerator() { setGeneratorOpen(false); }
 
-  Object.assign(OSR, { monstersForSystem, browserMatches, renderMonsterBrowser, generateMonster, closeMonsterGenerator, wireMonsterBrowser });
+  Object.assign(OSR, { monstersForSystem, browserMatches, renderMonsterBrowser, generateMonster, closeMonsterGenerator, wireMonsterBrowser,
+    BRP_SETTINGS, monsterSettings, fillSettingSelect, pickRandomMonster });
 })(window.OSR = window.OSR || {});
