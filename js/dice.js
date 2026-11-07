@@ -205,11 +205,18 @@
       resolved = sub.text;
     }
     if (resolved.charAt(0) === '%') return rollPercent(resolved, source);
+    // A target: "1d20>=14" (a WWN save) or "2d6+1>=8" succeeds on a total of
+    // the target or more. Modifiers from the roll popup come after the target
+    // ("1d20>=14+2"), so they are moved onto the dice.
+    let target = null;
+    const tm = resolved.match(/^(.*?)\s*(?:>=|≥)\s*(-?\d+)((?:\s*[+-]\s*\d+)*)\s*$/);
+    if (tm) { target = parseInt(tm[2], 10); resolved = tm[1] + tm[3].replace(/\s+/g, ''); }
     const res = evalFormula(resolved, defaultDie());
     if (!res) { showLast('—', 'Invalid: ' + raw, ''); return null; }
     // A Fate roll shows its result on the ladder: "4dF [+ 0 − +] +3 → Good (+4)".
-    const detail = res.fate && window.FateSheet ? res.detail + ' → ' + FateSheet.ladderLabel(res.total) : res.detail;
-    const entry = pushLog(source || 'Roll', res.normalized, res.total, detail);
+    let detail = res.fate && window.FateSheet ? res.detail + ' → ' + FateSheet.ladderLabel(res.total) : res.detail;
+    if (target != null) detail += ' → vs ' + target + ': ' + (res.total >= target ? 'Success' : 'Failure') + ' (' + (res.total - target >= 0 ? '+' : '') + (res.total - target) + ')';
+    const entry = pushLog(source || 'Roll', res.normalized + (target != null ? ' ≥ ' + target : ''), res.total, detail);
     // pushLog cleared lastRoll; a Dice Roller roll is applyable, so set it now.
     OSR.lastRoll = { total: res.total, dice: res.dice, flat: res.flat, normalized: res.normalized };
     // The Fate dice actions (invoke +2, reroll) act on this roll (js/fate-ui.js).

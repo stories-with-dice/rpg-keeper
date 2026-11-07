@@ -1,0 +1,29 @@
+Brannoc Vell [WWN]
+Level 1 Warrior | Soldier Background
+
+HP: 9/9; System Strain: 0/14
+
+```wwn
+Class: Warrior
+Level: 1
+STR 14  DEX 12  CON 14  INT 10  WIS 11  CHA 9
+Attack: +1
+Skills: Stab-1, Exert-0, Survive-0, Notice-0
+Foci: Armsmaster-1, Die Hard-1
+```
+
+**AC** 15 ([Pieced Armor] 14, [Large Shield] +1)
+
+ATTACKS (hit = 1d20 + attack bonus + STR + Stab)
+- [Short Sword] +3 to hit, 1d6+3 damage, Shock 5/AC 15
+- [Dagger] +3 to hit, 1d4+3 damage, Shock 4/AC 15
+
+CLASS ABILITIES
+- **Killing Blow**: add half your level, rounded up, to the damage of every attack and to Shock (+1 at level 1).
+- **Veteran's Luck**: once per scene, as an Instant action, turn your missed attack into a hit, or an enemy's hit on you into a miss.
+- Armsmaster adds Stab to damage and Shock. Die Hard: +2 max HP per level (included); you stabilize on your own when Mortally Wounded.
+
+EQUIPMENT (Armored Warrior package; Readied up to 7, Stowed up to 14)
+Readied: Pieced Armor (2), Large Shield (1), Short Sword (1), Dagger (1)
+Stowed: [Backpack] (1), [Tinder box] and 3 [Torch]es (1)
+Silver: 0

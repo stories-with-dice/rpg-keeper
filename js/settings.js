@@ -28,6 +28,7 @@
     if (sysSel) sysSel.value = OSR.currentSystem();
     $('#set-brp-initiative-row').hidden = OSR.currentSystem() !== 'brp';
     $('#set-brp-initiative').value = OSR.state.settings.brpInitiative === 'int' ? 'int' : 'dex';
+    OSR.renderWwnSettings();
     const mn = OSR.monstersForSystem().length;
     $('#set-lib-count').textContent = mn + ' monster' + (mn === 1 ? '' : 's') +
       ' in the ' + (OSR.SYSTEM_LABELS[OSR.currentSystem()] || OSR.currentSystem()) + ' library.';
@@ -38,7 +39,7 @@
     const total = OSR.data.pregens.length;
     const missing = OSR.missingPregens();
     $('#set-pregen-count').textContent = (total - missing.length) + ' of ' + total +
-      ' example characters (OSR, Unknown Armies, Silent Legions, Fate) are in this campaign' +
+      ' example characters (OSR, Unknown Armies, Silent Legions, Fate, WWN) are in this campaign' +
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
     OSR.renderSeedNotice();
@@ -99,7 +100,8 @@
       OSR.pushNote('Settings', 'Monster library reloaded (' + OSR.monstersForSystem().length + ')');
     });
     $('#set-reseed-compendium').addEventListener('click', () => {
-      const added = OSR.currentSystem() === 'fate' ? OSR.seedFateCompendium() : OSR.seedCompendium();
+      const sys = OSR.currentSystem();
+      const added = sys === 'fate' ? OSR.seedFateCompendium() : sys === 'wwn' ? OSR.seedWwn() : OSR.seedCompendium();
       renderSettings();
       OSR.pushNote('Settings', 'Compendium reseeded — ' + added + ' added, ' + OSR.state.compendium.length + ' total');
       alert(added

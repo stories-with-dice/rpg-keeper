@@ -76,6 +76,7 @@
     if (!OSR.state.compendiumSeeded) OSR.seedCompendium();
     if (!OSR.state.brpCompendiumSeeded) OSR.seedBrpCompendium();
     if (!OSR.state.fateCompendiumSeeded) OSR.seedFateCompendium();
+    if (!OSR.state.wwnSeeded) OSR.seedWwn();
   }
 
   Object.assign(OSR, { seedMissing, loadSeedSheets, seed, missingPregens, addMissingPregens, seedMonsters });

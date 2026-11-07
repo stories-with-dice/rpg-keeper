@@ -26,7 +26,8 @@
   'use strict';
 
   const PREGEN_FILES = [
-    'data/garrick-wwn.txt', 'data/gulzund-blize-shadowdark.txt',
+    'data/garrick-wwn.txt', 'data/brannoc-vell-wwn.txt', 'data/isha-corvain-wwn.txt',
+    'data/maelis-arn-wwn.txt', 'data/tobin-rask-wwn.txt', 'data/gulzund-blize-shadowdark.txt',
     'data/kevin-johnson-ua3e.txt', 'data/lucinda-adams-ua3e.txt',
     'data/dee-okafor-sl.txt', 'data/miriam-castell-sl.txt',
     'data/vivian-sato-sl.txt', 'data/ray-kowalczyk-sl.txt',
@@ -59,7 +60,7 @@
   async function loadData() {
     const jobs = {
       monsters: get('data/monsters.json'), spells: get('data/spells.json'), tables: get('data/tables.json'),
-      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'), fateSeed: get('data/seed-fate.json'),
+      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'), fateSeed: get('data/seed-fate.json'), wwnSeed: get('data/seed-wwn.json'),
       fate: Promise.all(Object.keys(FATE_FILES).map(k => get('data/fate/' + FATE_FILES[k]))),
       pregens: Promise.all(PREGEN_FILES.map(f => get(f, 'text'))),
       tokenIcons: get('data/token-icons.json')
@@ -77,7 +78,8 @@
       seeds: {
         osr: seed(r.osr, { compendium: withSpells(r.osr.compendium || [], r.spells), monsters: r.monsters }),
         brp: seed(r.brp),
-        fate: seed(r.fateSeed)
+        fate: seed(r.fateSeed),
+        wwn: seed(r.wwnSeed)
       },
       pregens: PREGEN_FILES.map((file, i) => ({ file, text: r.pregens[i] })),
       tokenIcons: r.tokenIcons,

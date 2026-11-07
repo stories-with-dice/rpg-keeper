@@ -357,6 +357,25 @@
           <select id="set-theme" class="btn"></select>
         </div>
 
+        <div class="setting-row setting-row-action" id="set-wwn-spells-row" hidden>
+          <span class="setting-text">
+            <b>WWN spell text</b>
+            <span class="hint">Which text the Compendium shows for a spell that has a condensed version (from the condensed spell pack). <b>Book</b> &mdash; the book name and text. <b>Condensed</b> &mdash; the short name and text; a <code>[Book Name]</code> link still finds it. <span id="set-wwn-spells-count"></span></span>
+          </span>
+          <select id="set-wwn-spells" class="btn">
+            <option value="book">Book</option>
+            <option value="condensed">Condensed</option>
+          </select>
+        </div>
+
+        <label class="setting-row" id="set-wwn-sd-row" hidden>
+          <input type="checkbox" id="set-wwn-sd" />
+          <span class="setting-text">
+            <b>Shadowdark Bestiary in WWN</b>
+            <span class="hint">When on, the Bestiary, Combat, and Populate by HD also list the Shadowdark monsters of the OSR library. Their AC and attack bonus work the same way in WWN; they have no Shock, Skill, or Instinct. Edits change the OSR copy. <span id="set-wwn-sd-count"></span></span>
+          </span>
+        </label>
+
         <div class="setting-row setting-row-action" id="set-brp-initiative-row" hidden>
           <span class="setting-text">
             <b>BRP combat order</b>
@@ -921,6 +940,7 @@
   <script src="js/ua-statblock.js"></script>
   <script src="js/fate.js"></script>
   <script src="js/fate-npc.js"></script>
+  <script src="js/wwn.js"></script>
   <script src="js/table-syntax.js"></script>
   <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
        all attach to window.OSR, so load order only requires core.js first. -->
@@ -957,6 +977,7 @@
   <script src="js/fate-ui.js"></script>
   <script src="js/seed.js"></script>
   <script src="js/brp-seed.js"></script>
+  <script src="js/wwn-ui.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

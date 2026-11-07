@@ -60,13 +60,21 @@
     'Great (+4): Fight\nGood (+3): Athletics, Notice\nFair (+2): Physique, Will, Empathy\nAverage (+1): Rapport, Lore, Stealth, Provoke\n\n' +
     'Stunt:\nRefresh: 3\n\nPhysical Stress: [ ] [ ] [ ]\nMental Stress: [ ] [ ] [ ]\n\nMild:\nModerate:\nSevere:\n```\n';
 
+  // Has a ```wwn fence so a blank character created while System is Worlds
+  // Without Number is itself classified 'wwn' by charSystemKey() below — same
+  // reasoning as DEFAULT_BLANK_UA above. HP and System Strain sit outside the
+  // fence: each is a sheet resource with its own tracker. The format is in js/wwn.js.
+  const DEFAULT_BLANK_WWN = '# New Character [WWN]\n\nHP: 6/6; System Strain: 0/10\n\n' +
+    '```wwn\nClass: Warrior\nLevel: 1\nSTR 10  DEX 10  CON 10  INT 10  WIS 10  CHA 10\nAttack: +1\n' +
+    'Skills: Notice-0, Stab-0\nFoci:\n```\n\n**AC** 10\n';
+
   function createCharacter(body, opts) {
     opts = opts || {};
     const state = OSR.state;
     const sys = OSR.currentSystem && OSR.currentSystem();
     const usedBody = body != null ? OSR.migrateBrpSheet(body) :
       (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : sys === 'sl' ? DEFAULT_BLANK_SL :
-        sys === 'fate' ? DEFAULT_BLANK_FATE : DEFAULT_BLANK_OSR);
+        sys === 'fate' ? DEFAULT_BLANK_FATE : sys === 'wwn' ? DEFAULT_BLANK_WWN : DEFAULT_BLANK_OSR);
     const det = detectNameSystem(usedBody);
     const ch = {
       id: uid(),
@@ -100,6 +108,8 @@
   const SL_FENCE_RE = /```sl[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
   // A Fate Core sheet: a ```fate fence (js/fate.js has the format).
   const FATE_FENCE_RE = /```fate[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
+  // A Worlds Without Number sheet: a ```wwn fence (js/wwn.js has the format).
+  const WWN_FENCE_RE = /```wwn[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
 
   // Which System bucket a character belongs to for the Character dropdown —
   // unlike the free-text `ch.system` display label (e.g. "Shadowdark",
@@ -117,6 +127,8 @@
     if (SL_FENCE_RE.test(body)) return 'sl';
     FATE_FENCE_RE.lastIndex = 0;
     if (FATE_FENCE_RE.test(body)) return 'fate';
+    WWN_FENCE_RE.lastIndex = 0;
+    if (WWN_FENCE_RE.test(body)) return 'wwn';
     return 'osr';
   }
   // The starting Madness score from the first ```sl fence's "Madness: N" line
@@ -375,6 +387,9 @@
         fateIndex++;
         return '\n\n' + window.FateSheet.sheetHtml(window.FateSheet.parse(inner), { fence: fateIndex }) + '\n\n';
       });
+    }
+    if (window.WwnSheet) {
+      out = out.replace(WWN_FENCE_RE, (whole, inner) => '\n\n' + window.WwnSheet.sheetHtml(window.WwnSheet.parse(inner)) + '\n\n');
     }
     return out;
   }
@@ -910,7 +925,7 @@
     charViewTarget, linkifyInText, applyPendingCompLink,
     openSelMenu, closeSelMenu, linkSelToExisting, wireCharacters,
     uaStatblockHtml, uaFeaturesHtml, renderUABlocks, stripTitleTag, renderCharMarkdown, syncWoundTracker, renameResourceTrackers,
-    patchUAFence, setUAShockValue, fateFenceDefs, patchFateFence, setFateStress, setFateConsequence, clearFateStress, DEFAULT_BLANK_FATE,
+    patchUAFence, setUAShockValue, fateFenceDefs, patchFateFence, setFateStress, setFateConsequence, clearFateStress, DEFAULT_BLANK_FATE, DEFAULT_BLANK_WWN,
     get selMenuData() { return selMenuData; }
   });
 })(window.OSR = window.OSR || {});

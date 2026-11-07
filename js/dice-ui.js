@@ -21,20 +21,42 @@
     { label: '4d6kh3', f: '4d6kh3' }
   ];
 
-  // Fate Core rolls only Fate dice: 4dF plus a skill rank.
-  const FATE_PRESETS = [
-    { label: '4dF−1', f: '4dF-1' }, { label: '4dF', f: '4dF' }, { label: '4dF+1', f: '4dF+1' }, { label: '4dF+2', f: '4dF+2' },
-    { label: '4dF+3', f: '4dF+3' }, { label: '4dF+4', f: '4dF+4' }, { label: '4dF+5', f: '4dF+5' }, { label: '4dF+6', f: '4dF+6' }
-  ];
+  // Fate Core rolls only Fate dice: one "4dF" button plus a −/+ modifier
+  // (the skill rank). The modifier lives here, not in state: it is per-roll.
+  let fateMod = 0;
+  function fateFormula() { return '4dF' + (fateMod ? (fateMod > 0 ? '+' : '') + fateMod : ''); }
+  function fateLabel() { return '4dF' + (fateMod ? (fateMod > 0 ? '+' : '\u2212') + Math.abs(fateMod) : ''); }
+  function setFateMod(v) {
+    const n = parseInt(v, 10);
+    fateMod = isNaN(n) ? 0 : Math.max(-20, Math.min(20, n));
+    const btn = $('#dice-fate-roll'), inp = $('#dice-fate-mod');
+    if (btn) { btn.textContent = fateLabel(); btn.title = 'Roll ' + fateFormula(); btn.dataset.formula = fateFormula(); }
+    if (inp) inp.value = fateMod;
+  }
 
   // Rebuilt on a System change (js/settings.js setSystem).
   function buildDiceGrid() {
     const grid = $('#dice-grid');
     grid.innerHTML = '';
     const fate = OSR.currentSystem && OSR.currentSystem() === 'fate';
+    grid.classList.toggle('dice-grid-fate', !!fate);
     const input = $('#custom-formula');
     if (input) input.placeholder = fate ? 'e.g. 4dF+3, +2, $Fight' : 'e.g. 2d6+3, 4d6kh3, 2d20kl1';
-    (fate ? FATE_PRESETS : DICE_PRESETS).forEach(p => {
+    if (fate) {
+      grid.innerHTML =
+        '<button id="dice-fate-roll" class="btn" type="button"></button>' +
+        '<button id="dice-fate-dec" class="cons-btn" type="button" aria-label="Modifier −1">&minus;</button>' +
+        '<input id="dice-fate-mod" class="cons-val-input" type="number" step="1" value="0" aria-label="Modifier" />' +
+        '<button id="dice-fate-inc" class="cons-btn" type="button" aria-label="Modifier +1">+</button>';
+      // data-formula is also read by the right-click "roll with modifiers" popup
+      $('#dice-fate-roll').addEventListener('click', () => OSR.doRoll(fateFormula(), 'Dice Roller'));
+      $('#dice-fate-dec').addEventListener('click', () => setFateMod(fateMod - 1));
+      $('#dice-fate-inc').addEventListener('click', () => setFateMod(fateMod + 1));
+      $('#dice-fate-mod').addEventListener('change', e => setFateMod(e.target.value));
+      setFateMod(fateMod);
+      return;
+    }
+    DICE_PRESETS.forEach(p => {
       const b = document.createElement('button');
       b.className = 'btn';
       b.textContent = p.label;
@@ -174,7 +196,7 @@
   }
 
   Object.assign(OSR, {
-    DICE_PRESETS, FATE_PRESETS, buildDiceGrid, openRollPopup, closeRollPopup, wireRollPopup, wireDicePanel,
+    DICE_PRESETS, buildDiceGrid, openRollPopup, closeRollPopup, wireRollPopup, wireDicePanel,
     get rollPop() { return rollPop; }
   });
 })(window.OSR = window.OSR || {});

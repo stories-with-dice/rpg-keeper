@@ -1,0 +1,35 @@
+Maelis Arn [WWN]
+Level 1 Mage (High Mage) | Scholar Background
+
+HP: 3/3; System Strain: 0/9; Effort: 2/2; Spells Cast: 1/1
+
+```wwn
+Class: Mage (High Mage)
+Level: 1
+STR 7  DEX 14  CON 9  INT 14  WIS 12  CHA 11
+Attack: +0
+Skills: Magic-0, Know-0, Heal-0, Administer-0, Notice-0
+Foci: Alert-1
+Effort: 2
+```
+
+**AC** 11 (no armor, DEX +1). High Magic does not work in armor or with a shield.
+
+ATTACKS (no Stab skill: −2 to hit)
+- [Staff] −1 to hit, 1d6+1 damage, Shock 2/AC 13
+- [Dagger] −1 to hit, 1d4+1 damage, Shock 2/AC 15
+
+MAGIC (Effort = 1 + Magic + INT; casts 1 spell per day; prepares 3 spells)
+Prepared spells:
+- [The Coruscating Coffin]
+- [Ineluctable Shackles of Volition]
+- [Apprehending the Arcane Form]
+
+Arts:
+- [Sense Magic]
+- [Counter Magic]
+
+EQUIPMENT (Mage, Healer, or Scholar package; Readied up to 3, Stowed up to 7)
+Readied: Staff (1), Daggers ×2 (2)
+Stowed: [Backpack] (1), [Lantern], [Tinder box], and 2 [Oil, one pint] (3), [Writing kit] (1), [Rations, one week] (4), [Waterskin, one gallon] (1), [Healer's pouch] (1)
+Silver: 80

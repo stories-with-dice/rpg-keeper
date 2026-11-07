@@ -15,7 +15,19 @@
   }
   function compendiumForSystem() {
     const sys = currentSystem();
-    return OSR.state.compendium.filter(e => (e.system || 'osr') === sys);
+    const list = OSR.state.compendium.filter(e => (e.system || 'osr') === sys);
+    return sys === 'wwn' ? wwnSpellView(list) : list;
+  }
+  // WWN: a condensed spell (from a pack) has `altOf` (the ref of the book
+  // spell) and `aka` (the book name). Settings → Spell text picks which of
+  // the pair shows: 'book' hides the condensed entries; 'condensed' hides
+  // the book entries that have a condensed one. Entries without a pair
+  // always show.
+  function wwnSpellView(list) {
+    const mode = (OSR.state.settings && OSR.state.settings.wwnSpellText) || 'book';
+    if (mode !== 'condensed') return list.filter(e => !e.altOf);
+    const replaced = new Set(list.filter(e => e.altOf).map(e => e.altOf));
+    return list.filter(e => !(e.ref && replaced.has(e.ref)));
   }
 
   // Resolve a name to compendium entries: exact (case-insensitive) matches
@@ -23,7 +35,7 @@
   function compByExactName(q) {
     const n = String(q || '').trim().toLowerCase();
     if (!n) return [];
-    return compendiumForSystem().filter(e => e.name.trim().toLowerCase() === n);
+    return compendiumForSystem().filter(e => e.name.trim().toLowerCase() === n || (e.aka && e.aka.trim().toLowerCase() === n));
   }
   // Returns Fuse results: [{ item, score }] (score 0 = perfect, 1 = worst).
   function compFuzzy(q, fullText) {

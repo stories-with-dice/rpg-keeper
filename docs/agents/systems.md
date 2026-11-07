@@ -2,7 +2,7 @@
 
 ## The System switch
 
-- `state.settings.system`, one of `OSR.SYSTEMS` (`'osr'`, `'ua3e'`, `'brp'`, `'sl'`, `'fate'`), set in
+- `state.settings.system`, one of `OSR.SYSTEMS` (`'osr'`, `'ua3e'`, `'brp'`, `'sl'`, `'fate'`, `'wwn'`), set in
   Settings → System. `OSR.setSystem(s)` (`js/settings.js`) is the change handler; a content pack of
   another system calls it too. It re-renders everything the setting gates: `refreshCharUI()` (also
   trackers), `renderMonsterBrowser()`, `renderCompendium()`, `renderCombat()`.
@@ -13,11 +13,11 @@
     "Add monster" modal, and Populate by HD. New monsters get `currentSystem()`; an edit keeps the
     original `system`. `seedMonsters()` replaces only the `'osr'` slice.
   - Characters: `charactersForSystem()` with `charSystemKey(ch)`: a ` ```ua ` fence, a `[BRP]` (or
-    `[Basic Roleplaying]`) tag at the end of the first line, a ` ```sl ` fence, or a ` ```fate `
-    fence in `ch.body` (checked in that order), else `'osr'`. The free-text `ch.system`
+    `[Basic Roleplaying]`) tag at the end of the first line, a ` ```sl ` fence, a ` ```fate `
+    fence, or a ` ```wwn ` fence in `ch.body` (checked in that order), else `'osr'`. The free-text `ch.system`
     label is never used for filtering. `refreshCharUI()` moves `activeId`/`activeIdB` to the first
     character of the system when they point outside it. **New blank** uses
-    `DEFAULT_BLANK_OSR/UA/BRP/SL/FATE` so the new character has the right fence or tag.
+    `DEFAULT_BLANK_OSR/UA/BRP/SL/FATE/WWN` so the new character has the right fence or tag.
   - Trackers: `consumablesForSystem()` hides a character's HP/Wounds/Madness tracker unless that
     character is in the current system. Other trackers always show.
   - Scenes: each has a `system`; `state.activeSceneIds[system]` is the open one.
@@ -182,7 +182,7 @@ Crit (1), Fumble (100), Matched Success/Failure (doubles). It sets `OSR.lastPerc
   and `annotate`'s `findMatches` for `+N` and `Name: N` rolls. `DICE_RE` accepts `NdF`. A Fate roll
   adds `→ Ladder (+N)` to the detail and sets `OSR.lastFate { formula, total, source }` (cleared by
   `pushLog`). `#dice-fate-actions`: `invokeLast()` (+2, logged) and `rerollLast()`.
-  `buildDiceGrid()` picks `FATE_PRESETS` in Fate; `renderSettings()` calls it (every load path does).
+  `buildDiceGrid()` shows one `4dF` button with a −/+ modifier (`#dice-fate-mod`, not persisted) in Fate; `renderSettings()` calls it (every load path does).
   `updateApplyButton` hides **Apply damage** in Fate.
 - **Aspect tracker** (`js/fate-ui.js`, `#fate-aspects-panel` above Trackers, shown only in Fate,
   rendered from `renderConsumables`): `state.fateScene = { aspects: [{ id, text, kind, invokes }],
@@ -217,3 +217,40 @@ Crit (1), Fumble (100), Matched Success/Failure (doubles). It sets `OSR.lastPerc
   `aspect-lists.json`; every entry has a `ref` (`fate-stunt:<id>`, `fate-aspect:<list>:<n>`) because
   names repeat. `seedFateCompendium()` (from `seedMissing`, flag `fateCompendiumSeeded`) matches by
   `seedRef`.
+
+## Worlds Without Number (`wwn`)
+
+- **Bundled content** (the free edition, by the owner's decision; see AGENTS.md "Hard rules"):
+  `data/seed-wwn.json` (`OSR.data.seeds.wwn`) has the spells (High Magic, Elementalist,
+  Necromancer; `ref` `wwn:spell:<slug>`), the arts of each tradition (`Abilities`, source
+  `<Tradition> Art`), the Foci (`Abilities`, source `Focus`), and the monster stat lines of the
+  core book. `seedWwn()` (`js/wwn-ui.js`, from `seedMissing`, flag `state.wwnSeeded`) copies new
+  items by seedRef. The encounter tables are `data/tables/wwn_*.csv` (origin "Worlds Without
+  Number" in `scripts/convert-tables.js`). The owner's private `book-extracts/build_wwn.js` writes
+  all of these and the private packs (Atlas monsters, The Monster Overhaul, condensed spells).
+- **PC sheet**: a ` ```wwn ` fence. `WwnSheet.parse(text)` (`js/wwn.js`, pure) reads `Class:`,
+  `Level:`, the six attributes (`STR 14  DEX 9 …`), `Attack:`, `Skills: Notice-1, Sneak-0 (DEX)`,
+  `Foci:`, `Effort:`; other `Key: value` lines become chips. `sheetHtml(def)` derives the
+  modifiers and the four saves (16 − level − the better modifier of the pair; Luck has none).
+  Saves are `.roll` spans with `data-formula="1d20>=N"`; a skill rolls `2d6 + skill + attribute`
+  (the skill's usual attribute from `SKILL_ATTR`, or the one in parentheses). Foci render as
+  `[Name]` links. `HP: 8/8; System Strain: 0/14` stay outside the fence: two resource trackers.
+- **Target rolls** (every system): `doRoll` (`js/dice.js`) reads a trailing `>=N` (or `≥N`) as a
+  target; modifiers after it (`1d20>=14+2`, from the roll popup) move onto the dice. The log shows
+  `→ vs N: Success (+margin)` or `Failure`.
+- **Monsters**: the OSR def shape with `source: 'wwn'`, ascending AC, one save
+  (`saveTargets: { Save: N }`), plus `skill`, `instinct` (1–10), `shock` (book text: `2/13`,
+  `Wpn+1`, `None`), `armored` (the book's `a`), `statLine`, `desc`, `group`, `origin`. `raw` is
+  `monsterText(def)`: the name, the keyed stat line, the description. WWN monsters are paste-only
+  (`PASTE_ONLY_SOURCES`): `WwnSheet.parseMonsters` takes "Name" + "HD 3, AC 15a, Atk +4, …" or
+  book table rows; the edit modal re-parses `raw` and keeps `ref`, `origin`, `group`, `abilities`.
+- **Combat**: `wwnDetailHtml` adds Skill (2d6 + skill), Instinct (1d10, at or under the score acts
+  on instinct), and Shock. An attack's log says `hits AC N or less` and the Shock on a miss
+  (`wwnHitNote`).
+- **Condensed spells**: a pack entry with `altOf` (the book spell's `ref`) and `aka` (its name).
+  Settings → **WWN spell text** (`state.settings.wwnSpellText`, `'book'` or `'condensed'`) picks
+  which of the pair `compendiumForSystem()` shows; `compByExactName` also matches `aka`, so a
+  `[Book Name]` link finds the condensed entry. Pack import matches `altOf` entries by `ref` only
+  (their name often equals the book name).
+- Tests: `test/wwn.test.js`.
+

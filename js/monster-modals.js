@@ -46,7 +46,10 @@
   // statblock format as a PC's ```ua fence plus a short header (parsed by
   // UAStatblock.parseUAMonster, js/ua-statblock.js) — there is no fields form.
   // Fate NPCs too: the same text as a character's ```fate fence, name first (js/fate.js).
-  const PASTE_ONLY_SOURCES = ['ua3e', 'fate'];
+  // WWN monsters too: a name, then "HD 1, AC 13a, Atk +1, …" or a book table row (js/wwn.js).
+  const PASTE_ONLY_SOURCES = ['ua3e', 'fate', 'wwn'];
+  const WWN_PASTE_EXAMPLE = "Bandit Captain\nHD 3, AC 15a, Atk +4, Dmg Wpn+1, Shock Wpn+1, Move 30', ML 9, Inst 3, Skill +1, Save 14+\n" +
+    'Leads the band from the old watchtower.';
   const FATE_PASTE_EXAMPLE = 'Harbor Thug\nHigh Concept: Dockside Muscle for Hire\nTrouble: Drinks Away the Pay\n' +
     'Fair (+2): Fight\nAverage (+1): Physique, Provoke\nStress: [ ] [ ]\nMild:';
   const UA_PASTE_EXAMPLE = 'Night Clerk\nSees everything, says nothing\nType: GMC\nWound Threshold: 50\n' +
@@ -66,8 +69,10 @@
       ? 'Paste a GMC or entity statblock: its name on the first line, then the same sections as a character\'s ```ua fence. Put a line of --- between two of them.'
       : sys === 'fate'
         ? 'Paste a Fate NPC: its name on the first line, then the same lines as a character\'s ```fate fence (aspects, skills, stunts, stress, consequences). Put a line of --- between two of them.'
-        : defaultPasteHint;
-    area.placeholder = sys === 'ua3e' ? UA_PASTE_EXAMPLE : sys === 'fate' ? FATE_PASTE_EXAMPLE : defaultPastePlaceholder;
+        : sys === 'wwn'
+          ? 'Paste a WWN monster: its name, then a line with HD, AC, Atk, Dmg, Shock, Move, ML, Inst, Skill, Save, then any description. Or paste rows of a book stat table, one per line. Put a line of --- between two monsters.'
+          : defaultPasteHint;
+    area.placeholder = sys === 'ua3e' ? UA_PASTE_EXAMPLE : sys === 'fate' ? FATE_PASTE_EXAMPLE : sys === 'wwn' ? WWN_PASTE_EXAMPLE : defaultPastePlaceholder;
   }
   function splitUaMonsters(text) {
     return String(text || '').split(/^\s*-{3,}\s*$/m).map(t => t.trim()).filter(Boolean);
@@ -289,6 +294,10 @@
       h += '<div class="mmp-line">' + escapeHtml(['Skill ' + ((d.skill || 0) >= 0 ? '+' : '') + (d.skill || 0),
         'Slaughter ' + (d.slaughterDie || '1d6'), 'Madness ' + (d.madness || 'None')].join('  ·  ')) + '</div>';
     }
+    if (d.source === 'wwn') {
+      h += '<div class="mmp-line">' + escapeHtml(['Skill ' + ((d.skill || 0) >= 0 ? '+' : '') + (d.skill || 0),
+        'Instinct ' + (d.instinct != null ? d.instinct : '—'), 'Shock ' + (d.shock || 'None')].join('  ·  ')) + '</div>';
+    }
     if (d.savesText) h += '<div class="mmp-line"><span>SV</span> ' + escapeHtml(d.savesText) + '</div>';
     if (Array.isArray(d.abilities) && d.abilities.length) {
       h += '<div class="mmp-abils">' + d.abilities.map(a =>
@@ -355,6 +364,11 @@
       ['importance', 'quality', 'threat', 'role', 'genre', 'archetype', 'seed', 'desc', 'ref'].forEach(k => { if (orig[k] != null) keep[k] = orig[k]; });
       parsed = window.FateSheet ? FateSheet.npcDef($('#me-area').value, keep) : null;
       if (!parsed) { $('#me-msg').textContent = 'Could not parse — the first line must be the name.'; return; }
+    } else if (orig.source === 'wwn') {
+      const keep = {};
+      ['ref', 'origin', 'group', 'abilities'].forEach(k => { if (orig[k] != null) keep[k] = orig[k]; });
+      parsed = window.WwnSheet ? WwnSheet.parseMonsterText($('#me-area').value, keep) : null;
+      if (!parsed) { $('#me-msg').textContent = 'Could not parse — the name on the first line, then a line with HD and AC.'; return; }
     } else if (orig.source === 'ua3e') {
       parsed = window.UAStatblock ? UAStatblock.uaMonsterDef($('#me-area').value) : null;
       if (!parsed) { $('#me-msg').textContent = 'Could not parse — the first line must be the name.'; return; }
@@ -385,12 +399,14 @@
   function parseAndAdd(text, alsoCombat) {
     const ua = OSR.currentSystem() === 'ua3e';
     const fate = OSR.currentSystem() === 'fate';
+    const wwn = OSR.currentSystem() === 'wwn';
     const defs = ua
       ? (window.UAStatblock ? splitUaMonsters(text).map(UAStatblock.uaMonsterDef).filter(Boolean) : [])
       : fate ? (window.FateSheet ? splitUaMonsters(text).map(t => FateSheet.npcDef(t)).filter(Boolean) : [])
-        : (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
+        : wwn ? (window.WwnSheet ? WwnSheet.parseMonsters(text) : [])
+          : (window.MonsterParse ? MonsterParse.parseMonsters(text || '') : []);
     if (!defs.length) {
-      $('#mm-msg').textContent = ua || fate
+      $('#mm-msg').textContent = wwn ? 'No WWN monster found — the name on the first line, then a line with HD and AC.' : ua || fate
         ? 'No statblock found — put the name on the first line (see the example in the box).'
         : 'No stat blocks found — each needs an "AC …" line, blank line between monsters.';
       return;

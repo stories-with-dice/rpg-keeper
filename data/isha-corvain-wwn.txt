@@ -1,0 +1,29 @@
+Isha Corvain [WWN]
+Level 1 Expert | Criminal Background
+
+HP: 4/4; System Strain: 0/9
+
+```wwn
+Class: Expert
+Level: 1
+STR 10  DEX 14  CON 9  INT 12  WIS 11  CHA 14
+Attack: +0
+Skills: Sneak-1, Connect-0, Convince-0, Notice-0, Stab-0
+Foci: Specialist-1, Alert-1
+```
+
+**AC** 14 ([Buff Coat] 12, [Small Shield] 13, DEX +1)
+
+ATTACKS (hit = 1d20 + attack bonus + DEX + Stab)
+- [Short Sword] +1 to hit, 1d6+1 damage, Shock 3/AC 15
+- [Throwing Blade] ×5, +1 to hit, 1d4+1 damage, range 30/60 ft, no Shock
+
+CLASS ABILITIES
+- **Masterful Expertise**: once per scene, reroll a non-combat skill check as an Instant action and keep the better roll.
+- **Quick Learner**: each new level gives one extra skill point for non-combat skills or attributes.
+- Specialist (Sneak): roll 3d6 and drop the lowest die for Sneak checks. Alert: you cannot be surprised.
+
+EQUIPMENT (Roguish Wanderer package; Readied up to 5, Stowed up to 10)
+Readied: Buff Coat (0), Small Shield (1), Short Sword (1), Throwing Blades ×5 (1)
+Stowed: [Backpack] (1), [Rations, one week] (4), [Waterskin, one gallon] (1), [Tinder box] and 3 [Torch]es (1), [Grappling hook] and [Rope, 50'] (2)
+Silver: 0

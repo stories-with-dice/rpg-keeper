@@ -16,9 +16,14 @@
   // every def carries a `system` field, backfilled to 'osr' for anything
   // that predates this (see ensureStateShape). Filtered from view, never
   // deleted — switching System back brings them right back.
+  // WWN can also show the OSR library's Shadowdark monsters (Settings →
+  // "Shadowdark Bestiary in WWN"): the two use the same ascending AC and
+  // attack bonus. They stay OSR monsters; this only shows them.
   function monstersForSystem() {
     const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
-    return OSR.state.monsters.filter(d => (d.system || 'osr') === sys);
+    const sd = sys === 'wwn' && OSR.state.settings && OSR.state.settings.wwnShadowdark === true;
+    return OSR.state.monsters.filter(d => (d.system || 'osr') === sys ||
+      (sd && (d.system || 'osr') === 'osr' && d.source === 'shadowdark'));
   }
 
   function browserMatches() {

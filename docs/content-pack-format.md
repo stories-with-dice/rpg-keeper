@@ -47,7 +47,7 @@ An import never deletes anything and never replaces the whole campaign.
 | Field | Required | Meaning |
 |---|---|---|
 | `pack.name` | yes | Shown in the picker and in the Session Log. It is also the default `origin` of a table. |
-| `pack.system` | yes | One of `osr`, `ua3e`, `brp`, `sl`, `fate` (see "Systems"). An unknown value means the current System. |
+| `pack.system` | yes | One of `osr`, `ua3e`, `brp`, `sl`, `fate`, `wwn` (see "Systems"). An unknown value means the current System. |
 | `pack.version`, `pack.createdAt` | no | Keeper ignores them. Useful for your own tracking. |
 | `compendium` | no | List of Compendium entries. A missing list counts as empty. |
 | `monsters` | no | List of Bestiary monsters. |
@@ -64,6 +64,7 @@ Do not put a `characters` list in a pack. Keeper ignores it.
 | `brp` | Basic Roleplaying | Fantasy |
 | `sl` | Silent Legions | Modern, Horror |
 | `fate` | Fate Core | Fantasy, Modern |
+| `wwn` | Worlds Without Number | Fantasy |
 
 A Compendium entry or a monster can carry its own `system`. A valid `system` on an item wins over
 `pack.system`. Leave it out, unless one pack must fill two systems.
@@ -89,9 +90,11 @@ A Compendium entry or a monster can carry its own `system`. A valid `system` on 
 | `ref` | recommended | A stable id that is unique in the pack, for example `<tool>:<kind>:<slug>`. Keep it the same between versions of your pack. |
 | `skill` | no | Fate: a stunt's skill (`"Fight"`), or an aspect's kind (`"Trouble"`). Shown as the **Skill / kind** filter. |
 | `settings` | no | Fate: a list such as `["Fantasy", "Sci-fi"]`. Shown as the **Setting** filter. |
+| `altOf` | no | WWN: the `ref` of the book entry that this entry is a condensed version of (`wwn:spell:the-coruscating-coffin`). Settings → **WWN spell text** shows one of the pair. |
+| `aka` | no | WWN, with `altOf`: the book entry's name. A `[Book Name]` link finds this entry while the condensed text shows. |
 
 **Match rule** (an entry "you have"): same system, and the same `ref`, or else the same name (not
-case-sensitive) and the same category.
+case-sensitive) and the same category. An entry with `altOf` matches by `ref` only.
 
 ## Monsters
 
@@ -101,7 +104,7 @@ A monster is a Keeper monster def. The fields depend on the system. Every system
 |---|---|---|
 | `name` | yes | The name in the Bestiary and in Combat. |
 | `ref` | recommended | A stable id, unique in the pack (`slpdf:monster:zombie`). Keeper also uses it as the seed id. |
-| `source` | yes | The stat-block shape: `shadowdark`, `ose`, `brp`, `sl`, or `ua3e`. |
+| `source` | yes | The stat-block shape: `shadowdark`, `ose`, `brp`, `sl`, `ua3e`, `fate`, or `wwn`. |
 | `raw` | recommended | The stat block as text. Keeper shows it, and the edit form can parse it again. |
 | `desc` | no | A description. |
 | `abilities` | no | A list of `{ "name": "", "text": "Undead" }`. A plain string is changed to `{ name: "", text }`. |
@@ -137,6 +140,26 @@ no `ref`.
   `slaughterDie` (`"1d6"`), and `mundaneImmune` (true shows AC with `*`). `ac.asc` is `null`
   and `ac.desc` is the book's descending AC. `saveTargets` has one key, `Save`.
 - Keep `hd`, `hdNum`, `hp`, the saves, `attacksText`, and `raw` consistent with each other.
+
+### Worlds Without Number (`source`: `wwn`)
+
+The OSR shape with ascending AC (`ac.asc`, `ac.desc: null`), one save (`saveTargets: { "Save": 14 }`,
+`savesText: "14+"`), and these fields:
+
+| Field | Meaning |
+|---|---|
+| `skill` | The skill bonus (a number). |
+| `instinct` | The Instinct score, 0–10, or `null`. |
+| `shock` | The book's Shock text: `"2/13"` (2 damage on a miss vs AC 13 or less), `"4/-"` (any AC), `"Wpn+1"`, or `"None"`. |
+| `armored` | `true` for the book's `a` after AC (the AC comes from armor). |
+| `statLine` | `HD 3, AC 15a, Atk +4, Dmg Wpn+1, Shock Wpn+1, Move 30', ML 9, Inst 3, Skill +1, Save 14+` |
+| `desc` | The description (Markdown). |
+| `group`, `origin` | Optional: the book table (`Normal Humans`) and the book (`WWN Atlas`). |
+
+`raw` is the name, the stat line, a blank line, and the description: the Bestiary's edit box parses
+it again. An attack whose damage is "by weapon" has `damage: ""` and `note: "by weapon+1"`.
+`js/wwn.js` (`WwnSheet.monsterFromCols`, `parseStatLine`) builds this shape from the book's columns;
+a Node tool can `require()` it.
 
 ### Unknown Armies (`source`: `ua3e`)
 

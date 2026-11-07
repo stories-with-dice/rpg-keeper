@@ -6862,5 +6862,689 @@
         "text": "An archmage entrusts a random magic item to the PCs"
       }
     ]
+  },
+  {
+    "id": "wwn_an_encounter_table_template",
+    "name": "WWN Encounter Table Template",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d6",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "Dangerous animal living in the vicinity"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "Small group of local inhabitants"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "Local elite or lieutenant with retinue"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Solitary intruder or unaffiliated creature"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "Environmental effect or ambiance"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "Sound or side-effect of inhabitant activity"
+      }
+    ]
+  },
+  {
+    "id": "wwn_beasts_and_monsters",
+    "name": "WWN Beasts and Monsters",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d12",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "Harmless but annoying local creature"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "Hungry pack hunters"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "Stalking predator looking for an opening"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Sick or somehow enraged predator"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "An ambush predator lying in wait"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "Large, dangerously aggressive herbivore"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "Uncanny or eldritch monster"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "A swarm of dangerous vermin"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "A flying monster or beast"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "Mated pair of team hunters"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "Ghost, animate corpse, or other undead"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "Something far too dangerous to confront"
+      }
+    ]
+  },
+  {
+    "id": "wwn_example_wilderness_events",
+    "name": "WWN Example Wilderness Events",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d20",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "A horse or pack animal goes lame"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "Cart wheel breaks or vehicle overturns"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "Sudden flash storm makes travel perilous"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Skill check or get lost for the day"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "Find the hideous remains of a massacre"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "Landslide blocks the path"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "Dust storm or deep fog obscures everything"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "Poisonous flora force saves or debilitation"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "Mold or vermin destroy some foodstuffs"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "A piece of equipment breaks during use"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "Find the remains of a lost traveler"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "Find territory-markers of nearby natives"
+      },
+      {
+        "range": "13",
+        "lo": 13,
+        "hi": 13,
+        "text": "Insects or parasites; save or get sick"
+      },
+      {
+        "range": "14",
+        "lo": 14,
+        "hi": 14,
+        "text": "Run into a dire monster when next foraging"
+      },
+      {
+        "range": "15",
+        "lo": 15,
+        "hi": 15,
+        "text": "Route dead-ends, wasting a day’s travel"
+      },
+      {
+        "range": "16",
+        "lo": 16,
+        "hi": 16,
+        "text": "Sudden great heat or cold snap"
+      },
+      {
+        "range": "17",
+        "lo": 17,
+        "hi": 17,
+        "text": "Steady, relentless rain halving all travel"
+      },
+      {
+        "range": "18",
+        "lo": 18,
+        "hi": 18,
+        "text": "Contaminated water; save or get sick"
+      },
+      {
+        "range": "19",
+        "lo": 19,
+        "hi": 19,
+        "text": "Maddening insects; can’t sleep well"
+      },
+      {
+        "range": "20",
+        "lo": 20,
+        "hi": 20,
+        "text": "Find signs of a lethal predator in the area"
+      }
+    ]
+  },
+  {
+    "id": "wwn_human_encounters",
+    "name": "WWN Human Encounters",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d12",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "Hopelessly lost merchant or peddler"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "Hermit with a good reason to stay alone"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "Escaped slave or prisoner"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Peasant perhaps moonlighting as a bandit"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "Dangerous outlaw or outcast"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "Explorer, scout, or surveyor"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "Patrol of the local authorities"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "Miners, woodsmen, hunters, or other workers"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "Common traveler, perhaps lost"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "Noble or other gentry on a journey"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "Pilgrim, perhaps of a malevolent god"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "Bandits, marauders, or other adventurers"
+      }
+    ]
+  },
+  {
+    "id": "wwn_nonhuman_sapient_encounters",
+    "name": "WWN Nonhuman Sapient Encounters",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d12",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "Raiders on their way to pillage a site"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "Scouts out surveilling the territory"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "Patrol to drive off troublesome intruders"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Campsite of the nonhumans"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "Nonhuman workers or resource gatherers"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "Religious figure conducting some rite"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "Nonhumans chasing a human escapee"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "Site of a bloody battle with nonhumans"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "Nonhuman traders with valuable goods"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "Outcast or deranged nonhuman"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "Nonhuman magic-user and attendants"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "Hunters pursuing their prey"
+      }
+    ]
+  },
+  {
+    "id": "wwn_what_are_they_trying_to_do",
+    "name": "WWN What Are They Trying To Do?",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d12",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "They’re hunting or gathering foodstuffs"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "They’re patrolling their territory"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "They’re investigating other intruders"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "They’re hiding a cache of wealth"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "They’re raiding their rivals"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "They’re escorting a wounded comrade"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "They’re fleeing a worse foe"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "They’ve been summoned back by the chief"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "They’re escorting prisoners or slaves"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "They’re working at a necessary labor"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "They’re repairing or maintaining the site"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "They’re sneaking away from work"
+      }
+    ]
+  },
+  {
+    "id": "wwn_whats_happening_with_the_beasts",
+    "name": "WWN What’s Happening with the Beasts?",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d12",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "It’s wounded from a recent hunt"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "It’s magically warped somehow"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "It’s being chased by something bigger"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "Remnants of its last prey are obvious nearby"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "It’s attacking someone right now"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "It’s well-fed and disinclined to hunt"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "It looks deceptively harmless or weak"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "It’s something’s pet or hunting beast"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "It’s fighting over a mate"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "It’s using bait to lure in humans"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "It’s currently eating its last unfortunate prey"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "It’s old or crippled and acting unpredictably"
+      }
+    ]
+  },
+  {
+    "id": "wwn_whats_happening_with_the_sapients",
+    "name": "WWN What’s Happening with the Sapients?",
+    "origin": "Worlds Without Number",
+    "settings": [
+      "Fantasy"
+    ],
+    "output": "Encounter",
+    "formula": "d12",
+    "entries": [
+      {
+        "range": "1",
+        "lo": 1,
+        "hi": 1,
+        "text": "They’re arguing hotly over something"
+      },
+      {
+        "range": "2",
+        "lo": 2,
+        "hi": 2,
+        "text": "They’re pausing for a meal"
+      },
+      {
+        "range": "3",
+        "lo": 3,
+        "hi": 3,
+        "text": "They’re making far too much noise for stealth"
+      },
+      {
+        "range": "4",
+        "lo": 4,
+        "hi": 4,
+        "text": "They’re interrogating a prisoner"
+      },
+      {
+        "range": "5",
+        "lo": 5,
+        "hi": 5,
+        "text": "They’re examining recent loot or a finding"
+      },
+      {
+        "range": "6",
+        "lo": 6,
+        "hi": 6,
+        "text": "They’re camping here for an interval"
+      },
+      {
+        "range": "7",
+        "lo": 7,
+        "hi": 7,
+        "text": "They’re fleeing a fearsome pursuer"
+      },
+      {
+        "range": "8",
+        "lo": 8,
+        "hi": 8,
+        "text": "They’re looking for something to steal"
+      },
+      {
+        "range": "9",
+        "lo": 9,
+        "hi": 9,
+        "text": "They need healing or help with a situation"
+      },
+      {
+        "range": "10",
+        "lo": 10,
+        "hi": 10,
+        "text": "They’re hiding from something hunting them"
+      },
+      {
+        "range": "11",
+        "lo": 11,
+        "hi": 11,
+        "text": "They’re in an affable and friendly mood"
+      },
+      {
+        "range": "12",
+        "lo": 12,
+        "hi": 12,
+        "text": "They’re chasing enemies of theirs"
+      }
+    ]
   }
 ]

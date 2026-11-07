@@ -6,7 +6,7 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 | Note | Covers |
 |---|---|
 | [storage.md](docs/agents/storage.md) | `OSR.state`, IndexedDB, campaigns, Export/Import, content packs, seeding, the seed store, the table library, Dropbox sync |
-| [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions, Fate Core |
+| [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions, Fate Core, Worlds Without Number |
 | [compendium.md](docs/agents/compendium.md) | Compendium entries, hover popups (also the map's), `[`/`$` autocomplete, the sheet-selection menu |
 | [dice.md](docs/agents/dice.md) | the dice engine, `annotate()`, sheet variables and `$Name`, the roll-with-modifiers popup |
 | [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab and the table library |
@@ -38,16 +38,23 @@ the Compendium entry, the monster def, or the table fields change.
   Add no other network use.
 - **No book text in the repo** (the repo is public). Silent Legions and Unknown Armies content comes
   only from the user's private content packs. `test/fixtures/sl-pack.json` has made-up text only.
+  The one exception, by the owner's decision (2026-11-06): the Worlds Without Number *free edition*
+  content in `data/seed-wwn.json` and `data/tables/wwn_*.csv` (printed pages 1–343 of the book; the
+  Deluxe-only chapters from "Arts of the Gyre" on are not bundled). Every other WWN book (Atlas,
+  The Monster Overhaul, the condensed spell lists) goes only into private packs.
 - **Generated files**: never edit `data/monsters.json`, `data/spells.json`, `data/tables.json`,
-  `data/game-icons-index.json`, `data/seed-fate.json` by hand. Edit the source data or the script,
-  run it, commit both. `data/fate/*.json` are copies of the fate-rpg-foundry repo's `data/`.
+  `data/game-icons-index.json`, `data/seed-fate.json`, `data/seed-wwn.json`, `data/tables/wwn_*.csv`
+  by hand. Edit the source data or the script, run it, commit both. `data/fate/*.json` are copies of
+  the fate-rpg-foundry repo's `data/`. `data/seed-wwn.json` and the `wwn_*.csv` files come from the
+  owner's private builder `book-extracts/build_wwn.js` (git-ignored: it reads the PDF text); fix
+  them there and run it, then `npm run convert-tables`.
 
 ## Code layout
 
 Every `js/*.js` file (except vendored ones) is an IIFE: `(function (OSR) {…})(window.OSR = window.OSR || {})`.
 `js/core.js` loads first and `js/main.js` last (`index.html` order). Cross-file calls are `OSR.foo()`,
 resolved at call time. Keep a helper local to its file unless another file or a test calls it.
-Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/fate.js`, `js/fate-npc.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
+Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/fate.js`, `js/fate-npc.js`, `js/wwn.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
 they also `module.exports` for Node.
 
 | File | Contents |
@@ -64,6 +71,7 @@ they also `module.exports` for Node.
 | `js/monsters.js`, `js/monster-form.js`, `js/monster-modals.js`, `js/monster-browser.js` | parser; fields form; add/edit modals; Bestiary tab and PL generator |
 | `js/ua-statblock.js`, `js/brp-seed.js`, `js/seed.js` | UA parser and rules; BRP/OSR seeding and pregens |
 | `js/fate.js`, `js/fate-npc.js`, `js/fate-ui.js` | Fate sheet text and panel; the NPC/encounter generator; aspect tracker, Fate dice actions, generator modals, Fate Compendium seed |
+| `js/wwn.js`, `js/wwn-ui.js` | WWN sheet text and panel, monster stat line and text; the WWN seed and Settings → WWN spell text |
 | `js/compendium.js`, `js/compendium-popups.js` | Compendium CRUD and filters; hover popups and autocomplete |
 | `js/maps.js`, `js/grid.js`, `js/tokens.js`, `js/drawings.js`, `js/pins.js`, `js/history.js`, `js/icons.js` | Maps tab |
 | `js/tables.js`, `js/table-syntax.js` | Tables tab and table editor; table text parser and master-table roller |
@@ -81,6 +89,7 @@ npm run convert-bestiary     # data/bestiary_data.json → data/monsters.json
 npm run convert-spells       # data/spell_data.json → data/spells.json
 npm run convert-tables       # data/tables/*.csv → data/tables.json
 npm run convert-fate         # data/fate/stunts.json + aspect-lists.json → data/seed-fate.json
+node book-extracts/build_wwn.js   # owner only (private): PDF text → data/seed-wwn.json, data/tables/wwn_*.csv, private packs
 ```
 
 - `jsdom` and `fake-indexeddb` are the only (dev) dependencies.

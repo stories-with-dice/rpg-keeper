@@ -75,6 +75,7 @@
     OSR.wireCombat();
     OSR.wirePopulateHd();
     OSR.wireFate();
+    OSR.wireWwn();
     OSR.wireMonsterBrowser();
     OSR.wireCompendiumEntries();
     OSR.wireCompendiumPopups();
@@ -183,6 +184,7 @@
       OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
       OSR.state.brpCompendiumSeeded = true;
       OSR.state.fateCompendiumSeeded = true;
+      OSR.state.wwnSeeded = true;
       OSR.ensureStateShape();
       OSR.lastRoll = null;
       OSR.mode = 'view';

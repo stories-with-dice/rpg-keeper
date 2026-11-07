@@ -371,6 +371,38 @@
     OSR.pushLog(e.name, 'Madness ' + d, r.total, r.detail + ' — at most ' + max + ' in total from this kind of creature');
   }
 
+  /* ---- Worlds Without Number: hit verdict, Shock, Instinct ---- */
+  function isWwnMonster(e) { return e.kind === 'monster' && !!e.monster && e.monster.source === 'wwn'; }
+  // A Shadowdark monster shown in WWN (Settings → Shadowdark Bestiary in WWN) gets the same hit verdict.
+  function wwnVerdict(e) {
+    return isWwnMonster(e) || (e.kind === 'monster' && !!e.monster && e.monster.source === 'shadowdark' && OSR.currentSystem() === 'wwn');
+  }
+  // A WWN attack hits when 1d20 + bonus is the target's (ascending) AC or more.
+  // A miss still does Shock damage to a target whose AC is at or under the limit.
+  function wwnHitNote(r, m) {
+    const nat = r.dice && r.dice[0] ? r.dice[0].value : null;
+    const shock = window.WwnSheet ? WwnSheet.parseShock(m && m.shock) : null;
+    const sh = shock && !shock.weapon ? '; on a miss, Shock ' + shock.dmg + (shock.ac == null ? ' (any AC)' : ' if AC ' + shock.ac + ' or less') : '';
+    if (nat === 20) return 'natural 20 — hits';
+    if (nat === 1) return 'natural 1 — misses' + sh;
+    return 'hits AC ' + r.total + ' or less' + sh;
+  }
+  function wwnDetailHtml(m) {
+    return '<div class="cd-sec"><span class="cd-lbl">Skill</span><button class="btn cbt-skill" title="Roll a skill check">2d6' +
+        fmtMod(m.skill || 0) + '</button></div>' +
+      '<div class="cd-sec"><span class="cd-lbl">Instinct</span>' +
+        (m.instinct != null ? '<button class="btn cbt-instinct" title="Roll 1d10: at or under the score, it acts on instinct">1d10 vs ' +
+          escapeHtml(String(m.instinct)) + '</button>' : '<span class="chip">—</span>') + '</div>' +
+      '<div class="cd-sec"><span class="cd-lbl">Shock</span><span class="chip" title="' +
+        escapeHtml(window.WwnSheet ? WwnSheet.shockText(m.shock) : String(m.shock || '')) + '">' + escapeHtml(m.shock || 'None') + '</span></div>';
+  }
+  function rollEntryInstinct(e) {
+    const n = e.monster && e.monster.instinct;
+    if (n == null) return;
+    const r = OSR.evalFormula('1d10');
+    OSR.pushLog(e.name, 'Instinct 1d10 vs ' + n, r.total, r.detail + (r.total <= n ? ' → acts on instinct (impulsive, unwise)' : ' → keeps its head'));
+  }
+
   /* ---- Unknown Armies: wounds count up to the wound threshold ---- */
   /* ---- Fate Core ---- */
   // A Fate combatant: a 'fate' Bestiary NPC (its own copy of the NPC text in
@@ -896,7 +928,7 @@
     const bonus = atk.toHit != null ? atk.toHit : (e.monster && e.monster.atkBonus) || 0;
     const r = OSR.evalFormula('1d20' + fmtMod(bonus));
     OSR.pushLog(e.name, (atk.label || 'attack') + ' to-hit ' + fmtMod(bonus), r.total,
-      isSlMonster(e) ? r.detail + ' → ' + slHitNote(r) : r.detail);
+      isSlMonster(e) ? r.detail + ' → ' + slHitNote(r) : wwnVerdict(e) ? r.detail + ' → ' + wwnHitNote(r, e.monster) : r.detail);
   }
   function rollEntrySave(e, key) {
     const m = e.monster;
@@ -1102,7 +1134,8 @@
       chip('HP', entryHp(ent) + ' / ' + (entryMaxHp(ent) || '—')) +
       (m.move ? chip('MV', m.move) : '') + (m.align ? chip('AL', m.align) : '') +
       (m.moraleML != null ? chip('ML', m.moraleML) : '') +
-      (m.source === 'sl' ? chip('Skill', fmtMod(m.skill || 0)) + chip('Madness', m.madness || 'None') : '') + '</div>';
+      (m.source === 'sl' ? chip('Skill', fmtMod(m.skill || 0)) + chip('Madness', m.madness || 'None') : '') +
+      (m.source === 'wwn' ? chip('Skill', fmtMod(m.skill || 0)) + chip('Inst', m.instinct != null ? m.instinct : '—') + chip('Shock', m.shock || 'None') : '') + '</div>';
     h += line('Attacks', m.attacksText) + line('Saves', m.savesText);
     if (m.abilities && m.abilities.length) {
       h += '<div class="cd-abils">' + m.abilities.map(a =>
@@ -1166,6 +1199,7 @@
       h += '<div class="cd-sec"><span class="cd-lbl">Morale</span><button class="btn cbt-morale">2d6' +
         (m.moraleML != null ? ' vs ML ' + m.moraleML : '') + '</button></div>';
       if (m.source === 'sl') h += slDetailHtml(m);
+      if (m.source === 'wwn') h += wwnDetailHtml(m);
       if (m.abilities && m.abilities.length) {
         h += '<div class="cd-abils">' + m.abilities.map(a =>
           '<p>' + (a.name ? '<b>' + escapeHtml(a.name) + '.</b> ' : '') + escapeHtml(a.text) + '</p>').join('') + '</div>';
@@ -1335,10 +1369,12 @@
     if (e.target.closest('.cbt-skill')) { rollEntrySkill(ent); return; }
     if (e.target.closest('.cbt-slaughter')) { rollEntrySlaughter(ent); return; }
     if (e.target.closest('.cbt-madness')) { rollEntryMadness(ent); return; }
+    if (e.target.closest('.cbt-instinct')) { rollEntryInstinct(ent); return; }
     if (e.target.closest('.cbt-atkroll')) {
       const b = (ent.monster && ent.monster.atkBonus) || 0;
       const r = OSR.evalFormula('1d20' + fmtMod(b));
-      OSR.pushLog(ent.name, 'Attack ' + fmtMod(b), r.total, isSlMonster(ent) ? r.detail + ' → ' + slHitNote(r) : r.detail);
+      OSR.pushLog(ent.name, 'Attack ' + fmtMod(b), r.total, isSlMonster(ent) ? r.detail + ' → ' + slHitNote(r) :
+        wwnVerdict(ent) ? r.detail + ' → ' + wwnHitNote(r, ent.monster) : r.detail);
       return;
     }
     const roll = e.target.closest('.roll');

@@ -27,6 +27,7 @@ const SCRIPTS = [
   'js/ua-statblock.js',
   'js/fate.js',
   'js/fate-npc.js',
+  'js/wwn.js',
   'js/table-syntax.js',
   'js/core.js',
   'js/data.js',
@@ -61,6 +62,7 @@ const SCRIPTS = [
   'js/fate-ui.js',
   'js/seed.js',
   'js/brp-seed.js',
+  'js/wwn-ui.js',
   'js/main.js',
 ];
 

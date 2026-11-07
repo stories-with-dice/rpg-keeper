@@ -1,0 +1,31 @@
+Tobin Rask [WWN]
+Level 1 Adventurer (Partial Warrior / Partial Healer) | Wanderer Background
+
+HP: 6/6; System Strain: 0/14; Effort: 2/2
+
+```wwn
+Class: Adventurer (Partial Warrior / Partial Healer)
+Level: 1
+STR 11  DEX 10  CON 14  INT 9  WIS 12  CHA 14
+Attack: +1
+Skills: Stab-1, Heal-1, Survive-0, Sneak-0, Notice-0
+Foci: Valiant Defender-1, Gifted Chirurgeon-1
+Effort: 2
+```
+
+**AC** 15 ([Pieced Armor] 14, [Large Shield] +1). Healer arts work in armor.
+
+ATTACKS (hit = 1d20 + attack bonus + STR + Stab)
+- [Light Spear] +2 to hit, 1d6 damage, Shock 2/AC 13, thrown 30/60 ft
+- [Dagger] +2 to hit, 1d4 damage, Shock 1/AC 15
+
+HEALER (Effort = Heal + CHA)
+- [Healing Touch]: Commit Effort for the scene; heal 2d6+1 to a touched ally as a Main Action, +1 System Strain to them each time.
+- [Purge Ailment]: Commit Effort for the day; cure one poison or disease.
+- Gifted Chirurgeon: roll 3d6 and drop the lowest for Heal checks; stabilize one Mortally Wounded ally per round as an On Turn action.
+- Valiant Defender: +2 on Screen Ally checks.
+
+EQUIPMENT (Armored Warrior package, spear for the sword; Readied up to 5, Stowed up to 11)
+Readied: Pieced Armor (2), Large Shield (1), Light Spear (1), Dagger (1)
+Stowed: [Backpack] (1), [Healer's pouch] (1), [Tinder box] and 3 [Torch]es (1)
+Silver: 0

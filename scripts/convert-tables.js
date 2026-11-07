@@ -32,6 +32,23 @@ const META = {};
 // Display-name overrides for slugs that don't title-case cleanly.
 const NAME_MAP = { river_and_coast: 'River & Coast' };
 
+// Worlds Without Number (free edition) encounter tables: wwn_*.csv, written by
+// the private book-extracts/build_wwn.js from the user's PDF.
+const WWN_TABLES = {
+  wwn_human_encounters: ['WWN Human Encounters', 'Encounter'],
+  wwn_nonhuman_sapient_encounters: ['WWN Nonhuman Sapient Encounters', 'Encounter'],
+  wwn_beasts_and_monsters: ['WWN Beasts and Monsters', 'Encounter'],
+  wwn_whats_happening_with_the_sapients: ['WWN What’s Happening with the Sapients?', 'Encounter'],
+  wwn_whats_happening_with_the_beasts: ['WWN What’s Happening with the Beasts?', 'Encounter'],
+  wwn_example_wilderness_events: ['WWN Example Wilderness Events', 'Encounter'],
+  wwn_an_encounter_table_template: ['WWN Encounter Table Template', 'Encounter'],
+  wwn_what_are_they_trying_to_do: ['WWN What Are They Trying To Do?', 'Encounter']
+};
+Object.keys(WWN_TABLES).forEach(slug => {
+  NAME_MAP[slug] = WWN_TABLES[slug][0];
+  META[slug] = { origin: 'Worlds Without Number', settings: ['Fantasy'], output: WWN_TABLES[slug][1] };
+});
+
 function titleCase(slug) {
   return slug.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }

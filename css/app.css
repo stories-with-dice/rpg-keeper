@@ -618,6 +618,10 @@ button, input, textarea, select {
   margin-bottom: 10px;
 }
 .dice-grid .btn { padding: 8px 4px; text-align: center; }
+/* Fate: one 4dF button, then the −/+ modifier ticker. */
+.dice-grid.dice-grid-fate { display: flex; align-items: center; gap: 4px; }
+.dice-grid-fate #dice-fate-roll { flex: 1; }
+.dice-grid-fate .cons-val-input { width: 44px; }
 .dice-custom { display: flex; gap: 6px; margin-bottom: 10px; }
 .dice-custom input {
   flex: 1;
@@ -1732,17 +1736,17 @@ button, input, textarea, select {
 .fate-aspect-list { list-style: none; margin: 0; padding: 0; }
 .fate-asp {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: "kind text del" "ctl ctl invoke";
-  gap: 4px;
-  padding: 6px 0;
+  grid-template-columns: auto 1fr auto auto;
+  grid-template-areas: "kind text text text" "ctl ctl invoke del";
+  gap: 3px;
+  padding: 5px 0;
   border-bottom: 1px solid var(--border);
 }
 .fate-asp-kind {
   grid-area: kind;
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
-  padding: 2px 5px;
+  padding: 1px 2px;
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: 3px;
@@ -1757,7 +1761,8 @@ button, input, textarea, select {
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 3px 6px;
+  padding: 2px 3px;
+  font-size: 12px;
   font-style: italic;
 }
 .fate-asp-del { grid-area: del; }
@@ -1767,17 +1772,19 @@ button, input, textarea, select {
   border-radius: var(--radius);
   color: var(--text-dim);
   cursor: pointer;
-  padding: 2px 7px;
+  padding: 0 5px;
+  font-size: 12px;
 }
 .fate-asp-del:hover { border-color: var(--danger); color: var(--danger); }
-.fate-asp-ctl { grid-area: ctl; display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-dim); }
+.fate-asp-ctl { grid-area: ctl; display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-dim); }
 .fate-asp-ctl::before { content: 'Free invokes'; margin-right: 2px; }
-.fate-asp-ctl .cons-btn { width: 22px; height: 22px; font-size: 13px; }
+.fate-asp-ctl .cons-btn { width: 20px; height: 20px; font-size: 12px; }
 .fate-asp-inv { min-width: 14px; text-align: center; color: var(--text); }
-.fate-asp-invoke { grid-area: invoke; padding: 2px 8px; font-size: 12px; }
+.fate-asp-invoke { grid-area: invoke; padding: 1px 6px; font-size: 11px; }
 .fate-aspect-add { display: flex; gap: 4px; margin-top: 8px; }
-.fate-aspect-add input { flex: 1; min-width: 0; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 6px; }
-.fate-aspect-add select { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
+.fate-aspect-add input { flex: 1; min-width: 0; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); padding: 3px 5px; font-size: 12px; }
+.fate-aspect-add select { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 12px; }
+.fate-aspect-add .btn { font-size: 12px; padding: 3px 8px; }
 
 /* The NPC and encounter generator modals. */
 #fate-gen-modal .modal-box-lg, #fate-enc-modal .modal-box-lg { max-height: 92vh; overflow: auto; }
@@ -1786,3 +1793,19 @@ button, input, textarea, select {
 .comp-skill-badge { color: var(--accent-2); }
 #comp-skill { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 2px 6px; }
 .comp-filter-row[hidden], .field[hidden], #fg-actions[hidden], #fe-actions[hidden] { display: none; }
+
+/* ---------- Worlds Without Number (js/wwn.js, js/wwn-ui.js) ---------- */
+/* The sheet panel of a ```wwn fence: attributes, saves, attack, skills, foci. */
+.wwn-sheet {
+  margin: .6em 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+}
+.wwn-sheet h4 { margin: .5em 0 .25em; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-dim); }
+.wwn-head { font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.wwn-attrs { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 4px 10px; }
+.wwn-attr-k { display: inline-block; min-width: 30px; font-size: 11px; color: var(--text-dim); }
+.wwn-saves, .wwn-skills { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.wwn-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: .4em 0; }

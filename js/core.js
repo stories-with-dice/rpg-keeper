@@ -27,11 +27,11 @@
   const STATE_DEFAULTS = {
     version: 1, activeId: null, activeIdB: null, characters: [], consumables: [], notes: '', log: [],
     monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
-    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, fateCompendiumSeeded: false,
+    compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, fateCompendiumSeeded: false, wwnSeeded: false,
     scenes: [], activeSceneIds: {},
     // Fate Core: the aspect tracker above Trackers (js/fate-ui.js) and the GM's fate points.
     fateScene: { aspects: [], gmPoints: 0 },
-    settings: { scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex' },
+    settings: { scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex', wwnSpellText: 'book', wwnShadowdark: false },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
@@ -48,8 +48,8 @@
   // Game system — set via Settings → System, partitions the Compendium
   // (state.compendium entries each carry a `system` field). Everything that
   // predates this feature is 'osr'. See AGENTS.md-style notes in js/settings.js.
-  const SYSTEMS = ['osr', 'ua3e', 'brp', 'sl', 'fate'];
-  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions', fate: 'Fate Core' };
+  const SYSTEMS = ['osr', 'ua3e', 'brp', 'sl', 'fate', 'wwn'];
+  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions', fate: 'Fate Core', wwn: 'Worlds Without Number' };
 
   function applyTheme() {
     const t = (OSR.state.settings && OSR.state.settings.theme) || 'default';
@@ -147,7 +147,9 @@
     if (!Array.isArray(state.characters)) state.characters = [];
     if (!Array.isArray(state.monsters)) state.monsters = [];
     if (!Array.isArray(state.log)) state.log = [];
-    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex' }, state.settings || {});
+    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex', wwnSpellText: 'book', wwnShadowdark: false }, state.settings || {});
+    state.settings.wwnShadowdark = state.settings.wwnShadowdark === true;
+    if (['book', 'condensed'].indexOf(state.settings.wwnSpellText) === -1) state.settings.wwnSpellText = 'book';
     if (THEMES.indexOf(state.settings.theme) === -1) state.settings.theme = 'default';
     if (SYSTEMS.indexOf(state.settings.system) === -1) state.settings.system = 'osr';
     if (!Array.isArray(state.conditions) || !state.conditions.length) {
@@ -187,6 +189,10 @@
       // Optional (Fate stunts): the skill, and the settings ("Fantasy", "Sci-fi").
       if (en.skill != null) en.skill = String(en.skill).trim();
       if (en.settings != null) en.settings = Array.isArray(en.settings) ? en.settings.map(String).filter(Boolean) : [];
+      // Optional (WWN condensed spells): the ref of the book entry this one
+      // replaces, and the book name it also answers to (compendiumForSystem).
+      if (en.altOf != null) en.altOf = String(en.altOf);
+      if (en.aka != null) en.aka = String(en.aka);
       if (!en.createdAt) en.createdAt = Date.now();
     });
     // A campaign's own random tables (older saves) move to the table library

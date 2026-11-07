@@ -66,7 +66,14 @@ test('Fate dice: 4dF terms roll −1/0/+1, a bare modifier rolls 4dF in Fate, th
   click($('#dice-fate-invoke'));
   assert.equal(T.lastFate.total, 5);
   assert.match($('#dice-last').textContent, /Superb \(\+5\)/);
-  assert.deepEqual(Array.from(window.document.querySelectorAll('#dice-grid button')).map(b => b.dataset.formula).slice(0, 3), ['4dF-1', '4dF', '4dF+1']);
+  assert.equal($('#dice-fate-roll').dataset.formula, '4dF', 'Fate shows one 4dF button');
+  click($('#dice-fate-inc')); click($('#dice-fate-inc'));
+  assert.equal($('#dice-fate-roll').dataset.formula, '4dF+2', 'the + button raises the modifier');
+  assert.equal($('#dice-fate-roll').textContent, '4dF+2');
+  click($('#dice-fate-dec')); click($('#dice-fate-dec')); click($('#dice-fate-dec'));
+  assert.equal($('#dice-fate-roll').textContent, '4dF\u22121');
+  click($('#dice-fate-roll'));
+  assert.match($('#dice-last').textContent, /4dF \[[+0− ]{7}\] -1 →/, 'the button rolls 4dF-1');
   restore();
   window.close();
 });

@@ -1,7 +1,7 @@
 # Character Keeper
 
 A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
-Worlds Without Number, OSE, …), **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**,
+OSE, …), **Worlds Without Number**, **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**,
 **Silent Legions**, and **Fate Core** — and running **basic combat**.
 Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
 at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
@@ -674,7 +674,7 @@ Set Settings → **System** to **Fate Core**.
   - `Mild:`, `Moderate:`, `Severe:`: type the consequence in View mode. The text goes into the block.
   - Put `Fate Points: 3/3` outside the block: it becomes a **Fate Points (Name)** tracker. A Fate
     character has no HP tracker.
-- **Dice**: the Dice Roller has only Fate dice (**4dF−1** to **4dF+6**). A bare modifier (`+2`) and a
+- **Dice**: the Dice Roller has one **4dF** button with a − / + modifier to its right. A bare modifier (`+2`) and a
   `Skill: +N` line roll **4dF + N** in Fate. The result shows on the ladder (`→ Good (+3)`). After a
   Fate roll, **Invoke +2** adds 2 to it and **Reroll** rolls it again. Random tables still roll their
   own dice.
@@ -700,6 +700,46 @@ Set Settings → **System** to **Fate Core**.
   Combat copy. The GM sets the turn order (drag the rows). **+ Populate encounter…** generates an
   easy, standard, or climactic encounter for your number of PCs and adds it to Combat; it also sets
   the GM fate points.
+
+---
+
+## Worlds Without Number
+
+Set Settings → **System** to **Worlds Without Number**.
+
+- **Bundled content** (from the free edition of the book): the spells of the High Mages,
+  Elementalists, and Necromancers; the arts of every tradition; the Foci; about 100 monster stat
+  lines; and the wilderness encounter tables in the Tables tab (Source: *Worlds Without Number*).
+- **Pregen**: Garrick, a level 1 Heroic Expert.
+- **Characters**: **New blank** makes a sheet with a ` ```wwn ` block. That block marks the
+  character as WWN. One `Key: value` per line:
+  - `Class: Expert`, `Level: 1`, the attributes on one line (`STR 14  DEX 9  CON 14  INT 9  WIS 14  CHA 11`),
+    `Attack: +1`, `Skills: Notice-1, Sneak-0 (DEX), Stab-0`, `Foci: Alert-1`, `Effort: 1`.
+  - View mode shows the modifiers and the four saves (16 − level − the better modifier). Click a
+    save to roll 1d20 against it: the log says **Success** or **Failure** and the margin.
+  - Click a skill to roll **2d6 + skill + attribute modifier**. The attribute is the skill's usual
+    one (Sneak → DEX, Notice → WIS, …); put another in parentheses (`Sneak-0 (CON)`). Difficulty
+    6 is easy, 8 normal, 10 hard, 12 very hard.
+  - Put `HP: 8/8; System Strain: 0/14` outside the block: each becomes a tracker.
+- **Target rolls** (every system): a formula that ends in `>=N`, for example `2d6+1>=8`, says
+  Success or Failure. Right-click modifiers still work.
+- **Bestiary**: paste a monster as its name, then a line such as
+  `HD 3, AC 15a, Atk +4, Dmg Wpn+1, Shock Wpn+1, Move 30', ML 9, Inst 3, Skill +1, Save 14+`, then
+  a description. You can also paste rows of a book stat table, one per line.
+- **Combat**: a WWN monster has **Skill** (2d6 + skill), **Instinct** (1d10; at or under the
+  score, it acts on instinct), and its **Shock**. An attack roll says which AC it hits and the
+  Shock damage on a miss.
+- **Content packs from your own books** (Import button): the *Atlas of the Latter Earth* monsters,
+  *The Monster Overhaul* (about 200 monsters with WWN stats, and an encounter table for each of its
+  20 chapters), and the condensed spells of *WWN Reduced & Homebrewed Rules*. These packs are not
+  in the app.
+- **Monster Overhaul stats**: the book gives HD, HP, armour, morale, and damage. The pack adds WWN
+  values: AC from the armour (none 10, leather 12, chain 14, plate 18, plate and shield 20), attack
+  bonus = HD, save = 15 − ½ HD, skill +1, Instinct 5, and Shock 1/13 per die of the first attack.
+  Edit any monster in the Bestiary.
+- **WWN spell text** (Settings, only in WWN): after you import the condensed spell pack, choose
+  **Book** (the book's name and text) or **Condensed** (the short name and text). A `[Book Name]`
+  link finds the spell in both modes.
 
 ---
 

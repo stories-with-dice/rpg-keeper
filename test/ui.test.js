@@ -1449,7 +1449,7 @@ test('Tables tab: lists every seeded table, with Source, Setting, and Output fil
   assert.match($('#tbl-count').textContent, new RegExp(total + ' / ' + total));
 
   const values = f => $$('#tbl-filters input[data-filter="' + f + '"]').map(cb => cb.dataset.value);
-  assert.deepEqual(values('origin'), ['Shadowdark']);
+  assert.deepEqual(values('origin'), ['Shadowdark', 'Worlds Without Number']);
   assert.deepEqual(values('settings'), ['Fantasy', 'Modern', 'Horror']);
   assert.equal($('#tbl-hide-subs').checked, true, '"Don\'t show included subtables" starts on');
   assert.deepEqual(values('output'), ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other']);
@@ -1473,9 +1473,10 @@ test('Tables tab: unticking a filter value hides its tables; right-clicking a va
   const total = window.OSR.data.tables.length + 3;
   const box = (f, v) => $('#tbl-filters input[data-filter="' + f + '"][data-value="' + v + '"]');
   const toggle = (f, v) => { const cb = box(f, v); cb.checked = !cb.checked; cb.dispatchEvent(new window.Event('change', { bubbles: true })); };
-  assert.deepEqual($$('#tbl-filters input[data-filter="origin"]').map(cb => cb.dataset.value), ['Homebrew', 'My Notes', 'Shadowdark']);
+  assert.deepEqual($$('#tbl-filters input[data-filter="origin"]').map(cb => cb.dataset.value), ['Homebrew', 'My Notes', 'Shadowdark', 'Worlds Without Number']);
 
   toggle('origin', 'Shadowdark');
+  toggle('origin', 'Worlds Without Number');
   assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade', 'Ghost', 'Mall']);
   toggle('output', 'Entity');
   assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade', 'Mall']);
@@ -1483,6 +1484,7 @@ test('Tables tab: unticking a filter value hides its tables; right-clicking a va
   assert.deepEqual($$('#tbl-list .tbl-name').map(n => n.textContent), ['Arcade'], 'a table shows while one of its settings is ticked');
   toggle('settings', 'Modern');
   toggle('origin', 'Shadowdark');
+  toggle('origin', 'Worlds Without Number');
   toggle('output', 'Entity');
   assert.equal($$('#tbl-list .tbl-row').length, total);
 

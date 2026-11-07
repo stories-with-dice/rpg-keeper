@@ -109,9 +109,11 @@
   }
   // The index of the campaign's Compendium entry or monster that an imported
   // one matches (same ref, else same name — and category for an entry), or -1.
+  // A WWN condensed spell (`altOf`) often has the book spell's name: it and
+  // the entries it sits beside match by ref only.
   function compIndex(en, system) {
     return OSR.state.compendium.findIndex(x => inSystem(x, system) &&
-      ((en.ref && x.ref === en.ref) || (lc(x.name) === lc(en.name) && x.category === en.category)));
+      ((en.ref && x.ref === en.ref) || (!en.altOf && !x.altOf && lc(x.name) === lc(en.name) && x.category === en.category)));
   }
   function monsterIndex(m, system) {
     return OSR.state.monsters.findIndex(x => inSystem(x, system) && ((m.ref && x.ref === m.ref) || lc(x.name) === lc(m.name)));
@@ -132,6 +134,8 @@
       if (en.ref) item.ref = String(en.ref);
       if (en.skill) item.skill = String(en.skill);
       if (Array.isArray(en.settings) && en.settings.length) item.settings = en.settings.map(String);
+      if (en.altOf) item.altOf = String(en.altOf);
+      if (en.aka) item.aka = String(en.aka);
       if (fromPack) { item.seedRef = OSR.seedRefOf(system, 'c', en); item.seedHash = OSR.contentHash(item); }
       else if (en.seedRef) { item.seedRef = en.seedRef; if (en.seedHash) item.seedHash = en.seedHash; }
       if (at === -1) { state.compendium.push(item); added.push(item.id); }
