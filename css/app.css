@@ -226,6 +226,34 @@ button, input, textarea, select {
 .tab-panel { display: none; }
 .tab-panel.is-active { display: block; }
 
+/* Split view (right-click a tab, js/main.js): the main tab on the left, the
+   split tab on the right. */
+.main.is-split {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr; /* the left panel spans both rows: its height goes to the 1fr row */
+  column-gap: 16px; align-items: start;
+}
+.main.is-split > .tab-panel.is-active { grid-column: 1; grid-row: 1 / span 2; }
+.main.is-split > .split-head { grid-column: 2; grid-row: 1; }
+.main.is-split > .tab-panel.is-split {
+  display: block; grid-column: 2; grid-row: 2;
+  min-width: 0; padding-left: 16px; border-left: 2px solid var(--accent);
+}
+.split-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 0 8px 16px; margin-bottom: 8px; border-left: 2px solid var(--accent);
+  border-bottom: 1px solid var(--border);
+}
+.split-head[hidden] { display: none; }
+.split-title { font-weight: 600; color: var(--accent); }
+.tab-btn.is-split { box-shadow: inset 0 -2px 0 var(--accent); }
+@media (max-width: 900px) {
+  .main.is-split { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .main.is-split > .tab-panel.is-active { grid-column: 1; grid-row: 1; }
+  .main.is-split > .split-head { grid-column: 1; grid-row: 2; margin-top: 16px; }
+  .main.is-split > .tab-panel.is-split { grid-column: 1; grid-row: 3; padding-left: 0; border-left: 0; }
+}
+
 /* ---------- Character toolbar ---------- */
 .char-toolbar {
   display: flex;
@@ -618,6 +646,9 @@ button, input, textarea, select {
   margin-bottom: 10px;
 }
 .dice-grid .btn { padding: 8px 4px; text-align: center; }
+.dice-grid .dice-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; }
+.dice-grid .dice-btn i { font-size: 18px; color: var(--accent); }
+.dice-grid .dice-btn .dice-btn-label { font-size: 11px; line-height: 1; color: var(--text-dim); }
 /* Fate: one 4dF button, then the −/+ modifier ticker. */
 .dice-grid.dice-grid-fate { display: flex; align-items: center; gap: 4px; }
 .dice-grid-fate #dice-fate-roll { flex: 1; }
@@ -759,11 +790,7 @@ button, input, textarea, select {
 .modal-actions { display: flex; gap: 8px; margin-top: 10px; }
 
 /* ---------- Journal (campaign notes) ---------- */
-.notes-section {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
+.notes-section { margin: 0; }
 .notes-section .panel-head kbd {
   font: inherit; font-size: 11px;
   background: var(--bg-3); border: 1px solid var(--border);
@@ -1154,6 +1181,9 @@ button, input, textarea, select {
   padding: 6px 8px; color: inherit;
 }
 .mb-row { cursor: default; }
+/* Hovering the name shows the stat-block card (#mm-preview). */
+/* No underline: the name looks like plain text. */
+.mb-hover-name, .mb-pick .comp-name { cursor: help; }
 .mb-hd-field select {
   background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 6px 8px; color: inherit; max-width: 220px;
@@ -1170,6 +1200,8 @@ button, input, textarea, select {
 #mb-pick-random[hidden] { display: none; }
 
 /* ---------- Compendium tab ---------- */
+/* The row name is a .comp-ref (hover popup) but keeps the row's look. */
+.comp-row-ref, .comp-row-ref:hover { text-decoration: none; background: none; cursor: help; }
 .comp-toolbar {
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px;
 }

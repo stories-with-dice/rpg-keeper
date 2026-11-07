@@ -1,6 +1,6 @@
 {
   "system": "brp",
-  "version": 5,
+  "version": 6,
   "compendium": [
     {
       "name": "Blast",
@@ -2063,7 +2063,12 @@
       "skillsText": "Dodge 30%, Hide 50%, Search 35%, Sense 30%, Stealth 75%, Track 15%",
       "source": "brp",
       "id": "brp-alligator-or-crocodile",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 2.5: a fair fight for about 2.5 starting Normal-level PCs. Offense 2.1x and toughness 3.0x a reference PC (unrounded EL 2.47). Attacks per round: Bite."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2088,7 +2093,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 2.5,
+      "hd": "2.5",
+      "hdNum": 2.5
     },
     {
       "name": "Bear",
@@ -2109,7 +2117,12 @@
       "skillsText": "Climb 35%, Move Quietly 35%, Search 35%, Sense 35%",
       "source": "brp",
       "id": "brp-bear",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 0.9x and toughness 1.1x a reference PC (unrounded EL 1.01). Attacks per round: Claw."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2134,7 +2147,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Brontosaur",
@@ -2155,13 +2171,21 @@
       "skillsText": "Listen 35%, Sense 30%, Spot 35%",
       "source": "brp",
       "id": "brp-brontosaur",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 11: a fair fight for about 11 starting Normal-level PCs. Offense 5.0x and toughness 26.6x a reference PC (unrounded EL 11.49). Attacks per round: Trample."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "High Fantasy",
         "Pulp Era",
         "Planetary Adventure"
-      ]
+      ],
+      "encounterLevel": 11.0,
+      "hd": "11",
+      "hdNum": 11.0
     },
     {
       "name": "Condor, Eagle, etc.",
@@ -2182,7 +2206,12 @@
       "skillsText": "Dodge 50%, Sense 25%, Search 90%",
       "source": "brp",
       "id": "brp-condor-eagle-etc",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.0x and toughness 0.8x a reference PC (unrounded EL 0.93). Attacks per round: Claw."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2207,7 +2236,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Dog",
@@ -2227,7 +2259,12 @@
       "skillsText": "Dodge 55%, Listen 75%, Sense 90%",
       "source": "brp",
       "id": "brp-dog",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.1x and toughness 0.4x a reference PC (unrounded EL 0.24). Attacks per round: Bite."
+        }
+      ],
       "armorNote": "",
       "settings": [
         "Prehistoric Age",
@@ -2253,7 +2290,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Elephant",
@@ -2274,7 +2314,12 @@
       "skillsText": "Listen 65%, Search 35%, Sense 55%",
       "source": "brp",
       "id": "brp-elephant",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 3.5: a fair fight for about 3.5 starting Normal-level PCs. Offense 3.3x and toughness 3.9x a reference PC (unrounded EL 3.59). Attacks per round: Trample. Not counted: special attacks (Trunk)."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2299,7 +2344,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 3.5,
+      "hd": "3.5",
+      "hdNum": 3.5
     },
     {
       "name": "Gorilla",
@@ -2320,7 +2368,12 @@
       "skillsText": "Climb 70%, Hide 40%, Listen 35%, Move Quietly 60%, Search 30%, Sense 40%",
       "source": "brp",
       "id": "brp-gorilla",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 2.2x and toughness 1.1x a reference PC (unrounded EL 1.52). Attacks per round: Wrestle."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2345,7 +2398,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Hawk",
@@ -2365,7 +2421,12 @@
       "skillsText": "Dodge 75%, Spot 100%",
       "source": "brp",
       "id": "brp-hawk",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.0x and toughness 0.5x a reference PC (unrounded EL 0.10). Attacks per round: Claw."
+        }
+      ],
       "armorNote": "",
       "settings": [
         "Prehistoric Age",
@@ -2391,7 +2452,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Horse",
@@ -2412,7 +2476,12 @@
       "skillsText": "Dodge 45%, Hide 25%, Move Quietly 25%, Sense 80%",
       "source": "brp",
       "id": "brp-horse",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.3x and toughness 1.1x a reference PC (unrounded EL 1.18). Attacks per round: Kick."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2437,7 +2506,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Insect Swarm",
@@ -2498,7 +2570,12 @@
       "skillsText": "Dodge 20%, Hide 20%, Listen 30%, Sense 40%, Track 15%",
       "source": "brp",
       "id": "brp-lion",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 2: a fair fight for about 2 starting Normal-level PCs. Offense 2.8x and toughness 1.6x a reference PC (unrounded EL 2.12). Attacks per round: Rip."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2523,7 +2600,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 2.0,
+      "hd": "2",
+      "hdNum": 2.0
     },
     {
       "name": "Rat Pack",
@@ -2584,7 +2664,12 @@
       "skillsText": "Sense 95%, Swim 100%",
       "source": "brp",
       "id": "brp-shark",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 3.5: a fair fight for about 3.5 starting Normal-level PCs. Offense 3.4x and toughness 3.9x a reference PC (unrounded EL 3.60). Attacks per round: Bite."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2609,7 +2694,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 3.5,
+      "hd": "3.5",
+      "hdNum": 3.5
     },
     {
       "name": "Snake (Constrictor)",
@@ -2630,7 +2718,12 @@
       "skillsText": "Climb 85%, Dodge 60%, Hide 75%, Sense 75%, Stealth 90%, Swim 70%",
       "source": "brp",
       "id": "brp-snake-constrictor",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 0.9x and toughness 1.0x a reference PC (unrounded EL 0.93). Attacks per round: Constrict. Not counted: special attacks (Swallow)."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2655,7 +2748,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Snake (Venomous)",
@@ -2675,7 +2771,12 @@
       "skillsText": "Climb 50%, Dodge 50%, Hide 80%, Sense 65%, Stealth 90%, Swim 70%",
       "source": "brp",
       "id": "brp-snake-venomous",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.0x and toughness 0.4x a reference PC (unrounded EL 0.06). Attacks per round: Bite. Not counted: poison or venom."
+        }
+      ],
       "armorNote": "",
       "settings": [
         "Prehistoric Age",
@@ -2701,7 +2802,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Squid (Giant)",
@@ -2722,7 +2826,12 @@
       "skillsText": "Hide 70%, Swim 100%",
       "source": "brp",
       "id": "brp-squid-giant",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 2: a fair fight for about 2 starting Normal-level PCs. Offense 2.7x and toughness 1.2x a reference PC (unrounded EL 1.78). Attacks per round: Tentacle. Not counted: poison or venom."
+        }
+      ],
       "settings": [
         "Ancient World",
         "High Fantasy",
@@ -2730,7 +2839,10 @@
         "Age of Sail",
         "Pulp Era",
         "Modern"
-      ]
+      ],
+      "encounterLevel": 2.0,
+      "hd": "2",
+      "hdNum": 2.0
     },
     {
       "name": "Tiger",
@@ -2751,7 +2863,12 @@
       "skillsText": "Dodge 45%, Hide 80%, Jump 55%, Stealth 75%, Sense 70%, Track 50%",
       "source": "brp",
       "id": "brp-tiger",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 2: a fair fight for about 2 starting Normal-level PCs. Offense 3.2x and toughness 1.5x a reference PC (unrounded EL 2.19). Attacks per round: Ripping."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2776,7 +2893,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 2.0,
+      "hd": "2",
+      "hdNum": 2.0
     },
     {
       "name": "Tyrannosaurus Rex",
@@ -2797,14 +2917,22 @@
       "skillsText": "Jump 50%, Listen 45%, Sense 35%, Spot 50%, Track 50%",
       "source": "brp",
       "id": "brp-tyrannosaurus-rex",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 9: a fair fight for about 9 starting Normal-level PCs. Offense 3.3x and toughness 25.6x a reference PC (unrounded EL 9.21). Attacks per round: Bite."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "High Fantasy",
         "Pulp Era",
         "Planetary Adventure",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 9.0,
+      "hd": "9",
+      "hdNum": 9.0
     },
     {
       "name": "Wolf",
@@ -2825,7 +2953,12 @@
       "skillsText": "Dodge 35%, Listen 75%, Sense 90%, Spot 60%, Track 80%",
       "source": "brp",
       "id": "brp-wolf",
-      "abilities": [],
+      "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.4x and toughness 0.6x a reference PC (unrounded EL 0.47). Attacks per round: Bite."
+        }
+      ],
       "settings": [
         "Prehistoric Age",
         "Ancient World",
@@ -2850,7 +2983,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Centaur",
@@ -2873,6 +3009,10 @@
       "skillsText": "Appraise 50%, Bargain 35%, Command 25%, Dodge 35%, Etiquette 35%, Insight 40%, First Aid 40%, Jump 60%, Knowledge (History) 50%, Listen 35%, Perform (Lyre) 35%, Sense 50%, Spot 40%, Swim 35%, Track 25%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 1.8x and toughness 1.1x a reference PC (unrounded EL 1.43). Attacks per round: Rear and Plunge. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Kicks 5 DEX ranks after a melee weapon strike; melee damage modifier uses STR×2 (normal for kicks/trample/charge). Prefers magic to sorcery: Enhance 35%, Heal 60%, Illusion 45%, Perception 40%, Vision 50%."
         }
@@ -2882,7 +3022,10 @@
       "settings": [
         "Ancient World",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Dragon",
@@ -2904,6 +3047,10 @@
       "skillsText": "Dodge 35%, Fly 100%, Listen 65%, Sense 50%, Spot 60%, Track 45%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 12: a fair fight for about 12 starting Normal-level PCs. Offense 4.4x and toughness 30.9x a reference PC (unrounded EL 11.69). Attacks per round: Breathe Flame. Not counted: area damage to more than one target; powers."
+        },
+        {
           "name": "Powers",
           "text": "Fire covers a 3m area at range equal to POW in meters; costs 1D6 power/fatigue points to breathe and can ignite targets. On the ground, makes two attacks a round (bite or breathe, plus claw or tail 5 DEX ranks later); tail sweep is an area attack. Intelligent dragons (INT 4D6) know magic or sorcery and may have other breath weapons."
         }
@@ -2914,7 +3061,10 @@
         "Early Medieval",
         "High Fantasy",
         "Imperial Asia"
-      ]
+      ],
+      "encounterLevel": 12.0,
+      "hd": "12",
+      "hdNum": 12.0
     },
     {
       "name": "Dwarf",
@@ -2937,6 +3087,10 @@
       "skillsText": "Appraise 50%, Bargain 45%, Brawl 50%, Craft (blacksmithing) 45%, Dodge 40%, Grapple 45%, Knowledge (Dwarf-lore) 35%, Language (Human) 35%, Language (Dwarf) 65%, Listen 45%, Repair (weapons and armor) 35%, Spot 45%, Status 35%, Throw 35%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 3: a fair fight for about 3 starting Normal-level PCs. Offense 1.5x and toughness 5.4x a reference PC (unrounded EL 2.87). Attacks per round: Heavy Crossbow. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Traditionally shun magic, though some use magic or sorcery. Natural Super Sense (Dark Vision) with levels equal to half POW (round up)."
         }
@@ -2946,7 +3100,10 @@
       "settings": [
         "Early Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 3.0,
+      "hd": "3",
+      "hdNum": 3.0
     },
     {
       "name": "Elf",
@@ -2969,6 +3126,10 @@
       "skillsText": "Climb 65%, Dodge 55%, First Aid 45%, Hide 35%, Jump 45%, Knowledge (Elf-lore) 45%, Language (Human) 40%, Language (Elvish) 85%, Listen 55%, Perform (Sing) 35%, Sense 30%, Spot 45%, Stealth 45%, Swim 35%, Track 40%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.5x and toughness 0.6x a reference PC (unrounded EL 0.98). Attacks per round: Longbow. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Commonly use magic; natural Super Sense (Night Vision) at half POW (round up). Common magic: Dispel 45%, Heal 50%, Illusion 35%, Perception 60%, Resistance 50%, Vision 60%."
         }
@@ -2978,7 +3139,10 @@
       "settings": [
         "Early Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Ghost",
@@ -3045,6 +3209,10 @@
       "skillsText": "Climb 60%, Dodge 45%, Grapple 50%, Hide 35%, Jump 50%, Listen 60%, Sense 40%, Spot 50%, Stealth 60%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 0.6x and toughness 1.3x a reference PC (unrounded EL 0.87). Attacks per round: Claw. Not counted: special attacks (Howl); poison or venom; powers."
+        },
+        {
           "name": "Powers",
           "text": "Bite injects venom (POT = CON); enough accumulated POT paralyzes the target for days equal to their CON. Howl (½ CON meters, round up) is a POW vs. INT roll that stuns failing targets until the howling stops; costs 1 power point. Natural Super Sense (Night Vision) at half INT (round up). More intelligent ghouls may know sorcery. Gains power points by eating corpses (1 per 3 SIZ) and must spend 1 power point daily or its body decomposes."
         }
@@ -3057,7 +3225,10 @@
         "Victorian Age",
         "Pulp Era",
         "Modern"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Giant",
@@ -3080,6 +3251,10 @@
       "skillsText": "Sense 60%, Spot 40%, Throw 35%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 8: a fair fight for about 8 starting Normal-level PCs. Offense 2.5x and toughness 24.5x a reference PC (unrounded EL 7.84). Attacks per round: M Thrown Rock. Not counted: area damage to more than one target; powers."
+        },
+        {
           "name": "Powers",
           "text": "Uses enormous clubs (10 + damage-modifier dice HP) or tree trunks, specializing in sweep attacks. Some powerful or older giants use magic or sorcery."
         }
@@ -3090,7 +3265,10 @@
         "Ancient World",
         "Early Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 8.0,
+      "hd": "8",
+      "hdNum": 8.0
     },
     {
       "name": "Griffin",
@@ -3112,6 +3290,10 @@
       "skillsText": "Dodge 30%, Fly 100%, Listen 50%, Sense 65%, Spot 75%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 5: a fair fight for about 5 starting Normal-level PCs. Offense 4.2x and toughness 5.5x a reference PC (unrounded EL 4.80). Attacks per round: Bite."
+        },
+        {
           "name": "Powers",
           "text": "Attacks with both claws simultaneously and bites 5 DEX ranks later."
         }
@@ -3122,7 +3304,10 @@
         "Ancient World",
         "High Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 5.0,
+      "hd": "5",
+      "hdNum": 5.0
     },
     {
       "name": "Halfling",
@@ -3145,6 +3330,10 @@
       "skillsText": "Appraise 35%, Bargain 35%, Craft (farming) 75%, Dodge 60%, Drive (wagon) 45%, Grapple 35%, Hide 65%, Knowledge (Halfling-lore) 35%, Language (Halfling) 75%, Language (Human) 65%, Listen 65%, Sense 45%, Spot 50%, Throw 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.4x and toughness 0.7x a reference PC (unrounded EL 0.51). Attacks per round: M Thrown Rock. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Expert at throwing rocks — ignore the negative damage modifier for thrown rocks. Traditionally shun magic; fewer still use sorcery."
         }
@@ -3153,7 +3342,10 @@
       "id": "brp-halfling",
       "settings": [
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Minotaur",
@@ -3176,6 +3368,10 @@
       "skillsText": "Dodge 40%, Listen 35%, Sense 30%, Spot 35%, Track 55%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 2: a fair fight for about 2 starting Normal-level PCs. Offense 2.7x and toughness 1.9x a reference PC (unrounded EL 2.25). Attacks per round: Great Axe. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Can use head butt or a weapon in a round, not both unless capable of two attacks. If wounded or scoring a special success, goes berserk for 24−CON turns (as the Fury sorcery spell); can shake it off with a successful INT×1 roll, then is fatigued. Rarely knows magic."
         }
@@ -3185,7 +3381,10 @@
       "settings": [
         "Ancient World",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 2.0,
+      "hd": "2",
+      "hdNum": 2.0
     },
     {
       "name": "Mummy",
@@ -3207,6 +3406,10 @@
       "skillsText": "Language (ancient tongue) 90%, Listen 50%, Sense 45%, Spot 50%, Stealth 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 1.2x and toughness 1.3x a reference PC (unrounded EL 1.28). Attacks per round: Short Sword. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Two fist attacks a round; if both hit, grapples and chokes next round. It is twice as easy to ignite a mummy and its fires are harder to extinguish. May remember sorcery from its former life — a sorcerer-mummy might know Brazier of Power (4), Gift of the Earth (4), Pox (1), Sorcerer’s Talons (2)."
         }
@@ -3219,7 +3422,10 @@
         "Victorian Age",
         "Pulp Era",
         "Modern"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Orc",
@@ -3242,6 +3448,10 @@
       "skillsText": "Climb 55%, Dodge 40%, Hide 35%, Knowledge (Orc-lore) 35%, Language (Human) 25%, Language (Orcish) 60%, Listen 50%, Ride (wolf) 50%, Sense 35%, Spot 45%, Stealth 40%, Track 30%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 1.0x and toughness 2.1x a reference PC (unrounded EL 1.44). Attacks per round: Composite Bow. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Sorcery is orc society’s most fearsome power; sorcerer-orcs (POW 16+) often lead as priests, knowing spells like Cloak of Night (2), Pox (1), Rat’s Vision (1), Sorcerer’s Razor (1), Sorcerer’s Speed (2), Ward (3). \"Greater\" orcs are larger (STR 5D6, CON 3D6+3, SIZ 3D6+6); \"lesser\" orcs are weaker (STR 3D6, SIZ 2D6)."
         }
@@ -3250,7 +3460,10 @@
       "id": "brp-orc",
       "settings": [
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Skeleton",
@@ -3271,6 +3484,10 @@
       "skillsText": "Dodge 40%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.0x and toughness 0.7x a reference PC (unrounded EL 0.85). Attacks per round: Self Bow."
+        },
+        {
           "name": "Powers",
           "text": "No CON — hit points equal SIZ. Immune to bleeding/impaling special effects and takes no damage at all from thrusting weapons (unless a special/critical, in which case damage applies but not the secondary effect). Any blow has a chance of shattering the skeleton outright equal to the damage done ×4%, in addition to normal HP loss."
         }
@@ -3283,7 +3500,10 @@
         "Victorian Age",
         "Pulp Era",
         "Modern"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Troll",
@@ -3306,6 +3526,10 @@
       "skillsText": "Dodge 35%, Sense 55%, Spot 55%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 2: a fair fight for about 2 starting Normal-level PCs. Offense 2.7x and toughness 1.6x a reference PC (unrounded EL 2.08). Attacks per round: Tree Trunk Club. Not counted: regeneration; powers."
+        },
+        {
           "name": "Powers",
           "text": "Regenerates 1D3 hit points per combat round (1 per wounded location if using hit locations) unless dead, in sunlight, or wounded by fire. Natural Super Sense (Night Vision) at half POW (round up). Its club is like a giant’s (10 + damage-modifier dice HP) and it cannot parry the round it uses club-then-claw. Trollwives are usually sorcery-using witches (Curse of Sorcery (4), Pox (1), Undo Sorcery (2), Witch Sight (3))."
         }
@@ -3315,7 +3539,10 @@
       "settings": [
         "Early Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 2.0,
+      "hd": "2",
+      "hdNum": 2.0
     },
     {
       "name": "Unicorn",
@@ -3337,6 +3564,10 @@
       "skillsText": "Dodge 35%, Hide 65%, Insight 50%, Jump 90%, Listen 70%, Sense 80%, Spot 75%, Stealth 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 3.4x and toughness 0.8x a reference PC (unrounded EL 1.65). Attacks per round: Trample."
+        },
+        {
           "name": "Powers",
           "text": "Can heal wounds by touch with its horn (1 power point per HP restored; 6+ points reattaches a severed limb). Can cure poison/disease-drained characteristics at a cost of 1 permanent POW per point cured. Detects poison by touching it with its horn; a cup made from the horn shatters if poisoned."
         }
@@ -3347,7 +3578,10 @@
       "settings": [
         "High Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Vampire",
@@ -3370,6 +3604,10 @@
       "skillsText": "Dodge 50%, Etiquette 50%, Fly 90%, Hide 70%, Insight 60%, Jump 75%, Knowledge (History) 75%, Language (ancient) 75%, Language (modern) 50%, Listen 60%, Persuade 60%, Sense 75%, Spot 75%, Stealth 80%, Track 75%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 3.5x and toughness 0.8x a reference PC (unrounded EL 1.67). Attacks per round: Bite, Claw, Claw. Not counted: immunities; regeneration; area damage to more than one target; powers."
+        },
+        {
           "name": "Powers",
           "text": "One bite and two claws a round (or one claw and a hypnotic gaze); grapples and drains blood after both claws and a bite connect. Blood Drain siphons 1D6 STR or power points a round (CON once STR is gone; 0 CON kills), converted to the vampire’s own power points (max = its CON) — a vampire has no POW of its own. Chill Touch drains 1D3 power points a round via a power point resistance roll after a claw hit. Hypnotic Gaze (current power points vs. target POW) forces simple commands. Night Sight combines Dark/Infrared/Night Vision at half INT. Regenerates 1D3 HP/round unless in sunlight or near a holy symbol. May also command lesser undead/animals (Legions of the Night), turn to mist, shape-shift into wolf/bat/rat-swarm, or cast double the normal human capacity of magic/sorcery spells."
         },
@@ -3389,7 +3627,10 @@
         "Noir",
         "Modern",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Werewolf",
@@ -3447,6 +3688,10 @@
       "skillsText": "Sense 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.0x and toughness 0.6x a reference PC (unrounded EL 0.75). Attacks per round: Large Club."
+        },
+        {
           "name": "Powers",
           "text": "Weapon skill equals DEX×5; never dodges or parries. Most slashing/crushing/impaling weapons do only half damage; fire does full damage. Some types can only be finished by a special/critical hit to the head. Some are infectious — a successful bite turns the victim in a number of turns equal to their CON."
         }
@@ -3461,7 +3706,10 @@
         "Modern",
         "Postapocalyptic",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Angel",
@@ -3484,6 +3732,10 @@
       "skillsText": "Command 100%, Dodge 100%, Flight 100%, Insight 75%, Knowledge (any) 100%, Language (any) 100%, Sense 90%, Spot 90%, Teach 90%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 31: a fair fight for about 31 starting Normal-level PCs. Offense 4.8x and toughness 205.0x a reference PC (unrounded EL 31.21). Attacks per round: Parries Over. Not counted: special attacks (M Voice of Heaven, As divine beings, angels are capable of exceeding skill levels of)."
+        },
+        {
           "name": "Powers",
           "text": "Divine Radiance grants 10-pt armor vs. any damage. Flight at levels equal to POW, free. Healing Touch restores HP at 1 per power point and can cure any infirmity for 1 permanent POW each. Holy Fire is a 3m-square flame strike doing 10D6 (10 power points, once/day). Invisibility at half POW in levels for 3 power points. Voice of Heaven stuns a 10m radius (POW vs. POW) for 3 power points. May know magic (Countermagic, Dispel, Enhance, Light, Speak to Mind, Teleport, all at 100%) or superpowers; rarely sorcery, never mutation."
         }
@@ -3499,7 +3751,10 @@
         "Pulp Era",
         "Modern",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 31.0,
+      "hd": "31",
+      "hdNum": 31.0
     },
     {
       "name": "Demon, Greater",
@@ -3522,6 +3777,10 @@
       "skillsText": "Climb 90%, Dodge 75%, Fly 100%, Jump 75%, Sense 75%, Spot 75%, Throw 75%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 23: a fair fight for about 23 starting Normal-level PCs. Offense 6.3x and toughness 80.8x a reference PC (unrounded EL 22.51). Attacks per round: Flame Breath. Not counted: regeneration; area damage to more than one target."
+        },
+        {
           "name": "Powers",
           "text": "Aura of Terror (POW vs. POW in a POW-meter radius, 1 power point) inflicts fear making all actions Difficult. Blight taints the land within POW×100m over 30−POW days. Flame Breath is a 3m-square, 6D6 area attack at CON meters range for 6 power points, burning three extra rounds. Flies tirelessly. Regenerates 1D6 HP/round for free. Sheath of Smoke and Fire burns anyone within 2m for 1D6/round for 1 power point. May have one or more Chaotic Features."
         }
@@ -3537,7 +3796,10 @@
         "Pulp Era",
         "Modern",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 23.0,
+      "hd": "23",
+      "hdNum": 23.0
     },
     {
       "name": "Demon, Lesser",
@@ -3560,6 +3822,10 @@
       "skillsText": "Bargain 55%, Climb 65%, Dodge 50%, Fast Talk 40%, Fly 75%, Hide 45%, Knowledge (Region: Hell) 35%, Listen 40%, Sense 35%, Spot 50%, Stealth 35%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.1x and toughness 0.6x a reference PC (unrounded EL 0.27). Attacks per round: Claw. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Two claw attacks a round; grapples and bites next round if both hit. May know a few sorcery spells if POW is high enough — common ones are Curse of Sorcery (4), Flames of the Sun (4), Midnight (1), Pox (1). May have a Chaotic Feature."
         }
@@ -3575,7 +3841,10 @@
         "Pulp Era",
         "Modern",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Elemental, Air",
@@ -3598,6 +3867,10 @@
       "skillsText": "Dodge 75%, Fly 100%, Language (summoner’s) 100%, Listen 75%, Science (Meteorology) 100%, Sense 75%, Spot 75%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 0.8x and toughness 1.2x a reference PC (unrounded EL 0.99). Attacks per round: Scouring Wind. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Hit points are CON+SIZ, not averaged; disappears at 0 HP or 0 power points, no natural healing. Casts Lift and Lightning at POW×3%; knows the sorcery spell Wings of the Sky (4) for free; has ¼ POW (round up) in levels of Energy Control/Projection (Wind). Can destroy a fire elemental of equal strength at the cost of its own life, supply breathable air (1 HP/round), and turn invisible for 1 power point."
         }
@@ -3609,7 +3882,10 @@
         "Imperial Asia",
         "Arabian Nights",
         "Enlightenment and Renaissance"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Elemental, Earth",
@@ -3632,6 +3908,10 @@
       "skillsText": "Appraise 50%, Craft (Blacksmithing) 75%, Language (summoner’s) 25%, Science (Metallurgy) 100%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 3.0x and toughness 0.9x a reference PC (unrounded EL 1.69). Attacks per round: Fist. Not counted: immunities; poison or venom; area damage to more than one target; powers."
+        },
+        {
           "name": "Powers",
           "text": "Hit points are CON+SIZ, not averaged. Casts Dull and Wall at POW×3%; knows Gift of the Earth (4) for free; has ¼ POW (round up) in levels of Barrier. Can destroy an air elemental of equal strength at the cost of its own life, burrow through earth (carrying a willing character), has a chance of breaking metal weapons that strike it, and senses precious metals/underground items within INT×100 meters."
         }
@@ -3643,7 +3923,10 @@
         "Imperial Asia",
         "Arabian Nights",
         "Enlightenment and Renaissance"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Elemental, Fire",
@@ -3666,6 +3949,10 @@
       "skillsText": "Demolition 75%, Dodge 50%, Language (summoner’s) 50%, Listen 50%, Sense 50%, Spot 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.1x and toughness 1.3x a reference PC (unrounded EL 1.21). Attacks per round: Flame Breath. Not counted: area damage to more than one target; powers."
+        },
+        {
           "name": "Powers",
           "text": "Hit points are CON+SIZ, not averaged. Casts Flame and Resistance at POW×3%; knows Flames of the Sun (4) for free; has ¼ POW (round up) in levels of Energy Control/Projection (Heat). Can destroy a water elemental of equal strength at the cost of its own life, and ignites flammable material by touch."
         }
@@ -3677,7 +3964,10 @@
         "Imperial Asia",
         "Arabian Nights",
         "Enlightenment and Renaissance"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Elemental, Water",
@@ -3733,6 +4023,10 @@
       "skillsText": "Dodge 40%, Fine Manipulation 75%, First Aid 75%, Hide 60%, Knowledge (Human Culture) 55%, Knowledge (Region: Milky Way) 85%, Language (Area) 20%, Language (Zeta Reticulan) 100%, Listen 55%, Medicine 100%, Navigate 70%, Pilot (UFO) 80%, Repair (Quantum) 50%, Science (Astronomy) 75%, Science (Planetology) 95%, Science (Zoology) 50%, Sense 60%, Spot 50%, Stealth 50%, Technical Skill (UFO Sensors) 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 2.2x and toughness 0.3x a reference PC (unrounded EL 0.87). Attacks per round: Disintegrator Rifle. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Uses psychic powers at POW×2% or higher: Emotion Control, Mind Control, Mind Shield, Telekinesis, Telepathy."
         }
@@ -3745,7 +4039,10 @@
         "Modern",
         "Superworld",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Alien, Xenomorph",
@@ -3768,6 +4065,10 @@
       "skillsText": "Climb 75%, Dodge 50%, Hide 60%, Jump 50%, Listen 35%, Sense 50%, Spot 35%, Stealth 50%, Track 75%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 0.9x and toughness 0.9x a reference PC (unrounded EL 0.91). Attacks per round: Claw."
+        },
+        {
           "name": "Powers",
           "text": "Two claw attacks then a bite 5 DEX ranks later (substitutes tail lash when appropriate); grapples and bites if both claws hit. Blood sprays as corrosive acid for 1D6+2 rounds when wounded — anyone within 1m must make a Luck roll or take 1D3 acid damage, which continues eating through armor each round."
         }
@@ -3777,7 +4078,10 @@
       "settings": [
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Blob",
@@ -3798,6 +4102,10 @@
       "skillsText": "Climb 50%, Hide 25%, Sense 25%, Stealth 25%, Track 25%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 3: a fair fight for about 3 starting Normal-level PCs. Offense 4.6x and toughness 2.2x a reference PC (unrounded EL 3.20). Attacks per round: Engulf. Not counted: regeneration."
+        },
+        {
           "name": "Powers",
           "text": "No armor, but fire/electrical attacks do only half damage and firearms only 1 point. Engulfing applies its damage modifier each round thereafter (1D3−1 if hit locations aren’t used); escaping takes a Difficult Effort roll. Regenerates 1 HP/round until full."
         }
@@ -3810,7 +4118,10 @@
         "Modern",
         "Superworld",
         "Space Exploration"
-      ]
+      ],
+      "encounterLevel": 3.0,
+      "hd": "3",
+      "hdNum": 3.0
     },
     {
       "name": "Robot, Giant",
@@ -3832,6 +4143,10 @@
       "skillsText": "Artillery 75%, Dodge 40%, Fine Manipulation 35%, Fly (Internal Rockets) 90%, Jump 55%, Knowledge (Kaiju) 50%, Language (English) 30%, Language (Japanese) 75%, Listen 65%, Martial Arts 40%, Navigate 50%, Repair (Mechanical) 55%, Spot 65%, Throw 55%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 39: a fair fight for about 39 starting Normal-level PCs. Offense 7.0x and toughness 218.9x a reference PC (unrounded EL 39.16). Attacks per round: Missile Pod. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "188 HP includes +100 from Extra Hit Points. Built from superpowers: Absorption (Electric) 20; Adaptation (High Pressure, Vacuum, always-on) 30; Armor (Heat, Kinetic, Radiation) 30 each; Energy Projection (Kinetic) 10; Extra Energy +200; Extra Hit Points +100; Flight 30; Resistance (Radiation, Sound) 10 each; Super Sense (5 types) 10 each; Super Skill 15 (Artillery +60%, Brawl +40%, Fly +60%, Navigate +20%, Repair +20%, Spot +40%)."
         }
@@ -3842,7 +4157,10 @@
         "Superworld",
         "Near-Future/Cyberpunk",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 39.0,
+      "hd": "39",
+      "hdNum": 39.0
     },
     {
       "name": "Robot, Killer",
@@ -3865,6 +4183,10 @@
       "skillsText": "Artillery 80%, Brawl 80%, Climb 50%, Demolition 50%, Dodge 40%, Drive (Motorcycle) 75%, Drive (Truck) 60%, Grapple 80%, Jump 50%, Knowledge (Future History) 65%, Knowledge (Region: Local) 50%, Language (Binary) 100%, Language (Local) 60%, Listen 65%, Pilot (Helicopter) 50%, Repair (Electronics) 75%, Repair (Mechanical) 95%, Spot 75%, Strategy 40%, Throw 55%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 8: a fair fight for about 8 starting Normal-level PCs. Offense 5.4x and toughness 13.0x a reference PC (unrounded EL 8.41). Attacks per round: Plasma Rifle. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Equipped for its era/setting. Usually has a few Super Sense superpowers (Infrared Vision, Super Hearing, Super Vision, Ultrasonic Hearing) at 5 each, free to use. Some can shape-change, stretch, or carry integral weapons (claws, blades, laser eyes, firearms)."
         }
@@ -3877,7 +4199,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 8.0,
+      "hd": "8",
+      "hdNum": 8.0
     },
     {
       "name": "Robot, Utility",
@@ -3897,6 +4222,10 @@
       "skillsText": "Diplomacy package: Appraise 85%, Bargain 55%, Etiquette 95%, Fast Talk 75%, Heavy Machine (Binary Loadlifter) 50%, Hide 25%, Insight 35%, Knowledge (Alien Cultures) 75%, Knowledge (Linguistics) 100%, Language (all known) 95%, Listen 55%, Persuade 45%, Teach 60%. Technical package: Fine Manipulation 95%, Heavy Machine (Spaceport Systems) 95%, Hide 35%, Language (Galactic Common, cannot speak) 50%, Language (Machine) 100%, Listen 50%, Pilot (Starfighter) 50%, Repair (Electronic) 95%, Repair (Mechanical) 95%, Repair (Quantum) 75%, Spot 50%, Technical Skill (Computer Use) 100%.",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 3.5: a fair fight for about 3.5 starting Normal-level PCs. Offense 4.7x and toughness 2.9x a reference PC (unrounded EL 3.70). Attacks per round: (Spaceport Systems). Not counted: special attacks (95%, Fast Talk, 25%, Insight, (Linguistics), 45%, Teach, Skills (Technical Package): Fine Manipulation, cannot speak), (Starfighter))."
+        },
+        {
           "name": "Powers",
           "text": "Strict programming against harming sentients, though some are less strict and may act in self-defense. Has built-in tools (welders, electric dischargers) usable as weapons."
         }
@@ -3908,7 +4237,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 3.5,
+      "hd": "3.5",
+      "hdNum": 3.5
     },
     {
       "name": "Cave Dweller",
@@ -3931,6 +4263,10 @@
       "skillsText": "Brawl 50%, Climb 60%, Craft (Wood Carving) 25%, Dodge 35%, Hide 35%, Jump 50%, Language (Own) 40%, Listen 55%, Sense 50%, Spot 65%, Stealth 30%, Throw 50%, Track 40%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.5x and toughness 0.8x a reference PC (unrounded EL 1.07). Attacks per round: Short Spear (thrown)."
+        },
+        {
           "name": "Powers",
           "text": "Rarely has powers, though a tribal shaman may have a few magic spells or psychic abilities if POW is high enough."
         }
@@ -3942,7 +4278,10 @@
         "Pulp Era",
         "Planetary Adventure",
         "Postapocalyptic"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Criminal Mastermind",
@@ -3964,6 +4303,10 @@
       "skillsText": "Appraise 55%, Bargain 65%, Command 65%, Craft (Cooking) 55%, Craft (License Plates) 35%, Demolition 35%, Disguise 25%, Dodge 50%, Drive (Getaway Car) 45%, Etiquette 45%, Fast Talk 55%, Gaming 60%, Hide 35%, Insight 75%, Knowledge (Law) 55%, Language (Local) 75%, Language (Own) 75%, Listen 55%, Medicine (Pharmacology) 35%, Perform (Singing) 50%, Persuade 75%, Sense 40%, Sleight of Hand 35%, Spot 45%, Status 55%, Stealth 55%, Strategy 60%, Throw 45%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 3.2x and toughness 0.7x a reference PC (unrounded EL 1.52). Attacks per round: Machine Gun."
+        },
+        {
           "name": "Powers",
           "text": "Rarely has powers, and is usually the enemy of those who do."
         }
@@ -3978,7 +4321,10 @@
         "Modern",
         "Superworld",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Cyborg",
@@ -4000,6 +4346,10 @@
       "skillsText": "Climb 40%, Dodge 65%, Drive (Car) 55%, Hide 40%, Jump 75%, Language (Own) 85%, Listen 75%, Pilot (Experimental Jets) 75%, Repair (Electronic) 55%, Science (Cybernetics) 40%, Spot 85%, Stealth 40%, Throw 65%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 2.5: a fair fight for about 2.5 starting Normal-level PCs. Offense 4.5x and toughness 1.1x a reference PC (unrounded EL 2.26). Attacks per round: Brawl. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Defensive Systems: Armor 5 (vs. electrical) + Extra Energy 5 (+50 power points). Physical: Leap 5 (+10m), Super Characteristics 40 (STR +20, CON +10, DEX +10), Super Speed 2 (extra move + action). Sensory: Super Sense (Super Hearing 10, Super Vision 10, Infrared Vision 5, Ultrasonic Hearing 5). Tactical: Defense 2 (−10% to be hit), Super Skill 8 (Jump +40%, Listen +40%, Spot +60%, Throw +25%), Unarmed Combat 5 (+10 damage, −25% to one attacker’s chance, +25% Brawl)."
         },
@@ -4016,7 +4366,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 2.5,
+      "hd": "2.5",
+      "hdNum": 2.5
     },
     {
       "name": "Demigod",
@@ -4039,6 +4392,10 @@
       "skillsText": "Brawl 110%, Climb 80%, Command 45%, Dodge 65%, Drive (Chariot) 65%, Etiquette 25%, Grapple 110%, Insight 55%, Jump 75%, Knowledge (Mythology) 85%, Language (Ancient Own) 100%, Language (Local) 90%, Listen 65%, Navigate 60%, Perform (Harp) 50%, Persuade 45%, Ride (Horse) 45%, Sense 70%, Spot 60%, Status 45%, Stealth 50%, Strategy 60%, Swim 75%, Throw 85%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 16: a fair fight for about 16 starting Normal-level PCs. Offense 3.8x and toughness 66.5x a reference PC (unrounded EL 15.84). Attacks per round: Short Sword. Not counted: regeneration; powers."
+        },
+        {
           "name": "Powers",
           "text": "Adaptation (Radiation, Underwater, Vacuum) 5 each; Armor (Kinetic) 20; Extra Energy 20 (+200 power points); Extra Hit Points 30; Leap 10 (+20m Jump); Regeneration 3 (3 HP/round); Sidekick; Super Characteristics 50 (STR/CON +20, POW/CHA +5); Super Skills 20 (several skills +40-80%); Unarmed Combat 5. Often has a mortal sidekick and may use magic or sorcery."
         },
@@ -4053,7 +4410,10 @@
         "Ancient World",
         "High Fantasy",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 16.0,
+      "hd": "16",
+      "hdNum": 16.0
     },
     {
       "name": "Detective",
@@ -4075,6 +4435,10 @@
       "skillsText": "Appraise 35%, Bargain 35%, Climb 55%, Disguise 35%, Dodge 40%, Drive (Sedan) 55%, Etiquette 25%, Fast Talk 65%, Hide 40%, Insight 55%, Knowledge (Law) 65%, Knowledge (Region: Local) 55%, Knowledge (Streetwise) 50%, Language (Local) 75%, Listen 45%, Persuade 45%, Research 75%, Sense 50%, Sleight of Hand 25%, Spot 65%, Stealth 50%, Track 35%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.6x and toughness 0.6x a reference PC (unrounded EL 0.97). Attacks per round: Medium Pistol."
+        },
+        {
           "name": "Powers",
           "text": "Rarely has powers, though some few magicians or sorcerers become detectives."
         }
@@ -4090,7 +4454,10 @@
         "Modern",
         "Superworld",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Galactic Knight",
@@ -4112,6 +4479,10 @@
       "skillsText": "Climb 75%, Command 50%, Dodge 75%, Hide 45%, Insight 75%, Jump 65%, Knowledge (Region: Galaxy) 35%, Language (Alien) 70%, Language (Own) 105%, Listen 65%, Martial Arts 80%, Navigate 50%, Persuade 35%, Pilot (Starfighter) 65%, Repair (Mechanical) 55%, Sense 70%, Spot 65%, Stealth 70%, Strategy 50%, Throw 60%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 3.5: a fair fight for about 3.5 starting Normal-level PCs. Offense 4.4x and toughness 2.7x a reference PC (unrounded EL 3.43). Attacks per round: Energy Sword. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Psychic abilities of the mystic tradition: Danger Sense 60%, Empathy 55%, Mind Control 35%, Precognition 40%, Telekinesis 45%, Telepathy 50%."
         }
@@ -4121,7 +4492,10 @@
       "armorNote": "",
       "settings": [
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 3.5,
+      "hd": "3.5",
+      "hdNum": 3.5
     },
     {
       "name": "Gunslinger",
@@ -4144,6 +4518,10 @@
       "skillsText": "Brawl 75%, Climb 60%, Demolition 30%, Dodge 60%, First Aid 40%, Gaming 65%, Grapple 50%, Insight 65%, Knowledge (Region: Local) 65%, Language (Own) 70%, Listen 65%, Ride (Horse) 75%, Sense 50%, Sleight of Hand 35%, Spot 75%, Stealth 50%, Throw 55%, Track 40%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 2.5: a fair fight for about 2.5 starting Normal-level PCs. Offense 5.0x and toughness 1.3x a reference PC (unrounded EL 2.51). Attacks per round: Double-barreled Shotgun."
+        },
+        {
           "name": "Powers",
           "text": "Rarely has any powers."
         }
@@ -4154,7 +4532,10 @@
         "Wild West",
         "Planetary Adventure",
         "Postapocalyptic"
-      ]
+      ],
+      "encounterLevel": 2.5,
+      "hd": "2.5",
+      "hdNum": 2.5
     },
     {
       "name": "Knight",
@@ -4177,6 +4558,10 @@
       "skillsText": "Command 45%, Dodge 50%, Etiquette 65%, Knowledge (Heraldry) 50%, Language (Other) 35%, Language (Own) 60%, Listen 45%, Ride (Horse) 75%, Sense 20%, Spot 45%, Status 60%, Strategy 30%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 6: a fair fight for about 6 starting Normal-level PCs. Offense 2.2x and toughness 17.5x a reference PC (unrounded EL 6.21). Attacks per round: Long Bow. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Generally has no powers, though rare knights know magic or carry a magic artifact (blessed weapon, holy relic, virtue-laid armor). Evil knights sworn to dark powers may use sorcery. Tournament lances do crushing damage instead of impaling."
         }
@@ -4187,7 +4572,10 @@
         "Early Medieval",
         "High Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 6.0,
+      "hd": "6",
+      "hdNum": 6.0
     },
     {
       "name": "Maniac",
@@ -4209,6 +4597,10 @@
       "skillsText": "Brawl 75%, Dodge 50%, Drive (Van) 65%, Hide 60%, Language (Own) 60%, Listen 45%, Sense 40%, Spot 65%, Stealth 80%, Throw 50%, Track 40%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 2.3x and toughness 1.0x a reference PC (unrounded EL 1.51). Attacks per round: M Wood Axe. Not counted: regeneration."
+        },
+        {
           "name": "Powers",
           "text": "Most have no powers, though some have exceptional toughness from a mutation such as Hardy, Increased Characteristic, Regeneration, or Natural Weapon (teeth)."
         }
@@ -4223,7 +4615,10 @@
         "Modern",
         "Postapocalyptic",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Mutant",
@@ -4246,6 +4641,10 @@
       "skillsText": "Disguise 25%, Dodge 40%, Drive (Dune Buggy) 40%, Fast Talk 25%, First Aid 40%, Hide 40%, Language (Own) 55%, Listen 35%, Sense 25%, Spot 30%, Stealth 25%, Track 25%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 2.5: a fair fight for about 2.5 starting Normal-level PCs. Offense 1.5x and toughness 3.4x a reference PC (unrounded EL 2.26). Attacks per round: Brawl."
+        },
+        {
           "name": "Powers",
           "text": "Mutations: Congenital Disease (hemophilia, CON −5), Increased Characteristic (STR +6), Natural Weaponry (bony knobs, +1D6 damage), Sensitivity (blood), Structural Improvement (bony knobs, +7-pt natural armor)."
         }
@@ -4256,7 +4655,10 @@
         "Superworld",
         "Postapocalyptic",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 2.5,
+      "hd": "2.5",
+      "hdNum": 2.5
     },
     {
       "name": "Ninja",
@@ -4279,6 +4681,10 @@
       "skillsText": "Climb 80%, Disguise 55%, Dodge 65%, Fine Manipulation 45%, Hide 70%, Jump 65%, Language (Own) 70%, Listen 65%, Martial Arts 35%, Sense 50%, Sleight of Hand 55%, Spot 55%, Stealth 75%, Swim 55%, Throw 50%, Track 35%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 1.4x and toughness 0.7x a reference PC (unrounded EL 1.01). Attacks per round: Composite Bow. Not counted: poison or venom; powers."
+        },
+        {
           "name": "Powers",
           "text": "Blowdarts usually carry a paralytic POT 15 poison. Generally no powers, though a setting may grant sorcery or superpowers approximating extraordinary martial arts."
         }
@@ -4289,7 +4695,10 @@
         "Imperial Asia",
         "Modern",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Pirate",
@@ -4311,6 +4720,10 @@
       "skillsText": "Artillery 30%, Brawl 50%, Climb 80%, Craft (Carpentry) 55%, Dodge 40%, Fine Manipulation 45%, Gaming 35%, Grapple 50%, Jump 45%, Knowledge (Region: Local) 40%, Language (Local) 40%, Language (Own) 55%, Listen 45%, Navigate 50%, Perform (Sing Sea Chantey) 45%, Pilot (Ship) 35%, Sense 30%, Sleight of Hand 35%, Spot 50%, Swim 45%, Throw 50%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1: a fair fight for about 1 starting Normal-level PC. Offense 2.1x and toughness 0.7x a reference PC (unrounded EL 1.23). Attacks per round: Musket. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Usually none, but some pirate chiefs bargain with darkness for sorcery if POW qualifies: Bird’s Vision (1), Breath of Life (1), Rat’s Vision (1), Sorcerer’s Razor (2), Sorcerer’s Sureness (2), Wings of the Sky (4)."
         }
@@ -4328,7 +4741,10 @@
         "Age of Sail",
         "Pulp Era",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.0,
+      "hd": "1",
+      "hdNum": 1.0
     },
     {
       "name": "Police Officer",
@@ -4351,6 +4767,10 @@
       "skillsText": "Brawl 65%, Dodge 40%, Drive (Police Car) 55%, Insight 35%, Knowledge (Law) 50%, Language (Spanish) 30%, Language (English) 80%, Listen 50%, Persuade 50%, Ride (Horse) 45%, Sense 30%, Spot 45%, Stealth 30%, Throw 45%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 6: a fair fight for about 6 starting Normal-level PCs. Offense 3.3x and toughness 9.2x a reference PC (unrounded EL 5.55). Attacks per round: Shotgun. Not counted: special attacks (Pepper Spray, Taser)."
+        },
+        {
           "name": "Powers",
           "text": "Rarely, if ever, has powers."
         }
@@ -4365,7 +4785,10 @@
         "Modern",
         "Superworld",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 6.0,
+      "hd": "6",
+      "hdNum": 6.0
     },
     {
       "name": "Priest",
@@ -4387,6 +4810,10 @@
       "attacksText": "Morningstar Flail 50%, 1D10+1+dm; Full Shield 45%, 1D4+dm; Sling 40%, 1D8+½dm; Kick 40%, 1D3+dm",
       "skillsText": "Art (Illuminated Manuscripts) 35%, Command 25%, Craft (Bookmaking) 35%, Dodge 40%, First Aid 45%, Insight 35%, Knowledge (Religion) 70%, Language (Own) 70%, Listen 45%, Literacy (Common) 70%, Perform (Hymns) 35%, Persuade 45%, Ride (Horse) 35%, Spot 40%, Status 35%, Teach 30%",
       "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 3.5: a fair fight for about 3.5 starting Normal-level PCs. Offense 1.6x and toughness 7.2x a reference PC (unrounded EL 3.37). Attacks per round: Morningstar Flail. Not counted: powers."
+        },
         {
           "name": "Powers",
           "text": "Psychic abilities granted by their deity: Divination, Mind Shield, Precognition, Sensitivity, all at POW×1%. Has at least 50 Allegiance to their patron deity."
@@ -4415,7 +4842,10 @@
         "Superworld",
         "Postapocalyptic",
         "Near-Future/Cyberpunk"
-      ]
+      ],
+      "encounterLevel": 3.5,
+      "hd": "3.5",
+      "hdNum": 3.5
     },
     {
       "name": "Psychic",
@@ -4437,6 +4867,10 @@
       "skillsText": "Art (Painting) 35%, Bargain 35%, Dodge 40%, Drive (Automobile) 30%, Fast Talk 35%, Insight 50%, Knowledge (Art History) 45%, Language (Own) 90%, Listen 35%, Research 65%, Sense 35%, Spot 40%, Status 35%, Stealth 30%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.4x and toughness 0.6x a reference PC (unrounded EL 0.52). Attacks per round: Fist. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Psychic abilities: Aura Detection 35%, Precognition 25%, Psychometry 50%."
         }
@@ -4452,7 +4886,10 @@
         "Superworld",
         "Near-Future/Cyberpunk",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Soldier",
@@ -4474,6 +4911,10 @@
       "attacksText": "Assault Rifle 65%, 2D6+2; Combat Knife (Dagger) 50%, 1D4+2+dm; Grenade (Explosive) 40%, 4D6 (knockback)",
       "skillsText": "Artillery 30%, Brawl 45%, Climb 50%, Command 25%, Dodge 40%, Drive (Humvee) 45%, First Aid 40%, Grapple 50%, Hide 35%, Jump 35%, Language (Own) 65%, Listen 45%, Spot 45%, Stealth 40%, Strategy 20%, Throw 40%",
       "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 5: a fair fight for about 5 starting Normal-level PCs. Offense 3.2x and toughness 7.8x a reference PC (unrounded EL 4.97). Attacks per round: M Assault Rifle."
+        },
         {
           "name": "Powers",
           "text": "Rarely, if ever, has powers."
@@ -4504,7 +4945,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 5.0,
+      "hd": "5",
+      "hdNum": 5.0
     },
     {
       "name": "Sorcerer",
@@ -4527,6 +4971,10 @@
       "skillsText": "Appraise 35%, Dodge 40%, Etiquette 35%, Fast Talk 45%, Hide 30%, Insight 35%, Knowledge (Academic Lore) 50%, Knowledge (Blasphemous Lore) 20%, Knowledge (Occult) 70%, Language (Demonic) 50%, Language (Own) 85%, Listen 35%, Persuade 45%, Research 75%, Ride (Horse) 35%, Sense 35%, Sleight of Hand 35%, Spot 55%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 0.5: a fair fight for about 0.5 starting Normal-level PCs. Offense 0.5x and toughness 0.6x a reference PC (unrounded EL 0.53). Attacks per round: Dagger. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Sorcery spells in memory: Curse of Sorcery (4), Sorcerous Armor (4), Sorcerer’s Sharp Flame (3), Summon Demon (1), Undo Sorcery (2), Heal (2), Witch Sight (3)."
         }
@@ -4542,7 +4990,10 @@
         "Enlightenment and Renaissance",
         "Pulp Era",
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 0.5,
+      "hd": "0.5",
+      "hdNum": 0.5
     },
     {
       "name": "Spy",
@@ -4564,6 +5015,10 @@
       "attacksText": "Light Pistol 75%, 1D6; Sniper Rifle 75%, 2D10+4; Throwing Knife 75%, 1D4+½dm; Fist 80%, 1D3+dm; Kick 65%, 1D3+dm",
       "skillsText": "Appraise 45%, Brawl 65%, Climb 60%, Demolition 40%, Disguise 60%, Dodge 50%, Drive (Sports Car) 85%, Etiquette 65%, Fast Talk 75%, Fine Manipulation 75%, First Aid 55%, Gaming 65%, Grapple 65%, Hide 75%, Insight 65%, Jump 50%, Knowledge (Espionage) 75%, Language (Own) 90%, Language (Other) 70%, Listen 65%, Martial Arts 45%, Persuade 55%, Pilot (Boat) 65%, Pilot (Helicopter) 45%, Research 45%, Ride (Horse) 45%, Sense 60%, Sleight of Hand 55%, Spot 65%, Stealth 70%, Strategy 50%, Swim 65%, Throw 65%, Track 35%",
       "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 4: a fair fight for about 4 starting Normal-level PCs. Offense 5.1x and toughness 3.4x a reference PC (unrounded EL 4.16). Attacks per round: Sniper Rifle."
+        },
         {
           "name": "Powers",
           "text": "Rarely, if ever, has any powers, but may carry high-tech spy gear."
@@ -4594,7 +5049,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 4.0,
+      "hd": "4",
+      "hdNum": 4.0
     },
     {
       "name": "Superhero",
@@ -4617,6 +5075,10 @@
       "skillsText": "Art (Photography) 70%, Brawl 50%, Dodge 50%, Drive (Car) 35%, Fly 80%, Grapple 35%, Knowledge (Region: Local) 35%, Language (other) 00%, Language (Own) 85%, Perform (News) 50%, Research 45%, Science (Meteorology) 25%, Status 25%, Technical Skill (Use Computer) 35%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 6: a fair fight for about 6 starting Normal-level PCs. Offense 3.3x and toughness 11.5x a reference PC (unrounded EL 6.15). Attacks per round: Lightning Bolt. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Absorption (Electric) 18; Armor (Kinetic, Radiation) 12 each; Energy Projection (Electric) 6; Extra Energy 15 (+150 power points); Flight 10; Super Characteristics 30 (STR +14, CON +8, DEX +8)."
         },
@@ -4629,7 +5091,10 @@
       "id": "brp-superhero",
       "settings": [
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 6.0,
+      "hd": "6",
+      "hdNum": 6.0
     },
     {
       "name": "Supervillain",
@@ -4652,6 +5117,10 @@
       "skillsText": "Command 35%, Dodge 40%, Drive (Van) 55%, Fine Manipulation 65%, Jump 65%, Language (Own) 125%, Listen 45%, Repair (Electronic) 85%, Repair (Quantum) 75%, Research 85%, Science (Physics) 95%, Spot 50%, Technical Skill (Use Computer) 95%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 3: a fair fight for about 3 starting Normal-level PCs. Offense 3.5x and toughness 2.3x a reference PC (unrounded EL 2.81). Attacks per round: Heat Projector. Not counted: powers."
+        },
+        {
           "name": "Powers",
           "text": "Armor (Kinetic) 4; Energy Projection (Heat) 6; Extra Energy 15 (+150 power points); Flight 3; Force Field (Electric, Kinetic, Radiation) 20 each; Leap 10 (+20m Jump); Super Sense (Infravision, Ultrasonic Hearing) 1 each."
         },
@@ -4664,7 +5133,10 @@
       "id": "brp-supervillain",
       "settings": [
         "Superworld"
-      ]
+      ],
+      "encounterLevel": 3.0,
+      "hd": "3",
+      "hdNum": 3.0
     },
     {
       "name": "Thug",
@@ -4686,6 +5158,10 @@
       "attacksText": "Heavy Pistol 50%, 1D10+2; Switchblade 50%, 1D4+dm; Baseball Bat 50%, 1D6+dm; Fist 50%, 1D3+dm; Head Butt 35%, 1D3+dm",
       "skillsText": "Demolition 20%, Dodge 35%, Drive (Truck) 50%, Gaming 30%, Grapple 50%, Hide 25%, Insight 25%, Knowledge (Region: Home City) 35%, Language (Own) 50%, Listen 35%, Persuade 35%, Sense 30%, Sleight of Hand 25%, Spot 35%, Stealth 25%, Throw 35%",
       "abilities": [
+        {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 2.0x and toughness 0.9x a reference PC (unrounded EL 1.34). Attacks per round: Heavy Pistol."
+        },
         {
           "name": "Powers",
           "text": "Never has powers. If they did, they’d be doing better for themselves."
@@ -4716,7 +5192,10 @@
         "Near-Future/Cyberpunk",
         "Space Exploration",
         "Space Opera"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Tribal Warrior",
@@ -4739,6 +5218,10 @@
       "skillsText": "Climb 75%, Dodge 40%, Hide 45%, Jump 45%, Language (Own) 60%, Listen 55%, Sense 60%, Spot 65%, Stealth 60%, Swim 55%, Throw 65%, Track 70%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 1.5: a fair fight for about 1.5 starting Normal-level PCs. Offense 2.3x and toughness 1.3x a reference PC (unrounded EL 1.68). Attacks per round: Short Spear (thrown). Not counted: poison or venom."
+        },
+        {
           "name": "Powers",
           "text": "Blowdarts usually carry a paralytic POT 10 poison. Rarely has powers, but the tribe’s shaman or wise person often has psychic abilities, magic, or occasionally sorcery."
         }
@@ -4754,7 +5237,10 @@
         "Wild West",
         "Planetary Adventure",
         "Postapocalyptic"
-      ]
+      ],
+      "encounterLevel": 1.5,
+      "hd": "1.5",
+      "hdNum": 1.5
     },
     {
       "name": "Viking",
@@ -4777,6 +5263,10 @@
       "skillsText": "Appraise 45%, Bargain 35%, Brawl 25%, Craft (type) 05%, Dodge 40%, Gaming 40%, Grapple 35%, Insight 15%, Jump 25%, Language (Own) 55%, Listen 40%, Navigate 35%, Pilot (ship) 25%, Ride (type) 05%, Spot 35%, Status 25%",
       "abilities": [
         {
+          "name": "Encounter Level",
+          "text": "EL 3.5: a fair fight for about 3.5 starting Normal-level PCs. Offense 1.8x and toughness 6.5x a reference PC (unrounded EL 3.41). Attacks per round: Broad Sword."
+        },
+        {
           "name": "Powers",
           "text": "Rarely has powers, though some spellcasters use rune magic, shapeshifting, or sorcery. A wealthy or favored Viking may carry a magic weapon, armor, or other artifact."
         }
@@ -4786,7 +5276,10 @@
       "settings": [
         "Early Medieval",
         "High Fantasy"
-      ]
+      ],
+      "encounterLevel": 3.5,
+      "hd": "3.5",
+      "hdNum": 3.5
     }
   ]
 }

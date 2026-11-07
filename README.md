@@ -22,6 +22,10 @@ HTML/CSS/JS — no build step, no backend, no account, nothing leaves your brows
   then open `http://localhost:8000/`. Opening `index.html` as a file (`file://`) does not work: the
   app loads its data files over http.
 - A reload opens the tab that was open last (stored in this browser only).
+- **Split view**: right-click a tab to show it on the right, next to the open tab (for example the
+  Compendium next to Combat). A click on the right tab moves it back to the main pane. A second
+  right-click on it, or the **×** above it, closes the split. A reload keeps the split (stored in this
+  browser only).
 
 ---
 
@@ -188,7 +192,7 @@ to open a small popup with a flat **modifier** field and a dropdown to add one o
 variables to the roll — picking one adds another dropdown so you can stack several — before rolling.
 
 ### Journal
-A **campaign-wide** Markdown composer below the sheet (a proper editor —
+The **Journal** tab: a **campaign-wide** Markdown composer (a proper editor —
 [EasyMDE](https://github.com/Ionaru/easy-markdown-editor), with the `[` Compendium autocomplete).
 Press **Enter** to log the current text to the **Session Log** as a *Journal* entry (rendered as
 Markdown there) and clear the box; **Shift+Enter** inserts a new line. The unsent draft is saved and
@@ -218,6 +222,10 @@ Silent Legions characters also get a **Madness (Name)** line (`0 / 100`) — see
 ---
 
 ## Dice roller (right side, always visible)
+
+The preset buttons are icons with the die under them (Font Awesome has no d4, d8, d10, or d12
+icon, so those use the d20 icon). Every roll (dice, percentile rolls, tables) plays a short swoosh;
+turn it off in Settings → **Roll sound** (saved in this browser only).
 
 Preset buttons: `d20`, `Adv` (2d20 keep-highest), `Dis` (2d20 keep-lowest), `d4`–`d12`, `d100`,
 `2d6`, `3d6`, `4d6kh3`. Plus a **custom formula** field.
@@ -322,8 +330,10 @@ add up. A BRP monster without an EL is never picked. A party calculator fills th
 - **Setting**: picks only monsters that fit one of the core book's 23 campaign settings (Chapter 10,
   Prehistoric Age to Space Opera). It starts at the Bestiary tab's **Setting** filter.
 
-The bundled BRP Bestiary has no ELs. The BRP content pack from the `brp_character` repo
-(`tools/extract_monsters.py`) adds rated monsters from your own PDFs, or type an EL in the form.
+The bundled BRP Bestiary has ELs (68 of its 73 monsters; the others have no damaging attack, and the
+Werewolf's stat block is not rated). The BRP content pack from the `brp_character` repo
+(`tools/extract_monsters.py`) adds the Creatures book monsters from your own PDFs, or type an EL in
+the form. An existing campaign gets the bundled ELs through Settings → **Apply** (the seed update).
 
 ---
 
@@ -333,7 +343,7 @@ A persistent, filterable view of the whole monster library — same idea as the 
 monsters. **+ New monster** and Combat's own **+ Add monster…** open the exact same modal described
 above; **Search** and **HD** min/max filter the list the same way the modal's own do (for BRP the filter
 reads **EL**, the Encounter Level). Per row:
-**Add to Combat**, **Edit**, **✕** (remove from library).
+**Add to Combat**, **Edit**, **✕** (remove from library). Hover a monster's name for its stat-block card.
 
 For **Basic Roleplaying**, two more controls:
 

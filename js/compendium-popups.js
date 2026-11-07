@@ -192,9 +192,13 @@
 
   // Hide each popup while another tab (or, on the Maps tab, another scene) is
   // open; show it again on its own tab and scene.
-  function syncCompPopsToTab(tab) {
-    const scene = tabScene(tab);
-    compPops.forEach(pop => { if (pop.tab) pop.el.hidden = pop.tab !== tab || (!!pop.scene && pop.scene !== scene); });
+  // `tabs`: the shown tab, or a list of them (the split view shows two).
+  function syncCompPopsToTab(tabs) {
+    const list = Array.isArray(tabs) ? tabs : [tabs];
+    compPops.forEach(pop => {
+      if (!pop.tab) return;
+      pop.el.hidden = list.indexOf(pop.tab) === -1 || (!!pop.scene && pop.scene !== tabScene(pop.tab));
+    });
   }
   function currentTab() {
     const panel = $('.tab-panel.is-active');

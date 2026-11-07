@@ -24,7 +24,7 @@
   `save()` also calls `OSR.dropboxNoteSave()` and `notifyMapViews()`.
 - `ensureStateShape()` is the migration hook (after `load()` and after import). Per-entry
   backfills (for example `entry.statuses = []`) go here too.
-- The Journal (`state.notes`, `js/notes.js`, EasyMDE through `js/mde.js`) is campaign-global. Enter
+- The Journal (`state.notes`, `js/notes.js`, EasyMDE through `js/mde.js`, its own tab `#tab-journal`) is campaign-global. Enter
   sends the draft to the log (`pushNote('Journal', …, { md: true })`); Shift+Enter is a newline.
 - Trackers (`state.consumables`) are campaign-global too. Each
   character owns an `HP (Name)` tracker (`hpTrackerLabel`/`ensureHpTracker`); Combat HP for a

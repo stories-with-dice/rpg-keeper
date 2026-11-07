@@ -183,7 +183,7 @@ filter), `hp: 0`, `attacks: []`, `abilities: []`. Optional metadata: `importance
 The OSR shape, plus `characteristics` (an object such as `{ "STR": 25, "CON": 18, "SIZ": 25, "POW": 7 }`;
 leave out the ones the creature does not have), `armor` (a number), `armorNote`, `damageBonus`
 (`"+2D6"`), `attacksText` (`"Bite 50%, 1D10+dm"`), and `skillsText`. Leave `ac`, `stats`, and
-`saveTargets` out. `data/seed-brp.json` has 73 examples (without an Encounter Level).
+`saveTargets` out. `data/seed-brp.json` has 73 examples (68 with an Encounter Level).
 
 Optional **Encounter Level** (EL): put it in `hd` (text, `"1.5"`) and `hdNum` (the number, `1.5`), and
 also in `encounterLevel`. Use steps of 0.5; the lowest EL is 0.5. The Bestiary's EL filter and Combat's

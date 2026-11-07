@@ -8,6 +8,7 @@
 
   function renderSettings() {
     $('#set-scarlet-heroes').checked = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
+    $('#set-roll-sound').checked = OSR.rollSoundOn();
     const sel = $('#set-theme');
     if (sel && !sel.options.length) {
       OSR.THEMES.forEach(t => {
@@ -82,6 +83,10 @@
       OSR.save();
       if (OSR.currentSystem() === 'brp') OSR.sortByRank(); else OSR.renderCombat();
       OSR.pushNote('Settings', 'BRP combat order → ' + (e.target.value === 'int' ? 'INT rank' : 'DEX rank'));
+    });
+    $('#set-roll-sound').addEventListener('change', e => {
+      OSR.setRollSound(e.target.checked);
+      if (e.target.checked) OSR.playRollSound(); // a sample
     });
     $('#set-scarlet-heroes').addEventListener('change', e => {
       OSR.state.settings.scarletHeroes = e.target.checked;

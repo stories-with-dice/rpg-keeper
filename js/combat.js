@@ -17,7 +17,8 @@
   }
 
   // The apply buttons show only on the Combat and Maps tabs, where the target is chosen.
-  const tabActive = name => { const t = $('#tab-' + name); return !!t && t.classList.contains('is-active'); };
+  // Shown in either pane of the split view (js/main.js).
+  const tabActive = name => OSR.tabShown ? OSR.tabShown(name) : (() => { const t = $('#tab-' + name); return !!t && t.classList.contains('is-active'); })();
   const applyTabActive = () => tabActive('combat') || tabActive('maps');
   // The damage target: on the Maps tab, the combat entry of the one selected
   // token (js/tokens.js selectedTokenEntry); else the selected combatant.

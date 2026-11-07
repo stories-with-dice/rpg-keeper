@@ -12,8 +12,9 @@
 <body>
   <header class="app-header">
     <h1>Character Keeper</h1>
-    <nav class="tabs" id="tabs">
+    <nav class="tabs" id="tabs" title="Click a tab to open it. Right-click a tab to open it in a split view on the right; right-click it again to close the split.">
       <button class="tab-btn is-active" data-tab="character"><i class="fa-solid fa-user"></i> Character</button>
+      <button class="tab-btn" data-tab="journal"><i class="fa-solid fa-feather"></i> Journal</button>
       <button class="tab-btn" data-tab="combat"><i class="fa-solid fa-khanda"></i> Combat</button>
       <button class="tab-btn" data-tab="bestiary"><i class="fa-solid fa-dragon"></i> Bestiary</button>
       <button class="tab-btn" data-tab="maps"><i class="fa-solid fa-map"></i> Maps</button>
@@ -33,6 +34,10 @@
   <div class="layout">
     <div class="load-error" id="load-error" role="alert" hidden></div>
     <main class="main">
+      <div class="split-head" id="split-head" hidden>
+        <span class="split-title" id="split-title"></span>
+        <button type="button" class="btn split-close" id="split-close" title="Close the split view" aria-label="Close the split view">&times;</button>
+      </div>
       <!-- ===== Character tab ===== -->
       <section class="tab-panel is-active" id="tab-character">
         <div class="char-toolbar">
@@ -80,10 +85,14 @@
           </div>
         </div>
 
+      </section>
+
+      <!-- ===== Journal tab ===== -->
+      <section class="tab-panel" id="tab-journal">
         <section class="notes-section" id="notes-section">
           <div class="panel-head">
             <h3>Journal</h3>
-            <span class="hint">Campaign-wide &middot; Markdown &middot; <kbd>Enter</kbd> logs the entry, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span>
+            <span class="hint">Campaign-wide &middot; Markdown &middot; <kbd>Enter</kbd> logs the entry to the Session Log, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line</span>
           </div>
           <textarea id="notes-area" spellcheck="false"></textarea>
         </section>
@@ -177,8 +186,8 @@
           <label class="comp-check"><input type="checkbox" id="comp-fuzzy" /> Fuzzy</label>
           <span class="comp-count" id="comp-count"></span>
         </div>
-        <div class="comp-filter-row"><span class="comp-filter-label">Category</span><div class="comp-cats" id="comp-cats"></div></div>
-        <div class="comp-filter-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="comp-sources"></div></div>
+        <div class="comp-filter-row" id="comp-cats-row"><span class="comp-filter-label">Category</span><div class="comp-cats" id="comp-cats"></div></div>
+        <div class="comp-filter-row" id="comp-sources-row"><span class="comp-filter-label">Source</span><div class="comp-cats" id="comp-sources"></div></div>
         <div class="comp-filter-row" id="comp-skill-row" hidden><span class="comp-filter-label">Skill / kind</span><select id="comp-skill"></select></div>
         <div class="comp-filter-row" id="comp-setting-row" hidden><span class="comp-filter-label">Setting</span><div class="comp-cats" id="comp-settings"></div></div>
         <p id="comp-empty" class="hint">No entries yet. Use <strong>+ New entry</strong>, or hover a <code>[bracketed]</code> item on a character sheet and create one.</p>
@@ -390,6 +399,14 @@
             <option value="int">INT rank</option>
           </select>
         </div>
+
+        <label class="setting-row">
+          <input type="checkbox" id="set-roll-sound" />
+          <span class="setting-text">
+            <b>Roll sound</b>
+            <span class="hint">A short swoosh on every roll (dice, percentile rolls, tables). On by default. Saved in this browser only, not in the campaign.</span>
+          </span>
+        </label>
 
         <label class="setting-row">
           <input type="checkbox" id="set-scarlet-heroes" />

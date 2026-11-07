@@ -6,19 +6,22 @@
   'use strict';
   const { $, escapeHtml } = OSR;
 
+  // `icon`: a Font Awesome icon. The free set has only a d20, a d6, and a
+  // pair of dice, so the other polyhedrals use the d20 icon, and the label
+  // under the icon says which die it is.
   const DICE_PRESETS = [
-    { label: 'd20',    f: '1d20' },
-    { label: 'Adv',    f: '2d20kh1' },
-    { label: 'Dis',    f: '2d20kl1' },
-    { label: 'd4',     f: '1d4' },
-    { label: 'd6',     f: '1d6' },
-    { label: 'd8',     f: '1d8' },
-    { label: 'd10',    f: '1d10' },
-    { label: 'd12',    f: '1d12' },
-    { label: 'd100',   f: '1d100' },
-    { label: '2d6',    f: '2d6' },
-    { label: '3d6',    f: '3d6' },
-    { label: '4d6kh3', f: '4d6kh3' }
+    { label: 'd20',    f: '1d20',    icon: 'fa-dice-d20' },
+    { label: 'Adv',    f: '2d20kh1', icon: 'fa-angles-up' },
+    { label: 'Dis',    f: '2d20kl1', icon: 'fa-angles-down' },
+    { label: 'd4',     f: '1d4',     icon: 'fa-dice-d20' },
+    { label: 'd6',     f: '1d6',     icon: 'fa-dice-d6' },
+    { label: 'd8',     f: '1d8',     icon: 'fa-dice-d20' },
+    { label: 'd10',    f: '1d10',    icon: 'fa-dice-d20' },
+    { label: 'd12',    f: '1d12',    icon: 'fa-dice-d20' },
+    { label: 'd100',   f: '1d100',   icon: 'fa-percent' },
+    { label: '2d6',    f: '2d6',     icon: 'fa-dice' },
+    { label: '3d6',    f: '3d6',     icon: 'fa-dice' },
+    { label: '4d6kh3', f: '4d6kh3',  icon: 'fa-dice' }
   ];
 
   // Fate Core rolls only Fate dice: one "4dF" button plus a −/+ modifier
@@ -58,8 +61,9 @@
     }
     DICE_PRESETS.forEach(p => {
       const b = document.createElement('button');
-      b.className = 'btn';
-      b.textContent = p.label;
+      b.className = 'btn dice-btn';
+      b.innerHTML = '<i class="fa-solid ' + p.icon + '" aria-hidden="true"></i><span class="dice-btn-label">' + escapeHtml(p.label) + '</span>';
+      b.setAttribute('aria-label', 'Roll ' + p.f);
       b.title = 'Roll ' + p.f;
       b.dataset.formula = p.f; // also read by the right-click "roll with modifiers" popup
       b.addEventListener('click', () => OSR.doRoll(p.f, 'Dice Roller'));

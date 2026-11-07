@@ -145,7 +145,7 @@
       const meta = OSR.monsterMetaLine(d);
       return '<li class="comp-row mb-row" data-id="' + d.id + '">' +
         '<div class="comp-row-head">' +
-          '<span class="comp-name">' + escapeHtml(d.name) + '</span>' +
+          '<span class="comp-name mb-hover-name" title="">' + escapeHtml(d.name) + '</span>' +
           '<span class="badge">' + escapeHtml(meta) + '</span>' +
           '<button class="btn mb-add-combat">Add to Combat</button>' +
           '<button class="btn mb-edit">Edit</button>' +
@@ -265,6 +265,15 @@
     });
     $('#mb-pick').addEventListener('mouseleave', OSR.hideLibPreview);
     $('#mb-list').addEventListener('click', onBrowserListClick);
+    // Hovering a monster's name shows its stat-block card (the Add monster modal's hover card).
+    $('#mb-list').addEventListener('mouseover', e => {
+      const row = e.target.closest('.mb-row[data-id]');
+      if (row && e.target.closest('.comp-name')) OSR.showLibPreview(row);
+    });
+    $('#mb-list').addEventListener('mouseout', e => {
+      if (e.target.closest('.comp-name') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.comp-name'))) OSR.hideLibPreview();
+    });
+    $('#mb-list').addEventListener('mouseleave', OSR.hideLibPreview);
     $('#mb-gen-open').addEventListener('click', () => setGeneratorOpen($('#mb-gen-pop').hidden));
     $('#mb-generate').addEventListener('click', () => {
       const pl = parseInt($('#mb-gen-pl').value, 10) || 0;

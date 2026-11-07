@@ -826,7 +826,13 @@
 
   /* ---- Paste and drop ---- */
 
-  const mapsTabActive = () => { const t = $('#tab-maps'); return !!t && t.classList.contains('is-active'); };
+  // Shown in either pane of the split view (js/main.js); always in a pop-out window.
+  const mapsTabActive = () => {
+    const t = $('#tab-maps');
+    if (!t) return false;
+    if (OSR.tabShown && !OSR.isMapPopout()) return OSR.tabShown('maps');
+    return t.classList.contains('is-active');
+  };
   const isTextField = el => !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
 
   function imageFrom(list) {

@@ -801,6 +801,17 @@ test('BRP seed: every power has the full book text, and every monster has its se
   assert.deepEqual(seed.monsters.find(m => m.name === 'Galactic Knight').settings, ['Space Opera']);
 });
 
+test('BRP seed: the bundled monsters have an Encounter Level, except the ones without a damaging attack', () => {
+  const ms = T.seeds.brp.monsters;
+  const unrated = ms.filter(m => !m.hd).map(m => m.name).sort();
+  assert.deepEqual(unrated, ['Elemental, Water', 'Ghost', 'Insect Swarm', 'Rat Pack', 'Werewolf']);
+  ms.filter(m => m.hd).forEach(m => {
+    assert.equal(typeof m.hdNum, 'number', m.name);
+    assert.equal(m.encounterLevel, m.hdNum, m.name);
+    assert.equal(m.abilities[0].name, 'Encounter Level', m.name);
+  });
+});
+
 test('filterMonsters: the setting option keeps the monsters whose settings list has it', () => {
   const list = [
     { name: 'Orc', hdNum: 1, settings: ['High Fantasy'] },

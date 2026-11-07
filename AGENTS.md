@@ -76,7 +76,7 @@ they also `module.exports` for Node.
 | `js/maps.js`, `js/grid.js`, `js/tokens.js`, `js/drawings.js`, `js/pins.js`, `js/history.js`, `js/icons.js` | Maps tab |
 | `js/tables.js`, `js/table-syntax.js` | Tables tab and table editor; table text parser and master-table roller |
 | `js/settings.js`, `js/io.js`, `js/dropbox.js` | Settings; paste modal, Export/Import, packs; Dropbox |
-| `js/main.js` | `wire()` calls every `wireX()`, `init()`, `boot()`, the test seam, the last-tab memory |
+| `js/main.js` | `wire()` calls every `wireX()`, `init()`, `boot()`, the test seam, the tabs (`showTab`, the split view `setSplit`, `tabShown`) and their memory |
 | `scripts/*.js` | CLI converters (bestiary, spells, tables, token icons, icon index) |
 | `test/*.test.js`, `test/helpers/boot.js` | `node:test` suites; boots the app in jsdom |
 
@@ -110,6 +110,11 @@ node book-extracts/build_wwn.js   # owner only (private): PDF text → data/seed
 - **Escape** every value from user input or data files with `escapeHtml()`, attributes too.
 - **Events**: delegated listeners on stable containers, attached once in a `wireX()`. Never attach
   listeners inside `render*()`.
+- **Tabs and the split view** (`js/main.js`): the main tab's panel has `.is-active`, the split tab's
+  `.is-split` (a right-click on a tab; never both on one panel). To ask "does this tab show?", use
+  `OSR.tabShown(name)`, not `.is-active`. Keyboard shortcuts stay on `.is-active` (the main pane), so
+  two shown tabs do not both answer a key. `onTabShown(name)` renders a tab when it shows in either
+  pane; add a new tab's render call there.
 - **Visibility**: `el.hidden = true/false`, not `style.display`. If CSS gives the element a
   `display`, add `.thing[hidden] { display: none }`.
 - **Popups and menus** that close on an outside `mousedown`/`scroll` must whitelist their own
@@ -117,7 +122,7 @@ node book-extracts/build_wwn.js   # owner only (private): PDF text → data/seed
 - **State**: a new persisted field goes in `STATE_DEFAULTS` and gets a backfill in
   `ensureStateShape()`. Entries made at runtime (`addCharEntry`, `addMonsterEntry`) must have every
   field `ensureStateShape` expects. Everything in `state` is exported and synced: per-device or
-  secret data goes in `localStorage` (`osr_map_sticky`, `osr_map_rclick_pan`, `osr_map_views`, `osr_map_pops`, `osr_last_tab`,
+  secret data goes in `localStorage` (`osr_map_sticky`, `osr_map_rclick_pan`, `osr_map_views`, `osr_map_pops`, `osr_last_tab`, `osr_split_tab`, `osr_roll_sound`,
   `osr_dropbox_*`).
 - **System scoping**: lists of characters, monsters, Compendium entries, and trackers go through
   the per-system helpers (`charactersForSystem`, `monstersForSystem`, `compendiumForSystem`,

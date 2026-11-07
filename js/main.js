@@ -35,34 +35,110 @@
     OSR.wireHistory();
   }
 
-  // The open tab is per device (localStorage, not state), so a reload opens it again.
+  // The open tab and the split tab are per device (localStorage, not state),
+  // so a reload opens them again.
   const TAB_KEY = 'osr_last_tab';
+  const SPLIT_KEY = 'osr_split_tab';
+
+  // Split view (like the Mythic GM app): a right-click on a tab shows it in a
+  // second pane on the right, next to the main tab. A tab is never in both
+  // panes: the panels are static DOM, and each panel shows once. A left-click
+  // on the split tab moves it back to the main pane; a right-click on it, or
+  // the pane's ×, closes the split. The main tab has `.is-active`, the split
+  // tab `.is-split`; OSR.tabShown(name) is true for both.
+  let splitTab = null;
+  const tabBtn = name => $$('.tab-btn').find(x => x.dataset.tab === name) || null;
+  const tabLabel = name => { const b = tabBtn(name); return b ? b.textContent.trim() : name; };
+  function activeTab() {
+    const b = $('.tab-btn.is-active');
+    return b ? b.dataset.tab : null;
+  }
+  function tabShown(name) { return name === activeTab() || name === splitTab; }
+  function shownTabs() { return [activeTab(), splitTab].filter(Boolean); }
+
+  // Render what a tab needs when it shows (in either pane).
+  function onTabShown(name) {
+    if (name === 'combat') OSR.renderCombat();
+    if (name === 'bestiary') OSR.renderMonsterBrowser();
+    if (name === 'compendium') OSR.renderCompendium();
+    if (name === 'tables') OSR.renderTables();
+    if (name === 'maps') OSR.renderMaps(); // the SVG has a size only while its tab shows
+    if (name === 'settings') OSR.renderSettings(); // counts change elsewhere (seeding, new characters)
+    if (name === 'journal' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
+  }
+
+  function applyTabs() {
+    const active = activeTab();
+    $$('.tab-btn').forEach(x => x.classList.toggle('is-split', x.dataset.tab === splitTab));
+    $$('.tab-panel').forEach(p => {
+      p.classList.toggle('is-active', p.id === 'tab-' + active);
+      p.classList.toggle('is-split', !!splitTab && p.id === 'tab-' + splitTab);
+    });
+    $('.main').classList.toggle('is-split', !!splitTab);
+    document.body.classList.toggle('split-view', !!splitTab);
+    $('#split-head').hidden = !splitTab;
+    $('#split-title').textContent = splitTab ? tabLabel(splitTab) : '';
+    OSR.updateApplyButton(); // "Apply damage" shows only with the Combat or Maps tab
+    OSR.syncCompPopsToTab(shownTabs()); // popups show only on the tabs they were opened from
+  }
+
+  function showTab(name) {
+    const b = tabBtn(name);
+    if (!b) return;
+    if (name === splitTab) splitTab = null; // a left-click takes the split tab back into the main pane
+    $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
+    try { localStorage.setItem(TAB_KEY, name); } catch (err) { /* kept for this page only */ }
+    saveSplit();
+    applyTabs();
+    onTabShown(name);
+  }
+
+  function setSplit(name) {
+    if (name && !tabBtn(name)) name = null;
+    if (name && name === activeTab()) {
+      // The main pane shows another tab: the first one that is not `name`.
+      const other = $$('.tab-btn').find(x => x.dataset.tab !== name);
+      if (!other) return;
+      $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === other));
+      try { localStorage.setItem(TAB_KEY, other.dataset.tab); } catch (err) { /* kept for this page only */ }
+      onTabShown(other.dataset.tab);
+    }
+    splitTab = name || null;
+    saveSplit();
+    applyTabs();
+    if (splitTab) onTabShown(splitTab);
+    // The main pane is narrower or wider now.
+    if (tabShown('maps')) OSR.renderMaps();
+  }
+  function saveSplit() {
+    try {
+      if (splitTab) localStorage.setItem(SPLIT_KEY, splitTab); else localStorage.removeItem(SPLIT_KEY);
+    } catch (err) { /* kept for this page only */ }
+  }
+
+  Object.assign(OSR, { tabShown, showTab, setSplit, splitTab: () => splitTab });
 
   function restoreTab() {
-    let name = null;
-    try { name = localStorage.getItem(TAB_KEY); } catch (e) { /* blocked storage: the first tab */ }
-    const b = name && $$('.tab-btn').find(x => x.dataset.tab === name);
-    if (b && !b.classList.contains('is-active')) b.click();
+    let name = null, split = null;
+    try { name = localStorage.getItem(TAB_KEY); split = localStorage.getItem(SPLIT_KEY); } catch (e) { /* blocked storage: the first tab */ }
+    const b = name && tabBtn(name);
+    if (b && !b.classList.contains('is-active')) showTab(name);
+    if (split && tabBtn(split)) setSplit(split);
   }
 
   function wire() {
-    // Tabs
+    // Tabs: a click opens the tab in the main pane, a right-click in the split pane.
     $('#tabs').addEventListener('click', e => {
       const b = e.target.closest('.tab-btn');
-      if (!b) return;
-      try { localStorage.setItem(TAB_KEY, b.dataset.tab); } catch (err) { /* kept for this page only */ }
-      $$('.tab-btn').forEach(x => x.classList.toggle('is-active', x === b));
-      $$('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + b.dataset.tab));
-      OSR.updateApplyButton(); // "Apply damage" shows only on the Combat tab
-      OSR.syncCompPopsToTab(b.dataset.tab); // popups show only on the tab they were opened from
-      if (b.dataset.tab === 'combat') OSR.renderCombat();
-      if (b.dataset.tab === 'bestiary') OSR.renderMonsterBrowser();
-      if (b.dataset.tab === 'compendium') OSR.renderCompendium();
-      if (b.dataset.tab === 'tables') OSR.renderTables();
-      if (b.dataset.tab === 'maps') OSR.renderMaps(); // the SVG has a size only while its tab shows
-      if (b.dataset.tab === 'settings') OSR.renderSettings(); // counts change elsewhere (seeding, new characters)
-      if (b.dataset.tab === 'character' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
+      if (b) showTab(b.dataset.tab);
     });
+    $('#tabs').addEventListener('contextmenu', e => {
+      const b = e.target.closest('.tab-btn');
+      if (!b || OSR.isMapPopout()) return;
+      e.preventDefault();
+      setSplit(b.dataset.tab === splitTab ? null : b.dataset.tab);
+    });
+    $('#split-close').addEventListener('click', () => setSplit(null));
 
     wireEscape();
 

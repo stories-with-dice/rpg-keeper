@@ -1243,6 +1243,132 @@ test('Populate by EL (BRP): labels read EL, the party calculator fills the total
   assert.match($('#mb-list [data-id="b-orc"] .badge').textContent, /^EL 1\.5 · HP 12/);
 });
 
+test('Bestiary: hovering a monster name shows its stat-block card', () => {
+  T.state.settings.system = 'brp';
+  T.state.monsters = [brpMonster('b-orc', 'Orc', 1.5)];
+  tab('bestiary');
+  T.renderAll();
+  const name = $('#mb-list .mb-row[data-id="b-orc"] .comp-name');
+  name.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true }));
+  assert.equal($('#mm-preview').hidden, false);
+  assert.match($('#mm-preview').textContent, /Orc/);
+  $('#mb-list').dispatchEvent(new window.MouseEvent('mouseleave'));
+  assert.equal($('#mm-preview').hidden, true);
+});
+
+test('Dice Roller: the preset buttons are Font Awesome icons with a label', () => {
+  T.state.settings.system = 'osr';
+  T.buildDiceGrid();
+  const btns = $$('#dice-grid .dice-btn');
+  assert.equal(btns.length, 12);
+  btns.forEach(b => assert.ok(b.querySelector('i.fa-solid'), b.title));
+  const d6 = btns.find(b => b.dataset.formula === '1d6');
+  assert.ok(d6.querySelector('i.fa-dice-d6'));
+  assert.equal(d6.querySelector('.dice-btn-label').textContent, 'd6');
+});
+
+test('Roll sound: on by default, plays on a roll, and the Settings checkbox turns it off', () => {
+  let started = 0;
+  const node = () => ({ connect() {}, start() { started++; }, stop() {}, buffer: null, type: '',
+    Q: { value: 0 }, frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+    gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} } });
+  window.AudioContext = function () {
+    return { currentTime: 0, sampleRate: 8000, state: 'running', destination: {},
+      createBuffer: (c, n) => ({ getChannelData: () => new Float32Array(n) }),
+      createBufferSource: node, createBiquadFilter: node, createGain: node };
+  };
+  try {
+    try { window.localStorage.removeItem('osr_roll_sound'); } catch (e) { /* no storage */ }
+    assert.equal(T.rollSoundOn(), true, 'on by default');
+    T.doRoll('1d6', 'Test');
+    assert.equal(started, 1, 'a roll plays the swoosh');
+    T.pushNote('Test', 'a note');
+    assert.equal(started, 1, 'a note is not a roll');
+    tab('settings');
+    T.renderAll();
+    const cb = $('#set-roll-sound');
+    assert.equal(cb.checked, true);
+    cb.checked = false;
+    fire(cb, 'change');
+    assert.equal(T.rollSoundOn(), false);
+    T.doRoll('1d6', 'Test');
+    assert.equal(started, 1, 'off: no sound');
+    cb.checked = true;
+    fire(cb, 'change');
+    assert.equal(started, 2, 'turning it on plays a sample');
+  } finally {
+    delete window.AudioContext;
+    try { window.localStorage.removeItem('osr_roll_sound'); } catch (e) { /* no storage */ }
+  }
+});
+
+test('Journal: has its own tab, not the Character tab', () => {
+  assert.ok($('#tab-journal').contains($('#notes-area')));
+  assert.ok(!$('#tab-character').contains($('#notes-section')));
+  tab('journal');
+  assert.ok($('#tab-journal').classList.contains('is-active'));
+  assert.ok(!$('#tab-character').classList.contains('is-active'));
+});
+
+test('Split view: a right-click on a tab shows it on the right; a left-click or a second right-click takes it back', () => {
+  const btn = name => $$('#tabs .tab-btn').find(b => b.dataset.tab === name);
+  const rclick = el => el.dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  tab('character');
+  rclick(btn('journal'));
+  assert.ok($('#tab-character').classList.contains('is-active'), 'the main tab stays');
+  assert.ok($('#tab-journal').classList.contains('is-split'));
+  assert.ok($('.main').classList.contains('is-split'));
+  assert.equal($('#split-head').hidden, false);
+  assert.match($('#split-title').textContent, /Journal/);
+  assert.equal(T.tabShown('journal'), true);
+  assert.equal(T.tabShown('combat'), false);
+
+  // Right-click the main tab: it moves to the split pane, and the main pane shows another tab.
+  rclick(btn('character'));
+  assert.ok($('#tab-character').classList.contains('is-split'));
+  assert.ok(!$('#tab-character').classList.contains('is-active'), 'a tab is never in both panes');
+  assert.equal($$('.tab-panel.is-active').length, 1);
+
+  // A left-click on the split tab takes it back into the main pane.
+  click(btn('character'));
+  assert.ok($('#tab-character').classList.contains('is-active'));
+  assert.equal($$('.tab-panel.is-split').length, 0);
+  assert.equal($('#split-head').hidden, true);
+
+  // A second right-click on the split tab, or the ×, closes the split.
+  rclick(btn('combat'));
+  assert.ok($('#tab-combat').classList.contains('is-split'));
+  rclick(btn('combat'));
+  assert.equal($$('.tab-panel.is-split').length, 0);
+  rclick(btn('compendium'));
+  click($('#split-close'));
+  assert.equal($$('.tab-panel.is-split').length, 0);
+  assert.ok(!$('.main').classList.contains('is-split'));
+});
+
+test('Compendium: only the categories in use show; hovering a row name shows the entry as Markdown', () => {
+  T.state.compendium = [
+    { id: 'c1', name: 'Blast', category: 'Powers', source: 'Magic', body: '**Range:** 100 meters\n\nA *beam*.', system: 'osr', createdAt: 1 },
+  ];
+  tab('compendium');
+  T.renderAll();
+  assert.deepEqual($$('#comp-cats input[data-cat]').map(cb => cb.dataset.cat), ['Powers'], 'no Stunts or Aspects');
+  assert.equal($('#comp-cats-row').hidden, false);
+  const ref = $('#comp-list .comp-row .comp-ref');
+  assert.equal(ref.dataset.name, 'Blast');
+  ref.dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true }));
+  const pop = $$('.comp-pop').find(p => !p.hidden && /Blast/.test(p.textContent));
+  assert.ok(pop, 'the popup opens');
+  assert.equal(pop.querySelector('.cpop-body strong').textContent, 'Range:');
+  assert.equal(pop.querySelector('.cpop-body em').textContent, 'beam');
+  T.hideCompPopNow();
+
+  T.state.compendium = [];
+  T.renderAll();
+  assert.equal($('#comp-cats-row').hidden, true, 'no entries: no Category row');
+  assert.equal($('#comp-sources-row').hidden, true);
+});
+
 test('Bestiary (BRP): the Setting filter and "Pick random" pick one monster from the filtered list', () => {
   T.state.settings.system = 'brp';
   T.state.monsters = [
@@ -1425,7 +1551,7 @@ test('Compendium: right-clicking a Category (or Source) filter isolates it; a ri
   assert.deepEqual(names(), ['Potion'], 'list narrows to Items + Homebrew');
 
   await rightClick($$('#comp-cats .comp-cat').find(l => l.textContent.trim() === 'Items'));
-  assert.deepEqual(checkedCats(), window.OSR.COMPENDIUM_CATEGORIES.slice(), 'a right-click on the only ticked category ticks every category');
+  assert.deepEqual(checkedCats(), ['Items', 'Spells'], 'a right-click on the only ticked category ticks every category (only the categories in use show)');
   await rightClick($$('#comp-sources .comp-cat').find(l => l.textContent.trim() === 'Homebrew'));
   assert.equal(checkedSrcs().length, $$('#comp-sources input[data-src]').length, 'a right-click on the only ticked source ticks every source');
   assert.equal(names().length, 3);
@@ -1471,7 +1597,7 @@ test('Compendium/Tables filter checkboxes: a spurious "change" fired alongside a
   change(spells());
   contextmenu(spells());
   await tick();
-  assert.deepEqual(checkedCats(), window.OSR.COMPENDIUM_CATEGORIES.slice(), 'every category is ticked again');
+  assert.deepEqual(checkedCats(), ['Items', 'Spells'], 'every category in use is ticked again');
   contextmenu(items());
   await tick();
   assert.deepEqual(checkedCats(), ['Items']);

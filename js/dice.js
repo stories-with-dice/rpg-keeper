@@ -130,8 +130,53 @@
   OSR.lastFate = null;
 
   // opts.quiet: log only, leave the Dice Roller's last-roll box (and its apply context) as it is.
+  // A short "swoosh" on every roll: white noise through a band-pass filter
+  // that sweeps down, with a quick fade in and out. Made with the Web Audio
+  // API, so there is no sound file and no network use. On by default; the
+  // Settings tab's "Roll sound" turns it off for this browser
+  // (localStorage, like the other per-device settings).
+  const ROLL_SOUND_KEY = 'osr_roll_sound';
+  let audioCtx = null;
+  function rollSoundOn() {
+    try { return localStorage.getItem(ROLL_SOUND_KEY) !== 'off'; } catch (e) { return true; }
+  }
+  function setRollSound(on) {
+    try { localStorage.setItem(ROLL_SOUND_KEY, on ? 'on' : 'off'); } catch (e) { /* this page only */ }
+  }
+  function playRollSound() {
+    if (!rollSoundOn()) return false;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    try {
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+      const ctx = audioCtx, now = ctx.currentTime, dur = 0.28;
+      const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.Q.value = 1.2;
+      filter.frequency.setValueAtTime(2600, now);
+      filter.frequency.exponentialRampToValueAtTime(500, now + dur);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.35, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      src.start(now);
+      src.stop(now + dur);
+      return true;
+    } catch (e) {
+      return false; // no audio: the roll still works
+    }
+  }
+
   function pushLog(source, formula, total, detail, opts) {
     const state = OSR.state;
+    playRollSound(); // every roll goes through here (dice, % rolls, tables); notes do not
     const entry = { id: OSR.uid(), ts: Date.now(), source: source || 'Roll', formula: formula, total: total, detail: detail || '' };
     state.log.push(entry);
     if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
@@ -294,7 +339,7 @@
     }
   }
 
-  Object.assign(OSR, {
+  Object.assign(OSR, { playRollSound, rollSoundOn, setRollSound,
     rollDie, rollTerm, evalFormula, defaultDie, normVarKey, substituteVars, formatFormulaDisplay,
     pushLog, pushNote, doRoll, rollPercent, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog, copyText
   });

@@ -7,8 +7,8 @@
   const $ = OSR.$;
 
   let notesTimer = null;
-  // Exposed on OSR: js/main.js's tab-click handler refreshes the CodeMirror
-  // view when switching back to the Character tab.
+  // Exposed on OSR: js/main.js refreshes the CodeMirror view when the
+  // Journal tab shows (a hidden editor has no size).
   OSR.notesMDE = null;
 
   function submitNote() {

@@ -96,9 +96,18 @@
     return Array.from(new Set(compendiumForSystem().map(e => e.source || COMPENDIUM_DEFAULT_SOURCE)))
       .sort((a, b) => a.localeCompare(b));
   }
+  // Only the categories that an entry of this System has (no Fate Stunts or
+  // Aspects in BRP). The Category row hides when no entry has one.
+  function compCatsInUse() {
+    const have = new Set(compendiumForSystem().map(e => e.category));
+    return COMPENDIUM_CATEGORIES.filter(c => have.has(c));
+  }
   function renderCompCats() {
     const on = compCats();
-    $('#comp-cats').innerHTML = COMPENDIUM_CATEGORIES.map(c =>
+    const used = compCatsInUse();
+    $('#comp-cats-row').hidden = !used.length;
+    $('#comp-sources-row').hidden = !compSources().length;
+    $('#comp-cats').innerHTML = used.map(c =>
       '<label class="comp-cat"><input type="checkbox" data-cat="' + escapeHtml(c) + '"' +
       (on.has(c) ? ' checked' : '') + ' /> ' + escapeHtml(c) + '</label>').join('');
     const srcs = compSources();
@@ -143,7 +152,10 @@
     $('#comp-list').innerHTML = list.map(e =>
       '<li class="comp-row" data-id="' + e.id + '">' +
         '<div class="comp-row-head">' +
-          '<span class="comp-name">' + escapeHtml(e.name || '(unnamed)') + '</span>' +
+          // A .comp-ref: hovering the name opens the shared popup (js/compendium-popups.js),
+          // which renders the entry's body as Markdown.
+          '<span class="comp-name comp-ref comp-row-ref" data-name="' + escapeHtml(e.name || '') + '">' +
+            escapeHtml(e.name || '(unnamed)') + '</span>' +
           '<span class="badge">' + escapeHtml(e.category) + '</span>' +
           '<span class="badge comp-src-badge">' + escapeHtml(e.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>' +
           (e.skill ? '<span class="badge comp-skill-badge">' + escapeHtml(e.skill) + '</span>' : '') +

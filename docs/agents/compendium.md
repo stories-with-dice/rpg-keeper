@@ -6,7 +6,11 @@
   `category` ∈ `OSR.COMPENDIUM_CATEGORIES` (includes `'Spells'`, `'Powers'`, `'Journal'`); `source`
   is free text (default `OSR.COMPENDIUM_DEFAULT_SOURCE`, "Unknown"); `system` is set at creation
   from `currentSystem()` and never changed by an edit.
-- Filters: category and source checkboxes (`#comp-cats`, `#comp-sources`). A right-click isolates
+- A row's name is a `.comp-ref` (`.comp-row-ref`), so the shared hover popup shows the entry with its
+  body as Markdown.
+- Filters: category and source checkboxes (`#comp-cats`, `#comp-sources`). The category row lists
+  only the categories that an entry of the System has (`compCatsInUse()`); `#comp-cats-row` and
+  `#comp-sources-row` hide when empty. A right-click isolates
   one (deferred with `setTimeout(…, 0)` so a stray `change` cannot win). A right-click when no
   other box in the row is ticked ticks them all again (the target's own box is ignored: a stray
   toggle can untick it first).
