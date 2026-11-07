@@ -34,6 +34,7 @@ const SCRIPTS = [
   'js/store.js',
   'js/seeds.js',
   'js/dice.js',
+  'js/dice3d.js',
   'js/annotate.js',
   'js/mde.js',
   'js/characters.js',

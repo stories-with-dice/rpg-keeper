@@ -234,6 +234,7 @@
     // pushLog cleared lastRoll — a % roll isn't "damage" itself, but an
     // Unknown Armies attack's wounds come from it (see js/combat.js).
     OSR.lastPercent = { roll: roll, target: target, verdict: verdict, source: source || 'Roll' };
+    if (OSR.show3dDice) OSR.show3dDice([{ sides: 100, value: roll }]); // js/dice3d.js: two d10s
     OSR.updateApplyButton();
     return entry;
   }
@@ -264,6 +265,7 @@
     const entry = pushLog(source || 'Roll', res.normalized + (target != null ? ' ≥ ' + target : ''), res.total, detail);
     // pushLog cleared lastRoll; a Dice Roller roll is applyable, so set it now.
     OSR.lastRoll = { total: res.total, dice: res.dice, flat: res.flat, normalized: res.normalized };
+    if (OSR.show3dDice) OSR.show3dDice(res.dice); // js/dice3d.js
     // The Fate dice actions (invoke +2, reroll) act on this roll (js/fate-ui.js).
     if (res.fate) OSR.lastFate = { formula: res.normalized, total: res.total, source: source || 'Roll' };
     OSR.updateApplyButton();

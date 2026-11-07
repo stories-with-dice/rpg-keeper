@@ -227,6 +227,12 @@ The preset buttons are icons with the die under them (Font Awesome has no d4, d8
 icon, so those use the d20 icon). Every roll (dice, percentile rolls, tables) plays a short swoosh;
 turn it off in Settings → **Roll sound** (saved in this browser only).
 
+Every dice roll (Dice Roller, sheet, Combat, Compendium popups, percentile rolls; not the random tables)
+also rolls **3D dice** over the page. They tumble in, land with the rolled faces toward you, and fade;
+**Esc** removes them at once, and they never block a click. A d% roll shows two d10s, a Fate roll its
+Fate dice; dice other than d4, d6, d8, d10, d12, and d20 are not drawn. Turn them off in Settings →
+**3D dice** (saved in this browser only). They are also off when your system asks for reduced motion.
+
 Preset buttons: `d20`, `Adv` (2d20 keep-highest), `Dis` (2d20 keep-lowest), `d4`–`d12`, `d100`,
 `2d6`, `3d6`, `4d6kh3`. Plus a **custom formula** field.
 
@@ -829,6 +835,7 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
 
 ## Credits
 
+- 3D dice: [three.js](https://threejs.org) r159 (MIT license, `vendor/three/LICENSE`).
 - Monster data: the **Shadowdark RPG** core bestiary (© The Arcane Library) — see
   `data/bestiary_data.json`.
 - Map token icons: [game-icons.net](https://game-icons.net) by Lorc, Delapouite, Skoll,

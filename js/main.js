@@ -167,6 +167,7 @@
     OSR.wireHistory();
     OSR.wireSeeds();
     OSR.wireRollPopup();
+    OSR.wireDice3d();
   }
 
   /* ------------------------------------------------------------------ */

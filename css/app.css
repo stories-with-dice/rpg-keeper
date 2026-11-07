@@ -197,6 +197,11 @@ button, input, textarea, select {
 .btn.btn-link { background: none; border: 0; padding: 0; color: var(--accent-2); text-decoration: underline; font: inherit; }
 .btn-danger:hover { background: var(--danger-bg-hover); }
 
+/* ---------- 3D dice (js/dice3d.js) ---------- */
+/* Over everything, but the mouse goes through to the page. */
+.dice3d-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 9000; pointer-events: none; }
+.dice3d-canvas[hidden] { display: none; }
+
 /* ---------- Layout ---------- */
 .layout {
   display: flex;

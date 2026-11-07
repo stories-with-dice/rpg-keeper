@@ -1302,6 +1302,35 @@ test('Roll sound: on by default, plays on a roll, and the Settings checkbox turn
   }
 });
 
+test('3D dice: each rolled die maps to a solid and the face that lands up; d% is two d10s', () => {
+  const show = T.diceToShow([
+    { sides: 20, value: 17 }, { sides: 10, value: 10 }, { sides: 'F', value: -1 }, { sides: 'F', value: 0 },
+    { sides: 3, value: 2 }, { sides: 100, value: 100 }, { sides: 100, value: 47 },
+  ]);
+  assert.deepEqual(show.map(d => [d.sides, d.label]),
+    [[20, '17'], [10, '0'], ['F', '−'], ['F', ''], [10, '00'], [10, '0'], [10, '40'], [10, '7']],
+    'a d3 has no solid; a d10 shows 10 as 0; 100 is 00 + 0');
+  show.forEach(d => assert.ok(d.labels.indexOf(d.label) !== -1, d.sides + ': the label is a face'));
+  assert.equal(T.diceToShow(Array.from({ length: 30 }, () => ({ sides: 6, value: 1 }))).length, 12, 'at most 12 dice');
+});
+
+test('3D dice: on by default; the Settings checkbox turns them off; never drawn in jsdom', () => {
+  try { window.localStorage.removeItem('osr_dice_3d'); } catch (e) { /* no storage */ }
+  assert.equal(T.dice3dOn(), true);
+  tab('settings');
+  T.renderAll();
+  const cb = $('#set-dice-3d');
+  assert.equal(cb.checked, true);
+  assert.equal(T.show3dDice([{ sides: 6, value: 3 }]), false, 'jsdom has no WebGL: no dice, no error');
+  cb.checked = false;
+  fire(cb, 'change');
+  assert.equal(T.dice3dOn(), false);
+  cb.checked = true;
+  fire(cb, 'change');
+  assert.equal(T.dice3dOn(), true);
+  try { window.localStorage.removeItem('osr_dice_3d'); } catch (e) { /* no storage */ }
+});
+
 test('Journal: has its own tab, not the Character tab', () => {
   assert.ok($('#tab-journal').contains($('#notes-area')));
   assert.ok(!$('#tab-character').contains($('#notes-section')));

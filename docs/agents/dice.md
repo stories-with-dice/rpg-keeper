@@ -8,6 +8,17 @@
 - `doRoll(formula, source, vars)`: `substituteVars` for `$Name`, then eval, `pushLog`, and
   `lastRoll` (drives Apply damage). An unknown `$Name` is rejected (`Invalid: … (unknown $Name)`).
   A `%NN` formula goes to `rollPercent()`.
+- 3D dice (`js/dice3d.js`): `doRoll` and `rollPercent` call `OSR.show3dDice(dice)` with the kept
+  dice (not the random tables: they use `evalFormula` directly). `diceToShow(dice)` (pure) maps them
+  to solids and the face label that lands up: d4, d6, d8, d10 (10 shows "0"), d12, d20, Fate (a cube
+  with +, +, −, −, blank, blank), and d% as two d10s ("00"–"90" and "0"–"9"); other dice are not
+  drawn; at most 12. three.js loads on the first 3D roll. Each die flies in and tumbles on a fixed path
+  (no physics) that ends with the rolled face toward the camera, holds, and fades; `Escape` clears
+  it. The canvas `.dice3d-canvas` has `pointer-events: none`. Off when `osr_dice_3d` is `'off'`
+  (Settings → 3D dice), with `prefers-reduced-motion`, without WebGL, and in jsdom. The result never
+  waits for the dice.
+- Roll sound: `pushLog` plays `playRollSound()` (Web Audio noise burst) unless `osr_roll_sound` is
+  `'off'`.
 - `pushLog(source, formula, total, detail)` is a roll line; `pushNote(source, text, detail)` a plain
   line (`{ md: true }` renders Markdown).
 
