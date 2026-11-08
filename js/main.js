@@ -14,7 +14,7 @@
       if (e.key === 'Escape') {
         OSR.closeAC(); OSR.closeSelMenu(); OSR.closeRollPopup(); OSR.closePasteModal();
         OSR.closeMonsterEdit(); OSR.closeMonsterModal(); OSR.closeCtxMenu();
-        OSR.closePopulateHdModal(); OSR.closeDropboxModal(); OSR.closeMonsterGenerator();
+        OSR.closePopulateHdModal(); OSR.closeDropboxModal(); OSR.closeMonsterGenerator(); OSR.closeNewCharMenu();
         OSR.closeCompEntry(); OSR.closeAllCompPops(); OSR.closeSceneModal(); OSR.closeExportModal(); OSR.closeMapMenu();
         OSR.closeTableEditor(); OSR.closeImportModal(); OSR.closeFateGenerator(); OSR.closeFateEncounter();
       }
@@ -80,6 +80,7 @@
     $('#split-title').textContent = splitTab ? tabLabel(splitTab) : '';
     OSR.updateApplyButton(); // "Apply damage" shows only with the Combat or Maps tab
     OSR.syncCompPopsToTab(shownTabs()); // popups show only on the tabs they were opened from
+    OSR.applyMapRail(); // the Maps tab can hide the side panel
   }
 
   function showTab(name) {

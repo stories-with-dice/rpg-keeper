@@ -382,7 +382,7 @@
             '</button>' +
             (t.user ? '<button class="btn tbl-edit" data-id="' + id + '"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
             '<button class="btn tbl-dup" data-id="' + id + '"><i class="fa-solid fa-copy"></i> Duplicate</button>' +
-            (t.user ? '<button class="btn btn-danger tbl-del" data-id="' + id + '"><i class="fa-solid fa-trash"></i></button>' : '') +
+            (t.user ? '<button class="btn row-del tbl-del" data-id="' + id + '" title="Delete this table" aria-label="Delete this table"><i class="fa-solid fa-trash"></i></button>' : '') +
           '</div>' +
           (last ? '<div class="tbl-result" data-id="' + id + '">' + resultHtml(t, last.tree) + '</div>' : '') +
           '<table class="tbl-entries">' + head + '<tbody>' +

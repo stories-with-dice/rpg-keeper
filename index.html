@@ -13,20 +13,21 @@
   <header class="app-header">
     <h1>Character Keeper</h1>
     <nav class="tabs" id="tabs" title="Click a tab to open it. Right-click a tab to open it in a split view on the right; right-click it again to close the split.">
-      <button class="tab-btn is-active" data-tab="character"><i class="fa-solid fa-user"></i> Character</button>
-      <button class="tab-btn" data-tab="journal"><i class="fa-solid fa-feather"></i> Journal</button>
-      <button class="tab-btn" data-tab="combat"><i class="fa-solid fa-khanda"></i> Combat</button>
-      <button class="tab-btn" data-tab="bestiary"><i class="fa-solid fa-dragon"></i> Bestiary</button>
-      <button class="tab-btn" data-tab="maps"><i class="fa-solid fa-map"></i> Maps</button>
-      <button class="tab-btn" data-tab="compendium"><i class="fa-solid fa-book"></i> Compendium</button>
-      <button class="tab-btn" data-tab="tables"><i class="fa-solid fa-table-list"></i> Tables</button>
-      <button class="tab-btn" data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+      <button class="tab-btn is-active" data-tab="character"><i class="fa-solid fa-user"></i> <span class="tab-label">Character</span></button>
+      <button class="tab-btn" data-tab="journal"><i class="fa-solid fa-feather"></i> <span class="tab-label">Journal</span></button>
+      <button class="tab-btn" data-tab="combat"><i class="fa-solid fa-khanda"></i> <span class="tab-label">Combat</span></button>
+      <button class="tab-btn" data-tab="bestiary"><i class="fa-solid fa-dragon"></i> <span class="tab-label">Bestiary</span></button>
+      <button class="tab-btn" data-tab="maps"><i class="fa-solid fa-map"></i> <span class="tab-label">Maps</span></button>
+      <button class="tab-btn" data-tab="compendium"><i class="fa-solid fa-book"></i> <span class="tab-label">Compendium</span></button>
+      <button class="tab-btn" data-tab="tables"><i class="fa-solid fa-table-list"></i> <span class="tab-label">Tables</span></button>
+      <button class="tab-btn" data-tab="settings"><i class="fa-solid fa-gear"></i> <span class="tab-label">Settings</span></button>
     </nav>
     <div class="header-actions">
       <select id="campaign-select" class="btn campaign-select" title="Campaign" aria-label="Campaign"></select>
+      <select id="header-system" class="btn system-select" title="Game system: each tab lists only this system's characters, monsters, Compendium entries, and scenes" aria-label="Game system"></select>
       <button id="dbx-status" class="btn dbx-status" hidden></button>
-      <button id="btn-export" class="btn"><i class="fa-solid fa-file-export"></i> Export</button>
-      <button id="btn-import" class="btn"><i class="fa-solid fa-file-import"></i> Import</button>
+      <button id="btn-export" class="btn" title="Export" aria-label="Export"><i class="fa-solid fa-file-export"></i> <span class="btn-label">Export</span></button>
+      <button id="btn-import" class="btn" title="Import" aria-label="Import"><i class="fa-solid fa-file-import"></i> <span class="btn-label">Import</span></button>
       <input type="file" id="file-import" accept="application/json,.json,application/zip,.zip" hidden />
     </div>
   </header>
@@ -49,16 +50,20 @@
             <span>Character B</span>
             <select id="char-select-b"></select>
           </label>
-          <button id="btn-new-blank" class="btn">New blank</button>
-          <button id="btn-new-paste" class="btn btn-primary">Paste from clipboard</button>
-          <button id="btn-new-text" class="btn">New from text&hellip;</button>
-          <button id="btn-rename" class="btn">Rename</button>
-          <button id="btn-delete" class="btn btn-danger">Delete</button>
+          <div class="menu-wrap" id="char-new">
+            <button id="btn-new-menu" class="btn btn-primary" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="char-new-menu">
+              <i class="fa-solid fa-plus"></i> New character <i class="fa-solid fa-caret-down"></i></button>
+            <div class="menu-pop" id="char-new-menu" role="menu" hidden>
+              <button id="btn-new-blank" class="menu-item" type="button" role="menuitem"><i class="fa-regular fa-file"></i> Blank sheet</button>
+              <button id="btn-new-paste" class="menu-item" type="button" role="menuitem"><i class="fa-solid fa-paste"></i> Paste from clipboard</button>
+              <button id="btn-new-text" class="menu-item" type="button" role="menuitem"><i class="fa-solid fa-align-left"></i> From text&hellip;</button>
+            </div>
+          </div>
         </div>
 
         <div id="char-empty" class="empty-state">
           <p>No characters yet.</p>
-          <p>Use <strong>Paste from clipboard</strong> or <strong>New from text</strong> to create one from a sheet, or <strong>New blank</strong> to start fresh.</p>
+          <p>Use <strong>New character</strong> &rarr; <strong>Paste from clipboard</strong> or <strong>From text&hellip;</strong> to create one from a sheet, or <strong>Blank sheet</strong> to start fresh.</p>
         </div>
 
         <div id="char-view" hidden>
@@ -70,6 +75,8 @@
             <div class="view-toggle">
               <button id="btn-mode-view" class="btn is-active">View</button>
               <button id="btn-mode-edit" class="btn">Edit</button>
+              <button id="btn-rename" class="btn">Rename</button>
+              <button id="btn-delete" class="btn row-del" title="Delete this character" aria-label="Delete this character"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
 
@@ -117,9 +124,10 @@
             <button id="cb-add-monster" class="btn">+ Add monster&hellip;</button>
             <button id="cb-populate-hd" class="btn">+ Populate by <span class="hd-label">HD</span>&hellip;</button>
             <button id="cb-clear" class="btn btn-danger">Clear</button>
+            <button id="cb-help" class="btn" type="button" title="Combat hotkeys" aria-label="Combat hotkeys" aria-expanded="false" aria-controls="cb-keys-hint"><i class="fa-solid fa-circle-question"></i></button>
           </div>
         </div>
-        <p class="hint cb-hint">
+        <p class="hint cb-hint" id="cb-keys-hint" hidden>
           <kbd>&uarr;</kbd>/<kbd>&darr;</kbd> select combatant &middot;
           <kbd>N</kbd>/<kbd>P</kbd> next/prev turn &middot;
           drag rows to reorder &middot; click stats in the panel below to roll them
@@ -141,7 +149,11 @@
           <b>Clear stress</b> empties every box at the end of the conflict.
         </p>
         <ol class="tracker-list" id="tracker-list"></ol>
-        <p id="tracker-empty" class="hint">No combatants yet. Add a character or monster above.</p>
+        <div id="tracker-empty" class="empty-state">
+          <p><i class="fa-solid fa-khanda empty-icon" aria-hidden="true"></i></p>
+          <p>No combatants yet.</p>
+          <p>Use <strong>+ Add character&hellip;</strong>, <strong>+ Add monster&hellip;</strong>, or <strong>+ Populate by <span class="hd-label">HD</span>&hellip;</strong> above.</p>
+        </div>
         <div id="combatant-detail" class="combatant-detail"></div>
       </section>
 
@@ -237,6 +249,7 @@
           <button id="map-undo" class="btn" title="Undo (Ctrl+Z)" aria-label="Undo"><i class="fa-solid fa-rotate-left"></i></button>
           <button id="map-redo" class="btn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><i class="fa-solid fa-rotate-right"></i></button>
           <button id="map-fit" class="btn" title="Show the whole map (Alt+F)" aria-label="Show the whole map"><i class="fa-solid fa-expand"></i></button>
+          <button id="map-rail" class="btn" type="button" aria-pressed="false" title="Hide the Dice Roller and Consumables while the Maps tab shows, so the map is wider. Saved in this browser only." aria-label="Hide the side panel"><i class="fa-solid fa-table-columns"></i></button>
           <button id="map-popout" class="btn" title="Open the map in its own window, for a second screen (Alt+O). Both windows show the same campaign." aria-label="Pop out"><i class="fa-solid fa-up-right-from-square"></i></button>
           <details class="map-drop map-grid-panel" id="map-grid-panel">
             <summary class="btn" title="Grid settings (Alt+G)"><i class="fa-solid fa-border-all"></i> Grid</summary>
@@ -335,13 +348,16 @@
             <button id="map-popout-reopen" class="btn btn-primary" type="button">Open the app here</button>
           </div>
           <div class="token-card" id="token-card" hidden></div>
-          <div class="map-empty" id="map-empty" hidden>No scenes for this System yet. Choose <b>+ New scene…</b>, drop an image here, or paste one (Ctrl+V).</div>
+          <div class="map-empty" id="map-empty" hidden><p><i class="fa-solid fa-map empty-icon" aria-hidden="true"></i><br>No scenes for this System yet. Choose <b>+ New scene…</b>, drop an image here, or paste one (Ctrl+V).</p></div>
         </div>
       </section>
 
       <!-- ===== Settings tab ===== -->
       <section class="tab-panel" id="tab-settings">
         <h2>Settings</h2>
+
+        <h3 class="settings-group">Campaign and game system</h3>
+        <p class="hint settings-group-hint">Saved in this campaign. Each campaign has its own System and rules options.</p>
 
         <div class="setting-row setting-row-action">
           <span class="setting-text">
@@ -357,17 +373,9 @@
         <div class="setting-row setting-row-action">
           <span class="setting-text">
             <b>System</b>
-            <span class="hint">Which game system you're running. Partitions the Compendium — each entry belongs to one system, and only that system's entries are listed/searched/linked. Everything created before this setting existed is <b>OSR</b>.</span>
+            <span class="hint">Which game system you're running. Every tab lists only this system's characters, monsters, Compendium entries, and scenes. You can also change it in the header, next to the campaign. Everything created before this setting existed is <b>OSR</b>.</span>
           </span>
           <select id="set-system" class="btn"></select>
-        </div>
-
-        <div class="setting-row setting-row-action">
-          <span class="setting-text">
-            <b>Style theme</b>
-            <span class="hint">Recolours and re-fonts the whole app. Dark mode only. <b>Fantasy</b> &mdash; parchment &amp; gold on mahogany; <b>Sci-fi</b> &mdash; cyan on slate, wide caps; <b>Horror</b> &mdash; bone &amp; blood on near-black.</span>
-          </span>
-          <select id="set-theme" class="btn"></select>
         </div>
 
         <div class="setting-row setting-row-action" id="set-wwn-spells-row" hidden>
@@ -401,28 +409,50 @@
         </div>
 
         <label class="setting-row">
-          <input type="checkbox" id="set-dice-3d" />
-          <span class="setting-text">
-            <b>3D dice</b>
-            <span class="hint">Every dice roll (not the random tables) also rolls 3D dice over the page; they land on the rolled faces and fade. <kbd>Esc</kbd> removes them. On by default. Off when your system asks for reduced motion. Saved in this browser only, not in the campaign.</span>
-          </span>
-        </label>
-
-        <label class="setting-row">
-          <input type="checkbox" id="set-roll-sound" />
-          <span class="setting-text">
-            <b>Roll sound</b>
-            <span class="hint">A short swoosh on every roll (dice, percentile rolls, tables). On by default. Saved in this browser only, not in the campaign.</span>
-          </span>
-        </label>
-
-        <label class="setting-row">
           <input type="checkbox" id="set-scarlet-heroes" />
           <span class="setting-text">
             <b>Scarlet Heroes damage resolution</b>
             <span class="hint">When on, applying damage translates <em>each</em> damage die (1&nbsp;&rarr;&nbsp;0, 2&ndash;5&nbsp;&rarr;&nbsp;1, 6&ndash;9&nbsp;&rarr;&nbsp;2, 10+&nbsp;&rarr;&nbsp;4), sums the results, then subtracts from a monster&rsquo;s <b>HD</b> or a character&rsquo;s <b>HP</b>. A flat damage bonus is added to the single highest die before translating. Off (default): the raw rolled total is subtracted from HP.</span>
           </span>
         </label>
+
+        <h3 class="settings-group">Look and sound</h3>
+        <p class="hint settings-group-hint">The style theme is saved in this campaign. 3D dice and the roll sound are saved in this browser only.</p>
+
+        <div class="setting-row setting-row-action">
+          <span class="setting-text">
+            <b>Style theme</b>
+            <span class="hint">Recolours and re-fonts the whole app. Dark mode only. <b>Fantasy</b> &mdash; parchment &amp; gold on mahogany; <b>Sci-fi</b> &mdash; cyan on slate, wide caps; <b>Horror</b> &mdash; bone &amp; blood on near-black.</span>
+          </span>
+          <select id="set-theme" class="btn"></select>
+        </div>
+
+        <label class="setting-row">
+          <input type="checkbox" id="set-dice-3d" />
+          <span class="setting-text">
+            <b>3D dice</b>
+            <span class="hint">A dice roll (not the random tables) first throws 3D dice across the page. They bounce, land on the rolled faces, and then the total shows, with the Session Log line. <kbd>Esc</kbd> skips to the result. Off: the result shows at once. On by default. Off when your system asks for reduced motion. Saved in this browser only, not in the campaign.</span>
+          </span>
+        </label>
+
+        <div class="setting-row setting-row-action">
+          <span class="setting-text">
+            <b>Dice skin</b>
+            <span class="hint">The look of the 3D dice. <b>Theme color</b> (default) uses the style theme's accent color. <b>Random</b> gives each die of a roll its own skin. A change throws two dice to show it. Saved in this browser only, not in the campaign.</span>
+          </span>
+          <select id="set-dice-skin" class="btn"></select>
+        </div>
+
+        <label class="setting-row">
+          <input type="checkbox" id="set-roll-sound" />
+          <span class="setting-text">
+            <b>Dice sound</b>
+            <span class="hint">With 3D dice: the dice clatter as they bounce and roll, and a click plays when the result shows. Without 3D dice (and for the random tables): a short swoosh. On by default. Saved in this browser only, not in the campaign.</span>
+          </span>
+        </label>
+
+        <h3 class="settings-group">Libraries and example data</h3>
+        <p class="hint settings-group-hint">For the current System.</p>
 
         <div class="setting-row setting-row-action">
           <span class="setting-text">
@@ -462,6 +492,8 @@
           </span>
           <button id="set-add-pregens" class="btn">Add missing pregens</button>
         </div>
+
+        <h3 class="settings-group">Sync</h3>
 
         <div class="setting-row setting-row-action dbx-row">
           <span class="setting-text">
@@ -979,6 +1011,7 @@
   <script src="js/store.js"></script>
   <script src="js/seeds.js"></script>
   <script src="js/dice.js"></script>
+  <script src="js/dice-sound.js"></script>
   <script src="js/dice3d.js"></script>
   <script src="js/annotate.js"></script>
   <script src="js/mde.js"></script>

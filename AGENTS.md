@@ -66,7 +66,7 @@ they also `module.exports` for Node.
 | `js/seeds.js` | the seed store (`OSR.seeds`), seed copies, Settings → New defaults |
 | `js/data.js` | `OSR.loadData()`: fetches every `data/` file into `OSR.data` |
 | `js/campaigns.js` | campaign selector and Settings → Campaign |
-| `js/dice.js`, `js/annotate.js`, `js/dice-ui.js`, `js/dice3d.js` | dice engine and log; sheet text → roll spans; Dice Roller panel and roll popup; the 3D dice over the page |
+| `js/dice.js`, `js/annotate.js`, `js/dice-ui.js`, `js/dice3d.js`, `js/dice-sound.js` | dice engine and log; sheet text → roll spans; Dice Roller panel and roll popup; the 3D dice thrown over the page; their sounds |
 | `js/characters.js` | character CRUD, View/Edit, UA statblock panel, sheet-selection menu |
 | `js/consumables.js`, `js/notes.js`, `js/mde.js` | trackers; the Journal; the shared EasyMDE builder |
 | `js/combat.js`, `js/combat-populate.js` | Combat tracker; Populate by HD |
@@ -117,6 +117,10 @@ node book-extracts/build_wwn.js   # owner only (private): PDF text → data/seed
   `OSR.tabShown(name)`, not `.is-active`. Keyboard shortcuts stay on `.is-active` (the main pane), so
   two shown tabs do not both answer a key. `onTabShown(name)` renders a tab when it shows in either
   pane; add a new tab's render call there.
+- **Styling** (`css/app.css`): font sizes use the type-scale tokens (`--fs-xs` 11px … `--fs-xl`), never
+  raw px; 11px is the smallest. Every `.btn` gets the disabled look and the global `:focus-visible`
+  ring for free. A list row puts its buttons in `.row-actions` (right column); a delete button in a
+  list is `.btn.row-del` (neutral, red on hover), not `.btn-danger`.
 - **Visibility**: `el.hidden = true/false`, not `style.display`. If CSS gives the element a
   `display`, add `.thing[hidden] { display: none }`.
 - **Popups and menus** that close on an outside `mousedown`/`scroll` must whitelist their own
@@ -124,7 +128,7 @@ node book-extracts/build_wwn.js   # owner only (private): PDF text → data/seed
 - **State**: a new persisted field goes in `STATE_DEFAULTS` and gets a backfill in
   `ensureStateShape()`. Entries made at runtime (`addCharEntry`, `addMonsterEntry`) must have every
   field `ensureStateShape` expects. Everything in `state` is exported and synced: per-device or
-  secret data goes in `localStorage` (`osr_map_sticky`, `osr_map_rclick_pan`, `osr_map_views`, `osr_map_pops`, `osr_last_tab`, `osr_split_tab`, `osr_roll_sound`, `osr_dice_3d`,
+  secret data goes in `localStorage` (`osr_map_sticky`, `osr_map_rclick_pan`, `osr_map_views`, `osr_map_pops`, `osr_last_tab`, `osr_split_tab`, `osr_roll_sound`, `osr_dice_3d`, `osr_dice_skin`, `osr_map_rail`,
   `osr_dropbox_*`).
 - **System scoping**: lists of characters, monsters, Compendium entries, and trackers go through
   the per-system helpers (`charactersForSystem`, `monstersForSystem`, `compendiumForSystem`,

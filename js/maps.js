@@ -895,6 +895,11 @@
     $('#map-delete').addEventListener('click', deleteScene);
     $('#map-fit').addEventListener('click', () => { const sc = activeScene(); if (sc) { fitScene(sc); renderScene(); } });
     $('#map-popout').addEventListener('click', popOut);
+    $('#map-rail').addEventListener('click', () => {
+      try { localStorage.setItem(RAIL_KEY, mapRailHidden() ? 'shown' : 'hidden'); } catch (err) { /* this page only */ }
+      applyMapRail();
+      renderMaps(); // the map is wider or narrower now
+    });
     // Closing this window ends what the pop-outs show: tell them.
     if (!isMapPopout()) {
       window.addEventListener('pagehide', () => mapWindows.forEach(w => { try { if (!w.closed && w.OSR) w.OSR.mainWindowClosed(); } catch (e) { /* gone */ } }));
@@ -935,7 +940,21 @@
   // Test-only view of the in-memory map state.
   const mapsState = () => ({ tool, sticky, rclickPan, views: JSON.parse(JSON.stringify(views)), overlay, status, images: new Map(images) });
 
-  Object.assign(OSR, {
+  // The side panel (Dice Roller, Consumables) can be hidden while the Maps tab
+  // is the only tab that shows. Per device: localStorage `osr_map_rail`.
+  const RAIL_KEY = 'osr_map_rail';
+  function mapRailHidden() {
+    try { return localStorage.getItem(RAIL_KEY) === 'hidden'; } catch (err) { return false; }
+  }
+  // Called by js/main.js applyTabs() on every tab change, and by #map-rail.
+  function applyMapRail() {
+    const hidden = mapRailHidden();
+    document.body.classList.toggle('rail-hidden', hidden && OSR.tabShown('maps') && !OSR.splitTab());
+    const b = $('#map-rail');
+    if (b) { b.classList.toggle('is-active', hidden); b.setAttribute('aria-pressed', hidden ? 'true' : 'false'); }
+  }
+
+  Object.assign(OSR, { applyMapRail,
     ensureSceneShape, scenesForSystem, activeScene, setActiveScene, createScene, storeImage, decodeImage, measureImageUrl,
     mapRect, mapView: viewOf, mapsIdle, setMapStatus: setStatus, setMapTool: setTool, mapToolUsed: toolUsed, setMapSticky: setSticky, setMapRclickPan: setRclickPan,
     openMapMenu, closeMapMenu, closeMapPanels, mapMenu,

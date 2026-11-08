@@ -129,8 +129,7 @@
   // The most recent Fate roll ({ formula, total, source }), for "Invoke +2" and "Reroll".
   OSR.lastFate = null;
 
-  // opts.quiet: log only, leave the Dice Roller's last-roll box (and its apply context) as it is.
-  // A short "swoosh" on every roll: white noise through a band-pass filter
+  // A short "swoosh" on a roll without 3D dice (3D dice have their own sounds, js/dice-sound.js): white noise through a band-pass filter
   // that sweeps down, with a quick fade in and out. Made with the Web Audio
   // API, so there is no sound file and no network use. On by default; the
   // Settings tab's "Roll sound" turns it off for this browser
@@ -174,16 +173,29 @@
     }
   }
 
+  // A roll line in the Session Log. Every roll goes through here (dice, % rolls,
+  // tables); notes do not.
+  // opts.quiet: log only, leave the Dice Roller's last-roll box (and its apply context) as it is.
+  // opts.dice: the roll's dice ([{ sides, value }]). With 3D dice on, they are
+  // thrown first (js/dice3d.js) and the log line and the result box show when
+  // they land. The entry is saved at once either way.
   function pushLog(source, formula, total, detail, opts) {
     const state = OSR.state;
-    playRollSound(); // every roll goes through here (dice, % rolls, tables); notes do not
     const entry = { id: OSR.uid(), ts: Date.now(), source: source || 'Roll', formula: formula, total: total, detail: detail || '' };
     state.log.push(entry);
     if (state.log.length > MAX_LOG) state.log = state.log.slice(-MAX_LOG);
     OSR.save();
-    appendLogEntry(entry);
-    if (opts && opts.quiet) return entry;
-    showLast(total, formula, detail);
+    const quiet = !!(opts && opts.quiet);
+    const reveal = () => {
+      // renderLog() may have drawn it already (a campaign switch while the dice rolled).
+      if (state.log.indexOf(entry) !== -1 && !$('#log-list').querySelector('[data-id="' + entry.id + '"]')) appendLogEntry(entry);
+      if (!quiet) showLast(total, formula, detail);
+      OSR.updateApplyButton();
+    };
+    const thrown = !!(opts && opts.dice && OSR.show3dDice &&
+      OSR.show3dDice(opts.dice, { source: entry.source, formula: formula, total: total, detail: detail, onLanded: reveal }));
+    if (!thrown) { playRollSound(); reveal(); }
+    if (quiet) return entry;
     // Any roll that isn't from the Dice Roller replaces what's shown, so retire the apply context.
     OSR.lastRoll = null;
     OSR.lastPercent = null;
@@ -230,11 +242,10 @@
     if (roll === 100) verdict = 'Fumble';
     else if (roll === 1) verdict = 'Crit';
     else if (tens === ones) verdict = 'Matched ' + verdict;
-    const entry = pushLog(source || 'Roll', '≤' + target + '%', roll, verdict);
+    const entry = pushLog(source || 'Roll', '≤' + target + '%', roll, verdict, { dice: [{ sides: 100, value: roll }] });
     // pushLog cleared lastRoll — a % roll isn't "damage" itself, but an
     // Unknown Armies attack's wounds come from it (see js/combat.js).
     OSR.lastPercent = { roll: roll, target: target, verdict: verdict, source: source || 'Roll' };
-    if (OSR.show3dDice) OSR.show3dDice([{ sides: 100, value: roll }]); // js/dice3d.js: two d10s
     OSR.updateApplyButton();
     return entry;
   }
@@ -262,10 +273,9 @@
     // A Fate roll shows its result on the ladder: "4dF [+ 0 − +] +3 → Good (+4)".
     let detail = res.fate && window.FateSheet ? res.detail + ' → ' + FateSheet.ladderLabel(res.total) : res.detail;
     if (target != null) detail += ' → vs ' + target + ': ' + (res.total >= target ? 'Success' : 'Failure') + ' (' + (res.total - target >= 0 ? '+' : '') + (res.total - target) + ')';
-    const entry = pushLog(source || 'Roll', res.normalized + (target != null ? ' ≥ ' + target : ''), res.total, detail);
+    const entry = pushLog(source || 'Roll', res.normalized + (target != null ? ' ≥ ' + target : ''), res.total, detail, { dice: res.dice });
     // pushLog cleared lastRoll; a Dice Roller roll is applyable, so set it now.
     OSR.lastRoll = { total: res.total, dice: res.dice, flat: res.flat, normalized: res.normalized };
-    if (OSR.show3dDice) OSR.show3dDice(res.dice); // js/dice3d.js
     // The Fate dice actions (invoke +2, reroll) act on this roll (js/fate-ui.js).
     if (res.fate) OSR.lastFate = { formula: res.normalized, total: res.total, source: source || 'Roll' };
     OSR.updateApplyButton();
@@ -290,6 +300,7 @@
     if (empty) empty.remove();
     const hasTotal = e.total !== '' && e.total != null;
     const li = document.createElement('li');
+    li.dataset.id = e.id;
     if (!hasTotal) li.className = 'log-note';
     li.innerHTML =
       '<span class="log-time">' + fmtTime(e.ts) + '</span>' +

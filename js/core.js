@@ -265,20 +265,21 @@
   }
 
   // Sheet resources: every "Name: current/max" on a sheet ("HP: 13/13; PP: 17/17",
-  // one per line or separated by ";" "|" ","), outside code fences. Each one
+  // one per line or separated by ";" "|" "," "·"), outside code fences. A bold
+  // name needs no colon ("**HP** 5/5 · **XP** 0", the Shadowdark sheets). Each one
   // gets a "Name (Character)" tracker; "HP" and "Hit Points" use the HP tracker.
   // Returns [{ name, value, max }].
-  const RESOURCE_RE = /(?:^|[;|,])[ \t]*\**[ \t]*([A-Za-z][A-Za-z .'()-]{0,29}?)[ \t]*\**[ \t]*:[ \t]*\**[ \t]*(\d+)[ \t]*\/[ \t]*(\d+)(?=[ \t]*\**[ \t]*(?:[;|,]|\r?$))/gm;
+  const RESOURCE_RE = /(?:^|[;|,\u00b7])[ \t]*(?:\*\*([A-Za-z][A-Za-z .'()-]{0,29}?)\*\*[ \t]*:?|\**[ \t]*([A-Za-z][A-Za-z .'()-]{0,29}?)[ \t]*\**[ \t]*:)[ \t]*\**[ \t]*(\d+)[ \t]*\/[ \t]*(\d+)(?=[ \t]*\**[ \t]*(?:[;|,\u00b7]|\r?$))/gm;
   function sheetResources(body) {
     const text = String(body || '').replace(/```[\s\S]*?```/g, '');
     const out = [], seen = new Set();
     let m;
     RESOURCE_RE.lastIndex = 0;
     while ((m = RESOURCE_RE.exec(text))) {
-      const name = m[1].replace(/^[-*>#\s]+/, '').trim();
+      const name = (m[1] || m[2]).replace(/^[-*>#\s]+/, '').trim();
       if (!name || seen.has(name.toLowerCase())) continue;
       seen.add(name.toLowerCase());
-      out.push({ name, value: +m[2], max: +m[3] });
+      out.push({ name, value: +m[3], max: +m[4] });
     }
     return out;
   }
@@ -324,6 +325,16 @@
     if (!state.consumables.some(c => c.name === label)) {
       state.consumables.push({ id: uid(), name: label, value: 0, max: 0 });
     }
+  }
+
+  // An untouched 0/0 HP tracker takes the sheet's HP ("HP: 5/5" or "**HP** 5/5").
+  // Runs at load, so a campaign saved before the sheet's HP could be read gets it
+  // too. A tracker the user changed keeps its values.
+  function fillHpTrackerFromSheet(ch) {
+    if (!ch) return;
+    const hp = sheetResources(ch.body).find(r => isHpName(r.name));
+    const c = hp && OSR.state.consumables.find(x => x.name === hpTrackerLabel(ch));
+    if (c && !c.value && !c.max) { c.value = Math.min(hp.value, hp.max || hp.value); c.max = hp.max; }
   }
 
   // Unknown Armies characters track Wound Threshold instead of HP. Same
@@ -378,6 +389,7 @@
       delete ch.consumables;
     });
     state.characters.forEach(ensureHpTracker);
+    state.characters.forEach(fillHpTrackerFromSheet);
     state.characters.forEach(ensureMadnessTracker);
     state.consumables.forEach(c => {
       if (!c.id) c.id = uid();

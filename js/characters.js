@@ -536,11 +536,14 @@
       if (parts[1] == null) {
         host.classList.remove('has-cols');
         host.innerHTML = renderCharMarkdown(a.body);
+        hideDupTitle(host, a);
+        flowSections(host);
         OSR.annotate(host, { vars: vars });
       } else {
         host.classList.add('has-cols');
         host.innerHTML = '<div class="char-cols">' +
           charColHtml(parts[0]) + charColHtml(parts[1]) + '</div>';
+        hideDupTitle($('.char-cols > .char-col', host), a);
         $$('.char-cols > .char-col', host).forEach(col => OSR.annotate(col, { vars: vars }));
       }
     }
@@ -565,6 +568,50 @@
     } else {
       host.classList.remove('has-cols');
       host.innerHTML = areaHtml(a);
+    }
+  }
+
+  function setNewMenuOpen(open) {
+    $('#char-new-menu').hidden = !open;
+    $('#btn-new-menu').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) $('#btn-new-blank').focus();
+  }
+  function closeNewCharMenu() { setNewMenuOpen(false); }
+
+  // A long one-column sheet: the text before the first "## " heading stays on
+  // top (.sheet-intro), and each "## " section goes in a .sheet-sec box inside
+  // .sheet-flow. On a wide screen the CSS flows the sections into two columns.
+  // A sheet with fewer than 3 sections stays as it is.
+  function flowSections(host) {
+    const kids = Array.from(host.childNodes);
+    const first = kids.findIndex(n => n.nodeName === 'H2');
+    if (first === -1 || kids.filter(n => n.nodeName === 'H2').length < 3) return;
+    const intro = document.createElement('div');
+    intro.className = 'sheet-intro';
+    const flow = document.createElement('div');
+    flow.className = 'sheet-flow';
+    let sec = null;
+    kids.forEach((n, i) => {
+      if (i < first) { intro.appendChild(n); return; }
+      if (n.nodeName === 'H2') {
+        sec = document.createElement('section');
+        sec.className = 'sheet-sec';
+        flow.appendChild(sec);
+      }
+      sec.appendChild(n);
+    });
+    if (intro.childNodes.length) host.appendChild(intro);
+    host.appendChild(flow);
+  }
+
+  // The header above the sheet shows the name, so a sheet that starts with an
+  // "# Name" heading of the same name hides that heading in View mode.
+  function hideDupTitle(host, ch) {
+    const h1 = host.querySelector('h1');
+    if (h1 && h1 === host.querySelector('h1, h2, h3, p, ul, ol, table, blockquote') &&
+        h1.textContent.trim().toLowerCase() === String(ch.name || '').trim().toLowerCase()) {
+      h1.hidden = true;
+      h1.classList.add('sheet-dup-title');
     }
   }
 
@@ -809,6 +856,12 @@
       OSR.save();
       refreshCharUI();
     });
+    // "New character" opens a small menu: Blank sheet, Paste from clipboard, From text….
+    $('#btn-new-menu').addEventListener('click', () => setNewMenuOpen($('#char-new-menu').hidden));
+    $('#char-new-menu').addEventListener('click', e => { if (e.target.closest('.menu-item')) setNewMenuOpen(false); });
+    document.addEventListener('mousedown', e => {
+      if (!$('#char-new-menu').hidden && !(e.target.closest && e.target.closest('#char-new'))) setNewMenuOpen(false);
+    });
     $('#btn-new-blank').addEventListener('click', () => createCharacter(null));
     $('#btn-new-paste').addEventListener('click', OSR.pasteFromClipboard);
     $('#btn-new-text').addEventListener('click', () => OSR.openPasteModal(''));
@@ -918,7 +971,7 @@
     window.addEventListener('resize', closeSelMenu);
   }
 
-  Object.assign(OSR, {
+  Object.assign(OSR, { closeNewCharMenu,
     detectNameSystem, createCharacter, charSystemKey, slFenceMadness, uaFenceDef, charactersForSystem, charB, fillCharOptions, refreshCharUI,
     splitBodyColumns, charColHtml, charColHead, renderCharView, renderCharEdit,
     setMode, renameHpTracker, renameWoundTracker, renameMadnessTracker, saveEdit, renameChar, deleteChar,

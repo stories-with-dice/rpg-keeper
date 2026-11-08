@@ -6,10 +6,23 @@
   'use strict';
   const $ = OSR.$;
 
+  // Short System names for the header selector (the header has little room).
+  const HEADER_SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies', brp: 'BRP', sl: 'Silent Legions', fate: 'Fate', wwn: 'WWN' };
+
   function renderSettings() {
     $('#set-scarlet-heroes').checked = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
     $('#set-roll-sound').checked = OSR.rollSoundOn();
     $('#set-dice-3d').checked = OSR.dice3dOn();
+    const skinSel = $('#set-dice-skin');
+    if (!skinSel.options.length) {
+      OSR.DICE_SKINS.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.id; o.textContent = s.label;
+        skinSel.appendChild(o);
+      });
+    }
+    skinSel.value = OSR.diceSkin();
+    skinSel.disabled = !OSR.dice3dOn();
     const sel = $('#set-theme');
     if (sel && !sel.options.length) {
       OSR.THEMES.forEach(t => {
@@ -19,15 +32,19 @@
       });
     }
     if (sel) sel.value = (OSR.state.settings && OSR.state.settings.theme) || 'default';
-    const sysSel = $('#set-system');
-    if (sysSel && !sysSel.options.length) {
-      OSR.SYSTEMS.forEach(s => {
-        const o = document.createElement('option');
-        o.value = s; o.textContent = OSR.SYSTEM_LABELS[s] || s;
-        sysSel.appendChild(o);
-      });
-    }
-    if (sysSel) sysSel.value = OSR.currentSystem();
+    // Two System selectors: Settings → System and the header's (short names).
+    [['#set-system', OSR.SYSTEM_LABELS], ['#header-system', HEADER_SYSTEM_LABELS]].forEach(([id, labels]) => {
+      const sysSel = $(id);
+      if (!sysSel) return;
+      if (!sysSel.options.length) {
+        OSR.SYSTEMS.forEach(s => {
+          const o = document.createElement('option');
+          o.value = s; o.textContent = labels[s] || OSR.SYSTEM_LABELS[s] || s;
+          sysSel.appendChild(o);
+        });
+      }
+      sysSel.value = OSR.currentSystem();
+    });
     $('#set-brp-initiative-row').hidden = OSR.currentSystem() !== 'brp';
     $('#set-brp-initiative').value = OSR.state.settings.brpInitiative === 'int' ? 'int' : 'dex';
     OSR.renderWwnSettings();
@@ -71,6 +88,7 @@
 
   function wireSettings() {
     $('#set-system').addEventListener('change', e => setSystem(e.target.value));
+    $('#header-system').addEventListener('change', e => setSystem(e.target.value));
     $('#set-theme').addEventListener('change', e => {
       const t = OSR.THEMES.indexOf(e.target.value) === -1 ? 'default' : e.target.value;
       OSR.state.settings.theme = t;
@@ -85,10 +103,22 @@
       if (OSR.currentSystem() === 'brp') OSR.sortByRank(); else OSR.renderCombat();
       OSR.pushNote('Settings', 'BRP combat order → ' + (e.target.value === 'int' ? 'INT rank' : 'DEX rank'));
     });
-    $('#set-dice-3d').addEventListener('change', e => OSR.setDice3d(e.target.checked));
+    $('#set-dice-3d').addEventListener('change', e => {
+      OSR.setDice3d(e.target.checked);
+      $('#set-dice-skin').disabled = !e.target.checked;
+    });
+    // Dice skin: a sample throw shows the new skin (no log line).
+    $('#set-dice-skin').addEventListener('change', e => {
+      OSR.setDiceSkin(e.target.value);
+      const label = (OSR.DICE_SKINS.find(s => s.id === OSR.diceSkin()) || {}).label || '';
+      const d20 = 1 + Math.floor(Math.random() * 20), d6 = 1 + Math.floor(Math.random() * 6);
+      OSR.show3dDice([{ sides: 20, value: d20 }, { sides: 6, value: d6 }],
+        { source: 'Dice skin', formula: label, total: d20 + d6, detail: '', onLanded() {} });
+    });
     $('#set-roll-sound').addEventListener('change', e => {
       OSR.setRollSound(e.target.checked);
       if (e.target.checked) OSR.playRollSound(); // a sample
+      if (e.target.checked && OSR.diceSound) OSR.diceSound.land(); // and the 3D dice's result click
     });
     $('#set-scarlet-heroes').addEventListener('change', e => {
       OSR.state.settings.scarletHeroes = e.target.checked;

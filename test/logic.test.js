@@ -1465,6 +1465,9 @@ test('sheetResources: every "Name: current/max", one per line or separated by ; 
   ]);
   assert.deepEqual(T.sheetResources('HP 6/6\nSTR: 12\nDamage 1d6/2\n```ua\nX: 1/2\n```'), [], 'no colon, no slash, or inside a fence: none');
   assert.deepEqual(T.sheetResources('HP: 5/5\r\nWP: 3/4\r\n').map(r => r.name), ['HP', 'WP']);
+  assert.deepEqual(T.sheetResources('> **AC** 11 · **HP** 5/5 · **Luck** 🍀 0 · **XP** 0'), [
+    { name: 'HP', value: 5, max: 5 }
+  ], 'a bold name needs no colon; "·" separates');
 });
 
 test('sheet resources: a new character gets one tracker each; a rename moves them; delete removes them', () => {

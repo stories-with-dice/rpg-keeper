@@ -159,8 +159,10 @@
           '<span class="badge">' + escapeHtml(e.category) + '</span>' +
           '<span class="badge comp-src-badge">' + escapeHtml(e.source || COMPENDIUM_DEFAULT_SOURCE) + '</span>' +
           (e.skill ? '<span class="badge comp-skill-badge">' + escapeHtml(e.skill) + '</span>' : '') +
-          '<button class="btn comp-row-edit">Edit</button>' +
-          '<button class="btn btn-danger comp-row-del" title="Delete">&times;</button>' +
+          '<span class="row-actions">' +
+            '<button class="btn comp-row-edit">Edit</button>' +
+            '<button class="btn row-del comp-row-del" title="Delete" aria-label="Delete">&times;</button>' +
+          '</span>' +
         '</div>' +
         (compExcerpt(e.body) ? '<div class="comp-excerpt">' + escapeHtml(compExcerpt(e.body)) + '</div>' : '') +
       '</li>').join('');

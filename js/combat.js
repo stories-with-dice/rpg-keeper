@@ -30,6 +30,13 @@
   function updateApplyButton() {
     const btn = $('#dice-apply');
     if (!btn) return;
+    // 3D dice in the air: the result (and so the damage) is not shown yet.
+    if (OSR.dice3dBusy && OSR.dice3dBusy()) {
+      btn.hidden = true;
+      const ua = $('#dice-apply-ua');
+      if (ua) ua.hidden = true;
+      return;
+    }
     renderUaDamage();
     // Fate has no damage roll: shifts become stress boxes and consequences (the row's boxes).
     if (!OSR.lastRoll || !applyTabActive() || OSR.currentSystem() === 'fate') { btn.hidden = true; return; }
@@ -1066,6 +1073,7 @@
     const list = $('#tracker-list');
     const ents = OSR.state.combat.entries;
     $('#tracker-empty').hidden = ents.length > 0;
+    $('#combatant-detail').hidden = !ents.length; // nothing to select yet
     list.innerHTML = ents.map(rowHtml).join('');
     OSR.refreshSourcePops(); // the map's token popups show HP and statuses
   }
@@ -1393,6 +1401,12 @@
   }
 
   function wireCombat() {
+    // "?" shows or hides the hotkey line under the Combat toolbar.
+    $('#cb-help').addEventListener('click', () => {
+      const hint = $('#cb-keys-hint');
+      hint.hidden = !hint.hidden;
+      $('#cb-help').setAttribute('aria-expanded', hint.hidden ? 'false' : 'true');
+    });
     $('#cb-round-dec').addEventListener('click', () => setRound(-1));
     $('#cb-round-inc').addEventListener('click', () => setRound(1));
     $('#cb-turn-prev').addEventListener('click', prevTurn);

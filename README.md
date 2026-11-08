@@ -3,8 +3,8 @@
 A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
 OSE, …), **Worlds Without Number**, **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**,
 **Silent Legions**, and **Fate Core** — and running **basic combat**.
-Settings → **System** switches which ruleset's characters, Compendium, and Bestiary you're looking
-at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
+The **System** selector in the header (next to the campaign; also Settings → **System**) switches
+which ruleset's characters, Compendium, Bestiary, and scenes you're looking at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
 sample NPCs). All bundled BRP data comes only from the *Basic Roleplaying: Universal Game Engine*
 core book (Chapters 4, 8, and 11), which is published under the ORC license; nothing comes from
 *Basic Roleplaying: Creatures*. Combat shows its
@@ -133,8 +133,9 @@ connect, which is enough for a gaming group.
 
 ## Character tab
 
-- Pick a character from the **Character** dropdown. Create one with **New blank**, **Paste from
-  clipboard** (reads a sheet off your clipboard), or **New from text…** (paste into a box). The first
+- Pick a character from the **Character** dropdown. Create one with **New character** → **Blank
+  sheet**, **Paste from clipboard** (reads a sheet off your clipboard), or **From text…** (paste
+  into a box). **Rename** and the trash button (delete) are next to **View / Edit**. The first
   heading or line becomes the name, without its `[WWN]` / `[BRP]` tag: pasting `# John [BRP]` makes
   a character named **John**. The tag (or "Shadowdark" in the text) sets the system badge, and
   View mode shows the heading without it. Keep the tag in the text: `[BRP]` is what marks a BRP sheet.
@@ -142,6 +143,11 @@ connect, which is enough for a gaming group.
   side by side, one per column. With **Character B** set to *— none —*, the single sheet is split
   into two columns at the first standalone `---` line in its Markdown (text before it on the left,
   text after it on the right); with two characters shown, `---` is just a normal rule.
+- On a wide screen (1200 px and up), a one-column sheet with three or more `## ` sections flows the
+  sections into two columns. A `# Name` heading that repeats the character's name is hidden in View
+  mode, because the name shows above the sheet.
+- A sheet's HP fills its **HP (Name)** tracker once, while the tracker is still 0/0. Both
+  `HP: 5/5` and a bold label without a colon (`**HP** 5/5`, as on the Shadowdark sheets) work.
 - **View / Edit** toggle. View renders the sheet as Markdown; Edit is the raw Markdown source
   (Edit always acts on **Character**, not Character B).
 - In View mode, **dice formulas and modifiers are underlined and clickable** (blue, dotted):
@@ -224,14 +230,29 @@ Silent Legions characters also get a **Madness (Name)** line (`0 / 100`) — see
 ## Dice roller (right side, always visible)
 
 The preset buttons are icons with the die under them (Font Awesome has no d4, d8, d10, or d12
-icon, so those use the d20 icon). Every roll (dice, percentile rolls, tables) plays a short swoosh;
-turn it off in Settings → **Roll sound** (saved in this browser only).
+icon, so those use the d20 icon).
 
-Every dice roll (Dice Roller, sheet, Combat, Compendium popups, percentile rolls; not the random tables)
-also rolls **3D dice** over the page. They tumble in, land with the rolled faces toward you, and fade;
-**Esc** removes them at once, and they never block a click. A d% roll shows two d10s, a Fate roll its
-Fate dice; dice other than d4, d6, d8, d10, d12, and d20 are not drawn. Turn them off in Settings →
-**3D dice** (saved in this browser only). They are also off when your system asks for reduced motion.
+A dice roll (Dice Roller, sheet, Compendium popups, percentile rolls) first throws **3D dice** across the page. They fly in from one side, bounce off
+each other, roll, and land with the rolled faces toward you. Then a panel at the bottom of the page
+shows the total, and the Session Log line, the Dice Roller's result, and **Apply damage** show. The
+dice and the panel fade after about 2 seconds. **Esc** skips to the result, and the dice never block a
+click. A d% roll shows a tens die and a units die, a Fate roll its Fate dice; d3, d5, d7, d14, d16,
+d24, and d30 have their own shapes, and other sizes show as a coin with the number on top. Turn them
+off in Settings → **3D dice** (saved in this browser only): the result then shows at once. They are
+also off when your system asks for reduced motion. The random tables and Combat's attack, save, and
+morale buttons show their result at once, without 3D dice.
+
+**Dice skin** (Settings, saved in this browser only): the look of the 3D dice. **Theme color**
+(default) uses the style theme's accent color. The 12 skins are Ivory, Obsidian, Crimson, Sapphire,
+Emerald, Amethyst, Marble, Galaxy, Dragonfire, Frost, Oak, and Gold. **Random (each die)** gives each
+die of a roll its own skin. A change throws two sample dice.
+
+**Dice sound** (Settings, on by default, saved in this browser only): with 3D dice, the dice clatter
+as they bounce, hit each other, and roll, and a click plays when the result shows. The sounds are
+made in code, with no sound files. Without 3D dice, and for the random tables, a roll plays a short
+swoosh.
+
+The 3D dice and their sounds come from the owner's Wox dice roller plugin.
 
 Preset buttons: `d20`, `Adv` (2d20 keep-highest), `Dis` (2d20 keep-lowest), `d4`–`d12`, `d100`,
 `2d6`, `3d6`, `4d6kh3`. Plus a **custom formula** field.
@@ -259,6 +280,8 @@ the round number). **Copy** puts the log on your clipboard; **Clear** empties it
 ### The tracker
 - **Add character…** (dropdown of your characters) or **Add monster…** (opens the library, below).
   A second copy of the same name gets a `(1)`, `(2)`… suffix.
+- The **?** button at the end of the toolbar shows the hotkeys: ↑/↓ select a combatant, N/P next
+  and previous turn.
 - Combatants are shown top-to-bottom in initiative order. **Drag rows** to reorder. **Initiative is
   entered manually** — the app never rolls it.
 - **Basic Roleplaying**: the order is a rank, highest first. Settings → **BRP combat order** picks
@@ -519,6 +542,8 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
   - With the hand tool, click a drawing to select it, drag it to move it, and press Delete to
     remove it. **Clear drawings** removes them all.
   - Right-click a drawing to change its color or thickness (a text's size), or to delete it.
+- **Hide the side panel.** The <i>columns</i> button hides the Dice Roller and Consumables while
+  the Maps tab shows, so the map is wider. Other tabs keep the panel. Saved in this browser only.
 - **Pop out.** The <i>window</i> button opens the map in a window of its own, for example on a
   second screen for the players. Both windows show the same campaign: a token moved or a line drawn
   in one shows in the other at once, and Ctrl+Z in either undoes the last map change. Keep the main
@@ -773,6 +798,9 @@ Set Settings → **System** to **Worlds Without Number**.
 ---
 
 ## Settings tab
+
+The settings are in four groups: **Campaign and game system**, **Look and sound**, **Libraries and
+example data**, and **Sync**.
 
 - **Style theme** (default **Default**). Recolours and re-fonts the whole app; dark mode only.
   **Fantasy** — parchment & gold on mahogany, serif type. **Sci-fi** — cyan on cold slate, wide

@@ -147,9 +147,11 @@
         '<div class="comp-row-head">' +
           '<span class="comp-name mb-hover-name" title="">' + escapeHtml(d.name) + '</span>' +
           '<span class="badge">' + escapeHtml(meta) + '</span>' +
-          '<button class="btn mb-add-combat">Add to Combat</button>' +
-          '<button class="btn mb-edit">Edit</button>' +
-          '<button class="btn btn-danger mb-del" title="Remove from library">&times;</button>' +
+          '<span class="row-actions">' +
+            '<button class="btn mb-add-combat">Add to Combat</button>' +
+            '<button class="btn mb-edit">Edit</button>' +
+            '<button class="btn row-del mb-del" title="Remove from library" aria-label="Remove from library">&times;</button>' +
+          '</span>' +
         '</div>' +
       '</li>';
     }).join('');

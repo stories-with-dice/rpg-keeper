@@ -3,7 +3,8 @@
 ## The System switch
 
 - `state.settings.system`, one of `OSR.SYSTEMS` (`'osr'`, `'ua3e'`, `'brp'`, `'sl'`, `'fate'`, `'wwn'`), set in
-  Settings → System. `OSR.setSystem(s)` (`js/settings.js`) is the change handler; a content pack of
+  Settings → System (`#set-system`) or the header's `#header-system` (short names); `renderSettings()`
+  fills and syncs both. `OSR.setSystem(s)` (`js/settings.js`) is the change handler; a content pack of
   another system calls it too. It re-renders everything the setting gates: `refreshCharUI()` (also
   trackers), `renderMonsterBrowser()`, `renderCompendium()`, `renderCombat()`.
 - It filters, never deletes. Always go through the helpers:

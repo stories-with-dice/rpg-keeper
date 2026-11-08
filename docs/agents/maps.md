@@ -97,13 +97,16 @@ pin here; Mark hex explored) unless right-click pan is on. Each change is one `s
 
 ## Toolbar, modes, hotkeys
 
-- Order: tools, sticky, right-click pan, undo, redo, fit, pop out, then the **Grid**, **Tokens**,
+- Order: tools, sticky, right-click pan, undo, redo, fit, side panel, pop out, then the **Grid**, **Tokens**,
   and **?** menus (`<details class="map-drop">`, one open at a time, `closeMapPanels()`), then scene
   controls. `#map-status` floats bottom-right. Nothing that opens moves the map.
 - Tools: `measure` (`measureText()`, `MapGrid.distance`), `calibrate` (drag `#grid-span` cells →
   `MapGrid.gridFromRect()`; arrow keys nudge the offset, Shift 10 px). `grid.locked` blocks both.
 - Sticky (`osr_map_sticky`, on): off → `toolUsed()` returns to the hand tool after one use.
 - Right-click pan (`osr_map_rclick_pan`, off): on → a right drag on the map itself pans.
+- Side panel (`#map-rail`, `osr_map_rail`, shown): hidden → `applyMapRail()` sets `body.rail-hidden`
+  while Maps is the only tab that shows (not in the split view). `applyTabs()` in js/main.js calls it
+  on every tab change; the button also calls `renderMaps()` because the map width changes.
 - `onPointerDown` focuses `#map-wrap` (`preventScroll`) so Delete reaches `onMapKey`.
 - Hotkeys (`onHotkey`, Maps tab only, not in fields or modals): Alt + `KeyboardEvent.code`.
   `Digit1`…`Digit0`, `Minus`, `Equal` click the `.map-tool` with that `data-key`; `KeyS` sticky,

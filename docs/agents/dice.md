@@ -8,17 +8,36 @@
 - `doRoll(formula, source, vars)`: `substituteVars` for `$Name`, then eval, `pushLog`, and
   `lastRoll` (drives Apply damage). An unknown `$Name` is rejected (`Invalid: … (unknown $Name)`).
   A `%NN` formula goes to `rollPercent()`.
-- 3D dice (`js/dice3d.js`): `doRoll` and `rollPercent` call `OSR.show3dDice(dice)` with the kept
-  dice (not the random tables: they use `evalFormula` directly). `diceToShow(dice)` (pure) maps them
-  to solids and the face label that lands up: d4, d6, d8, d10 (10 shows "0"), d12, d20, Fate (a cube
-  with +, +, −, −, blank, blank), and d% as two d10s ("00"–"90" and "0"–"9"); other dice are not
-  drawn; at most 12. three.js loads on the first 3D roll. Each die flies in and tumbles on a fixed path
-  (no physics) that ends with the rolled face toward the camera, holds, and fades; `Escape` clears
-  it. The canvas `.dice3d-canvas` has `pointer-events: none`. Off when `osr_dice_3d` is `'off'`
-  (Settings → 3D dice), with `prefers-reduced-motion`, without WebGL, and in jsdom. The result never
-  waits for the dice.
-- Roll sound: `pushLog` plays `playRollSound()` (Web Audio noise burst) unless `osr_roll_sound` is
-  `'off'`.
+- 3D dice (`js/dice3d.js`, ported from the owner's Wox dice roller `overlay/render.js`): `doRoll`
+  and `rollPercent` pass the kept dice to `pushLog(…, { dice })`, which calls
+  `OSR.show3dDice(dice, { source, formula, total, detail, onLanded })`. Not the random tables or the
+  Combat detail rolls (saves, morale, …): they call `pushLog` without `dice`.
+  - `diceToShow(dice)` (pure) maps the dice to `{ key, sides, top, pair }`: `key` is the body (d3–d30,
+    `dF`, `d10t`/`d10u` for the two d% dice, `token` for any other size), `top` the label that lands
+    up. At most 20.
+  - The order: the throw is simulated at once (`simulate()`: gravity, bounces, die-to-die hits,
+    friction, in CSS px), and its bounces, hits, and face roll-overs become sound events. The frames
+    play back on `.dice3d-canvas`; each die turns so it ends with the rolled face up. At
+    `settleTime + 0.15 s` the `.dice3d-panel` shows the total, `OSR.diceSound.land()` clicks, and
+    `onLanded()` runs. The dice fade 2.2 s later.
+  - `pushLog` saves the entry at once, but its log line, `showLast()`, and `updateApplyButton()` run in
+    `onLanded`. While `OSR.dice3dBusy()` is true, `updateApplyButton()` hides Apply damage.
+  - `onLanded` runs exactly once: on landing, on `clearDice()` (Escape, a new roll, 3D dice turned
+    off), when three.js or WebGL fails, or from a fallback timer (`settleTime + 1.15 s`) because a
+    hidden browser tab runs no animation frames.
+  - three.js loads on the first 3D roll. The canvas and the panel have `pointer-events: none`. Off when
+    `osr_dice_3d` is `'off'` (Settings → 3D dice), with `prefers-reduced-motion`, without WebGL, and in
+    jsdom: then `show3dDice` returns false and the result shows at once.
+- Dice skin (`osr_dice_skin`, Settings → Dice skin, default `'theme'`): `SKINS` in `js/dice3d.js`
+  are 12 skin defs (body colors, ink, pattern, roughness, metalness, opacity, edge color);
+  `paintSkin()` draws the pattern (`gem`, `marble`, `galaxy`, `flame`, `frost`, `wood`, `metal`) under
+  each face label. `skinFor(pref)` gives one die its skin: `'theme'` builds one from `--accent`,
+  `'random'` picks one of the 12 for each die. `DICE_SKINS` is the dropdown list (Theme color, the 12,
+  Random). `show3dDice` takes `info.skin` to override the setting (the Settings preview throw).
+- Dice sound (`osr_roll_sound`, Settings → Dice sound, on): with 3D dice, `js/dice-sound.js` (from
+  the Wox `overlay/sound.js`) plays the throw's events (die click, table thud, clack, roll click) and
+  `land()`; its AudioContext starts in the rolling click (`show3dDice` calls `context()`). Without
+  3D dice, `pushLog` plays `playRollSound()` (the swoosh).
 - `pushLog(source, formula, total, detail)` is a roll line; `pushNote(source, text, detail)` a plain
   line (`{ md: true }` renders Markdown).
 

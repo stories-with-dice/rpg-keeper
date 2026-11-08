@@ -1302,16 +1302,47 @@ test('Roll sound: on by default, plays on a roll, and the Settings checkbox turn
   }
 });
 
-test('3D dice: each rolled die maps to a solid and the face that lands up; d% is two d10s', () => {
+test('3D dice: each rolled die maps to a body and the label that lands up; d% is two d10s', () => {
   const show = T.diceToShow([
     { sides: 20, value: 17 }, { sides: 10, value: 10 }, { sides: 'F', value: -1 }, { sides: 'F', value: 0 },
-    { sides: 3, value: 2 }, { sides: 100, value: 100 }, { sides: 100, value: 47 },
+    { sides: 3, value: 2 }, { sides: 9, value: 5 }, { sides: 100, value: 100 }, { sides: 100, value: 47 },
   ]);
-  assert.deepEqual(show.map(d => [d.sides, d.label]),
-    [[20, '17'], [10, '0'], ['F', '−'], ['F', ''], [10, '00'], [10, '0'], [10, '40'], [10, '7']],
-    'a d3 has no solid; a d10 shows 10 as 0; 100 is 00 + 0');
-  show.forEach(d => assert.ok(d.labels.indexOf(d.label) !== -1, d.sides + ': the label is a face'));
-  assert.equal(T.diceToShow(Array.from({ length: 30 }, () => ({ sides: 6, value: 1 }))).length, 12, 'at most 12 dice');
+  assert.deepEqual(show.map(d => [d.key, d.top]),
+    [['d20', '17'], ['d10', '10'], ['dF', '−'], ['dF', ' '], ['d3', '2'], ['token', '5'],
+      ['d10t', '00'], ['d10u', '0'], ['d10t', '40'], ['d10u', '7']],
+    'a d3 has a body; a d9 is a coin; 100 is 00 + 0');
+  assert.equal(T.diceToShow(Array.from({ length: 30 }, () => ({ sides: 6, value: 1 }))).length, 20, 'at most 20 dice');
+});
+
+test('3D dice: the log line and the result box wait until the dice land; Apply damage too', () => {
+  const real = T.show3dDice;
+  const realBusy = T.dice3dBusy;
+  let info = null;
+  T.show3dDice = (dice, i) => { info = i; info.dice = dice; return true; };
+  T.dice3dBusy = () => !!info && !info.done;
+  try {
+    const before = $$('#log-list li:not(.log-empty)').length;
+    $('#dice-last').innerHTML = '';
+    T.doRoll('2d6', 'Test');
+    assert.ok(info, 'the dice are thrown');
+    assert.equal(info.dice.length, 2);
+    assert.equal(info.source, 'Test');
+    assert.equal(T.state.log[T.state.log.length - 1].formula, '2d6', 'the entry is saved at once');
+    assert.equal($$('#log-list li:not(.log-empty)').length, before, 'no log line yet');
+    assert.equal($('#dice-last').textContent, '', 'no result yet');
+    assert.equal($('#dice-apply').hidden, true, 'no Apply damage while the dice roll');
+    info.done = true;
+    info.onLanded();
+    assert.equal($$('#log-list li:not(.log-empty)').length, before + 1, 'the log line shows when they land');
+    assert.match($('#dice-last').textContent, new RegExp(String(info.total)));
+    T.doRoll('%50', 'Pct');
+    assert.deepEqual(info.dice, [{ sides: 100, value: T.lastPercent.roll }], 'a % roll throws d% too');
+    info.done = true;
+    info.onLanded();
+  } finally {
+    T.show3dDice = real;
+    T.dice3dBusy = realBusy;
+  }
 });
 
 test('3D dice: on by default; the Settings checkbox turns them off; never drawn in jsdom', () => {
@@ -1329,6 +1360,29 @@ test('3D dice: on by default; the Settings checkbox turns them off; never drawn 
   fire(cb, 'change');
   assert.equal(T.dice3dOn(), true);
   try { window.localStorage.removeItem('osr_dice_3d'); } catch (e) { /* no storage */ }
+});
+
+test('Dice skin: Theme color by default, 12 skins plus Random in Settings, saved per browser', () => {
+  try { window.localStorage.removeItem('osr_dice_skin'); } catch (e) { /* no storage */ }
+  assert.equal(T.diceSkin(), 'theme');
+  tab('settings');
+  T.renderAll();
+  const sel = $('#set-dice-skin');
+  const ids = Array.from(sel.options).map(o => o.value);
+  assert.equal(ids.length, 14, 'Theme color, 12 skins, Random');
+  assert.equal(ids[0], 'theme');
+  assert.equal(ids[ids.length - 1], 'random');
+  assert.equal(sel.value, 'theme');
+  setValue(sel, 'galaxy');
+  assert.equal(T.diceSkin(), 'galaxy');
+  assert.equal(window.localStorage.getItem('osr_dice_skin'), 'galaxy');
+  assert.equal(T.skinFor('galaxy').id, 'galaxy');
+  assert.equal(T.skinFor('theme').id, 'theme');
+  const skins = ids.slice(1, -1);
+  for (let i = 0; i < 30; i++) assert.ok(skins.indexOf(T.skinFor('random').id) !== -1, 'Random picks one of the 12');
+  window.localStorage.setItem('osr_dice_skin', 'nope');
+  assert.equal(T.diceSkin(), 'theme', 'an unknown value falls back to Theme color');
+  try { window.localStorage.removeItem('osr_dice_skin'); } catch (e) { /* no storage */ }
 });
 
 test('Journal: has its own tab, not the Character tab', () => {
@@ -2388,4 +2442,98 @@ test('Compendium popups: the corner grip resizes a popup and pins it', () => {
   assert.strictEqual(pop.style.height, '100px', 'a minimum height');
   T.closeAllCompPops();
   ref.remove();
+});
+
+/* ================================================================== */
+/* UX review fixes (2026-11-08)                                       */
+/* ================================================================== */
+
+test('header System selector: shows the current System and switches it like Settings → System', () => {
+  const sel = $('#header-system');
+  assert.equal(sel.value, 'osr');
+  assert.ok(sel.options.length >= 6, 'one option per System');
+  setValue(sel, 'ua3e');
+  assert.equal(T.currentSystem(), 'ua3e');
+  assert.equal($('#set-system').value, 'ua3e', 'Settings → System follows');
+  setValue($('#set-system'), 'osr');
+  assert.equal($('#header-system').value, 'osr', 'the header follows Settings → System');
+});
+
+test('Character tab: "New character" opens a menu; a menu item closes it; Escape closes it', () => {
+  const menu = $('#char-new-menu');
+  assert.equal(menu.hidden, true);
+  click($('#btn-new-menu'));
+  assert.equal(menu.hidden, false);
+  assert.equal($('#btn-new-menu').getAttribute('aria-expanded'), 'true');
+  click($('#btn-new-blank'));
+  assert.equal(menu.hidden, true, 'a menu item closes the menu');
+  assert.equal(T.charactersForSystem().length, 1, 'Blank sheet made a character');
+  click($('#btn-new-menu'));
+  key($('#btn-new-menu'), 'Escape');
+  assert.equal(menu.hidden, true, 'Escape closes the menu');
+});
+
+test('Character view: the sheet hides an "# Name" heading that repeats the header name; long sheets get sections', () => {
+  T.createCharacter('# Hero\nA fighter.\n\n## One\nx\n\n## Two\ny\n\n## Three\nz');
+  T.renderAll();
+  const h1 = $('#mode-view h1');
+  assert.equal(h1.hidden, true, 'same name as the header: hidden');
+  assert.equal($('#view-name').textContent, 'Hero');
+  assert.equal($$('#mode-view .sheet-flow > .sheet-sec').length, 3, 'one box per "## " section');
+  assert.ok($('#mode-view .sheet-intro').contains(h1), 'the text before the first section stays on top');
+  T.createCharacter('# Other Name Here\n\n## Only\nx');
+  T.state.activeId = T.state.characters[T.state.characters.length - 1].id;
+  T.renderAll();
+  assert.equal($('#mode-view .sheet-flow'), null, 'fewer than 3 sections: no section boxes');
+});
+
+test('HP tracker: an untouched 0/0 HP tracker takes "**HP** 5/5" from the sheet at load', () => {
+  T.state.characters.push({ id: 'g1', name: 'Gulz', body: '# Gulz\n> **AC** 11 · **HP** 5/5 · **XP** 0' });
+  T.state.consumables.push({ id: 'h1', name: 'HP (Gulz)', value: 0, max: 0 });
+  T.ensureStateShape();
+  const c = T.state.consumables.find(x => x.name === 'HP (Gulz)');
+  assert.deepEqual([c.value, c.max], [5, 5]);
+  c.value = 2;
+  T.ensureStateShape();
+  assert.equal(c.value, 2, 'a tracker the user changed keeps its value');
+});
+
+test('Combat: the hotkey line shows only after "?"; the empty state hides the detail panel', () => {
+  tab('combat');
+  assert.equal($('#cb-keys-hint').hidden, true);
+  click($('#cb-help'));
+  assert.equal($('#cb-keys-hint').hidden, false);
+  assert.equal($('#cb-help').getAttribute('aria-expanded'), 'true');
+  click($('#cb-help'));
+  assert.equal($('#cb-keys-hint').hidden, true);
+  assert.equal($('#tracker-empty').hidden, false);
+  assert.equal($('#combatant-detail').hidden, true);
+});
+
+test('Maps: the side-panel button hides the right rail only while the Maps tab shows', () => {
+  tab('maps');
+  assert.equal(document.body.classList.contains('rail-hidden'), false);
+  click($('#map-rail'));
+  assert.equal(document.body.classList.contains('rail-hidden'), true);
+  assert.equal(window.localStorage.getItem('osr_map_rail'), 'hidden');
+  tab('combat');
+  assert.equal(document.body.classList.contains('rail-hidden'), false, 'other tabs keep the rail');
+  tab('maps');
+  assert.equal(document.body.classList.contains('rail-hidden'), true);
+  click($('#map-rail'));
+  assert.equal(document.body.classList.contains('rail-hidden'), false);
+  assert.equal(window.localStorage.getItem('osr_map_rail'), 'shown');
+  tab('character');
+});
+
+test('Bestiary and Compendium rows: the actions sit in .row-actions; delete is the neutral .row-del', () => {
+  T.seedCompendium();
+  T.state.monsters.push({ id: 'm1', name: 'Rat', system: 'osr', hd: 1, ac: 10, hp: 2, attacks: [] });
+  T.ensureStateShape();
+  T.renderAll();
+  const mb = $('#mb-list .mb-row');
+  assert.ok(mb.querySelector('.row-actions .mb-del.row-del'));
+  assert.equal(mb.querySelector('.btn-danger'), null);
+  const cr = $('#comp-list .comp-row');
+  assert.ok(cr.querySelector('.row-actions .comp-row-del.row-del'));
 });
