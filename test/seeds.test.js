@@ -152,7 +152,7 @@ test('Merge import: an imported seeded item replaces the campaign\'s copy with t
   exported.characters = [];
   window.confirm = () => false; // Cancel = Merge
   await T.importData(new window.File([JSON.stringify(exported)], 'export.json', { type: 'application/json' }));
-  const torches = T.state.compendium.filter(e => e.name === 'Torch');
+  const torches = T.state.compendium.filter(e => e.name === 'Torch' && e.system === 'osr'); // WWN has its own Torch
   assert.strictEqual(torches.length, 2, 'no duplicate');
   assert.strictEqual(torches.find(e => e.id === torch.id).body, 'Newer torch text.');
   assert.strictEqual(torches.find(e => e.id === 'mine').body, 'House rule.');

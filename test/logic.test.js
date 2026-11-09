@@ -1808,12 +1808,12 @@ test('deleteChar: removes the character and its HP tracker', () => {
 /* Seeding — first-run example characters                             */
 /* ================================================================== */
 
-test('seed(): a fresh install creates the OSR examples plus the two Unknown Armies examples', async () => {
+test('seed(): a fresh install creates the OSR example plus the two Unknown Armies examples', async () => {
   // Its own isolated jsdom instance — freshSeed:true lets init() run the real
   // first-run seeding instead of the shared T's blank-save short-circuit.
   const { T: T2 } = await boot({ freshSeed: true });
-  const names = T2.state.characters.filter(c => ['sl', 'fate'].indexOf(T2.charSystemKey(c)) === -1).map(c => c.name).sort();
-  assert.deepEqual(names, ['Garrick', 'Gulzund Blize', 'Kevin Johnson', 'Lucinda Adams']);
+  const names = T2.state.characters.filter(c => ['sl', 'fate', 'wwn'].indexOf(T2.charSystemKey(c)) === -1).map(c => c.name).sort();
+  assert.deepEqual(names, ['Gulzund Blize', 'Kevin Johnson', 'Lucinda Adams']);
 
   const kevin = T2.state.characters.find(c => c.name === 'Kevin Johnson');
   assert.equal(kevin.system, 'Unknown Armies');
@@ -1859,16 +1859,16 @@ test('addMissingPregens: adds only the example characters the campaign lacks, ke
   T.createCharacter('# Garrick [WWN]\nMy own edited Garrick.');
   T.createCharacter('# Mara\nA homebrew character.');
   const mara = T.activeChar();
-  assert.equal(T.missingPregens().length, 10, 'Garrick is matched by name');
-  assert.equal(await T.addMissingPregens(), 10);
-  assert.equal(T.state.characters.length, 12);
+  assert.equal(T.missingPregens().length, 14, 'Garrick is matched by name');
+  assert.equal(await T.addMissingPregens(), 14);
+  assert.equal(T.state.characters.length, 16);
   assert.equal(T.state.characters.filter(c => c.name === 'Garrick').length, 1, 'no duplicate Garrick');
   assert.match(T.state.characters.find(c => c.name === 'Garrick').body, /My own edited Garrick/, 'the existing sheet is untouched');
   assert.equal(T.activeChar().id, mara.id, 'the active character stays selected');
   assert.ok(T.state.consumables.some(c => c.name === 'Madness (Miriam Castell)' && c.value === 10));
   assert.deepEqual(T.missingPregens(), []);
   assert.equal(await T.addMissingPregens(), 0, 'second run adds nothing');
-  assert.equal(T.state.characters.length, 12);
+  assert.equal(T.state.characters.length, 16);
 });
 
 // The Unknown Armies Compendium is not bundled (the UA3 data tools build it

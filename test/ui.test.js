@@ -2311,16 +2311,16 @@ test('Settings → "Add missing pregens": counts the example characters, adds th
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.renderAll();
   tab('settings');
-  assert.match($('#set-pregen-count').textContent, /^1 of 11 example characters/);
-  assert.match($('#set-pregen-count').textContent, /missing: Gulzund Blize, Kevin Johnson, .*Ray Kowalczyk, Mara Venn, Dex Okonjo, Ione Kask\./);
+  assert.match($('#set-pregen-count').textContent, /^1 of 15 example characters/);
+  assert.match($('#set-pregen-count').textContent, /missing: Brannoc Vell, Isha Corvain, Maelis Arn, Tobin Rask, Gulzund Blize, Kevin Johnson, .*Ray Kowalczyk, Mara Venn, Dex Okonjo, Ione Kask\./);
   assert.equal($('#set-add-pregens').disabled, false);
   click($('#set-add-pregens'));
   await new Promise(r => setTimeout(r, 0)); // the handler awaits loadSeedSheets()
   await new Promise(r => setTimeout(r, 0));
-  assert.equal(T.state.characters.length, 11);
-  assert.match($('#set-pregen-count').textContent, /^11 of 11 example characters .* are in this campaign\.$/);
+  assert.equal(T.state.characters.length, 15);
+  assert.match($('#set-pregen-count').textContent, /^15 of 15 example characters .* are in this campaign\.$/);
   assert.equal($('#set-add-pregens').disabled, true, 'nothing left to add');
-  assert.match(logText(), /Example characters — 10 added/);
+  assert.match(logText(), /Example characters — 14 added/);
   tab('character');
   assert.equal($('#view-name').textContent, 'Garrick', 'the active character stays selected');
   setValue($('#set-system'), 'sl');

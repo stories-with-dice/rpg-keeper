@@ -59,7 +59,7 @@ test('first run: seeds every system from data/ (characters, Bestiary, Compendium
   const { T, window } = await boot({ freshSeed: true });
   const count = (arr, sys) => arr.filter(x => (x.system || 'osr') === sys).length;
   assert.strictEqual(T.state.characters.length, T.PREGEN_FILES.length);
-  assert.deepEqual(T.state.characters.map(c => c.name).slice(0, 2), ['Garrick', 'Gulzund Blize']);
+  assert.deepEqual(T.state.characters.map(c => c.name).slice(0, 2), ['Garrick', 'Brannoc Vell']);
   assert.strictEqual(count(T.state.monsters, 'osr'), readJson('monsters.json').length);
   assert.strictEqual(count(T.state.monsters, 'brp'), readJson('seed-brp.json').monsters.length);
   assert.strictEqual(count(T.state.monsters, 'sl'), 0);
