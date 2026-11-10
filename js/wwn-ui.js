@@ -55,10 +55,10 @@
     if (!row) return;
     row.hidden = OSR.currentSystem() !== 'wwn';
     $('#set-wwn-sd').checked = OSR.state.settings.wwnShadowdark === true;
-    const n = OSR.state.monsters.filter(m => (m.system || 'osr') === 'osr' && m.source === 'shadowdark').length;
+    const n = OSR.state.monsters.filter(m => (m.system || 'shadowdark') === 'shadowdark' && m.source === 'shadowdark').length;
     $('#set-wwn-sd-count').textContent = n
       ? n + ' Shadowdark monster' + (n === 1 ? '' : 's') + ' in this campaign.'
-      : 'This campaign has no Shadowdark monsters: switch to OSR and use Settings → Reload defaults for the monster library.';
+      : 'This campaign has no Shadowdark monsters: switch to Shadowdark and use Settings → Reload defaults for the monster library.';
   }
 
   function wireWwn() {

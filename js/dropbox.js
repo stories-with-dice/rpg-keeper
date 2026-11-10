@@ -123,6 +123,12 @@
   const campaignDir = id => '/campaigns/' + id;
   const docPath = (id, key) => campaignDir(id) + '/' + (key === 'campaign' ? 'shared' : key) + '.json';
   const seedPath = sys => '/seeds/' + sys + '.json';
+  // The file of the same document under its old system key ('osr.json' before
+  // the rename to 'shadowdark'), or null. Read while the new file is missing;
+  // never written.
+  const oldKeyOf = key => Object.keys(OSR.LEGACY_SYSTEM_KEYS).find(k => OSR.LEGACY_SYSTEM_KEYS[k] === key) || null;
+  const legacyDocPath = (id, key) => (oldKeyOf(key) ? docPath(id, oldKeyOf(key)) : null);
+  const legacySeedPath = sys => (oldKeyOf(sys) ? seedPath(oldKeyOf(sys)) : null);
   const TABLES_PATH = '/tables.json';
   const IMAGE_EXT = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif' };
   const blobPath = (id, blobId, type) => campaignDir(id) + '/maps/' + blobId + '.' + (IMAGE_EXT[type] || 'bin');
@@ -357,18 +363,28 @@
   // (or Dropbox has no file), and records a download whose text is the same.
   // Otherwise returns the downloaded text for the caller: action 'pull' (only
   // Dropbox changed), 'link', or 'conflict'.
-  async function syncFile(path, localText, listing) {
-    const remote = listing.get(path.toLowerCase()) || null;
+  // `oldPath`: the same document under an old system key. While Dropbox has
+  // no file at `path`, the old file stands in for it (with its sync record);
+  // an upload then creates the file at `path` and leaves the old one alone.
+  // The result's `upTo` is the remote to pass to uploadText (null: create).
+  async function syncFile(path, localText, listing, oldPath) {
+    let remote = listing.get(path.toLowerCase()) || null;
+    let viaOld = false;
+    if (!remote && oldPath && listing.get(oldPath.toLowerCase())) {
+      remote = listing.get(oldPath.toLowerCase());
+      viaOld = true;
+      if (!meta.files[path.toLowerCase()] && meta.files[oldPath.toLowerCase()]) setRec(path, rec(oldPath));
+    }
     const hash = hashText(localText);
     const action = decideSync(remote, rec(path), hash);
     if (action === 'noop') return { action };
     if (action === 'create' || action === 'upload') {
-      recordFile(path, await uploadText(path, localText, action === 'upload' ? remote : null), hash);
+      recordFile(path, await uploadText(path, localText, action === 'upload' && !viaOld ? remote : null), hash);
       return { action };
     }
     const text = await downloadRemote(remote);
     if (action !== 'pull' && hashText(text) === hash) { recordFile(path, remote, hash); return { action: 'noop' }; }
-    return { action, text, remote, hash };
+    return { action, text, remote, hash, upTo: viaOld ? null : remote };
   }
 
   // Step 1: a campaign's old whole-campaign file. Synced with the old rules
@@ -463,15 +479,18 @@
     for (const sys of OSR.SYSTEMS) {
       const seed = OSR.seeds[sys];
       const path = seedPath(sys);
-      if (!seed || (!seed.compendium.length && !seed.monsters.length && !listing.has(path))) continue;
-      const r = await syncFile(path, JSON.stringify(seed), listing);
+      const oldPath = legacySeedPath(sys);
+      const inDropbox = listing.has(path) || (oldPath && listing.has(oldPath));
+      if (!seed || (!seed.compendium.length && !seed.monsters.length && !inDropbox)) continue;
+      const r = await syncFile(path, JSON.stringify(seed), listing, oldPath);
       if (!r.text) continue;
       let remoteSeed;
       try { remoteSeed = JSON.parse(r.text); } catch (e) { continue; }
+      remoteSeed.system = sys;
       const next = r.action === 'pull' ? remoteSeed : OSR.mergeSeeds(seed, remoteSeed);
       await OSR.setSeed(sys, next);
       const text = JSON.stringify(next);
-      recordFile(path, r.action === 'pull' ? r.remote : await uploadText(path, text, r.remote), hashText(text));
+      recordFile(path, r.action === 'pull' ? r.remote : await uploadText(path, text, r.upTo), hashText(text));
     }
   }
 
@@ -499,7 +518,7 @@
     const pulled = [], conflicts = [];
     for (const key of Object.keys(docs)) {
       const path = docPath(c.id, key);
-      const r = await syncFile(path, docs[key], listing);
+      const r = await syncFile(path, docs[key], listing, legacyDocPath(c.id, key));
       if (!r.text) continue;
       // An edit made during the download turns a pull into a conflict.
       const mode = r.action === 'pull' && OSR.serializeState(OSR.state)[key] !== docs[key] ? 'conflict' : r.action;
@@ -941,7 +960,8 @@
       const docs = {};
       for (const key of ['campaign'].concat(OSR.SYSTEMS)) {
         const path = docPath(id, key);
-        const remote = listing.get(path.toLowerCase());
+        const oldPath = legacyDocPath(id, key);
+        const remote = listing.get(path.toLowerCase()) || (oldPath && listing.get(oldPath.toLowerCase()));
         if (!remote) continue;
         docs[key] = await downloadRemote(remote);
         recordFile(path, remote, hashText(docs[key]));

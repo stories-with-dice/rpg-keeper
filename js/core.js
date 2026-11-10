@@ -29,9 +29,11 @@
     monsters: [], monstersSeeded: false, brpMonstersSeeded: false, conditions: [],
     compendium: [], compendiumSeeded: false, compendiumSeedVersion: 0, brpCompendiumSeeded: false, fateCompendiumSeeded: false, wwnSeeded: false,
     scenes: [], activeSceneIds: {},
+    // Shadowdark carousing and downtime (js/downtime-ui.js): per-character records and the form choices.
+    downtime: { records: {}, ui: {} },
     // Fate Core: the aspect tracker above Trackers (js/fate-ui.js) and the GM's fate points.
     fateScene: { aspects: [], gmPoints: 0 },
-    settings: { scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex', wwnSpellText: 'book', wwnShadowdark: false },
+    settings: { scarletHeroes: false, theme: 'default', system: 'shadowdark', brpInitiative: 'dex', wwnSpellText: 'book', wwnShadowdark: false },
     combat: { round: 1, activeId: null, selectedId: null, entries: [] }
   };
 
@@ -47,9 +49,28 @@
 
   // Game system — set via Settings → System, partitions the Compendium
   // (state.compendium entries each carry a `system` field). Everything that
-  // predates this feature is 'osr'. See AGENTS.md-style notes in js/settings.js.
-  const SYSTEMS = ['osr', 'ua3e', 'brp', 'sl', 'fate', 'wwn'];
-  const SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions', fate: 'Fate Core', wwn: 'Worlds Without Number' };
+  // predates this feature is 'shadowdark'. See AGENTS.md-style notes in js/settings.js.
+  const SYSTEMS = ['shadowdark', 'ua3e', 'brp', 'sl', 'fate', 'wwn'];
+  const SYSTEM_LABELS = { shadowdark: 'Shadowdark', ua3e: 'Unknown Armies 3rd Ed', brp: 'Basic Roleplaying (BRP)', sl: 'Silent Legions', fate: 'Fate Core', wwn: 'Worlds Without Number' };
+  // The Shadowdark system was called 'osr' until 2026-11-09. Saves, exports,
+  // packs, IndexedDB documents, and Dropbox files from before then still use
+  // that key: every read of a system key goes through normSystem().
+  const LEGACY_SYSTEM_KEYS = { osr: 'shadowdark' };
+  function normSystem(s, fallback) {
+    if (LEGACY_SYSTEM_KEYS[s]) return LEGACY_SYSTEM_KEYS[s];
+    return SYSTEMS.indexOf(s) === -1 ? (fallback === undefined ? 'shadowdark' : fallback) : s;
+  }
+  // { shadowdark: …, osr: … } → the value under the new key (the old one if the new is missing).
+  function renameLegacyKeys(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    Object.keys(LEGACY_SYSTEM_KEYS).forEach(old => {
+      if (!(old in obj)) return;
+      const now = LEGACY_SYSTEM_KEYS[old];
+      if (!(now in obj)) obj[now] = obj[old];
+      delete obj[old];
+    });
+    return obj;
+  }
 
   function applyTheme() {
     const t = (OSR.state.settings && OSR.state.settings.theme) || 'default';
@@ -131,6 +152,10 @@
     lastWritten = Object.assign({}, raw);
     OSR.state = Object.assign(defaults(), had ? OSR.joinState(OSR.parseDocs(raw)) : {});
     ensureStateShape();
+    // Documents under an old system key: the next write saves them under the
+    // new key, then deletes the old ones.
+    legacyDocs = Object.keys(raw).filter(k => LEGACY_SYSTEM_KEYS[k]);
+    if (legacyDocs.length) save();
     return had;
   }
 
@@ -142,16 +167,41 @@
     return true;
   }
 
+  const DOWNTIME_UI = {
+    kind: 'core', settlement: 'any', eventIdx: 0, ids: [], bardGroup: false, brewery: false, other: 0, useRenown: true,
+    treasureRules: 'core', library: false, checkPc: '', wr: true, oneToOne: false, rumorId: '', rumorDir: 1, warbandLv: 1,
+    wtIds: [], wtOthers: '', wtCoins: 20, wtValue: 1
+  };
+  function ensureDowntimeShape(state) {
+    if (!state.downtime || typeof state.downtime !== 'object') state.downtime = {};
+    const d = state.downtime;
+    if (!d.records || typeof d.records !== 'object' || Array.isArray(d.records)) d.records = {};
+    d.ui = Object.assign({}, DOWNTIME_UI, d.ui && typeof d.ui === 'object' ? d.ui : {});
+    ['ids', 'wtIds'].forEach(k => { if (!Array.isArray(d.ui[k])) d.ui[k] = []; });
+    Object.keys(d.records).forEach(id => {
+      const r = d.records[id];
+      if (!r || typeof r !== 'object') { delete d.records[id]; return; }
+      if (!Array.isArray(r.ongoing)) r.ongoing = [];
+      if (!Array.isArray(r.log)) r.log = [];
+      if (!r.failures || typeof r.failures !== 'object') r.failures = {};
+      ['gp', 'carouseMod', 'nextCarouse'].forEach(k => { r[k] = Number(r[k]) || 0; });
+      r.renown = r.renown == null ? null : Number(r.renown) || 0;
+    });
+    // Records of deleted characters go.
+    const ids = new Set((state.characters || []).map(c => c.id));
+    Object.keys(d.records).forEach(id => { if (!ids.has(id)) delete d.records[id]; });
+  }
+
   function ensureStateShape() {
     const state = OSR.state;
     if (!Array.isArray(state.characters)) state.characters = [];
     if (!Array.isArray(state.monsters)) state.monsters = [];
     if (!Array.isArray(state.log)) state.log = [];
-    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'osr', brpInitiative: 'dex', wwnSpellText: 'book', wwnShadowdark: false }, state.settings || {});
+    state.settings = Object.assign({ scarletHeroes: false, theme: 'default', system: 'shadowdark', brpInitiative: 'dex', wwnSpellText: 'book', wwnShadowdark: false }, state.settings || {});
     state.settings.wwnShadowdark = state.settings.wwnShadowdark === true;
     if (['book', 'condensed'].indexOf(state.settings.wwnSpellText) === -1) state.settings.wwnSpellText = 'book';
     if (THEMES.indexOf(state.settings.theme) === -1) state.settings.theme = 'default';
-    if (SYSTEMS.indexOf(state.settings.system) === -1) state.settings.system = 'osr';
+    state.settings.system = normSystem(state.settings.system);
     if (!Array.isArray(state.conditions) || !state.conditions.length) {
       state.conditions = CONDITION_SEED.map(c => Object.assign({ id: uid() }, c));
     }
@@ -164,7 +214,7 @@
     }
     state.monsters.forEach(m => {
       if (!m.id) m.id = uid();
-      m.system = SYSTEMS.indexOf(m.system) === -1 ? 'osr' : m.system;
+      m.system = normSystem(m.system);
       // Early Silent Legions packs wrote abilities as strings. A copy that was
       // unedited before the fix stays unedited (js/seeds.js).
       const unedited = m.seedHash && OSR.contentHash && OSR.contentHash(m) === m.seedHash;
@@ -185,7 +235,7 @@
       en.category = COMPENDIUM_CATEGORIES.indexOf(en.category) === -1 ? 'Other' : en.category;
       en.source = en.source == null || String(en.source).trim() === '' ? COMPENDIUM_DEFAULT_SOURCE : String(en.source).trim();
       en.body = en.body == null ? '' : String(en.body);
-      en.system = SYSTEMS.indexOf(en.system) === -1 ? 'osr' : en.system;
+      en.system = normSystem(en.system);
       // Optional (Fate stunts): the skill, and the settings ("Fantasy", "Sci-fi").
       if (en.skill != null) en.skill = String(en.skill).trim();
       if (en.settings != null) en.settings = Array.isArray(en.settings) ? en.settings.map(String).filter(Boolean) : [];
@@ -215,6 +265,9 @@
     state.fateScene.gmPoints = Math.max(0, Math.round(Number(state.fateScene.gmPoints) || 0));
     if (!Array.isArray(state.scenes)) state.scenes = [];
     if (!state.activeSceneIds || typeof state.activeSceneIds !== 'object') state.activeSceneIds = {};
+    renameLegacyKeys(state.activeSceneIds);
+    ensureDowntimeShape(state);
+    if (state.seedVersions && typeof state.seedVersions === 'object') renameLegacyKeys(state.seedVersions);
     if (OSR.ensureSceneShape) state.scenes.forEach(OSR.ensureSceneShape); // js/maps.js
     if (OSR.ensureCustomIcons) OSR.ensureCustomIcons(state); // js/icons.js
     state.combat.entries.forEach(e => {
@@ -420,6 +473,7 @@
   let lastOk = true;
   let campaignsDirty = false; // OSR.campaigns / campaignId not yet in IndexedDB
   let migrateOldKey = false;  // remove localStorage[STORAGE_KEY] after the next good write
+  let legacyDocs = [];        // old-key documents ('osr') to delete after the next good write
 
   function save() {
     dirty = true;
@@ -451,6 +505,11 @@
     try {
       if (Object.keys(changed).length) await OSR.store.putDocs(id, changed);
       Object.assign(lastWritten, changed);
+      if (legacyDocs.length && id === OSR.campaignId) {
+        const old = legacyDocs; legacyDocs = [];
+        await OSR.store.deleteDocKeys(id, old);
+        old.forEach(k => { delete lastWritten[k]; });
+      }
       if (campaignsDirty) { await writeCampaigns(); }
     } catch (e) { console.warn('save failed', e); return false; }
     if (migrateOldKey) {
@@ -493,7 +552,7 @@
   Object.assign(OSR, {
     STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
-    THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, CONDITION_SEED, DEFAULT_STATUS_ICON,
+    THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, LEGACY_SYSTEM_KEYS, normSystem, renameLegacyKeys, CONDITION_SEED, DEFAULT_STATUS_ICON,
     applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape, migrateBrpSheet, fixAbilities,
     hpTrackerLabel, ensureHpTracker, ensureConsumablesShape, clampConsumable,
     sheetResources, resourceTrackerLabel, syncResourceTrackers, resourceTrackerLabels,

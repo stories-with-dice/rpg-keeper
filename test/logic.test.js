@@ -389,18 +389,18 @@ test('ensureStateShape: normalizes compendium entries', () => {
   assert.equal(en.category, 'Other');
   assert.equal(en.source, 'Unknown');
   assert.equal(en.body, '');
-  assert.equal(en.system, 'osr'); // backfilled — everything predating the System setting is OSR
+  assert.equal(en.system, 'shadowdark'); // backfilled — everything predating the System setting is OSR
   assert.ok(en.id && en.createdAt);
 });
 
-test('ensureStateShape: backfills settings.system to "osr", rejects an unknown system', () => {
+test('ensureStateShape: backfills settings.system to "shadowdark", rejects an unknown system', () => {
   T.state = { characters: [], settings: {} };
   T.ensureStateShape();
-  assert.equal(T.state.settings.system, 'osr');
+  assert.equal(T.state.settings.system, 'shadowdark');
 
   T.state = { characters: [], settings: { system: 'bogus' } };
   T.ensureStateShape();
-  assert.equal(T.state.settings.system, 'osr');
+  assert.equal(T.state.settings.system, 'shadowdark');
 
   T.state = { characters: [], settings: { system: 'ua3e' } };
   T.ensureStateShape();
@@ -413,10 +413,10 @@ test('ensureStateShape: backfills settings.system to "osr", rejects an unknown s
 
 test('currentSystem / compendiumForSystem: only entries for the active system are listed/resolved', () => {
   T.state.compendium.push(
-    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'shadowdark' },
     { id: 'u1', name: 'Biblioklept', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
   );
-  assert.equal(T.currentSystem(), 'osr');
+  assert.equal(T.currentSystem(), 'shadowdark');
   assert.deepEqual(T.compendiumForSystem().map(e => e.name), ['Longsword']);
   assert.equal(T.compByExactName('Biblioklept').length, 0);
 
@@ -428,7 +428,7 @@ test('currentSystem / compendiumForSystem: only entries for the active system ar
 
 test('acSearch (the "[" autocomplete): only suggests entries from the active system (bug: leaked every system)', () => {
   T.state.compendium.push(
-    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'shadowdark' },
     { id: 'u1', name: 'Loretta', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
   );
   assert.deepEqual(T.acSearch('lo').map(e => e.name), ['Longsword']);
@@ -438,7 +438,7 @@ test('acSearch (the "[" autocomplete): only suggests entries from the active sys
 
 test('monstersForSystem: only monsters tagged for the active system are listed (bug: the Bestiary showed every system)', () => {
   T.state.monsters.push(
-    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' }
   );
   assert.deepEqual(T.monstersForSystem().map(m => m.name), ['Goblin']);
@@ -446,10 +446,10 @@ test('monstersForSystem: only monsters tagged for the active system are listed (
   assert.deepEqual(T.monstersForSystem().map(m => m.name), ['Denizen']);
 });
 
-test('ensureStateShape: backfills monster.system to "osr"', () => {
+test('ensureStateShape: backfills monster.system to "shadowdark"', () => {
   T.state = { characters: [], monsters: [{ id: 'm1', name: 'Goblin' }] };
   T.ensureStateShape();
-  assert.equal(T.state.monsters[0].system, 'osr');
+  assert.equal(T.state.monsters[0].system, 'shadowdark');
 });
 
 const RAT_STATBLOCK = 'Rat\nAC 11, HP 1, ATK 1 bite +1 (1d3), MV near, S -3, D +1, C -2, I -3, W +0, Ch -3, AL N, LV 0';
@@ -740,7 +740,7 @@ test('seedCompendium: adds the bundled gear once, then is idempotent', () => {
   const added = T.seedCompendium();
   assert.ok(added > 0);
   assert.equal(T.state.compendium.length, added);
-  assert.equal(T.state.compendiumSeedVersion, T.data.seeds.osr.version);
+  assert.equal(T.state.compendiumSeedVersion, T.data.seeds.shadowdark.version);
   const en = T.state.compendium[0];
   assert.equal(en.category, 'Items');
   assert.equal(en.source, 'Shadowdark Core');
@@ -748,7 +748,7 @@ test('seedCompendium: adds the bundled gear once, then is idempotent', () => {
 });
 
 test('seedCompendium: leaves an existing same-name entry untouched', () => {
-  const name = T.data.seeds.osr.compendium[0].name;
+  const name = T.data.seeds.shadowdark.compendium[0].name;
   T.state.compendium = [{ id: 'mine', name, category: 'Rules', source: 'Homebrew', body: 'mine' }];
   T.seedCompendium();
   const mine = T.state.compendium.find(e => e.id === 'mine');
@@ -773,12 +773,12 @@ test('seedBrpMonsters: populates state.monsters, tagged system:brp, with the BRP
 });
 
 test('seedBrpMonsters: reseeding only ever replaces the brp-tagged slice (other systems preserved)', () => {
-  T.state.monsters = [{ id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' }];
+  T.state.monsters = [{ id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' }];
   T.seedBrpMonsters();
   T.seedBrpMonsters();
   const brpCount = T.state.monsters.filter(m => m.system === 'brp').length;
   assert.ok(brpCount > 0);
-  assert.equal(T.state.monsters.filter(m => m.system === 'osr').length, 1, 'the OSR monster survives reseeding');
+  assert.equal(T.state.monsters.filter(m => m.system === 'shadowdark').length, 1, 'the OSR monster survives reseeding');
   // No duplicate brp entries from the second run.
   assert.equal(T.state.monsters.filter(m => m.system === 'brp').length, brpCount);
 });
@@ -844,7 +844,7 @@ test('BRP entries are invisible under other systems, and vice versa (Compendium 
   T.state.compendium = [];
   T.seedBrpMonsters();
   T.seedBrpCompendium();
-  assert.equal(T.currentSystem(), 'osr');
+  assert.equal(T.currentSystem(), 'shadowdark');
   assert.equal(T.monstersForSystem().length, 0);
   assert.equal(T.compendiumForSystem().length, 0);
   T.state.settings.system = 'brp';
@@ -865,10 +865,10 @@ async function importSlPack() {
 
 test('Silent Legions pack: importPack adds Compendium entries, monsters in the SL def shape, and tables, tagged system:sl', async () => {
   T.state.monsters = [
-    { id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'sd1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     { id: 'b1', name: 'Troll', hd: '', hdNum: 0, hp: 20, attacks: [], abilities: [], source: 'brp', system: 'brp' }
   ];
-  T.state.compendium = [{ id: 'k1', name: 'Knife', category: 'Items', source: 'Shadowdark Core', body: '', system: 'osr' }];
+  T.state.compendium = [{ id: 'k1', name: 'Knife', category: 'Items', source: 'Shadowdark Core', body: '', system: 'shadowdark' }];
   await importSlPack();
   const mons = T.state.monsters.filter(m => m.system === 'sl');
   assert.equal(mons.length, slPack().monsters.length);
@@ -956,7 +956,7 @@ test('SL monsters are invisible under other systems, and vice versa (Compendium 
   T.state.monsters = [];
   T.state.compendium = [];
   await importSlPack();
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   assert.equal(T.monstersForSystem().length, 0);
   assert.equal(T.compendiumForSystem().length, 0);
   T.state.settings.system = 'sl';
@@ -1424,16 +1424,16 @@ test('createCharacter: detects name/system, adds an HP tracker, becomes active',
 /* ================================================================== */
 
 test('charSystemKey: classified by the presence of a ```ua fence, not the free-text `system` label', () => {
-  assert.equal(T.charSystemKey({ body: '# Plain\nHP 4/4' }), 'osr');
+  assert.equal(T.charSystemKey({ body: '# Plain\nHP 4/4' }), 'shadowdark');
   assert.equal(T.charSystemKey({ body: UA_BODY }), 'ua3e');
-  assert.equal(T.charSystemKey({}), 'osr');
+  assert.equal(T.charSystemKey({}), 'shadowdark');
 });
 
 test('charSystemKey: also classified by a "[BRP]" tag at the end of the first line', () => {
   assert.equal(T.charSystemKey({ body: '# Ada Vance [BRP]\n\n| STR |\n|---|\n| 11 |\n' }), 'brp');
   assert.equal(T.charSystemKey({ body: '\n# Ada [Basic Roleplaying]\nSTR 11' }), 'brp');
-  assert.equal(T.charSystemKey({ body: '# Plain\nSee [BRP] rules' }), 'osr', 'only the first line counts');
-  assert.equal(T.charSystemKey({ body: '# Plain\nSTR: 11' }), 'osr');
+  assert.equal(T.charSystemKey({ body: '# Plain\nSee [BRP] rules' }), 'shadowdark', 'only the first line counts');
+  assert.equal(T.charSystemKey({ body: '# Plain\nSTR: 11' }), 'shadowdark');
 });
 
 test('migrateBrpSheet: an old ```brp fence or characteristics table becomes one "STR: 12; DEX: 9" line, and the sheet gets the [BRP] tag', () => {
@@ -1523,7 +1523,7 @@ test('BRP combat: new combatants go in at their DEX rank, and Sort by DEX restor
 });
 
 test('combat outside BRP: new combatants still go at the end', () => {
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.addMonsterEntry({ name: 'Orc', hd: '1', hp: 5, attacks: [], abilities: [] });
   T.addMonsterEntry({ name: 'Tiger', source: 'brp', system: 'brp', hp: 10, characteristics: { DEX: 19 }, attacks: [], abilities: [] });
   assert.deepEqual(T.state.combat.entries.map(e => e.name), ['Orc', 'Tiger']);
@@ -1602,7 +1602,7 @@ test('ensureStateShape: an sl character from an older save gets its Madness trac
 test('refreshCharUI: the Character dropdown only lists the active system\'s characters; a UA character is never selected while System is osr', () => {
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.createCharacter(UA_BODY, { name: 'Kevin Johnson' });
-  // Creating the UA character does not select it — System is still 'osr'.
+  // Creating the UA character does not select it — System is still 'shadowdark'.
   assert.equal(T.activeChar().name, 'Garrick');
   assert.deepEqual(T.charactersForSystem().map(c => c.name), ['Garrick']);
 
@@ -1611,7 +1611,7 @@ test('refreshCharUI: the Character dropdown only lists the active system\'s char
   assert.equal(T.activeChar().name, 'Kevin Johnson');
   assert.deepEqual(T.charactersForSystem().map(c => c.name), ['Kevin Johnson']);
 
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.refreshCharUI();
   assert.equal(T.activeChar().name, 'Garrick');
 });
@@ -1750,7 +1750,7 @@ test('renderUABlocks: leaves a body with no ```ua fence untouched', () => {
 test('syncWoundTracker: a Wound Threshold in a ```ua fence seeds/updates the "Wounds (Name)" tracker', () => {
   T.createCharacter(UA_BODY, { name: 'Kevin Johnson' });
   // Look the character up directly rather than via activeChar() — creating a
-  // ua3e character while System is 'osr' (the default here) doesn't select
+  // ua3e character while System is 'shadowdark' (the default here) doesn't select
   // it in the Character dropdown (see charSystemKey/charactersForSystem).
   const ch = T.state.characters.find(c => c.name === 'Kevin Johnson');
   T.syncWoundTracker(ch);
@@ -1769,7 +1769,7 @@ test('syncWoundTracker: a plain OSR character never gets a Wounds tracker', () =
 
 test('setUAShockValue: logs the meter/field/before/after under the character\'s name', () => {
   // Look the character up directly — creating a ua3e character while System
-  // is 'osr' (the default here) doesn't select it in the dropdown (see
+  // is 'shadowdark' (the default here) doesn't select it in the dropdown (see
   // charSystemKey/charactersForSystem), so activeChar() would be null.
   T.createCharacter('# Kevin [Unknown Armies]\n\n```ua\nShock\nSelf: 2 hardened / 0 failed\n```\n');
   const ch = T.state.characters.find(c => c.name === 'Kevin');
@@ -1949,19 +1949,19 @@ test('importData: replace (OK) swaps the whole state', async () => {
 
 test('importData: a merge keeps each Compendium entry\'s system, and skips a duplicate only inside the same system', async () => {
   window.confirm = () => false;         // Cancel => merge
-  T.state.compendium.push({ id: 'o1', name: 'Witchsight', category: 'Spells', source: 'Unknown', body: '', system: 'osr' });
+  T.state.compendium.push({ id: 'o1', name: 'Witchsight', category: 'Spells', source: 'Unknown', body: '', system: 'shadowdark' });
   const payload = JSON.stringify({
     characters: [],
     compendium: [
       { name: 'Witchsight', category: 'Spells', source: 'Spell', body: 'UA', system: 'ua3e' },
-      { name: 'Witchsight', category: 'Spells', source: 'Spell', body: 'dup', system: 'osr' },
+      { name: 'Witchsight', category: 'Spells', source: 'Spell', body: 'dup', system: 'shadowdark' },
       { name: 'Old Entry', category: 'Items', body: '' }
     ]
   });
   await T.importData(new window.File([payload], 'm.json', { type: 'application/json' }));
   const ws = T.state.compendium.filter(e => e.name === 'Witchsight');
-  assert.deepEqual(ws.map(e => e.system).sort(), ['osr', 'ua3e'], 'the UA entry is added, the OSR duplicate is not');
-  assert.equal(T.state.compendium.find(e => e.name === 'Old Entry').system, 'osr', 'no system field: OSR, as before');
+  assert.deepEqual(ws.map(e => e.system).sort(), ['shadowdark', 'ua3e'], 'the UA entry is added, the OSR duplicate is not');
+  assert.equal(T.state.compendium.find(e => e.name === 'Old Entry').system, 'shadowdark', 'no system field: OSR, as before');
 });
 
 // An invented two-entry pack in the shape the UA3 data tools write (no book text in this repo).
@@ -2026,13 +2026,13 @@ test('Table library: the tables of an old campaign or export move to the library
   T.addTables([{ id: 'keep', name: 'Kept', source: 'd1\n1: k\n' }]);
   await T.replaceState({ characters: [], tables: [
     { id: 'old1', name: 'Old', tag: 'Custom', system: 'ua3e', source: 'd1\n1: x\n', createdAt: 5 },
-    { id: 'old2', name: 'kept', system: 'osr', source: 'd1\n1: y\n' }] });
+    { id: 'old2', name: 'kept', system: 'shadowdark', source: 'd1\n1: y\n' }] });
   assert.equal('tables' in T.state, false);
   assert.deepEqual(T.tableLib.tables.map(t => [t.id, t.name, t.origin, t.settings, t.output]),
     [['keep', 'Kept', 'Homebrew', ['Fantasy'], 'Other'], ['old1', 'Old', 'Homebrew', ['Modern'], 'Other']],
     'a name the library has is skipped; the System gives the settings');
   const docs = T.splitState(Object.assign({}, T.state, { tables: [] }));
-  assert.equal('tables' in docs.osr, false, 'a system document has no tables');
+  assert.equal('tables' in docs.shadowdark, false, 'a system document has no tables');
 
   // A table deleted from the library does not come back from the same old file.
   T.removeTables(['old1']);
@@ -2071,7 +2071,7 @@ test('importData: Cancel on a content pack adds nothing; × and Escape cancel to
 // A pack with two Compendium categories, two monsters, and two tables.
 function pickPack() {
   return {
-    pack: { name: 'Pick Pack', system: 'osr' },
+    pack: { name: 'Pick Pack', system: 'shadowdark' },
     compendium: [
       { name: 'Lantern', category: 'Items', body: 'New lantern.' },
       { name: 'Rope', category: 'Items', body: 'New rope.' },
@@ -2111,13 +2111,13 @@ test('Import picker: groups by Compendium category, Bestiary, and table output; 
   assert.deepEqual(T.state.compendium.map(e => e.name), ['Lantern']);
   assert.deepEqual(T.state.monsters.map(m => m.name), ['Mire Hag']);
   assert.deepEqual(T.tableLib.tables.map(t => t.name), ['Bog', 'Hags']);
-  assert.deepEqual(T.seeds.osr.compendium.filter(e => e.name === 'Rope' || e.name === 'Lantern').map(e => e.name), ['Lantern'],
+  assert.deepEqual(T.seeds.shadowdark.compendium.filter(e => e.name === 'Rope' || e.name === 'Lantern').map(e => e.name), ['Lantern'],
     'only the picked items go into the seed');
 });
 
 test('Import picker: "Replace" replaces the items you have with the same name (same id); without it they are skipped', async () => {
-  T.state.compendium.push({ id: 'mine', name: 'lantern', category: 'Items', source: 'Me', system: 'osr', body: 'My lantern.', createdAt: 1 });
-  T.state.monsters.push({ id: 'rat', name: 'Bog Rat', system: 'osr', hd: '1', hp: 3, attacks: [] });
+  T.state.compendium.push({ id: 'mine', name: 'lantern', category: 'Items', source: 'Me', system: 'shadowdark', body: 'My lantern.', createdAt: 1 });
+  T.state.monsters.push({ id: 'rat', name: 'Bog Rat', system: 'shadowdark', hd: '1', hp: 3, attacks: [] });
   T.addTables([{ id: 'bog', name: 'BOG', source: 'd1\n1: my mud\n' }, { id: 'day', name: 'Day', source: 'd1\n1: [BOG]\n' }]);
   T.save();
 

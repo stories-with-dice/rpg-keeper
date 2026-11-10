@@ -1960,3 +1960,57 @@ body.rail-hidden .rail { display: none; }
   .sheet-sec { break-inside: avoid; padding-top: 2px; }
 }
 #view-name.char-name { font-size: var(--fs-xl); }
+
+/* ===== Downtime tab (js/downtime-ui.js) ===== */
+.tab-btn[hidden] { display: none; }
+#dt-root { max-width: 1400px; }
+.dt-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.dt-views { display: flex; flex-wrap: wrap; gap: 4px; }
+.dt-sets { margin: 8px 0; }
+.dt-opts-row { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 12px; }
+.dt-toolbar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 10px; }
+.dt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; align-items: start; }
+.dt-acts { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+.dt-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.dt-card h3 { margin: 0; font-size: var(--fs-lg); }
+.dt-card h4 { margin: 6px 0 2px; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--text-dim); }
+.dt-card-head { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+.dt-fields { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: var(--fs-md); }
+.dt-fields label, .dt-inline label { display: inline-flex; gap: 4px; align-items: center; }
+.dt-field { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-sm); color: var(--text-dim); }
+.dt-inline { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: var(--fs-md); }
+.dt-num { padding: 2px 4px; }
+.dt-levelup { background: var(--roll-tint); border: 1px solid var(--accent-2); border-radius: var(--radius); padding: 4px 8px; font-size: var(--fs-md); display: flex; gap: 8px; align-items: center; }
+.badge.dt-used { color: var(--danger); border-color: var(--danger); }
+.dt-more summary { cursor: pointer; font-size: var(--fs-md); color: var(--text-dim); }
+.dt-ongoing, .dt-lines, .dt-related { list-style: none; padding: 0; margin: 4px 0; font-size: var(--fs-md); }
+.dt-ongoing li { display: flex; justify-content: space-between; gap: 6px; padding: 2px 0; border-bottom: 1px dotted var(--border); }
+.dt-log { font-size: var(--fs-sm); max-height: 220px; overflow-y: auto; padding-left: 18px; }
+.dt-carouse { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 1200px) { .dt-carouse { grid-template-columns: 1fr 1fr; } .dt-carouse > :first-child { grid-column: 1 / -1; } }
+.dt-table { border-collapse: collapse; width: 100%; font-size: var(--fs-md); }
+.dt-table th, .dt-table td { border-bottom: 1px solid var(--border); padding: 3px 6px; text-align: left; vertical-align: top; }
+.dt-table th { color: var(--text-dim); font-weight: 600; }
+.dt-table tr[data-act="event"] { cursor: pointer; }
+.dt-table tr.is-on td { background: var(--roll-tint); }
+.dt-table tr.is-off { opacity: .5; }
+.dt-table tr.is-off[data-act="event"] { cursor: not-allowed; }
+.dt-dc { white-space: nowrap; font-weight: 700; width: 70px; }
+.dt-go { width: 100%; margin-top: 6px; }
+.dt-warn { color: var(--danger); font-size: var(--fs-sm); }
+.dt-results { margin: 14px 0; }
+.dt-checkres { margin-bottom: 12px; border-color: var(--accent-2); }
+.dt-lines li { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px dotted var(--border); }
+.dt-roll { min-width: 26px; text-align: center; font-weight: 700; color: var(--bg); background: var(--accent-2); border-radius: 3px; padding: 0 4px; white-space: nowrap; }
+.dt-auto { color: var(--text-dim); padding-left: 18px !important; }
+.dt-auto::before { content: '→'; color: var(--accent-2); }
+.dt-note { color: var(--text-dim); font-style: italic; }
+.dt-fail > span:last-child { color: var(--danger); }
+.dt-ok > span:last-child { color: var(--ok); }
+.dt-mishap b { color: var(--danger); }
+.dt-benefit b, .dt-treasure b { color: var(--ok); }
+.dt-src { font-size: var(--fs-xs); color: var(--text-dim); border: 1px solid var(--border); border-radius: 3px; padding: 0 5px; white-space: nowrap; }
+.dt-rtable { margin: 10px 0; }
+.dt-related li { padding: 4px 0; border-bottom: 1px dotted var(--border); }
+.dt-rule { border-bottom: 1px solid var(--border); padding: 8px 0; }
+.dt-rule summary { cursor: pointer; font-size: var(--fs-lg); }

@@ -29,10 +29,10 @@
   // they were, same as the Compendium/Bestiary/Character partitioning.
   // Trackers that don't belong to any character (Rations, Torches, …) always show.
   function consumablesForSystem() {
-    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'shadowdark';
     return OSR.state.consumables.filter(c => {
       const owner = trackerOwner(c);
-      return !owner || (OSR.charSystemKey ? OSR.charSystemKey(owner.ch) : 'osr') === sys;
+      return !owner || (OSR.charSystemKey ? OSR.charSystemKey(owner.ch) : 'shadowdark') === sys;
     });
   }
 

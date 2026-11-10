@@ -13,17 +13,17 @@
 
   // The monster library is partitioned by System (Settings → System), same
   // mechanism as the Compendium (compendiumForSystem in js/compendium.js) —
-  // every def carries a `system` field, backfilled to 'osr' for anything
+  // every def carries a `system` field, backfilled to 'shadowdark' for anything
   // that predates this (see ensureStateShape). Filtered from view, never
   // deleted — switching System back brings them right back.
   // WWN can also show the OSR library's Shadowdark monsters (Settings →
   // "Shadowdark Bestiary in WWN"): the two use the same ascending AC and
   // attack bonus. They stay OSR monsters; this only shows them.
   function monstersForSystem() {
-    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'shadowdark';
     const sd = sys === 'wwn' && OSR.state.settings && OSR.state.settings.wwnShadowdark === true;
-    return OSR.state.monsters.filter(d => (d.system || 'osr') === sys ||
-      (sd && (d.system || 'osr') === 'osr' && d.source === 'shadowdark'));
+    return OSR.state.monsters.filter(d => (d.system || 'shadowdark') === sys ||
+      (sd && (d.system || 'shadowdark') === 'shadowdark' && d.source === 'shadowdark'));
   }
 
   // The BRP core book's Chapter 10 settings (pp.205-210), in the book's order.
@@ -126,7 +126,7 @@
     // Unknown Armies equivalent (no monster stat blocks, GMCs use the same
     // sheet as PCs), so hide it rather than let it add nonsense 'ua3e' monsters.
     const gen = $('#mb-gen');
-    if (gen) gen.hidden = (OSR.currentSystem ? OSR.currentSystem() : 'osr') !== 'osr';
+    if (gen) gen.hidden = (OSR.currentSystem ? OSR.currentSystem() : 'shadowdark') !== 'shadowdark';
     // Fate has its own NPC generator (js/fate-ui.js).
     const fateGen = $('#fate-gen-open');
     if (fateGen) fateGen.hidden = OSR.currentSystem() !== 'fate';

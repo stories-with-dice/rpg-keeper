@@ -6,12 +6,13 @@ subsystem are in [docs/agents/](docs/agents/): read the one for the code you cha
 | Note | Covers |
 |---|---|
 | [storage.md](docs/agents/storage.md) | `OSR.state`, IndexedDB, campaigns, Export/Import, content packs, seeding, the seed store, the table library, Dropbox sync |
-| [systems.md](docs/agents/systems.md) | the System switch, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions, Fate Core, Worlds Without Number |
+| [systems.md](docs/agents/systems.md) | the System switch, the old `osr` key and its migration, character classification, HP/Wounds/Madness trackers, Unknown Armies, BRP, Silent Legions, Fate Core, Worlds Without Number |
 | [compendium.md](docs/agents/compendium.md) | Compendium entries, hover popups (also the map's), `[`/`$` autocomplete, the sheet-selection menu |
 | [dice.md](docs/agents/dice.md) | the dice engine, `annotate()`, sheet variables and `$Name`, the roll-with-modifiers popup |
 | [monsters.md](docs/agents/monsters.md) | the stat-block parser, Bestiary tab, monster modals and form, PL generator, Populate by HD, converters, Tables tab and the table library |
 | [combat.md](docs/agents/combat.md) | the Combat tracker: entries, statuses, the right-click menu, the detail panel |
 | [maps.md](docs/agents/maps.md) | Maps tab: scenes, view, tokens, drawings, pins, hexcrawl, toolbar, hotkeys, pop-out, undo |
+| [downtime.md](docs/agents/downtime.md) | Downtime tab (Shadowdark only): carousing, downtime activities, gambling, the rules data, sheet ↔ record |
 
 The content pack format for tools that write packs is in
 [docs/content-pack-format.md](docs/content-pack-format.md). Update it when the import of packs,
@@ -44,9 +45,12 @@ the Compendium entry, the monster def, or the table fields change.
   content in `data/seed-wwn.json` and `data/tables/wwn_*.csv` (printed pages 1–343 of the book; the
   Deluxe-only chapters from "Arts of the Gyre" on are not bundled). Every other WWN book (Atlas,
   The Monster Overhaul, the condensed spell lists) goes only into private packs.
+  A second exception, by the owner's decision (2026-11-09): the Shadowdark carousing and downtime
+  rules in `data/downtime-shadowdark.json` (core book, both Western Reaches books, GM Companion).
 - **Generated files**: never edit `data/monsters.json`, `data/spells.json`, `data/tables.json`,
-  `data/game-icons-index.json`, `data/seed-fate.json`, `data/seed-wwn.json`, `data/tables/wwn_*.csv`
-  by hand. Edit the source data or the script, run it, commit both. `data/fate/*.json` are copies of
+  `data/game-icons-index.json`, `data/seed-fate.json`, `data/seed-wwn.json`, `data/tables/wwn_*.csv`,
+  `data/downtime-shadowdark.json` by hand. The last one comes from the `shadowdark_companion` repo
+  (`node tools/export_keeper_downtime.ts` there). Edit the source data or the script, run it, commit both. `data/fate/*.json` are copies of
   the fate-rpg-foundry repo's `data/`. `data/seed-wwn.json` and the `wwn_*.csv` files come from the
   owner's private builder `book-extracts/build_wwn.js` (git-ignored: it reads the PDF text); fix
   them there and run it, then `npm run convert-tables`.
@@ -56,7 +60,7 @@ the Compendium entry, the monster def, or the table fields change.
 Every `js/*.js` file (except vendored ones) is an IIFE: `(function (OSR) {…})(window.OSR = window.OSR || {})`.
 `js/core.js` loads first and `js/main.js` last (`index.html` order). Cross-file calls are `OSR.foo()`,
 resolved at call time. Keep a helper local to its file unless another file or a test calls it.
-Pure modules (`js/monsters.js`, `js/grid.js`, `js/ua-statblock.js`, `js/fate.js`, `js/fate-npc.js`, `js/wwn.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
+Pure modules (`js/monsters.js`, `js/downtime.js`, `js/grid.js`, `js/ua-statblock.js`, `js/fate.js`, `js/fate-npc.js`, `js/wwn.js`, `js/icons.js`, `js/table-syntax.js`) are UMD-ish:
 they also `module.exports` for Node.
 
 | File | Contents |
@@ -77,6 +81,7 @@ they also `module.exports` for Node.
 | `js/compendium.js`, `js/compendium-popups.js` | Compendium CRUD and filters; hover popups and autocomplete |
 | `js/maps.js`, `js/grid.js`, `js/tokens.js`, `js/drawings.js`, `js/pins.js`, `js/history.js`, `js/icons.js` | Maps tab |
 | `js/tables.js`, `js/table-syntax.js` | Tables tab and table editor; table text parser and master-table roller |
+| `js/downtime.js`, `js/downtime-ui.js` | Shadowdark carousing and downtime rules engine (pure); the Downtime tab |
 | `js/settings.js`, `js/io.js`, `js/dropbox.js` | Settings; paste modal, Export/Import, packs; Dropbox |
 | `js/main.js` | `wire()` calls every `wireX()`, `init()`, `boot()`, the test seam, the tabs (`showTab`, the split view `setSplit`, `tabShown`) and their memory |
 | `scripts/*.js` | CLI converters (bestiary, spells, tables, token icons, icon index) |

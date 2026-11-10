@@ -222,7 +222,7 @@
     renderLibrary();
     const li = $('#mm-lib-list [data-id="' + d.id + '"]');
     if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const what = d.source === 'ua3e' || d.source === 'fate' ? monsterMetaLine(d) : levelLabel(d.source === 'brp' ? 'brp' : 'osr') + ' ' + (d.hd || '?');
+    const what = d.source === 'ua3e' || d.source === 'fate' ? monsterMetaLine(d) : levelLabel(d.source === 'brp' ? 'brp' : 'shadowdark') + ' ' + (d.hd || '?');
     $('#mm-msg').textContent = 'Rolled → ' + d.name + '  (' + what + ', ' + libFiltered.length + ' options)';
     OSR.pushNote('Library', 'rolled → ' + d.name, what + ', ' + libFiltered.length + ' options');
   }
@@ -392,7 +392,7 @@
       parsed.raw = text.trim();
     }
     parsed.id = editMonsterId;
-    parsed.system = OSR.state.monsters[idx].system || 'osr'; // editing never reclassifies a monster's system
+    parsed.system = OSR.state.monsters[idx].system || 'shadowdark'; // editing never reclassifies a monster's system
     OSR.state.monsters[idx] = parsed;
     OSR.save();
     hideLibPreview();

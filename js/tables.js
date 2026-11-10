@@ -25,7 +25,7 @@
   const TABLE_OUTPUTS = ['Encounter', 'Entity', 'Location', 'Adventure', 'Group', 'Other'];
   const DEFAULT_ORIGIN = 'Homebrew';
   // The settings a table gets when it has none: from the System it was made in.
-  const SYSTEM_SETTINGS = { osr: ['Fantasy'], brp: ['Fantasy'], ua3e: ['Modern'], sl: ['Modern', 'Horror'], fate: ['Fantasy', 'Modern'] };
+  const SYSTEM_SETTINGS = { shadowdark: ['Fantasy'], brp: ['Fantasy'], ua3e: ['Modern'], sl: ['Modern', 'Horror'], fate: ['Fantasy', 'Modern'] };
   const FILTERS = ['origin', 'settings', 'output'];
   const FILTER_ROW = { origin: '#tbl-filter-origin', settings: '#tbl-filter-settings', output: '#tbl-filter-output' };
 
@@ -56,7 +56,7 @@
       id: t.id ? String(t.id) : OSR.uid(),
       name: String(t.name == null ? '' : t.name).trim(),
       origin: String(t.origin || '').trim() || o.origin || DEFAULT_ORIGIN,
-      settings: firstList(pickSettings(t.settings != null ? t.settings : t.setting), SYSTEM_SETTINGS[t.system || o.system], ['Fantasy']),
+      settings: firstList(pickSettings(t.settings != null ? t.settings : t.setting), SYSTEM_SETTINGS[OSR.normSystem(t.system || o.system, null)], ['Fantasy']),
       output: pick(TABLE_OUTPUTS, t.output) || 'Other',
       source: String(t.source == null ? '' : t.source),
       createdAt: t.createdAt || now,

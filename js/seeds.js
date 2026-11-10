@@ -32,7 +32,15 @@
     if (item.seedRef) return item.seedRef;
     if (item.ref) return String(item.ref);
     if (kind === 'm' && item.id) return String(item.id);
-    return sys + ':' + kind + ':' + cleanName(item.name);
+    return refPrefix(sys) + ':' + kind + ':' + cleanName(item.name);
+  }
+
+  // Seed refs keep the system key of the day they were made: the Shadowdark
+  // seed's refs are 'osr:c:<name>' (the key before 2026-11-09). A new prefix
+  // would make every campaign's seed copies look new and duplicate them.
+  function refPrefix(sys) {
+    const old = Object.keys(OSR.LEGACY_SYSTEM_KEYS).find(k => OSR.LEGACY_SYSTEM_KEYS[k] === sys);
+    return old || sys;
   }
 
   function codeSeed(sys) {
@@ -108,6 +116,17 @@
   async function loadSeeds() {
     const raw = await OSR.store.getDocs('seeds');
     const writes = {};
+    let written = true;
+    // A seed stored under an old system key ('osr') moves to the new key.
+    const legacy = Object.keys(raw).filter(k => OSR.LEGACY_SYSTEM_KEYS[k]);
+    legacy.forEach(k => {
+      const now = OSR.LEGACY_SYSTEM_KEYS[k];
+      if (!raw[now]) {
+        const seed = JSON.parse(raw[k]);
+        seed.system = now;
+        raw[now] = writes[now] = JSON.stringify(seed);
+      }
+    });
     OSR.SYSTEMS.forEach(sys => {
       let seed = raw[sys] ? JSON.parse(raw[sys]) : null;
       const code = codeSeed(sys);
@@ -121,7 +140,10 @@
     // A failed write (storage full) is not fatal: the seeds work from memory,
     // and the next boot writes them again.
     if (Object.keys(writes).length) {
-      try { await OSR.store.putDocs('seeds', writes); } catch (e) { console.warn('seed write failed', e); }
+      try { await OSR.store.putDocs('seeds', writes); } catch (e) { console.warn('seed write failed', e); written = false; }
+    }
+    if (legacy.length && written) {
+      try { await OSR.store.deleteDocKeys('seeds', legacy); } catch (e) { console.warn('old seed delete failed', e); }
     }
   }
 
@@ -161,8 +183,8 @@
   function compCopy(sys, e) {
     const item = {
       id: uid(), name: e.name,
-      category: OSR.COMPENDIUM_CATEGORIES.indexOf(e.category) === -1 ? (sys === 'osr' ? 'Items' : 'Other') : e.category,
-      source: sys === 'osr' && !e.ref ? 'Shadowdark Core' : (e.source || OSR.COMPENDIUM_DEFAULT_SOURCE),
+      category: OSR.COMPENDIUM_CATEGORIES.indexOf(e.category) === -1 ? (sys === 'shadowdark' ? 'Items' : 'Other') : e.category,
+      source: sys === 'shadowdark' && !e.ref ? 'Shadowdark Core' : (e.source || OSR.COMPENDIUM_DEFAULT_SOURCE),
       system: sys, body: e.body || '', createdAt: Date.now(), updatedAt: Date.now()
     };
     if (e.ref) item.ref = String(e.ref);
@@ -201,7 +223,7 @@
       if (old) state.seedVersions[sys] = seed.version;
       const byName = new Map(seed.compendium.map(e => [cleanName(e.name), e]));
       state.compendium.forEach(en => {
-        if ((en.system || 'osr') !== sys || en.seedRef) return;
+        if ((en.system || 'shadowdark') !== sys || en.seedRef) return;
         const s = (en.ref && seed.compendium.find(x => x.seedRef === en.ref)) || byName.get(cleanName(en.name));
         if (!s) return;
         en.seedRef = s.seedRef;
@@ -210,7 +232,7 @@
       const monById = new Map(seed.monsters.map(m => [m.id, m]));
       const monByName = new Map(seed.monsters.map(m => [cleanName(m.name), m]));
       state.monsters.forEach(d => {
-        if ((d.system || 'osr') !== sys || d.seedRef) return;
+        if ((d.system || 'shadowdark') !== sys || d.seedRef) return;
         const s = monById.get(d.id) || monByName.get(cleanName(d.name));
         if (!s) return;
         d.seedRef = s.seedRef;
@@ -224,7 +246,7 @@
     const seed = OSR.seeds[sys] || emptySeed(sys);
     const st = OSR.state;
     const res = { system: sys, version: seed.version, seen: (st.seedVersions || {})[sys] || 0, added: [], changed: [], edited: [] };
-    const sameSys = x => (x.system || 'osr') === sys;
+    const sameSys = x => (x.system || 'shadowdark') === sys;
     const comp = st.compendium.filter(sameSys), mons = st.monsters.filter(sameSys);
     const check = (kind, items, mine, copy) => {
       const byRef = new Map(mine.filter(x => x.seedRef).map(x => [x.seedRef, x]));
@@ -290,7 +312,7 @@
   function renderSeedNotice() {
     const row = $('#set-seed-row');
     if (!row) return;
-    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'shadowdark';
     const r = seedStatus(sys);
     const pending = r.seen < r.version && (r.added.length || r.changed.length || r.edited.length);
     row.hidden = !pending;

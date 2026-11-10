@@ -14,7 +14,7 @@
  *   monsters  the OSR (Shadowdark/OSE) bestiary
  *   tables    the random tables (Tables tab)
  *   seeds     { osr, brp, fate } → { version, compendium, monsters }; the OSR
- *             Compendium seed is the gear from data/seed-osr.json plus every
+ *             Compendium seed is the gear from data/seed-shadowdark.json plus every
  *             spell from data/spells.json whose name is not already there
  *   pregens   [{ file, text }] in PREGEN_FILES order
  *   tokenIcons [{ id, name, author, paths }] — game-icons.net icons, path data only
@@ -36,7 +36,7 @@
   // The Fate NPC generator's data (js/fate-npc.js), copied from the fate-rpg-foundry repo.
   const FATE_FILES = { rules: 'rules.json', genres: 'genres.json', archetypes: 'archetypes.json', stunts: 'stunts.json', aspectLists: 'aspect-lists.json' };
 
-  OSR.data = { monsters: [], tables: [], seeds: {}, pregens: [], tokenIcons: [], fate: null };
+  OSR.data = { monsters: [], tables: [], seeds: {}, pregens: [], tokenIcons: [], fate: null, downtime: null };
 
   async function get(url, as) {
     let res;
@@ -60,10 +60,11 @@
   async function loadData() {
     const jobs = {
       monsters: get('data/monsters.json'), spells: get('data/spells.json'), tables: get('data/tables.json'),
-      osr: get('data/seed-osr.json'), brp: get('data/seed-brp.json'), fateSeed: get('data/seed-fate.json'), wwnSeed: get('data/seed-wwn.json'),
+      shadowdark: get('data/seed-shadowdark.json'), brp: get('data/seed-brp.json'), fateSeed: get('data/seed-fate.json'), wwnSeed: get('data/seed-wwn.json'),
       fate: Promise.all(Object.keys(FATE_FILES).map(k => get('data/fate/' + FATE_FILES[k]))),
       pregens: Promise.all(PREGEN_FILES.map(f => get(f, 'text'))),
-      tokenIcons: get('data/token-icons.json')
+      tokenIcons: get('data/token-icons.json'),
+      downtime: get('data/downtime-shadowdark.json')
     };
     const keys = Object.keys(jobs);
     const settled = await Promise.allSettled(keys.map(k => jobs[k]));
@@ -76,14 +77,15 @@
       monsters: r.monsters,
       tables: r.tables,
       seeds: {
-        osr: seed(r.osr, { compendium: withSpells(r.osr.compendium || [], r.spells), monsters: r.monsters }),
+        shadowdark: seed(r.shadowdark, { compendium: withSpells(r.shadowdark.compendium || [], r.spells), monsters: r.monsters }),
         brp: seed(r.brp),
         fate: seed(r.fateSeed),
         wwn: seed(r.wwnSeed)
       },
       pregens: PREGEN_FILES.map((file, i) => ({ file, text: r.pregens[i] })),
       tokenIcons: r.tokenIcons,
-      fate: Object.keys(FATE_FILES).reduce((acc, k, i) => { acc[k] = r.fate[i]; return acc; }, {})
+      fate: Object.keys(FATE_FILES).reduce((acc, k, i) => { acc[k] = r.fate[i]; return acc; }, {}),
+      downtime: r.downtime
     };
     return OSR.data;
   }

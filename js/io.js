@@ -95,12 +95,12 @@
   // `fromPack`, every added item becomes a seed copy (seedRef + seedHash).
   // With opts.replace (the import picker's "Replace"), a match is replaced in
   // place (same id) instead of skipped; its id goes into opts.replaced.
-  const validSystem = (s, fallback) => (OSR.SYSTEMS.indexOf(s) === -1 ? fallback : s);
+  const validSystem = (s, fallback) => OSR.normSystem(s, fallback);
   const lc = s => String(s || '').trim().toLowerCase();
-  const inSystem = (x, system) => (x.system || 'osr') === system;
+  const inSystem = (x, system) => OSR.normSystem(x.system) === system;
   function replaceSeeded(list, item, system) {
     if (!item.seedRef) return false;
-    const i = list.findIndex(x => (x.system || 'osr') === system && x.seedRef === item.seedRef);
+    const i = list.findIndex(x => (x.system || 'shadowdark') === system && x.seedRef === item.seedRef);
     if (i === -1) return false;
     item.id = list[i].id;
     item.system = system;
@@ -408,13 +408,13 @@
           state.consumables.push({ id: OSR.uid(), name: String(c.name || ''), value: Number(c.value) || 0, max: Number(c.max) || 0 });
         }
       });
-      if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'osr');
-      if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'osr');
+      if (Array.isArray(data.monsters)) mergeMonsters(data.monsters, 'shadowdark');
+      if (Array.isArray(data.compendium)) mergeCompendium(data.compendium, 'shadowdark');
       if (OSR.addTables(data.tables).length) OSR.saveTables();
       if (Array.isArray(data.scenes)) data.scenes.forEach(sc => {
         if (!sc) return;
         sc.id = OSR.uid();
-        sc.system = validSystem(sc.system, 'osr');
+        sc.system = validSystem(sc.system, 'shadowdark');
         state.scenes.push(OSR.ensureSceneShape(sc));
       });
       if (typeof data.notes === 'string' && data.notes.trim()) {

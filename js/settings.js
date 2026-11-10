@@ -7,7 +7,7 @@
   const $ = OSR.$;
 
   // Short System names for the header selector (the header has little room).
-  const HEADER_SYSTEM_LABELS = { osr: 'OSR', ua3e: 'Unknown Armies', brp: 'BRP', sl: 'Silent Legions', fate: 'Fate', wwn: 'WWN' };
+  const HEADER_SYSTEM_LABELS = { shadowdark: 'Shadowdark', ua3e: 'Unknown Armies', brp: 'BRP', sl: 'Silent Legions', fate: 'Fate', wwn: 'WWN' };
 
   function renderSettings() {
     $('#set-scarlet-heroes').checked = !!(OSR.state.settings && OSR.state.settings.scarletHeroes);
@@ -54,11 +54,11 @@
     const cn = OSR.compendiumForSystem().length;
     $('#set-comp-count').textContent = cn + ' entr' + (cn === 1 ? 'y' : 'ies') +
       ' in the ' + (OSR.SYSTEM_LABELS[OSR.currentSystem()] || OSR.currentSystem()) + ' Compendium' +
-      (OSR.currentSystem() === 'osr' ? ' (' + OSR.data.seeds.osr.compendium.length + ' in the default seed)' : '') + '.';
+      (OSR.currentSystem() === 'shadowdark' ? ' (' + OSR.data.seeds.shadowdark.compendium.length + ' in the default seed)' : '') + '.';
     const total = OSR.data.pregens.length;
     const missing = OSR.missingPregens();
     $('#set-pregen-count').textContent = (total - missing.length) + ' of ' + total +
-      ' example characters (OSR, Unknown Armies, Silent Legions, Fate, WWN) are in this campaign' +
+      ' example characters (Shadowdark, Unknown Armies, Silent Legions, Fate, WWN) are in this campaign' +
       (missing.length ? '; missing: ' + missing.join(', ') + '.' : '.');
     $('#set-add-pregens').disabled = !missing.length;
     OSR.renderSeedNotice();
@@ -66,13 +66,16 @@
     // load path (boot, a campaign switch, an import) calls renderSettings().
     OSR.buildDiceGrid();
     OSR.renderFateDiceActions();
+    // The Downtime tab is for Shadowdark only (js/downtime-ui.js).
+    if (OSR.applyDowntimeTab) OSR.applyDowntimeTab();
+    if (OSR.tabShown && OSR.tabShown('downtime')) OSR.renderDowntime();
     if (OSR.renderTokenCredits) OSR.renderTokenCredits();
     OSR.renderDropbox();
   }
   // Settings → System, and an imported pack of another system (js/io.js):
   // re-render everything the system partitions (see AGENTS.md "Game system").
   function setSystem(value) {
-    const s = OSR.SYSTEMS.indexOf(value) === -1 ? 'osr' : value;
+    const s = OSR.normSystem(value);
     OSR.state.settings.system = s;
     OSR.save();
     OSR.resetCompendiumFilters();
@@ -127,10 +130,10 @@
       OSR.pushNote('Settings', 'Scarlet Heroes damage resolution ' + (e.target.checked ? 'enabled' : 'disabled'));
     });
     $('#set-reload-monsters').addEventListener('click', () => {
-      if (!confirm('Replace the bundled OSR monster library with the defaults? OSR monsters you added by pasting will be lost ' +
+      if (!confirm('Replace the bundled Shadowdark monster library with the defaults? Shadowdark monsters you added by pasting will be lost ' +
         '(Unknown Armies monsters and existing combat entries are unaffected).')) return;
       OSR.state.monstersSeeded = false;
-      OSR.seedMonsters(); // only ever replaces the 'osr' portion of state.monsters — see js/seed.js
+      OSR.seedMonsters(); // only ever replaces the 'shadowdark' portion of state.monsters — see js/seed.js
       renderSettings();
       OSR.renderMonsterBrowser();
       OSR.renderCombat();
@@ -162,7 +165,7 @@
       if (!confirm('Delete ALL ' + n + ' ' + sysLabel + ' Compendium entries? This cannot be undone. ' +
         '(Other systems’ entries are untouched. Reseed defaults brings the bundled gear back.)')) return;
       const sys = OSR.currentSystem();
-      OSR.state.compendium = OSR.state.compendium.filter(e => (e.system || 'osr') !== sys);
+      OSR.state.compendium = OSR.state.compendium.filter(e => (e.system || 'shadowdark') !== sys);
       OSR.resetCompendiumFilters();
       OSR.save();
       OSR.hideCompPopNow();

@@ -53,7 +53,7 @@ const check = (env, sel, on) => { const el = env.$(sel); el.checked = on; el.dis
 test('pins: "Journal" is a Compendium category, and old entries keep theirs', async () => {
   const { T, window } = await setup();
   assert.ok(T.COMPENDIUM_CATEGORIES.includes('Journal'));
-  T.state.compendium = [{ id: 'a', name: 'Note', category: 'Journal', system: 'osr', body: '' }, { id: 'b', name: 'Rule', category: 'Rules', system: 'osr', body: '' }];
+  T.state.compendium = [{ id: 'a', name: 'Note', category: 'Journal', system: 'shadowdark', body: '' }, { id: 'b', name: 'Rule', category: 'Rules', system: 'shadowdark', body: '' }];
   T.ensureStateShape();
   assert.deepEqual(T.state.compendium.map(e => e.category), ['Journal', 'Rules']);
   window.close();
@@ -116,7 +116,7 @@ test('pins: the pin tool adds a pin and a Journal note in this System, named aft
   const pin = sc.pins[0];
   assert.deepEqual([Math.round(pin.x), Math.round(pin.y)], [300, 200], 'no snapping outside hexcrawl');
   const note = T.state.compendium.find(e => e.id === pin.compendiumId);
-  assert.deepEqual([note.name, note.category, note.system, note.source], ['Wilds — Location 1', 'Journal', 'osr', 'Maps']);
+  assert.deepEqual([note.name, note.category, note.system, note.source], ['Wilds — Location 1', 'Journal', 'shadowdark', 'Maps']);
   assert.strictEqual(note.body, '**Map:** Wilds\n\n', 'the map name; no hex on squares');
   assert.ok(!$('#comp-modal').hidden, 'the editor opens');
   assert.strictEqual($('#comp-f-name').value, 'Wilds — Location 1');

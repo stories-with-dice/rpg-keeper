@@ -466,7 +466,7 @@ test('Consumables: HP/Wounds trackers only show for the active system; switching
   setValue($('#set-system'), 'ua3e');
   assert.deepEqual(names(), ['Rations', 'Wounds (Kevin)']);
 
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   assert.deepEqual(names(), ['HP (Garrick)', 'Rations']);
 
   // still never deleted underneath
@@ -593,7 +593,7 @@ test('Combat (BRP): rows show the DEX rank; an edited rank and Sort by DEX reord
   setValue($$('#tracker-list .cbt-row')[0].querySelector('.cbt-rank'), '');
   assert.equal(T.state.combat.entries.find(e => e.name === 'Wolf').dexRank, null, 'a blank rank goes back to DEX');
 
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.renderCombat();
   assert.equal($('#cb-sort-rank').hidden, true);
 });
@@ -624,7 +624,7 @@ test('Settings (BRP): "BRP combat order" switches the tracker to INT rank and re
   click($('#cb-sort-rank'));
   assert.deepEqual(rows(), ['Elf', 'Wolf', 'Sorcerer', 'Rat Swarm']);
 
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.renderSettings();
   assert.equal($('#set-brp-initiative-row').hidden, true);
 });
@@ -673,7 +673,7 @@ test('Bestiary tab: lists monsters, filters by name and HD, shows a count', () =
 
 test('Bestiary tab: only shows the active system\'s monsters (bug: OSR monsters showed in UA mode and vice versa)', () => {
   T.state.monsters = [
-    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' },
   ];
   tab('bestiary');
@@ -698,7 +698,7 @@ test('Bestiary: the random monster generator (Shadowdark-only rules) is hidden w
   setValue($('#set-system'), 'ua3e');
   assert.equal($('#mb-gen').hidden, true);
 
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   assert.equal($('#mb-gen').hidden, false);
 });
 
@@ -1071,13 +1071,13 @@ test('Combat "+ Populate by HD…": generate shows a proposal to confirm, then a
   T.state.monsters = [
     { id: 'm-rat', name: 'Rat', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '0', hdNum: 0, hp: 1, move: 'near', align: 'N', xp: null, moraleML: null, atkBonus: 0,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
     { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
     { id: 'm-ogre', name: 'Ogre', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '4', hdNum: 4, hp: 20, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 4,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
   ];
   T.state.combat.entries = [];
   T.renderAll();
@@ -1119,7 +1119,7 @@ test('Combat "+ Populate by HD…": hovering a proposed monster shows its stat-b
   T.state.monsters = [
     { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: 'A sneaky raider.', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
-      attacksText: '1 shortsword +1 (1d6)', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '1 shortsword +1 (1d6)', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
   ];
   T.state.combat.entries = [];
   T.renderAll();
@@ -1139,10 +1139,10 @@ test('Combat "+ Populate by HD…": the dice icon rerolls just that monster for 
   T.state.monsters = [
     { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
     { id: 'm-orc', name: 'Orc', source: 'shadowdark', desc: '', raw: '', ac: { asc: 13, desc: null, thac0: null },
       hd: '1', hdNum: 1, hp: 6, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
   ];
   T.state.combat.entries = [];
   T.renderAll();
@@ -1170,7 +1170,7 @@ test('Combat "+ Populate by HD…": the dice icon is disabled when no other mons
   T.state.monsters = [
     { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
   ];
   T.state.combat.entries = [];
   T.renderAll();
@@ -1186,7 +1186,7 @@ test('Combat "+ Populate by HD…": an infeasible exact count shows an error and
   T.state.monsters = [
     { id: 'm-goblin', name: 'Goblin', source: 'shadowdark', desc: '', raw: '', ac: { asc: 12, desc: null, thac0: null },
       hd: '1', hdNum: 1, hp: 5, move: 'near', align: 'C', xp: null, moraleML: null, atkBonus: 1,
-      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'osr' },
+      attacksText: '', attacks: [], stats: null, saveTargets: null, savesText: '', abilities: [], system: 'shadowdark' },
   ];
   T.state.combat.entries = [];
   T.renderAll();
@@ -1257,7 +1257,7 @@ test('Bestiary: hovering a monster name shows its stat-block card', () => {
 });
 
 test('Dice Roller: the preset buttons are Font Awesome icons with a label', () => {
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.buildDiceGrid();
   const btns = $$('#dice-grid .dice-btn');
   assert.equal(btns.length, 12);
@@ -1431,7 +1431,7 @@ test('Split view: a right-click on a tab shows it on the right; a left-click or 
 
 test('Compendium: only the categories in use show; hovering a row name shows the entry as Markdown', () => {
   T.state.compendium = [
-    { id: 'c1', name: 'Blast', category: 'Powers', source: 'Magic', body: '**Range:** 100 meters\n\nA *beam*.', system: 'osr', createdAt: 1 },
+    { id: 'c1', name: 'Blast', category: 'Powers', source: 'Magic', body: '**Range:** 100 meters\n\nA *beam*.', system: 'shadowdark', createdAt: 1 },
   ];
   tab('compendium');
   T.renderAll();
@@ -1500,7 +1500,7 @@ test('Bestiary (BRP): the Setting filter and "Pick random" pick one monster from
   assert.notEqual($('#mb-pick .comp-name').textContent, first);
 
   // Other systems: no Pick random, no Setting filter, no pick box.
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.renderAll();
   assert.equal($('#mb-pick-random').hidden, true);
   assert.equal($('#mb-setting-field').hidden, true);
@@ -1537,7 +1537,7 @@ test('Populate by EL (BRP): the Setting choice limits the monsters, and starts a
 });
 
 test('Populate by HD: outside BRP the labels read HD and the party calculator is hidden', () => {
-  T.state.settings.system = 'osr';
+  T.state.settings.system = 'shadowdark';
   T.renderAll();
   tab('combat');
   assert.match($('#cb-populate-hd').textContent, /Populate by HD/);
@@ -1984,7 +1984,7 @@ test('Tables tab: every System sees every table; a user table hides a built-in o
   makeTable('Cult', 'd1\n1: a cult\n');
   assert.ok(tblRow('Cult'));
 
-  window.OSR.setSystem('osr');
+  window.OSR.setSystem('shadowdark');
   assert.ok(tblRow('Cult'), 'OSR sees the table made under Silent Legions');
   assert.deepEqual(T.tableLib.tables.map(t => [t.name, t.settings]), [['Arctic', ['Fantasy']], ['Cult', ['Modern', 'Horror']]]);
 });
@@ -2057,7 +2057,7 @@ test('Settings: Compendium "Reseed defaults" adds the bundled gear; "Delete all"
 
 test('Settings: System select partitions the Compendium — an entry created under one system is invisible under the other', async () => {
   tab('settings');
-  assert.equal($('#set-system').value, 'osr');
+  assert.equal($('#set-system').value, 'shadowdark');
 
   setValue($('#set-system'), 'ua3e');
   assert.equal(T.state.settings.system, 'ua3e');
@@ -2074,7 +2074,7 @@ test('Settings: System select partitions the Compendium — an entry created und
   assert.equal(entry.system, 'ua3e');
 
   tab('settings');
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   tab('compendium');
   assert.doesNotMatch($('#comp-list').textContent, /Biblioklept/, 'the ua3e entry is hidden under osr');
   assert.ok(T.state.compendium.some(e => e.name === 'Biblioklept'), 'but it still exists in state');
@@ -2098,14 +2098,14 @@ test('Settings: switching System updates the Character dropdown immediately (bug
   assert.equal($('#view-name').textContent, 'Kevin Johnson');
 
   tab('settings');
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   tab('character');
   assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
 });
 
 test('Settings: Compendium "Delete all" only clears the active system\'s entries (bug: used to wipe every system)', () => {
   T.state.compendium.push(
-    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'o1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'shadowdark' },
     { id: 'u1', name: 'Biblioklept', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
   );
   tab('settings');
@@ -2134,13 +2134,13 @@ test('Settings: Monster library "Reload defaults" only replaces the OSR portion 
   click($('#set-reload-monsters'));      // confirm() stubbed true; seedMonsters() is async
   await new Promise(r => setTimeout(r, 30));
   assert.ok(T.state.monsters.some(m => m.name === 'Denizen'), 'the ua3e monster survived the reload');
-  assert.ok(T.state.monsters.some(m => (m.system || 'osr') === 'osr'), 'the bundled osr defaults were (re)added');
+  assert.ok(T.state.monsters.some(m => (m.system || 'shadowdark') === 'shadowdark'), 'the bundled osr defaults were (re)added');
 });
 
 test('Settings: switching System updates the Bestiary tab and Combat\'s add-character/add-monster dropdowns immediately', () => {
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.state.monsters = [
-    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'm1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     { id: 'm2', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' },
   ];
   T.renderAll();
@@ -2161,11 +2161,11 @@ test('System switch: Compendium, Bestiary, Character dropdown, Combat pickers, a
   T.createCharacter('# Garrick [WWN]\nA warrior.'); // -> HP (Garrick)
   T.createCharacter('# Kevin [Unknown Armies]\n\n```ua\nWound Threshold: 50\n\nShock\n```\n'); // -> Wounds (Kevin)
   T.state.compendium.push(
-    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'shadowdark' },
     { id: 'cu1', name: 'Biblioklept', category: 'Other', source: 'Unknown', body: '', system: 'ua3e' }
   );
   T.state.monsters.push(
-    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     { id: 'mu1', name: 'Denizen', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'ua3e' }
   );
   T.state.consumables.push({ id: 'r1', name: 'Rations', value: 3, max: 3 }); // not tied to any character
@@ -2210,14 +2210,14 @@ test('System switch: Compendium, Bestiary, Character dropdown, Combat pickers, a
     assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name).sort(), ['Rations', 'Wounds (Kevin)']);
   }
 
-  assertOsrView(); // default System is 'osr'
+  assertOsrView(); // default System is 'shadowdark'
 
   tab('settings');
   setValue($('#set-system'), 'ua3e');
   assertUaView();
 
   tab('settings');
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   assertOsrView(); // switching back restores the exact same OSR view
 
   tab('settings');
@@ -2235,11 +2235,11 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.createCharacter('# Mara [Silent Legions]\n\n```sl\nINT 14 (+1)\nMadness: 12\n```\n');
   T.state.compendium.push(
-    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'shadowdark' },
     { id: 'cs1', name: 'The Black Lamp', category: 'Spells', source: 'Spell Level 3', body: '', system: 'sl' }
   );
   T.state.monsters.push(
-    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     Object.assign(JSON.parse(JSON.stringify(slPack().monsters.find(d => d.name === 'Zombie'))), { system: 'sl' })
   );
   T.renderAll();
@@ -2260,7 +2260,7 @@ test('System switch: Silent Legions gets its own Character dropdown, Compendium,
   assert.equal(madness.max, 100);
 
   tab('settings');
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   tab('character');
   assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
   assert.deepEqual($$('#consumables-list .cons-row').map(r => r.dataset.name).sort(), ['HP (Garrick)']);
@@ -2271,11 +2271,11 @@ test('System switch: Fate Core gets its own Character dropdown, Compendium, Best
   T.createCharacter('# Garrick [WWN]\nA warrior.');
   T.createCharacter('# Wyn [Fate]\n\nFate Points: 3/3\n\n```fate\nHigh Concept: Knight\nGood (+3): Fight\nPhysical Stress: [ ] [ ]\n```\n');
   T.state.compendium.push(
-    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'osr' },
+    { id: 'co1', name: 'Longsword', category: 'Items', source: 'Unknown', body: '', system: 'shadowdark' },
     { id: 'cf1', name: 'Shield Wall', category: 'Stunts', source: 'Fate Core', skill: 'Fight', settings: ['Generic'], body: '', system: 'fate' }
   );
   T.state.monsters.push(
-    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'osr' },
+    { id: 'mo1', name: 'Goblin', hd: '1', hdNum: 1, hp: 4, ac: { asc: 12 }, attacks: [], abilities: [], system: 'shadowdark' },
     Object.assign(window.FateSheet.npcDef('Harbor Thug\nHigh Concept: Dockside Muscle\nFair (+2): Fight\nStress: [ ]'), { id: 'mf1', system: 'fate' })
   );
   T.renderAll();
@@ -2297,7 +2297,7 @@ test('System switch: Fate Core gets its own Character dropdown, Compendium, Best
   assert.deepEqual($$('#cb-add-char option').map(o => o.textContent).slice(1), ['Wyn']);
 
   tab('settings');
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   tab('character');
   assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (WWN)']);
   assert.equal($('#fate-aspects-panel').hidden, true);
@@ -2450,13 +2450,13 @@ test('Compendium popups: the corner grip resizes a popup and pins it', () => {
 
 test('header System selector: shows the current System and switches it like Settings → System', () => {
   const sel = $('#header-system');
-  assert.equal(sel.value, 'osr');
+  assert.equal(sel.value, 'shadowdark');
   assert.ok(sel.options.length >= 6, 'one option per System');
   setValue(sel, 'ua3e');
   assert.equal(T.currentSystem(), 'ua3e');
   assert.equal($('#set-system').value, 'ua3e', 'Settings → System follows');
-  setValue($('#set-system'), 'osr');
-  assert.equal($('#header-system').value, 'osr', 'the header follows Settings → System');
+  setValue($('#set-system'), 'shadowdark');
+  assert.equal($('#header-system').value, 'shadowdark', 'the header follows Settings → System');
 });
 
 test('Character tab: "New character" opens a menu; a menu item closes it; Escape closes it', () => {
@@ -2528,7 +2528,7 @@ test('Maps: the side-panel button hides the right rail only while the Maps tab s
 
 test('Bestiary and Compendium rows: the actions sit in .row-actions; delete is the neutral .row-del', () => {
   T.seedCompendium();
-  T.state.monsters.push({ id: 'm1', name: 'Rat', system: 'osr', hd: 1, ac: 10, hp: 2, attacks: [] });
+  T.state.monsters.push({ id: 'm1', name: 'Rat', system: 'shadowdark', hd: 1, ac: 10, hp: 2, attacks: [] });
   T.ensureStateShape();
   T.renderAll();
   const mb = $('#mb-list .mb-row');

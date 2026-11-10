@@ -17,7 +17,7 @@ const DATA = path.join(__dirname, '..', 'data');
 const readJson = f => JSON.parse(fs.readFileSync(path.join(DATA, f), 'utf8'));
 
 test('data/seed-<system>.json: each parses, names its own system, has a version, and its names are unique', () => {
-  ['osr', 'brp'].forEach(sys => {
+  ['shadowdark', 'brp'].forEach(sys => {
     const f = 'seed-' + sys + '.json';
     const seed = readJson(f);
     assert.strictEqual(seed.system, sys, f + ': system');
@@ -30,7 +30,7 @@ test('data/seed-<system>.json: each parses, names its own system, has a version,
     });
     const names = seed.compendium.map(e => e.name.toLowerCase());
     assert.strictEqual(new Set(names).size, names.length, f + ': Compendium names are unique');
-    if (sys === 'osr') return; // the OSR bestiary is data/monsters.json (generated)
+    if (sys === 'shadowdark') return; // the OSR bestiary is data/monsters.json (generated)
     assert.ok(Array.isArray(seed.monsters) && seed.monsters.length, f + ': monsters');
     const mnames = seed.monsters.map(m => m.name);
     assert.strictEqual(new Set(mnames).size, mnames.length, f + ': monster names are unique');
@@ -39,10 +39,10 @@ test('data/seed-<system>.json: each parses, names its own system, has a version,
 
 test('OSR.loadData: builds the seeds and pregens from data/, with the spells folded into the OSR Compendium seed', async () => {
   const { T, window } = await boot();
-  const gear = readJson('seed-osr.json').compendium;
+  const gear = readJson('seed-shadowdark.json').compendium;
   const spells = readJson('spells.json');
-  const osr = T.data.seeds.osr;
-  assert.strictEqual(osr.version, readJson('seed-osr.json').version);
+  const osr = T.data.seeds.shadowdark;
+  assert.strictEqual(osr.version, readJson('seed-shadowdark.json').version);
   assert.strictEqual(osr.compendium.length, gear.length + spells.length, 'no spell shares a name with the gear');
   assert.deepEqual(osr.compendium.slice(0, gear.length).map(e => e.name), gear.map(e => e.name), 'gear first');
   assert.ok(osr.compendium.some(e => e.name === spells[0].name && e.category === 'Spells'));
@@ -57,17 +57,17 @@ test('OSR.loadData: builds the seeds and pregens from data/, with the spells fol
 
 test('first run: seeds every system from data/ (characters, Bestiary, Compendium)', async () => {
   const { T, window } = await boot({ freshSeed: true });
-  const count = (arr, sys) => arr.filter(x => (x.system || 'osr') === sys).length;
+  const count = (arr, sys) => arr.filter(x => (x.system || 'shadowdark') === sys).length;
   assert.strictEqual(T.state.characters.length, T.PREGEN_FILES.length);
   assert.deepEqual(T.state.characters.map(c => c.name).slice(0, 2), ['Garrick', 'Brannoc Vell']);
-  assert.strictEqual(count(T.state.monsters, 'osr'), readJson('monsters.json').length);
+  assert.strictEqual(count(T.state.monsters, 'shadowdark'), readJson('monsters.json').length);
   assert.strictEqual(count(T.state.monsters, 'brp'), readJson('seed-brp.json').monsters.length);
   assert.strictEqual(count(T.state.monsters, 'sl'), 0);
-  assert.strictEqual(count(T.state.compendium, 'osr'), T.data.seeds.osr.compendium.length);
+  assert.strictEqual(count(T.state.compendium, 'shadowdark'), T.data.seeds.shadowdark.compendium.length);
   assert.strictEqual(count(T.state.compendium, 'brp'), readJson('seed-brp.json').compendium.length);
   assert.strictEqual(count(T.state.compendium, 'sl'), 0);
   assert.ok(T.state.compendium.some(e => e.name === 'Torch' && e.source === 'Shadowdark Core'));
-  assert.strictEqual(T.state.compendiumSeedVersion, T.data.seeds.osr.version);
+  assert.strictEqual(T.state.compendiumSeedVersion, T.data.seeds.shadowdark.version);
   window.close();
 });
 

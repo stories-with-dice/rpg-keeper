@@ -71,7 +71,7 @@ test('Maps: the tab shows an empty state, and "+ New scene…" with a file creat
   assert.ok($('#scene-modal').hidden);
   const sc = T.activeScene();
   assert.strictEqual(sc.name, 'Crypt');
-  assert.strictEqual(sc.system, 'osr');
+  assert.strictEqual(sc.system, 'shadowdark');
   assert.deepEqual([sc.width, sc.height, sc.imageType], [1200, 800, 'image/webp']);
   const rec = await T.store.getBlob(sc.imageBlobId);
   assert.deepEqual(Array.from(new Uint8Array(rec.bytes)), [137, 80, 78, 71, 1, 2, 3]);
@@ -81,7 +81,7 @@ test('Maps: the tab shows an empty state, and "+ New scene…" with a file creat
   assert.deepEqual(env.$$('#map-svg > g').map(g => g.getAttribute('class')),
     ['map-layer-image', 'map-layer-grid', 'map-layer-drawings', 'map-layer-pins', 'map-layer-tokens', 'map-layer-overlay']);
   assert.deepEqual((await savedState(T)).scenes.map(s => s.name), ['Crypt']);
-  assert.strictEqual(T.state.activeSceneIds.osr, sc.id);
+  assert.strictEqual(T.state.activeSceneIds.shadowdark, sc.id);
   window.close();
 });
 
@@ -215,7 +215,7 @@ test('Maps: scenes belong to their System', async () => {
   assert.ok(!$('#map-empty').hidden);
   await T.createScene({ name: 'Motel' });
   assert.strictEqual(T.activeScene().system, 'ua3e');
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   assert.deepEqual(env.$$('#map-scene option').map(o => o.textContent), ['OSR Dungeon', '+ New scene…']);
   assert.deepEqual(T.splitState(T.state).ua3e.scenes.map(s => s.name), ['Motel'], 'saved in the system document');
   window.close();

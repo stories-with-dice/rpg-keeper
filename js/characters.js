@@ -21,11 +21,11 @@
     return { name, system };
   }
 
-  const DEFAULT_BLANK_OSR = '# New Character\n\n*System — Level 1*\n\n> **AC** 10 · **HP** 6/6\n\n## Abilities\n\n- STR +0\n- DEX +0\n';
+  const DEFAULT_BLANK_SHADOWDARK = '# New Character\n\n*System — Level 1*\n\n> **AC** 10 · **HP** 6/6\n\n## Abilities\n\n- STR +0\n- DEX +0\n';
   // Has a (near-empty) ```ua fence so a blank character created while System
   // is Unknown Armies is itself classified 'ua3e' by charSystemKey() below —
   // otherwise it would vanish from the Character dropdown the instant it's
-  // created (filtered out as an 'osr' character in a ua3e-filtered list).
+  // created (filtered out as an 'shadowdark' character in a ua3e-filtered list).
   const DEFAULT_BLANK_UA = '# New Character [Unknown Armies]\n\n```ua\nIdentities\n\nWound Threshold: 50\n\n' +
     'Shock\nHelplessness: 0 hardened / 0 failed\nIsolation: 0 hardened / 0 failed\nSelf: 0 hardened / 0 failed\n' +
     'Unnatural: 0 hardened / 0 failed\nViolence: 0 hardened / 0 failed\n```\n';
@@ -74,7 +74,7 @@
     const sys = OSR.currentSystem && OSR.currentSystem();
     const usedBody = body != null ? OSR.migrateBrpSheet(body) :
       (sys === 'ua3e' ? DEFAULT_BLANK_UA : sys === 'brp' ? DEFAULT_BLANK_BRP : sys === 'sl' ? DEFAULT_BLANK_SL :
-        sys === 'fate' ? DEFAULT_BLANK_FATE : sys === 'wwn' ? DEFAULT_BLANK_WWN : DEFAULT_BLANK_OSR);
+        sys === 'fate' ? DEFAULT_BLANK_FATE : sys === 'wwn' ? DEFAULT_BLANK_WWN : DEFAULT_BLANK_SHADOWDARK);
     const det = detectNameSystem(usedBody);
     const ch = {
       id: uid(),
@@ -116,7 +116,7 @@
   // "Unknown Armies"), this is derived from whether the sheet actually has a
   // ```ua or ```sl fence or the "[BRP]" tag of its first line, so it can't
   // drift out of sync with the sheet (a plain OSR sheet has none, and
-  // defaults to 'osr').
+  // defaults to 'shadowdark').
   function charSystemKey(ch) {
     const body = (ch && ch.body) || '';
     UA_FENCE_RE.lastIndex = 0;
@@ -129,7 +129,7 @@
     if (FATE_FENCE_RE.test(body)) return 'fate';
     WWN_FENCE_RE.lastIndex = 0;
     if (WWN_FENCE_RE.test(body)) return 'wwn';
-    return 'osr';
+    return 'shadowdark';
   }
   // The starting Madness score from the first ```sl fence's "Madness: N" line
   // (0 when absent) — read once, when the "Madness (Name)" tracker is created
@@ -204,7 +204,7 @@
   }
 
   function charactersForSystem() {
-    const sys = OSR.currentSystem ? OSR.currentSystem() : 'osr';
+    const sys = OSR.currentSystem ? OSR.currentSystem() : 'shadowdark';
     return OSR.state.characters.filter(c => charSystemKey(c) === sys);
   }
 

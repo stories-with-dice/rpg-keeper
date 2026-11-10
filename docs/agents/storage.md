@@ -6,7 +6,7 @@
   `OSR.campaigns`).
 - **IndexedDB** database `osr_store`:
   - `docs`: each campaign as JSON documents: `'<campaignId>/campaign'` plus `'<campaignId>/<system>'`
-    for each of `OSR.SYSTEMS` (`['osr','ua3e','brp','sl']`). Also `seeds/<system>` and
+    for each of `OSR.SYSTEMS` (`['shadowdark','ua3e','brp','sl','fate','wwn']`; a stored `osr` document is the old name of `shadowdark`, see systems.md). Also `seeds/<system>` and
     `library/tables` (the table library that every campaign shares, `OSR.tableLib`; see monsters.md).
   - `meta`: `'campaigns'` (`[{ id, name, createdAt, primary }]`) and `'activeCampaignId'`.
   - `blobs`: map images.
@@ -47,7 +47,7 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
 - Replace all (Import → Replace, Dropbox pull): `OSR.replaceState(data)` → `finishLoad()` (migrate,
   save, render everything, `resetHistories()`).
 - Merge (`importData`, Cancel on the question): `mergeCompendium`/`mergeMonsters`. An item keeps its
-  `system` (missing → `'osr'`); a duplicate in the same system (same `ref`, or same name + category
+  `system` (missing → `'shadowdark'`; `'osr'` → `'shadowdark'`); a duplicate in the same system (same `ref`, or same name + category
   for an entry) is skipped. An item with a `seedRef` replaces the campaign's item with that
   `seedRef` (`replaceSeeded()`). Scenes get new ids.
 - Export adds `tables` (the table library). Import (Replace or Merge) and packs give tables to
@@ -71,9 +71,9 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
 
 ## Seeding (`js/data.js`, `js/seeds.js`, `js/seed.js`)
 
-- `init()` awaits `OSR.loadData()`: `OSR.data.monsters`, `.tables`, `.seeds.osr` (gear in
-  `data/seed-osr.json` + spells in `data/spells.json` whose names the gear does not use +
-  `data/monsters.json`), `.seeds.brp`, `.pregens` (`OSR.PREGEN_FILES`). If any file
+- `init()` awaits `OSR.loadData()`: `OSR.data.monsters`, `.tables`, `.seeds.shadowdark` (gear in
+  `data/seed-shadowdark.json` + spells in `data/spells.json` whose names the gear does not use +
+  `data/monsters.json`), `.seeds.brp`, `.pregens` (`OSR.PREGEN_FILES`). `.downtime` (`data/downtime-shadowdark.json`, the Downtime tab's rules). If any file
   fails, `showLoadError()` and `init()` stops before `load()`.
 - **Seed store**: `OSR.loadSeeds()` (before `load()`). `OSR.seeds[system]` = `{ system, version,
   codeVersion, compendium, monsters }`, shared by every campaign on the device, stored as
@@ -89,7 +89,7 @@ renames and deletes (never the last one). `switchCampaign(id)` awaits `flushSave
   `state.brpCompendiumSeeded` and friends.
 - Pregens: `seed()` runs only with no characters. Settings → Add missing pregens
   (`addMissingPregens()`) adds every example whose name no character has, and keeps
-  `activeId`/`activeIdB`. OSR: Garrick, Gulzund. UA: Kevin Johnson, Lucinda Adams (book identities;
+  `activeId`/`activeIdB`. Shadowdark: Gulzund. UA: Kevin Johnson, Lucinda Adams (book identities;
   the logic test checks their link names against `UA_PREGEN_LINKS`). SL: Dee Okafor, Miriam
   Castell, Vivian Sato, Ray Kowalczyk.
 

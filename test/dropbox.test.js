@@ -51,14 +51,14 @@ const docPath = (cid, key) => '/campaigns/' + cid + '/' + (key === 'campaign' ? 
 // A campaign as Dropbox has it (its documents joined, like js/store.js does).
 function remoteCampaign(T, dbx, cid = T.campaignId) {
   const docs = {};
-  ['campaign', 'osr', 'ua3e', 'brp', 'sl'].forEach(k => { const j = dbx.json(docPath(cid, k)); if (j) docs[k] = j; });
+  ['campaign', 'shadowdark', 'ua3e', 'brp', 'sl'].forEach(k => { const j = dbx.json(docPath(cid, k)); if (j) docs[k] = j; });
   return T.joinState(JSON.parse(JSON.stringify(docs)));
 }
 const remoteNames = (T, dbx, cid) => remoteCampaign(T, dbx, cid).characters.map(c => c.name);
 
 // Another device adds an OSR character to the campaign in Dropbox.
 function addRemoteCharacter(T, dbx, name, cid = T.campaignId) {
-  const f = dbx.file(docPath(cid, 'osr'));
+  const f = dbx.file(docPath(cid, 'shadowdark'));
   const doc = JSON.parse(f.content);
   doc.characters.push({ id: 'remote-' + name, name, system: '', body: '# ' + name + '\n' });
   dbx.edit(f.id, JSON.stringify(doc));
@@ -121,13 +121,13 @@ test('Dropbox sync: "Connect with a code" opens Dropbox; the first sync writes t
   await settle();
   const cid = T.campaignId;
   assert.deepEqual(dbx.paths(), [
-    '/campaigns/' + cid + '/brp.json', '/campaigns/' + cid + '/fate.json', '/campaigns/' + cid + '/osr.json', '/campaigns/' + cid + '/shared.json',
+    '/campaigns/' + cid + '/brp.json', '/campaigns/' + cid + '/fate.json', '/campaigns/' + cid + '/shadowdark.json', '/campaigns/' + cid + '/shared.json',
     '/campaigns/' + cid + '/sl.json', '/campaigns/' + cid + '/ua3e.json', '/campaigns/' + cid + '/wwn.json', '/campaigns/index.json',
-    '/seeds/brp.json', '/seeds/fate.json', '/seeds/osr.json', '/seeds/wwn.json'
+    '/seeds/brp.json', '/seeds/fate.json', '/seeds/shadowdark.json', '/seeds/wwn.json'
   ].sort(), 'no seed file for a system with an empty seed (ua3e, sl)');
   assert.deepEqual(dbx.json('/campaigns/index.json').map(c => [c.id, c.name, c.primary]), [[cid, 'Default', true]]);
   assert.deepEqual(remoteNames(T, dbx), ['Aria']);
-  assert.strictEqual(dbx.json('/seeds/osr.json').monsters.length, T.data.seeds.osr.monsters.length);
+  assert.strictEqual(dbx.json('/seeds/shadowdark.json').monsters.length, T.data.seeds.shadowdark.monsters.length);
   const st = T.dropboxState();
   assert.strictEqual(st.status, 'synced');
   assert.strictEqual(st.auth, null);
@@ -149,7 +149,7 @@ test('Dropbox sync: "Connect with a code" opens Dropbox; the first sync writes t
   T.save();
   assert.strictEqual(T.dropboxState().status, 'pending', 'a save queues an upload');
   await T.dropboxFlush();
-  assert.deepEqual(dbx.writes().slice(before), ['files/upload update /campaigns/' + cid + '/osr.json']);
+  assert.deepEqual(dbx.writes().slice(before), ['files/upload update /campaigns/' + cid + '/shadowdark.json']);
   assert.ok(dbx.calls.some(c => c === 'files/list_folder/continue'), 'reads every page of the listing');
   assert.strictEqual(T.dropboxState().status, 'synced');
 
@@ -276,7 +276,7 @@ test('Dropbox sync: another device writing between the listing and the upload is
   dbx.before = endpoint => { if (endpoint === 'files/upload') { dbx.before = null; addRemoteCharacter(T, dbx, 'Remote Only'); } };
   await T.dropboxFlush();
   await settle();
-  assert.ok(dbx.calls.includes('files/upload update /campaigns/' + T.campaignId + '/osr.json'));
+  assert.ok(dbx.calls.includes('files/upload update /campaigns/' + T.campaignId + '/shadowdark.json'));
   assert.ok(remoteNames(T, dbx).includes('Remote Only'), 'the other device\'s write survives');
   assert.ok(T.dropboxState().status === 'conflict' || T.dropboxState().status === 'pending');
   window.close();
@@ -294,7 +294,7 @@ test('Dropbox sync: both sides changed → the dialog asks once for the campaign
   assert.strictEqual(T.dropboxState().status, 'conflict');
   assert.ok(!$('#dbx-modal').hidden);
   assert.strictEqual($('#dbx-modal-title').textContent, 'Dropbox copy changed');
-  assert.match($('#dbx-modal-text').textContent, /Files: osr\.json\./);
+  assert.match($('#dbx-modal-text').textContent, /Files: shadowdark\.json\./);
   assert.match($('#dbx-modal-compare').textContent, /Dropbox.*2 characters.*Only here: Remote Only\.[\s\S]*This browser: 2 characters.*Only here: Local Only\./);
   assert.match($('#dbx-status').textContent, /Resolve/);
   assert.ok(remoteNames(T, dbx).includes('Remote Only'), 'nothing is overwritten before the user decides');
@@ -593,7 +593,7 @@ test('Dropbox sync: each campaign has its own folder; a pending upload goes to t
   await settle();
   const second = T.campaignId;
   await T.dropboxFlush();
-  assert.ok(dbx.file(docPath(second, 'osr')), 'the new campaign gets its own files');
+  assert.ok(dbx.file(docPath(second, 'shadowdark')), 'the new campaign gets its own files');
   assert.deepEqual(remoteNames(T, dbx, second), []);
   assert.deepEqual(dbx.json('/campaigns/index.json').map(c => c.name), ['Default', 'Second Game']);
 
@@ -660,7 +660,7 @@ test('Dropbox sync: a campaign deleted in this browser does not come back from t
   assert.ok(T.dropboxState().meta.hidden[doomed]);
   await T.dropboxSyncNow();
   assert.deepEqual(T.campaigns.map(c => c.name), ['Default']);
-  assert.ok(dbx.file(docPath(doomed, 'osr')), 'its Dropbox files stay');
+  assert.ok(dbx.file(docPath(doomed, 'shadowdark')), 'its Dropbox files stay');
   window.close();
 });
 
@@ -705,16 +705,16 @@ test('Dropbox sync: seeds changed on both devices are merged without a question'
   const env = await setup();
   const { T, window, dbx } = env;
   await connect(env);
-  const remote = dbx.json('/seeds/osr.json');
+  const remote = dbx.json('/seeds/shadowdark.json');
   remote.version += 1;
   remote.compendium.push({ name: 'Remote Gear', category: 'Items', body: 'From the other device.', seedRef: 'osr:c:remote gear' });
-  dbx.edit(dbx.file('/seeds/osr.json').id, JSON.stringify(remote));
-  await T.addToSeed('osr', [{ name: 'Local Gear', category: 'Items', body: 'From here.' }], []);
+  dbx.edit(dbx.file('/seeds/shadowdark.json').id, JSON.stringify(remote));
+  await T.addToSeed('shadowdark', [{ name: 'Local Gear', category: 'Items', body: 'From here.' }], []);
   await T.dropboxFlush();
   await settle();
-  const names2 = dbx.json('/seeds/osr.json').compendium.map(e => e.name);
+  const names2 = dbx.json('/seeds/shadowdark.json').compendium.map(e => e.name);
   assert.ok(names2.includes('Remote Gear') && names2.includes('Local Gear'));
-  assert.ok(T.seeds.osr.compendium.some(e => e.name === 'Remote Gear'));
+  assert.ok(T.seeds.shadowdark.compendium.some(e => e.name === 'Remote Gear'));
   assert.strictEqual(T.dropboxState().status, 'synced');
   window.close();
 });
@@ -765,7 +765,7 @@ test('Dropbox sync: a pull that the browser storage refuses is not recorded, so 
   T.createCharacter('# Aria');
   await connect(env);
   addRemoteCharacter(T, dbx, 'Corvin');
-  const path = '/campaigns/' + T.campaignId + '/osr.json';
+  const path = '/campaigns/' + T.campaignId + '/shadowdark.json';
   const before = T.dropboxState().meta.files[path.toLowerCase()];
   const putDocs = T.store.putDocs;
   T.store.putDocs = () => Promise.reject(new window.DOMException('quota', 'QuotaExceededError'));
@@ -796,7 +796,7 @@ test('Dropbox sync: a map image is uploaded once to the campaign\'s maps folder;
   const f = shared.file(path);
   assert.ok(f, 'uploaded');
   assert.deepEqual(Array.from(f.content), [9, 8, 7, 6]);
-  assert.deepEqual(shared.json(docPath(cid, 'osr')).scenes.map(s => s.name), ['Shared Map']);
+  assert.deepEqual(shared.json(docPath(cid, 'shadowdark')).scenes.map(s => s.name), ['Shared Map']);
   const uploads = shared.writes().filter(w => w.includes('/maps/')).length;
   a.T.createCharacter('# Later');
   await a.T.dropboxFlush();

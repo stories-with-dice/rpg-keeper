@@ -1,14 +1,14 @@
 # Character Keeper
 
-A single-page app for keeping **tabletop RPG characters** — OSR / old-school systems (Shadowdark,
-OSE, …), **Worlds Without Number**, **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**,
+A single-page app for keeping **tabletop RPG characters** — **Shadowdark** (and other old-school
+systems such as OSE), **Worlds Without Number**, **Unknown Armies 3rd Edition**, **Basic Roleplaying (BRP)**,
 **Silent Legions**, and **Fate Core** — and running **basic combat**.
 The **System** selector in the header (next to the campaign; also Settings → **System**) switches
 which ruleset's characters, Compendium, Bestiary, and scenes you're looking at. BRP ships with its own bundled Compendium (Powers and Equipment) and Bestiary (creatures and
 sample NPCs). All bundled BRP data comes only from the *Basic Roleplaying: Universal Game Engine*
 core book (Chapters 4, 8, and 11), which is published under the ORC license; nothing comes from
 *Basic Roleplaying: Creatures*. Combat shows its
-characteristics/Armor/Damage Bonus instead of the OSR AC/HD. Silent Legions book content (Compendium,
+characteristics/Armor/Damage Bonus instead of the Shadowdark AC/HD. Silent Legions book content (Compendium,
 Bestiary, random tables) can be loaded from your own PDF; see [Silent Legions](#silent-legions)
 below. Unknown Armies Combat counts wounds up to
 the wound threshold, and its book content can be loaded from your own PDFs; see
@@ -569,6 +569,36 @@ Battle maps and world maps, one **scene** at a time. Each scene belongs to the c
 
 ---
 
+## Downtime tab
+
+Shown only while the System is **Shadowdark**. It puts every carousing and downtime rule of the
+Shadowdark core book, the Western Reaches *Player's Guide* and *Game Master's Guide*, and the
+*Gamemaster Companion* in one place, and it rolls them for the campaign's Shadowdark characters.
+
+- **Party.** One card per Shadowdark character. Level, XP, luck tokens, stat modifiers, and the
+  class come from the character sheet. Wealth, renown (it starts at the CHA modifier), talents and
+  factions that give ADV, a standing carousing modifier (for example a cursed armor), one-time
+  bonuses, and a list of contacts, debts, items, and lasting effects are kept here. **Level up**
+  appears when the XP is enough. **New break between adventures** gives every PC a downtime
+  activity again.
+- **Carousing.** Pick the event type (core, Western Reaches expanded, Acts of Devotion, Combat
+  Training, Magical Study), where the party is (settlement limits), the event, and who takes part.
+  The tab splits the cost, adds the bonuses (renown, the bard talent, the bastion brewery,
+  one-time and standing modifiers), rolls 1d8, and applies the result: XP into the sheet; wealth
+  lost as a percentage or in gp; renown; luck tokens; next-roll bonuses; the Western Reaches d100
+  benefits and mishaps; treasure rolls on the right table for the PC's level; rumors.
+- **Activities.** Learning (core) and the Western Reaches Spiritualism, Skulduggery, Martial
+  Training, Magical Research, and warband recruiting. Each option shows its DC (lowered after each
+  failure), its cost, the stat the tab uses, any ADV, and the chance to succeed.
+- **Gambling.** Plays a full game of Wizards and Thieves, and can apply the result to the party's
+  wealth. The stakes tables and the Farkle rules are here too.
+- **All rules.** The full text of every carousing and downtime section, with click-to-roll tables.
+
+**Undo** reverts the last roll (until a reload). Two switches at the top turn the Western Reaches
+rules and the 1:1-time durations (how many days each activity takes) on or off.
+
+---
+
 ## Tables tab
 
 A library of **random tables**. The built-in ones are Shadowdark encounter tables (one per
@@ -824,7 +854,7 @@ example data**, and **Sync**.
   app, or a content pack imported in another campaign or browser. **Apply** adds the new items and
   updates the changed ones. Items you edited stay as they are, unless you click **Apply and
   overwrite my edits**. **Skip** hides the notice until the defaults change again.
-- **Example characters → Add missing pregens** — the example characters (OSR, Unknown Armies, and
+- **Example characters → Add missing pregens** — the example characters (Shadowdark, Unknown Armies, and
   the four Silent Legions pregens) are only created on a fresh install. This adds any of them your
   campaign doesn't have, matched by name; your own characters and edits are left alone. Each one
   shows under its own **System**. The button is disabled when nothing is missing.

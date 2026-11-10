@@ -62,6 +62,7 @@
     if (name === 'bestiary') OSR.renderMonsterBrowser();
     if (name === 'compendium') OSR.renderCompendium();
     if (name === 'tables') OSR.renderTables();
+    if (name === 'downtime') OSR.renderDowntime();
     if (name === 'maps') OSR.renderMaps(); // the SVG has a size only while its tab shows
     if (name === 'settings') OSR.renderSettings(); // counts change elsewhere (seeding, new characters)
     if (name === 'journal' && OSR.notesMDE) setTimeout(() => OSR.notesMDE.codemirror.refresh(), 0);
@@ -157,6 +158,7 @@
     OSR.wireCompendiumEntries();
     OSR.wireCompendiumPopups();
     OSR.wireTables();
+    OSR.wireDowntime();
     OSR.wireSettings();
     OSR.wireDropbox();
     OSR.wireCampaigns();
@@ -259,7 +261,7 @@
       OSR.state.monstersSeeded = true;
       OSR.state.brpMonstersSeeded = true;
       OSR.state.compendiumSeeded = true;
-      OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
+      OSR.state.compendiumSeedVersion = OSR.seeds.shadowdark.codeVersion;
       OSR.state.brpCompendiumSeeded = true;
       OSR.state.fateCompendiumSeeded = true;
       OSR.state.wwnSeeded = true;

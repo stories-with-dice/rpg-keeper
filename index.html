@@ -20,6 +20,7 @@
       <button class="tab-btn" data-tab="maps"><i class="fa-solid fa-map"></i> <span class="tab-label">Maps</span></button>
       <button class="tab-btn" data-tab="compendium"><i class="fa-solid fa-book"></i> <span class="tab-label">Compendium</span></button>
       <button class="tab-btn" data-tab="tables"><i class="fa-solid fa-table-list"></i> <span class="tab-label">Tables</span></button>
+      <button class="tab-btn" data-tab="downtime" title="Shadowdark carousing and downtime"><i class="fa-solid fa-beer-mug-empty"></i> <span class="tab-label">Downtime</span></button>
       <button class="tab-btn" data-tab="settings"><i class="fa-solid fa-gear"></i> <span class="tab-label">Settings</span></button>
     </nav>
     <div class="header-actions">
@@ -225,6 +226,11 @@
         <ul class="comp-list tbl-list" id="tbl-list"></ul>
       </section>
 
+      <!-- ===== Downtime tab (js/downtime-ui.js; Shadowdark only) ===== -->
+      <section class="tab-panel" id="tab-downtime">
+        <div id="dt-root"></div>
+      </section>
+
       <!-- ===== Maps tab (js/maps.js) ===== -->
       <section class="tab-panel" id="tab-maps">
         <div class="map-toolbar">
@@ -373,7 +379,7 @@
         <div class="setting-row setting-row-action">
           <span class="setting-text">
             <b>System</b>
-            <span class="hint">Which game system you're running. Every tab lists only this system's characters, monsters, Compendium entries, and scenes. You can also change it in the header, next to the campaign. Everything created before this setting existed is <b>OSR</b>.</span>
+            <span class="hint">Which game system you're running. Every tab lists only this system's characters, monsters, Compendium entries, and scenes. You can also change it in the header, next to the campaign. Everything created before this setting existed is <b>Shadowdark</b>.</span>
           </span>
           <select id="set-system" class="btn"></select>
         </div>
@@ -393,7 +399,7 @@
           <input type="checkbox" id="set-wwn-sd" />
           <span class="setting-text">
             <b>Shadowdark Bestiary in WWN</b>
-            <span class="hint">When on, the Bestiary, Combat, and Populate by HD also list the Shadowdark monsters of the OSR library. Their AC and attack bonus work the same way in WWN; they have no Shock, Skill, or Instinct. Edits change the OSR copy. <span id="set-wwn-sd-count"></span></span>
+            <span class="hint">When on, the Bestiary, Combat, and Populate by HD also list the monsters of the Shadowdark library. Their AC and attack bonus work the same way in WWN; they have no Shock, Skill, or Instinct. Edits change the Shadowdark copy. <span id="set-wwn-sd-count"></span></span>
           </span>
         </label>
 
@@ -1004,6 +1010,7 @@
   <script src="js/fate-npc.js"></script>
   <script src="js/wwn.js"></script>
   <script src="js/table-syntax.js"></script>
+  <script src="js/downtime.js"></script>
   <!-- App code, split into one file per subsystem (see AGENTS.md "Layout") —
        all attach to window.OSR, so load order only requires core.js first. -->
   <script src="js/core.js"></script>
@@ -1033,6 +1040,7 @@
   <script src="js/compendium.js"></script>
   <script src="js/compendium-popups.js"></script>
   <script src="js/tables.js"></script>
+  <script src="js/downtime-ui.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/dropbox.js"></script>
   <script src="js/io.js"></script>

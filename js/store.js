@@ -91,6 +91,12 @@
     });
   }
 
+  // Deletes the named documents of one campaign (the old 'osr' document once
+  // its content is saved under 'shadowdark').
+  function deleteDocKeys(campaignId, keys) {
+    return tx('docs', 'readwrite', s => { keys.forEach(k => s.delete(campaignId + '/' + k)); });
+  }
+
   async function deleteDocs(campaignId) {
     const prefix = campaignId + '/';
     const db = await open();
@@ -122,12 +128,12 @@
     return owners;
   }
 
-  // OSR.state → { campaign: {...}, osr: {...}, ua3e: {...}, brp: {...}, sl: {...} }.
+  // OSR.state → { campaign: {...}, shadowdark: {...}, ua3e: {...}, brp: {...}, sl: {...} }.
   // Every system gets a document, even an empty one.
   function splitState(state) {
     const docs = {};
     OSR.SYSTEMS.forEach(s => { docs[s] = { characters: [], monsters: [], compendium: [], consumables: [], scenes: [] }; });
-    const sysOf = x => (OSR.SYSTEMS.indexOf(x) === -1 ? 'osr' : x);
+    const sysOf = x => OSR.normSystem(x);
     const characters = state.characters || [];
     characters.forEach(ch => docs[sysOf(OSR.charSystemKey(ch))].characters.push(ch));
     (state.monsters || []).forEach(m => docs[sysOf(m.system)].monsters.push(m));
@@ -155,6 +161,8 @@
   // that shows them is filtered to one system, so only the order inside a
   // system matters, and that is kept).
   function joinState(docs) {
+    // A document saved under an old system key ('osr') is read as the new one.
+    OSR.renameLegacyKeys(docs);
     const campaign = Object.assign({}, docs.campaign || {});
     const order = campaign.order || {};
     delete campaign.order;
@@ -196,6 +204,6 @@
   const putBlob = (id, value) => tx('blobs', 'readwrite', s => s.put(value, id));
   const deleteBlob = id => tx('blobs', 'readwrite', s => s.delete(id));
 
-  OSR.store = { open, getMeta, setMeta, getDocs, putDocs, deleteDocs, getBlob, putBlob, deleteBlob };
+  OSR.store = { open, getMeta, setMeta, getDocs, putDocs, deleteDocs, deleteDocKeys, getBlob, putBlob, deleteBlob };
   Object.assign(OSR, { splitState, joinState, serializeState: serialize, parseDocs });
 })(window.OSR = window.OSR || {});

@@ -47,7 +47,7 @@ An import never deletes anything and never replaces the whole campaign.
 | Field | Required | Meaning |
 |---|---|---|
 | `pack.name` | yes | Shown in the picker and in the Session Log. It is also the default `origin` of a table. |
-| `pack.system` | yes | One of `osr`, `ua3e`, `brp`, `sl`, `fate`, `wwn` (see "Systems"). An unknown value means the current System. |
+| `pack.system` | yes | One of `shadowdark`, `ua3e`, `brp`, `sl`, `fate`, `wwn` (see "Systems"). `osr` (the old name) means `shadowdark`. An unknown value means the current System. |
 | `pack.version`, `pack.createdAt` | no | Keeper ignores them. Useful for your own tracking. |
 | `compendium` | no | List of Compendium entries. A missing list counts as empty. |
 | `monsters` | no | List of Bestiary monsters. |
@@ -59,7 +59,7 @@ Do not put a `characters` list in a pack. Keeper ignores it.
 
 | `system` | Game | Table settings by default |
 |---|---|---|
-| `osr` | OSR games (Shadowdark, OSE) | Fantasy |
+| `shadowdark` | Shadowdark and other OSR games (OSE). The old name `osr` still works. | Fantasy |
 | `ua3e` | Unknown Armies 3rd Ed | Modern |
 | `brp` | Basic Roleplaying | Fantasy |
 | `sl` | Silent Legions | Modern, Horror |
@@ -114,7 +114,7 @@ no `ref`.
 
 **Match rule**: same system, and the same `ref`, or else the same name (not case-sensitive).
 
-### OSR, Silent Legions (`source`: `shadowdark`, `ose`, `sl`)
+### Shadowdark (OSR), Silent Legions (`source`: `shadowdark`, `ose`, `sl`)
 
 ```json
 {

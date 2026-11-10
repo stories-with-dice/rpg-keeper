@@ -95,7 +95,7 @@ test('System switch: WWN gets its own Character dropdown, Compendium, Bestiary, 
   assert.equal($('#mb-gen').hidden, true, 'the Shadowdark PL generator is hidden for WWN');
   tab('settings');
   assert.equal($('#set-wwn-spells-row').hidden, false);
-  setValue($('#set-system'), 'osr');
+  setValue($('#set-system'), 'shadowdark');
   assert.equal($('#set-wwn-spells-row').hidden, true);
   tab('character');
   assert.deepEqual($$('#char-select option').map(o => o.textContent), ['Garrick (Shadowdark)']);

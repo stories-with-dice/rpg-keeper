@@ -3,7 +3,7 @@
  * js/seeds.js).
  * Mirrors js/seed.js's seedMonsters()/js/compendium.js's seedCompendium(), but
  * unlike the OSR-only seedCompendium() (which hardcodes source/system to
- * "Shadowdark Core"/'osr'), these use each entry's own `category`/`source`
+ * "Shadowdark Core"/'shadowdark'), these use each entry's own `category`/`source`
  * and tag everything `system: 'brp'` — see AGENTS.md "Game system".
  */
 (function (OSR) {
@@ -13,7 +13,7 @@
   // other systems' monsters are preserved (same pattern as seedMonsters()).
   function seedBrpMonsters() {
     const defs = OSR.seeds.brp.monsters.map(m => OSR.monsterCopy('brp', m));
-    OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'osr') !== 'brp').concat(defs);
+    OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'shadowdark') !== 'brp').concat(defs);
     OSR.state.brpMonstersSeeded = true;
     OSR.save();
   }

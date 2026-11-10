@@ -7,15 +7,15 @@
   const { $, escapeHtml, uid, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE } = OSR;
 
   // The Compendium is partitioned by game system (Settings → System) — every
-  // entry carries a `system` field ('osr' | 'ua3e', backfilled to 'osr' by
+  // entry carries a `system` field ('shadowdark' | 'ua3e', backfilled to 'shadowdark' by
   // ensureStateShape for anything that predates this). Only the entries for
   // the currently active system are ever listed, resolved, or searched.
   function currentSystem() {
-    return (OSR.state.settings && OSR.state.settings.system) || 'osr';
+    return (OSR.state.settings && OSR.state.settings.system) || 'shadowdark';
   }
   function compendiumForSystem() {
     const sys = currentSystem();
-    const list = OSR.state.compendium.filter(e => (e.system || 'osr') === sys);
+    const list = OSR.state.compendium.filter(e => (e.system || 'shadowdark') === sys);
     return sys === 'wwn' ? wwnSpellView(list) : list;
   }
   // WWN: a condensed spell (from a pack) has `altOf` (the ref of the book
@@ -251,7 +251,7 @@
   }
 
   /* ---- default seed ---- */
-  // OSR.seeds.osr (js/seeds.js): the gear from data/seed-osr.json plus the
+  // OSR.seeds.shadowdark (js/seeds.js): the gear from data/seed-shadowdark.json plus the
   // spells from data/spells.json, and any OSR content pack.
 
   // Add every default entry not already present (matched by name, case-insensitive),
@@ -261,13 +261,13 @@
   function seedCompendium() {
     const have = new Set(OSR.state.compendium.map(e => (e.name || '').toLowerCase()));
     let added = 0;
-    OSR.seeds.osr.compendium.forEach(e => {
+    OSR.seeds.shadowdark.compendium.forEach(e => {
       if (!e || !e.name || have.has(String(e.name).toLowerCase())) return;
-      OSR.state.compendium.push(OSR.compCopy('osr', e));
+      OSR.state.compendium.push(OSR.compCopy('shadowdark', e));
       added++;
     });
     OSR.state.compendiumSeeded = true;
-    OSR.state.compendiumSeedVersion = OSR.seeds.osr.codeVersion;
+    OSR.state.compendiumSeedVersion = OSR.seeds.shadowdark.codeVersion;
     OSR.save();
     renderCompendium();
     return added;

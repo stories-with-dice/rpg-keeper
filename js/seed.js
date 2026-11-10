@@ -53,11 +53,11 @@
 
   function seedMonsters() {
     // copies, so state mutations never touch the shared seed
-    const defs = OSR.seeds.osr.monsters.map(m => OSR.monsterCopy('osr', m));
+    const defs = OSR.seeds.shadowdark.monsters.map(m => OSR.monsterCopy('shadowdark', m));
     // Reseeding only ever replaces the OSR-tagged portion of the library —
     // monsters belonging to another system are preserved (mirrors how the
     // Compendium's Reseed/Delete all stay scoped to the active system).
-    OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'osr') !== 'osr').concat(defs);
+    OSR.state.monsters = OSR.state.monsters.filter(m => (m.system || 'shadowdark') !== 'shadowdark').concat(defs);
     OSR.state.monstersSeeded = true;
     OSR.save();
     OSR.renderLibrary();

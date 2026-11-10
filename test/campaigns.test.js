@@ -22,7 +22,7 @@ function fourSystems(T) {
   T.createCharacter('# Brakka [BRP]\n| STR |\n|---|\n| 12 |');
   T.createCharacter('# Dee\n```sl\nMadness: 4\n```');
   T.state.consumables.push({ id: 'rations', name: 'Rations', value: 3, max: 10 });
-  ['osr', 'ua3e', 'brp', 'sl'].forEach(sys => {
+  ['shadowdark', 'ua3e', 'brp', 'sl'].forEach(sys => {
     T.state.monsters.push({ id: 'm-' + sys, name: 'Beast ' + sys, system: sys });
     T.state.compendium.push({ id: 'e-' + sys, name: 'Entry ' + sys, category: 'Rules', source: 'Test', system: sys, body: '', createdAt: 1 });
   });
@@ -33,17 +33,17 @@ test('splitState: each item goes to its system document; shared data and order g
   const { T, window } = await boot();
   fourSystems(T);
   const docs = T.splitState(T.state);
-  assert.deepEqual(Object.keys(docs).sort(), ['brp', 'campaign', 'fate', 'osr', 'sl', 'ua3e', 'wwn']);
+  assert.deepEqual(Object.keys(docs).sort(), ['brp', 'campaign', 'fate', 'shadowdark', 'sl', 'ua3e', 'wwn']);
   const names = (sys, key) => docs[sys][key].map(x => x.name);
-  assert.deepEqual(names('osr', 'characters'), ['Aria']);
+  assert.deepEqual(names('shadowdark', 'characters'), ['Aria']);
   assert.deepEqual(names('ua3e', 'characters'), ['Kevin']);
   assert.deepEqual(names('brp', 'characters'), ['Brakka']);
   assert.deepEqual(names('sl', 'characters'), ['Dee']);
   assert.deepEqual(names('sl', 'consumables').sort(), ['HP (Dee)', 'Madness (Dee)']);
   assert.deepEqual(names('ua3e', 'consumables'), ['Wounds (Kevin)']);
-  assert.deepEqual(names('osr', 'consumables'), ['HP (Aria)']);
+  assert.deepEqual(names('shadowdark', 'consumables'), ['HP (Aria)']);
   assert.deepEqual(docs.campaign.consumables.map(c => c.name), ['Rations'], 'a tracker no character owns is shared');
-  ['osr', 'ua3e', 'brp', 'sl'].forEach(sys => {
+  ['shadowdark', 'ua3e', 'brp', 'sl'].forEach(sys => {
     assert.deepEqual(names(sys, 'monsters'), ['Beast ' + sys]);
     assert.deepEqual(names(sys, 'compendium'), ['Entry ' + sys]);
   });
@@ -62,7 +62,7 @@ test('joinState(splitState(x)) gives x back: characters and trackers in their or
   const after = T.joinState(JSON.parse(JSON.stringify(T.splitState(T.state))));
   assert.deepEqual(after.characters, before.characters);
   assert.deepEqual(after.consumables, before.consumables);
-  const bySys = list => ['osr', 'ua3e', 'brp', 'sl'].map(s => list.filter(x => x.system === s));
+  const bySys = list => ['shadowdark', 'ua3e', 'brp', 'sl'].map(s => list.filter(x => x.system === s));
   assert.deepEqual(bySys(after.monsters), bySys(before.monsters));
   assert.deepEqual(bySys(after.compendium), bySys(before.compendium));
   ['log', 'notes', 'settings', 'combat', 'conditions', 'activeId', 'compendiumSeedVersion'].forEach(k =>
@@ -198,7 +198,7 @@ test('Campaign selector: "+ New campaign…" creates and opens an empty campaign
     ['Default', 'Second Game', '+ New campaign…']);
   assert.deepEqual(T.state.characters, [], 'no example characters in a new campaign');
   assert.strictEqual(T.state.notes, '');
-  assert.strictEqual(T.state.monsters.filter(m => m.system === 'osr').length, T.data.seeds.osr.monsters.length);
+  assert.strictEqual(T.state.monsters.filter(m => m.system === 'shadowdark').length, T.data.seeds.shadowdark.monsters.length);
   assert.strictEqual(T.state.compendium.filter(e => e.system === 'brp').length, T.data.seeds.brp.compendium.length);
   assert.strictEqual(await T.store.getMeta('activeCampaignId'), T.campaignId);
   window.close();
@@ -221,7 +221,7 @@ test('Table library: every campaign sees the same tables; the first boot after t
     doc.tables = tables;
     await T.store.putDocs(cid, { [sys]: JSON.stringify(doc) });
   };
-  await putOld(first, 'osr', [{ id: 'a', name: 'Alpha', tag: 'Custom', system: 'osr', source: 'd1\n1: a\n' }]);
+  await putOld(first, 'shadowdark', [{ id: 'a', name: 'Alpha', tag: 'Custom', system: 'shadowdark', source: 'd1\n1: a\n' }]);
   await putOld(second, 'ua3e', [{ id: 'b', name: 'Beta', tag: 'Custom', system: 'ua3e', source: 'd1\n1: b\n' }]);
   await T.store.deleteDocs('library');
   const indexedDB = window.indexedDB;
@@ -232,7 +232,7 @@ test('Table library: every campaign sees the same tables; the first boot after t
   assert.deepEqual((await savedTables(r.T)).tables.map(t => t.name).sort(), ['Alpha', 'Beta']);
   r.T.save();
   await r.T.flushSave();
-  const doc = JSON.parse((await r.T.store.getDocs(r.T.campaignId)).osr);
+  const doc = JSON.parse((await r.T.store.getDocs(r.T.campaignId)).shadowdark);
   assert.equal('tables' in doc, false, 'the campaign no longer keeps tables');
   r.window.close();
 });

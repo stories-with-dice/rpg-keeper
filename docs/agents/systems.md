@@ -2,27 +2,45 @@
 
 ## The System switch
 
-- `state.settings.system`, one of `OSR.SYSTEMS` (`'osr'`, `'ua3e'`, `'brp'`, `'sl'`, `'fate'`, `'wwn'`), set in
+- `state.settings.system`, one of `OSR.SYSTEMS` (`'shadowdark'`, `'ua3e'`, `'brp'`, `'sl'`, `'fate'`, `'wwn'`), set in
   Settings → System (`#set-system`) or the header's `#header-system` (short names); `renderSettings()`
   fills and syncs both. `OSR.setSystem(s)` (`js/settings.js`) is the change handler; a content pack of
   another system calls it too. It re-renders everything the setting gates: `refreshCharUI()` (also
   trackers), `renderMonsterBrowser()`, `renderCompendium()`, `renderCombat()`.
+- **The old key `'osr'`.** Shadowdark was the `'osr'` system until 2026-11-09 (label "OSR").
+  Saved campaigns, exports, packs, IndexedDB documents, and Dropbox files from before then still
+  say `'osr'`. Every read of a system key goes through `OSR.normSystem(s, fallback)` (js/core.js,
+  `LEGACY_SYSTEM_KEYS`), which turns `'osr'` into `'shadowdark'`:
+  - `ensureStateShape()`: `settings.system`, each monster's and entry's `system`;
+    `renameLegacyKeys()` on `activeSceneIds` and `seedVersions`. `ensureSceneShape()` for scenes.
+  - `joinState()`: a stored document `'<campaignId>/osr'` is read as `'shadowdark'`;
+    `loadCampaign()` then writes it under the new key and deletes the old one (`store.deleteDocKeys`).
+  - `loadSeeds()`: `seeds/osr` moves to `seeds/shadowdark` (deleted only after the write succeeds).
+  - Dropbox (`js/dropbox.js`): while `/campaigns/<id>/shadowdark.json` or `/seeds/shadowdark.json`
+    is missing, `syncFile(path, text, listing, oldPath)` reads the old `osr.json` (with its sync
+    record) in its place, and an upload creates the new file. The old file is never written.
+  - Imports: `validSystem()` in js/io.js, and table settings in js/tables.js.
+  - Seed refs keep the old prefix (`osr:c:<name>`, `refPrefix()` in js/seeds.js): a new prefix would
+    make every campaign's seed copies look new and duplicate them.
+  Tests: test/rename.test.js.
+- **Downtime tab**: shown only while the system is `'shadowdark'` (`applyDowntimeTab()`, called from
+  `renderSettings()`). See [downtime.md](downtime.md).
 - It filters, never deletes. Always go through the helpers:
   - Compendium: `compendiumForSystem()` (`entry.system`). Used by `compByExactName`, `compFuzzy`,
     `compResolve`, popups, `[` autocomplete, the list, and Settings → Delete all.
-  - Bestiary: `monstersForSystem()` (`(m.system || 'osr')`). Used by the Bestiary list, the
+  - Bestiary: `monstersForSystem()` (`(m.system || 'shadowdark')`). Used by the Bestiary list, the
     "Add monster" modal, and Populate by HD. New monsters get `currentSystem()`; an edit keeps the
-    original `system`. `seedMonsters()` replaces only the `'osr'` slice.
+    original `system`. `seedMonsters()` replaces only the `'shadowdark'` slice.
   - Characters: `charactersForSystem()` with `charSystemKey(ch)`: a ` ```ua ` fence, a `[BRP]` (or
     `[Basic Roleplaying]`) tag at the end of the first line, a ` ```sl ` fence, a ` ```fate `
-    fence, or a ` ```wwn ` fence in `ch.body` (checked in that order), else `'osr'`. The free-text `ch.system`
+    fence, or a ` ```wwn ` fence in `ch.body` (checked in that order), else `'shadowdark'`. The free-text `ch.system`
     label is never used for filtering. `refreshCharUI()` moves `activeId`/`activeIdB` to the first
     character of the system when they point outside it. **New blank** uses
-    `DEFAULT_BLANK_OSR/UA/BRP/SL/FATE/WWN` so the new character has the right fence or tag.
+    `DEFAULT_BLANK_SHADOWDARK`, `DEFAULT_BLANK_UA/BRP/SL/FATE/WWN` so the new character has the right fence or tag.
   - Trackers: `consumablesForSystem()` hides a character's HP/Wounds/Madness tracker unless that
     character is in the current system. Other trackers always show.
   - Scenes: each has a `system`; `state.activeSceneIds[system]` is the open one.
-- The PL generator (`#mb-gen`) is hidden unless the system is `'osr'`.
+- The PL generator (`#mb-gen`) is hidden unless the system is `'shadowdark'`.
 - Tests: "System switch: …" in `test/ui.test.js` (one per system) switch back and forth and check
   every panel and that no array shrinks. Add a new listing surface there.
 

@@ -74,7 +74,7 @@
   function ensureSceneShape(sc) {
     if (!sc.id) sc.id = uid();
     sc.name = sc.name == null || String(sc.name).trim() === '' ? 'Scene' : String(sc.name);
-    sc.system = OSR.SYSTEMS.indexOf(sc.system) === -1 ? 'osr' : sc.system;
+    sc.system = OSR.normSystem(sc.system);
     sc.width = Number(sc.width) > 0 ? Number(sc.width) : BLANK.width;
     sc.height = Number(sc.height) > 0 ? Number(sc.height) : BLANK.height;
     sc.grid = Object.assign({}, GRID_DEFAULTS, sc.grid || {});

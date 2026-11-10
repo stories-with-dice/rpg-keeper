@@ -25,8 +25,8 @@ test('seed copies: every seeded entry and monster carries its seedRef and seedHa
   assert.strictEqual(aboleth.seedHash, T.contentHash(aboleth));
   assert.ok(T.state.compendium.filter(e => e.system === 'brp').every(e => e.seedRef && e.seedRef.startsWith('brp:c:')));
   const stored = await T.store.getDocs('seeds');
-  assert.deepEqual(Object.keys(stored).sort(), ['brp', 'fate', 'osr', 'wwn'], 'Unknown Armies and Silent Legions have no code seed: only a pack makes one');
-  assert.strictEqual(JSON.parse(stored.osr).codeVersion, T.data.seeds.osr.version);
+  assert.deepEqual(Object.keys(stored).sort(), ['brp', 'fate', 'shadowdark', 'wwn'], 'Unknown Armies and Silent Legions have no code seed: only a pack makes one');
+  assert.strictEqual(JSON.parse(stored.shadowdark).codeVersion, T.data.seeds.shadowdark.version);
   assert.ok(window.document.querySelector('#set-seed-row').hidden, 'nothing new on a fresh install');
   window.close();
 });
@@ -38,7 +38,7 @@ test('a newer code seed is offered in Settings: Apply adds new items and updates
   const torch = T.state.compendium.find(e => e.name === 'Torch');
   torch.body = 'My own torch rules.';
   T.save();
-  const code = T.data.seeds.osr;
+  const code = T.data.seeds.shadowdark;
   code.version += 1;
   code.compendium = code.compendium.map(e => (e.name === 'Torch' || e.name === 'Lantern') ? Object.assign({}, e, { body: e.body + ' (revised)' }) : e)
     .concat([{ name: 'Tent', category: 'Items', body: 'Sleeps two.' }]);
@@ -46,7 +46,7 @@ test('a newer code seed is offered in Settings: Apply adds new items and updates
   T.checkSeeds();
   click($('#tabs .tab-btn[data-tab="settings"]'));
   assert.ok(!$('#set-seed-row').hidden);
-  assert.match($('#set-seed-text').textContent, /OSR defaults changed: 1 new, 1 changed, and 1 changed that you also edited/);
+  assert.match($('#set-seed-text').textContent, /The Shadowdark defaults changed: 1 new, 1 changed, and 1 changed that you also edited/);
   assert.ok(!$('#set-seed-overwrite').hidden);
 
   click($('#set-seed-apply'));
@@ -55,7 +55,7 @@ test('a newer code seed is offered in Settings: Apply adds new items and updates
   assert.match(byName('Lantern').body, /\(revised\)$/, 'unedited item updated');
   assert.strictEqual(byName('Torch').body, 'My own torch rules.', 'edited item kept');
   assert.ok($('#set-seed-row').hidden);
-  assert.strictEqual(T.state.seedVersions.osr, T.seeds.osr.version);
+  assert.strictEqual(T.state.seedVersions.shadowdark, T.seeds.shadowdark.version);
   assert.strictEqual(T.state.compendium.filter(e => e.name === 'Tent').length, 1);
   window.close();
 });
@@ -67,7 +67,7 @@ test('"Apply and overwrite my edits" replaces edited items too; "Skip" hides the
   const torchId = torch.id;
   torch.body = 'Mine.';
   T.save();
-  const code = T.data.seeds.osr;
+  const code = T.data.seeds.shadowdark;
   code.version += 1;
   code.compendium = code.compendium.map(e => e.name === 'Torch' ? Object.assign({}, e, { body: 'New torch.' }) : e);
   await T.loadSeeds();
@@ -93,9 +93,9 @@ test('"Apply and overwrite my edits" replaces edited items too; "Skip" hides the
 test('items from before seed refs are linked to the seed by name; an item that differs counts as edited', async () => {
   const { T, window } = await boot();
   T.state.compendium = [
-    { id: 'a', name: 'Torch', category: 'Items', source: 'Shadowdark Core', system: 'osr', body: T.seeds.osr.compendium.find(e => e.name === 'Torch').body },
-    { id: 'b', name: 'Lantern', category: 'Items', source: 'Shadowdark Core', system: 'osr', body: 'Changed by hand.' },
-    { id: 'c', name: 'Homebrew', category: 'Rules', source: 'Me', system: 'osr', body: '' }
+    { id: 'a', name: 'Torch', category: 'Items', source: 'Shadowdark Core', system: 'shadowdark', body: T.seeds.shadowdark.compendium.find(e => e.name === 'Torch').body },
+    { id: 'b', name: 'Lantern', category: 'Items', source: 'Shadowdark Core', system: 'shadowdark', body: 'Changed by hand.' },
+    { id: 'c', name: 'Homebrew', category: 'Rules', source: 'Me', system: 'shadowdark', body: '' }
   ];
   delete T.state.seedVersions;
   T.ensureStateShape();
@@ -105,7 +105,7 @@ test('items from before seed refs are linked to the seed by name; an item that d
   assert.strictEqual(lantern.seedRef, 'osr:c:lantern');
   assert.notStrictEqual(T.contentHash(lantern), lantern.seedHash, 'differs: edited');
   assert.strictEqual(home.seedRef, undefined, 'the user\'s own entry is not linked');
-  assert.strictEqual(T.state.seedVersions.osr, T.seeds.osr.version, 'an old save counts as up to date');
+  assert.strictEqual(T.state.seedVersions.shadowdark, T.seeds.shadowdark.version, 'an old save counts as up to date');
   window.close();
 });
 
@@ -143,7 +143,7 @@ test('a content pack goes into the system\'s seed too; another campaign is offer
 test('Merge import: an imported seeded item replaces the campaign\'s copy with the same seedRef; your own item with that name stays', async () => {
   const { T, window } = await boot({ freshSeed: true });
   const torch = T.state.compendium.find(e => e.name === 'Torch');
-  T.state.compendium.push({ id: 'mine', name: 'Torch', category: 'Rules', source: 'Me', system: 'osr', body: 'House rule.' });
+  T.state.compendium.push({ id: 'mine', name: 'Torch', category: 'Rules', source: 'Me', system: 'shadowdark', body: 'House rule.' });
   T.save();
   const exported = JSON.parse(JSON.stringify(T.state));
   const newer = exported.compendium.find(e => e.id === torch.id);
@@ -152,7 +152,7 @@ test('Merge import: an imported seeded item replaces the campaign\'s copy with t
   exported.characters = [];
   window.confirm = () => false; // Cancel = Merge
   await T.importData(new window.File([JSON.stringify(exported)], 'export.json', { type: 'application/json' }));
-  const torches = T.state.compendium.filter(e => e.name === 'Torch' && e.system === 'osr'); // WWN has its own Torch
+  const torches = T.state.compendium.filter(e => e.name === 'Torch' && e.system === 'shadowdark'); // WWN has its own Torch
   assert.strictEqual(torches.length, 2, 'no duplicate');
   assert.strictEqual(torches.find(e => e.id === torch.id).body, 'Newer torch text.');
   assert.strictEqual(torches.find(e => e.id === 'mine').body, 'House rule.');

@@ -302,7 +302,7 @@ test('tokens: names are escaped in the label and the hover card; tokens are save
   tokenEl(env, t).dispatchEvent(new window.MouseEvent('mouseover', { bubbles: true }));
   assert.strictEqual($('#token-card img'), null);
   await T.flushSave();
-  assert.deepEqual(T.splitState(T.state).osr.scenes[0].tokens.map(x => x.id), [t.id]);
+  assert.deepEqual(T.splitState(T.state).shadowdark.scenes[0].tokens.map(x => x.id), [t.id]);
   window.close();
 });
 
