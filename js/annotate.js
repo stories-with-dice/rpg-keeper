@@ -11,12 +11,22 @@
   // clickable formula; evalFormula (js/dice.js) already sums any number of
   // dice/flat terms, this just has to recognize the whole chain as one span.
   // "4dF+2" (Fate dice) is a formula too.
-  const DICE_RE = /\b\d*d(?:\d+|F)(?:(?:kh|kl|dh|dl)\d+)?(?:\s*[+-]\s*(?:\d*d\d+(?:(?:kh|kl|dh|dl)\d+)?|\d+|\$[A-Za-z][A-Za-z0-9]*))*\b/gi;
-  const MOD_RE  = /(?<![\w.])[+-]\d+(?![\w.\d])/g;
-  // A bare (optionally signed) $VarName reference not already consumed as
-  // part of a dice chain above — e.g. "Melee bonus: $STR" rolls 1d20+STR
-  // (evalFormula's own "no dice -> d20" fallback, once $STR is substituted).
-  const VARREF_RE = /(?<![\w.$])[+-]?\$([A-Za-z][A-Za-z0-9]*)/g;
+  // Each roll pattern may end with an "(adv)" or "(dis)" tag ("+0(adv)",
+  // "+$STR (dis)", "1d20+2(adv)"): the d20 becomes 2d20kh1 or 2d20kl1
+  // (OSR.withAdv, js/dice.js). The tag is capture group `adv`.
+  const ADV_TAG = '(?:\\s?\\((?<adv>adv|dis|disadv)\\))?';
+  const DICE_RE = new RegExp('\\b\\d*d(?:\\d+|F)(?:(?:kh|kl|dh|dl)\\d+)?(?:\\s*[+-]\\s*(?:\\d*d\\d+(?:(?:kh|kl|dh|dl)\\d+)?|\\d+|\\$[A-Za-z][A-Za-z0-9]*))*\\b' + ADV_TAG, 'gi');
+  const MOD_RE  = new RegExp('(?<![\\w.])[+-]\\d+(?![\\w.\\d])' + ADV_TAG, 'gi');
+  // A chain of signed $VarName references and integers, not already consumed
+  // as part of a dice chain above: "Melee bonus: $STR" rolls 1d20+STR, and
+  // "Sword +$STR+$WeaponMastery" rolls 1d20+STR+WeaponMastery as one span
+  // (evalFormula's own "no dice -> d20" fallback, once each $Name is
+  // substituted). It must start with a $Name or a signed integer and hold at
+  // least one $Name (a chain of only integers is left to MOD_RE). It runs
+  // before MOD_RE, so "+2+$STR" is one span too.
+  const VAR_TERM = '\\$[A-Za-z][A-Za-z0-9]*';
+  const VARCHAIN_RE = new RegExp('(?<![\\w.$])(?:[+-]?' + VAR_TERM + '|[+-]\\s*\\d+(?![\\w.]))' +
+    '(?:\\s*[+-]\\s*(?:' + VAR_TERM + '|\\d+(?![\\w.])))*' + ADV_TAG, 'gi');
   // A bare "NN%" (Unknown Armies identity/ability/relationship rating, etc.)
   // becomes a clickable percentile roll: 1d100, success on a result <= NN.
   // Capped to 0-100 so it doesn't misfire on unrelated percentages ("150% of
@@ -68,6 +78,14 @@
     return out;
   }
 
+  // The formula text without its "(adv)"/"(dis)" tag and spaces.
+  function stripAdv(raw) { return raw.replace(/\s?\((?:adv|dis|disadv)\)$/i, '').replace(/\s+/g, ''); }
+  // "adv" → 2d20kh1, "dis"/"disadv" → 2d20kl1 (no change without a d20 to swap).
+  function rollFormula(formula, tag) {
+    if (!tag || !OSR.withAdv) return formula;
+    return OSR.withAdv(formula, /^adv$/i.test(tag) ? 'adv' : 'dis');
+  }
+
   function findMatches(text, opts) {
     const spans = [];
     let m;
@@ -109,19 +127,21 @@
       if (spans.some(sp => s < sp.end && e > sp.start)) continue;
       // Displayed label drops the "$" (data-formula keeps it, for rolling) —
       // "1d20+$AB+$STR" reads as "1d20+AB+STR".
-      spans.push({ kind: 'roll', start: s, end: e, formula: raw.replace(/\s+/g, ''), label: raw.replace(/\$/g, '') });
+      spans.push({ kind: 'roll', start: s, end: e, formula: rollFormula(stripAdv(raw), m.groups.adv), label: raw.replace(/\$/g, '') });
+    }
+    VARCHAIN_RE.lastIndex = 0;
+    while ((m = VARCHAIN_RE.exec(text))) {
+      const raw = m[0];
+      if (raw.indexOf('$') === -1) continue;
+      const s = m.index, e = m.index + raw.length;
+      if (spans.some(sp => s < sp.end && e > sp.start)) continue;
+      spans.push({ kind: 'roll', start: s, end: e, formula: rollFormula(stripAdv(raw), m.groups.adv), label: raw.replace(/\$/g, '') });
     }
     MOD_RE.lastIndex = 0;
     while ((m = MOD_RE.exec(text))) {
       const s = m.index, e = m.index + m[0].length;
       if (spans.some(sp => s < sp.end && e > sp.start)) continue;
-      spans.push({ kind: 'roll', start: s, end: e, formula: base + m[0], label: m[0] });
-    }
-    VARREF_RE.lastIndex = 0;
-    while ((m = VARREF_RE.exec(text))) {
-      const s = m.index, e = m.index + m[0].length;
-      if (spans.some(sp => s < sp.end && e > sp.start)) continue;
-      spans.push({ kind: 'roll', start: s, end: e, formula: m[0].replace(/\s+/g, ''), label: m[0].replace(/\$/g, '') });
+      spans.push({ kind: 'roll', start: s, end: e, formula: rollFormula(base + stripAdv(m[0]), m.groups.adv), label: m[0] });
     }
     PCT_RE.lastIndex = 0;
     while ((m = PCT_RE.exec(text))) {

@@ -988,10 +988,17 @@
 
   <div class="roll-popup" id="roll-popup" hidden>
     <div class="rp-head">Roll <span id="rp-formula"></span></div>
-    <label class="rp-row">
-      <span>Modifier</span>
-      <input type="number" id="rp-mod" step="1" placeholder="0" />
-    </label>
+    <div class="rp-row">
+      <label class="rp-mod-wrap">
+        <span>Modifier</span>
+        <input type="number" id="rp-mod" step="1" placeholder="0" />
+      </label>
+      <select id="rp-adv" aria-label="Advantage">
+        <option value="">Normal</option>
+        <option value="adv">Advantage</option>
+        <option value="dis">Disadvantage</option>
+      </select>
+    </div>
     <div class="rp-vars" id="rp-vars"></div>
     <div class="rp-preview" id="rp-preview"></div>
     <div class="rp-actions">
@@ -1004,6 +1011,9 @@
   <script src="js/fuse.min.js"></script>
   <script src="vendor/fflate/fflate.min.js"></script>
   <script src="vendor/easymde/easymde.min.js"></script>
+  <script src="vendor/rpg-dice-3d/rpg-dice.js"></script>
+  <script src="vendor/rpg-dice-3d/rpg-dice-sound.js"></script>
+  <script src="vendor/rpg-dice-3d/rpg-dice-3d.js"></script>
   <script src="js/monsters.js"></script>
   <script src="js/ua-statblock.js"></script>
   <script src="js/fate.js"></script>
@@ -1018,7 +1028,6 @@
   <script src="js/store.js"></script>
   <script src="js/seeds.js"></script>
   <script src="js/dice.js"></script>
-  <script src="js/dice-sound.js"></script>
   <script src="js/dice3d.js"></script>
   <script src="js/annotate.js"></script>
   <script src="js/mde.js"></script>

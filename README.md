@@ -149,10 +149,14 @@ connect, which is enough for a gaming group.
 - A sheet's HP fills its **HP (Name)** tracker once, while the tracker is still 0/0. Both
   `HP: 5/5` and a bold label without a colon (`**HP** 5/5`, as on the Shadowdark sheets) work.
 - **View / Edit** toggle. View renders the sheet as Markdown; Edit is the raw Markdown source
-  (Edit always acts on **Character**, not Character B).
+  (Edit always acts on **Character**, not Character B). In Edit, **Ctrl+Enter** (Cmd+Enter on a
+  Mac) saves, like the **Save** button.
 - In View mode, **dice formulas and modifiers are underlined and clickable** (blue, dotted):
   - `2d6+3`, `1d20+4`, `4d6kh3`, `1d8 + 2` → rolled as written.
   - A bare `+1` / `-2` / `+0` → rolled as `1d20 ± that`.
+  - Add `(adv)` or `(dis)` after a roll to roll the d20 with advantage or disadvantage:
+    `Stealth +0(adv)` rolls `2d20kh1+0`, `Climb -1(dis)` rolls `2d20kl1-1`. A roll without a d20
+    (`1d8+2(adv)`) ignores the tag.
   - Every click is logged under the character's name.
 - Also in View mode, **names in `[square brackets]` are underlined (violet, dashed)** and looked up
   in the **Compendium** on hover — see that tab. Short all-caps tags like `[WWN]` are left alone.
@@ -193,9 +197,16 @@ editor or the Dice Roller's custom-formula box pops up a list of that character'
 to pick from. If a name changes or a sheet is edited, `$Name` always resolves against whatever the
 sheet says *right now*.
 
+Variables chain without dice too. With `STR: 1` and `WeaponMastery: 2` on the sheet,
+`Sword +$STR+$WeaponMastery` makes one clickable roll: `1d20+1+2` (a +3 roll). Signed numbers can
+join the chain (`+2+$DEX-1`).
+
 **Right-click any dice roll** (in a sheet, in Combat, in a Compendium popup, or a Dice Roller preset)
 to open a small popup with a flat **modifier** field and a dropdown to add one of the character's
 variables to the roll — picking one adds another dropdown so you can stack several — before rolling.
+Next to the modifier, the **Normal / Advantage / Disadvantage** dropdown turns the roll's d20 into
+`2d20kh1` or `2d20kl1`. It starts at the roll's own mode (a sheet's `(adv)`, the **Adv** preset) and is
+disabled when the roll has no d20.
 
 ### Journal
 The **Journal** tab: a **campaign-wide** Markdown composer (a proper editor —
@@ -236,15 +247,16 @@ A dice roll (Dice Roller, sheet, Compendium popups, percentile rolls) first thro
 each other, roll, and land with the rolled faces toward you. Then a panel at the bottom of the page
 shows the total, and the Session Log line, the Dice Roller's result, and **Apply damage** show. The
 dice and the panel fade after about 2 seconds. **Esc** skips to the result, and the dice never block a
-click. A d% roll shows a tens die and a units die, a Fate roll its Fate dice; d3, d5, d7, d14, d16,
+click. A roll with keep or drop (`2d20kh1`, `4d6kh3`) throws every die, and the dropped dice go dim
+when they land. A d% roll shows a tens die and a units die, a Fate roll its Fate dice; d3, d5, d7, d14, d16,
 d24, and d30 have their own shapes, and other sizes show as a coin with the number on top. Turn them
 off in Settings → **3D dice** (saved in this browser only): the result then shows at once. They are
 also off when your system asks for reduced motion. The random tables and Combat's attack, save, and
 morale buttons show their result at once, without 3D dice.
 
 **Dice skin** (Settings, saved in this browser only): the look of the 3D dice. **Theme color**
-(default) uses the style theme's accent color. The 12 skins are Ivory, Obsidian, Crimson, Sapphire,
-Emerald, Amethyst, Marble, Galaxy, Dragonfire, Frost, Oak, and Gold. **Random (each die)** gives each
+(default) uses the style theme's accent color. The 14 skins are Ivory, Obsidian, Crimson, Sapphire,
+Emerald, Amethyst, Marble, Galaxy, Dragonfire, Frost, Oak, Gold, Indigo, and Steel. **Random (each die)** gives each
 die of a roll its own skin. A change throws two sample dice.
 
 **Dice sound** (Settings, on by default, saved in this browser only): with 3D dice, the dice clatter
@@ -252,13 +264,17 @@ as they bounce, hit each other, and roll, and a click plays when the result show
 made in code, with no sound files. Without 3D dice, and for the random tables, a roll plays a short
 swoosh.
 
-The 3D dice and their sounds come from the owner's Wox dice roller plugin.
+The dice formulas, the 3D dice, and their sounds come from the owner's
+[rpg-dice-3d](https://github.com/stories-with-dice/rpg-dice-3d) library, which the Wox dice roller
+plugin and the Mythic toolkit also use.
 
 Preset buttons: `d20`, `Adv` (2d20 keep-highest), `Dis` (2d20 keep-lowest), `d4`–`d12`, `d100`,
 `2d6`, `3d6`, `4d6kh3`. Plus a **custom formula** field.
 
 Formula grammar: `NdM` (e.g. `3d6`), `+`/`-` chains (`2d6+3`, `1d8-1`), keep/drop
-(`kh`/`kl`/`dh`/`dl` + number, e.g. `4d6kh3`), and `d%`. Typing a bare number/modifier rolls a d20.
+(`kh`/`kl`/`dh`/`dl` + number, e.g. `4d6kh3`), `d%`, and Fate dice (`4dF`). Also exploding dice
+(`1d6!`), rerolls (`2d6r1`), `*`, `/`, and parentheses (`(1d4+2)*3`). Typing a bare number/modifier
+rolls a d20. At most 100 dice per group.
 
 After a roll, on the Combat tab, an **Apply damage** button appears — it subtracts the result from
 the **currently selected combatant** (HP, or HD/HP under Scarlet Heroes rules — see Settings). The
@@ -896,7 +912,9 @@ Paste several at once — a blank line between them is ideal, but back-to-back b
 
 ## Credits
 
-- 3D dice: [three.js](https://threejs.org) r159 (MIT license, `vendor/three/LICENSE`).
+- Dice formulas, 3D dice, and dice sounds: [rpg-dice-3d](https://github.com/stories-with-dice/rpg-dice-3d)
+  (MIT license, `vendor/rpg-dice-3d/LICENSE`), with [three.js](https://threejs.org) r159 (MIT license,
+  `vendor/rpg-dice-3d/three/LICENSE`).
 - Monster data: the **Shadowdark RPG** core bestiary (© The Arcane Library) — see
   `data/bestiary_data.json`.
 - Map token icons: [game-icons.net](https://game-icons.net) by Lorc, Delapouite, Skoll,

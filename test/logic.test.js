@@ -52,7 +52,7 @@ function threeCombatants() {
 }
 
 /* ================================================================== */
-/* Dice engine — evalFormula / rollTerm                                */
+/* Dice engine — evalFormula (on the library's RpgDice)                                */
 /* ================================================================== */
 
 test('evalFormula: NdM sums every die', () => {
@@ -114,10 +114,32 @@ test('evalFormula: d% resolves to d100', () => {
   assert.equal(r.dice[0].sides, 100);
 });
 
-test('evalFormula: die count is clamped to MAX_DICE (500)', () => {
+test('evalFormula: die count is clamped to the library\'s 100 per group', () => {
   rig(face(1, 4));
   const r = T.evalFormula('999d4');
-  assert.equal(r.dice.length, 500);
+  assert.equal(r.dice.length, 100);
+});
+
+test('evalFormula: advantage keeps one d20 but reports both for the 3D dice', () => {
+  rig([face(8, 20), face(17, 20)]);
+  const r = T.evalFormula('2d20kh1+2');
+  assert.equal(r.total, 19);
+  assert.deepEqual(r.dice, [{ value: 17, sides: 20, sign: 1 }]);
+  assert.deepEqual(r.rolled.map(d => [d.value, d.kept]), [[8, false], [17, true]]);
+  assert.equal(r.flat, 2);
+  assert.equal(r.detail, '2d20kh1 [8, 17] kh1 +2');
+});
+
+test('evalFormula: the library\'s extra syntax rolls too; a minus die has sign -1', () => {
+  rig(face(3, 6));
+  assert.equal(T.evalFormula('(1d6+1)*2').total, 8);
+  rig([face(5, 8), face(2, 4)]);
+  const r = T.evalFormula('1d8-1d4');
+  assert.equal(r.total, 3);
+  assert.deepEqual(r.dice.map(d => d.sign), [1, -1]);
+  assert.equal(r.detail, '1d8 [5] -1d4 [2]');
+  rig([face(1, 6), face(4, 6)]);
+  assert.equal(T.evalFormula('1d6 fire damage').total, 1, 'text after the dice is left out');
 });
 
 test('evalFormula: empty / malformed-die input returns null', () => {
@@ -208,6 +230,47 @@ test('findMatches: the "$" is stripped from the displayed label but kept in data
   const bare = T.findMatches('Melee bonus: $STR').find(s => s.kind === 'roll');
   assert.equal(bare.formula, '$STR');
   assert.equal(bare.label, 'STR');
+});
+
+test('findMatches: a chain of $Names and integers is one roll span ("Sword +$STR+$WeaponMastery")', () => {
+  const sword = T.findMatches('Sword +$STR+$WeaponMastery').filter(s => s.kind === 'roll');
+  assert.equal(sword.length, 1);
+  assert.equal(sword[0].formula, '+$STR+$WeaponMastery');
+  assert.equal(sword[0].label, '+STR+WeaponMastery');
+  const mixed = T.findMatches('Bow +2+$DEX - 1 at range').filter(s => s.kind === 'roll');
+  assert.deepEqual(mixed.map(s => s.formula), ['+2+$DEX-1']);
+  const plain = T.findMatches('Shield +1, Helm +2').filter(s => s.kind === 'roll');
+  assert.deepEqual(plain.map(s => s.formula), ['1d20+1', '1d20+2'], 'a chain without a $Name stays as bare modifiers');
+  const sum = T.substituteVars('+$STR+$WeaponMastery', [{ name: 'STR', value: 1 }, { name: 'WeaponMastery', value: 2 }]);
+  assert.equal(T.evalFormula(sum.text).normalized, '1d20+1+2');
+});
+
+test('findMatches: an "(adv)"/"(dis)" tag rolls 2d20kh1 or 2d20kl1', () => {
+  const roll = t => T.findMatches(t).find(s => s.kind === 'roll');
+  assert.equal(roll('Stealth +0(adv)').formula, '2d20kh1+0');
+  assert.equal(roll('Stealth +0(adv)').label, '+0(adv)');
+  assert.equal(roll('Climb -1 (dis)').formula, '2d20kl1-1');
+  assert.equal(roll('Sword +$STR+$WM(adv)').formula, '2d20kh1+$STR+$WM');
+  assert.equal(roll('Attack 1d20+2(disadv)').formula, '2d20kl1+2');
+  assert.equal(roll('Damage 1d8+2(adv)').formula, '1d8+2', 'no d20 to swap');
+});
+
+test('withAdv / advModeOf: swap the single d20 of a formula', () => {
+  assert.equal(T.withAdv('1d20+2', 'adv'), '2d20kh1+2');
+  assert.equal(T.withAdv('d20-1', 'dis'), '2d20kl1-1');
+  assert.equal(T.withAdv('2d20kh1+1', ''), '1d20+1');
+  assert.equal(T.withAdv('2d20kh1+1', 'dis'), '2d20kl1+1');
+  assert.equal(T.withAdv('+$STR', 'adv'), '2d20kh1+$STR');
+  assert.equal(T.withAdv('+$STR', ''), '+$STR');
+  assert.equal(T.withAdv('1d8+2', 'adv'), '1d8+2');
+  assert.equal(T.withAdv('3d20', 'adv'), '3d20');
+  assert.equal(T.withAdv('1d200', 'adv'), '1d200');
+  assert.equal(T.advModeOf('2d20kh1+3'), 'adv');
+  assert.equal(T.advModeOf('2d20kl1'), 'dis');
+  assert.equal(T.advModeOf('1d20+3'), '');
+  assert.equal(T.canAdv('%45'), false);
+  assert.equal(T.canAdv('1d6'), false);
+  assert.equal(T.canAdv('+2'), true);
 });
 
 test('formatFormulaDisplay: "$Name" -> "Name (value)" for a hover tooltip, missing ones show "(?)"', () => {

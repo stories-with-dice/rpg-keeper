@@ -30,9 +30,13 @@ the Compendium entry, the monster def, or the table fields change.
 - **Static single-page app**: `index.html`, `css/app.css`, `js/*.js`. No build step, framework,
   bundler, TypeScript, JSX, ES modules (jsdom does not run them), runtime npm dependencies, or
   CDN `<script>`/`<link>` tags. Third-party code is vendored: `js/marked.min.js`, `js/fuse.min.js`,
-  `vendor/fflate/`, `vendor/easymde/`, `vendor/fontawesome/`, `vendor/three/` (three.js r159, the
-  last release with a classic-script build; its deprecation `console.warn` is replaced with
-  `void 0,`. `js/dice3d.js` adds its `<script>` on the first 3D roll, not at boot).
+  `vendor/fflate/`, `vendor/easymde/`, `vendor/fontawesome/`, `vendor/rpg-dice-3d/`.
+  `vendor/rpg-dice-3d/` is the owner's dice library ([rpg-dice-3d](https://github.com/stories-with-dice/rpg-dice-3d),
+  MIT): the formula parser `RpgDice`, the 3D dice `RpgDice3D`, their sound `RpgDiceSound`, and
+  three.js r159 in `three/` (the last release with a classic-script build; its deprecation
+  `console.warn` is replaced with `void 0,`). `js/dice3d.js` adds the three.js `<script>` on the first
+  3D roll, not at boot. Do not edit the copy: change the library, run its tests, then run
+  `node ../rpg-dice-3d/scripts/vendor.js vendor/rpg-dice-3d` from here. `VERSION` names the commit.
 - **http(s) only**: GitHub Pages (`.github/workflows/static.yml` publishes `main`) or a local static
   server. `file://` is not supported because boot `fetch()`es `data/`. Do not add workarounds.
 - **Network**: only two uses. (1) `js/icons.js` fetches one game-icons SVG from jsDelivr
@@ -70,7 +74,7 @@ they also `module.exports` for Node.
 | `js/seeds.js` | the seed store (`OSR.seeds`), seed copies, Settings → New defaults |
 | `js/data.js` | `OSR.loadData()`: fetches every `data/` file into `OSR.data` |
 | `js/campaigns.js` | campaign selector and Settings → Campaign |
-| `js/dice.js`, `js/annotate.js`, `js/dice-ui.js`, `js/dice3d.js`, `js/dice-sound.js` | dice engine and log; sheet text → roll spans; Dice Roller panel and roll popup; the 3D dice thrown over the page; their sounds |
+| `js/dice.js`, `js/annotate.js`, `js/dice-ui.js`, `js/dice3d.js` | dice engine (on the library's `RpgDice`) and log; sheet text → roll spans; Dice Roller panel and roll popup; the 3D dice thrown over the page (the library's `RpgDice3D`, with its sound) |
 | `js/characters.js` | character CRUD, View/Edit, UA statblock panel, sheet-selection menu |
 | `js/consumables.js`, `js/notes.js`, `js/mde.js` | trackers; the Journal; the shared EasyMDE builder |
 | `js/combat.js`, `js/combat-populate.js` | Combat tracker; Populate by HD |

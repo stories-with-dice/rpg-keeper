@@ -76,11 +76,16 @@
   // popups) or a Dice Roller preset button. Lets you add a flat modifier and
   // stack any number of the owning character's detected variables before
   // rolling — none selected by default.
+  // The Adv/Dis dropdown (#rp-adv) starts at the formula's own mode
+  // ("2d20kh1+2" or a sheet "+2(adv)" → Advantage) and rewrites its d20
+  // (OSR.withAdv). It is disabled when the formula has no single d20 (damage
+  // dice, a d100, Fate).
   let rollPop = null; // { formula, source, vars: [{name,value}], picks: [name|null,...] }
 
   function rollPopupFormula() {
     if (!rollPop) return '';
-    let f = rollPop.formula;
+    const adv = $('#rp-adv');
+    let f = OSR.canAdv(rollPop.formula) ? OSR.withAdv(rollPop.formula, adv.value) : rollPop.formula;
     const mod = parseInt($('#rp-mod').value, 10);
     if (!isNaN(mod) && mod !== 0) f += (mod >= 0 ? '+' : '') + mod;
     rollPop.picks.forEach(name => {
@@ -112,6 +117,9 @@
     rollPop = { formula: formula, source: source || 'Roll', vars: vars || [], picks: [] };
     const el = $('#roll-popup');
     $('#rp-mod').value = '';
+    const adv = $('#rp-adv');
+    adv.disabled = !OSR.canAdv(formula);
+    adv.value = adv.disabled ? '' : OSR.advModeOf(formula);
     renderRollPopup();
     el.hidden = false;
     const w = el.offsetWidth, h = el.offsetHeight;
@@ -152,6 +160,7 @@
       }
     });
     $('#rp-mod').addEventListener('input', renderRollPopup);
+    $('#rp-adv').addEventListener('change', renderRollPopup);
     $('#rp-vars').addEventListener('change', e => {
       const sel = e.target.closest('.rp-var-select');
       if (!sel || !rollPop) return;

@@ -1,60 +1,48 @@
-/* js/dice.js — dice engine (pure) + roll/session-log rendering.
+/* js/dice.js — dice engine (on the rpg-dice-3d library's RpgDice) + roll/session-log rendering.
  * See AGENTS.md "The dice engine" and "Character-sheet variables" sections.
  */
 (function (OSR) {
   'use strict';
-  const { $, escapeHtml, MAX_DICE, MAX_LOG } = OSR;
+  const { $, escapeHtml, MAX_LOG } = OSR;
 
   function rollDie(sides) { return 1 + Math.floor(Math.random() * sides); }
 
   // Fate dice faces as the log shows them.
   const FATE_FACE = { '-1': '−', '0': '0', '1': '+' };
 
-  // Roll one term: "2d10", "d20", "4d6kh3", "d%", "4dF" (Fate dice: −1, 0,
-  // +1 each), or a plain integer.
-  function rollTerm(token) {
-    token = token.trim().toLowerCase();
-    const fm = token.match(/^(\d*)df$/);
-    if (fm) {
-      const count = Math.max(1, Math.min(parseInt(fm[1] || '4', 10), MAX_DICE));
-      const rolls = [];
-      for (let i = 0; i < count; i++) rolls.push(rollDie(3) - 2);
-      return { value: rolls.reduce((a, b) => a + b, 0), text: '[' + rolls.map(v => FATE_FACE[v]).join(' ') + ']', rolls: rolls, sides: 'F' };
-    }
-    const dm = token.match(/^(\d*)d(\d+|%)((?:kh|kl|dh|dl)\d+)?$/);
-    if (dm) {
-      const count = Math.max(1, Math.min(parseInt(dm[1] || '1', 10), MAX_DICE));
-      const sides = dm[2] === '%' ? 100 : parseInt(dm[2], 10);
-      if (!sides) return null;
-      const rolls = [];
-      for (let i = 0; i < count; i++) rolls.push(rollDie(sides));
-      let kept = rolls.slice();
-      let note = '';
-      if (dm[3]) {
-        const kind = dm[3].slice(0, 2);
-        const n = parseInt(dm[3].slice(2), 10);
-        const sorted = rolls.slice().sort((a, b) => a - b);
-        if (kind === 'kh') kept = sorted.slice(-n);
-        else if (kind === 'kl') kept = sorted.slice(0, n);
-        else if (kind === 'dh') kept = sorted.slice(0, Math.max(0, sorted.length - n));
-        else if (kind === 'dl') kept = sorted.slice(n);
-        note = ' ' + dm[3];
-      }
-      const sum = kept.reduce((a, b) => a + b, 0);
-      return { value: sum, text: '[' + rolls.join(', ') + ']' + note, rolls: kept, sides: sides };
-    }
-    if (/^\d+$/.test(token)) return { value: parseInt(token, 10), text: token };
-    return null;
+  // The parser and roller are the rpg-dice-3d library's RpgDice
+  // (vendor/rpg-dice-3d/rpg-dice.js). evalFormula() keeps this app's rules on
+  // top of it:
+  //   - a formula without dice is a modifier on the base die ("+3" → 1d20+3, 4dF in Fate);
+  //   - "dF" alone is 4dF (4 Fate dice);
+  //   - text the library cannot parse is not an error: the dice and numbers
+  //     in it still roll ("1d6 fire" → 1d6), and text with none → the base die;
+  //   - a die count above the library's limit (100) is clamped to it.
+  // The library's random source is rollDie() (Math.random), so the tests can script it.
+  const TERM_RE = /([+-]?)(\d*d(?:\d+|%|f)(?:(?:kh|kl|dh|dl|k)\d+)?|\d+)/g;
+  const MAX_GROUP = 100;
+
+  function parseLoose(expr) {
+    try { return RpgDice.parse(expr); } catch (e) { /* the loose way below */ }
+    const terms = expr.match(TERM_RE);
+    if (!terms) return null;
+    let joined = terms.join('');
+    if (!/^[+-]/.test(joined)) joined = '+' + joined;
+    try { return RpgDice.parse(joined.replace(/^\+/, '')); } catch (e) { return null; }
   }
 
   // The die a bare modifier ("+2") rolls: 4dF in Fate, else 1d20.
   function defaultDie() { return OSR.currentSystem && OSR.currentSystem() === 'fate' ? '4dF' : '1d20'; }
 
-  // Evaluate a whole formula string -> { total, detail, normalized, dice, flat, fate } or null.
-  //   dice: [{ value, sides, sign }] for every individual die kept (sides 'F' for a Fate die)
-  //   flat: signed sum of all constant terms
-  //   fate: true when the formula has Fate dice
+  // Evaluate a whole formula string -> { total, detail, normalized, dice, rolled, flat, fate } or null.
+  //   dice:   [{ value, sides, sign }] for every kept die (sides 'F' for a Fate die)
+  //   rolled: [{ value, sides, kept }] for every die rolled, dropped ones too (the 3D dice show them all)
+  //   flat:   signed sum of all constant terms
+  //   fate:   true when the formula has Fate dice
+  //   detail: each term with its dice, "2d20kh1 [8, 17] kh1 +2" (dropped dice are listed too)
   // `base` is the die a bare modifier rolls (default 1d20; doRoll passes defaultDie()).
+  //   evalFormula('2d20kh1+2') with dice 8, 17 → { total: 19, normalized: '2d20kh1+2',
+  //     dice: [{ value: 17, sides: 20, sign: 1 }], rolled: [{ value: 8, …, kept: false }, { value: 17, …, kept: true }], flat: 2 }
   function evalFormula(formula, base) {
     let expr = String(formula || '').trim().toLowerCase().replace(/\s+/g, '').replace(/−/g, '-');
     if (!expr) return null;
@@ -62,24 +50,89 @@
     if (!/d(\d+|%|f)/.test(expr)) {
       expr = String(base || '1d20').toLowerCase() + (/^[+-]/.test(expr) ? expr : '+' + expr);
     }
-    const re = /([+-]?)(\d*d(?:\d+|%|f)(?:(?:kh|kl|dh|dl)\d+)?|\d+)/g;
-    let m, total = 0, parts = [], matched = false;
-    const dice = [];
-    let flat = 0;
-    while ((m = re.exec(expr))) {
-      matched = true;
-      const sign = m[1] === '-' ? -1 : 1;
-      const r = rollTerm(m[2]);
-      if (!r) return null;
-      total += sign * r.value;
-      if (r.rolls) r.rolls.forEach(v => dice.push({ value: v, sides: r.sides, sign: sign }));
-      else flat += sign * r.value;
-      const s = sign < 0 ? '-' : (parts.length ? '+' : '');
-      parts.push(/d/.test(m[2]) ? (s + m[2].replace(/df$/, 'dF') + ' ' + r.text) : (s + r.text));
+    expr = expr.replace(/(^|[^\d])df/g, '$14df')
+      .replace(/(\d+)d/g, (m, n) => Math.max(1, Math.min(parseInt(n, 10), MAX_GROUP)) + 'd');
+    const parsed = parseLoose(expr);
+    if (!parsed) return null;
+    let res;
+    try { res = RpgDice.roll(parsed, rollDie); } catch (e) { return null; }
+
+    const dice = [], rolled = [];
+    let diceSum = 0;
+    res.groups.forEach(g => {
+      const sides = g.kind === 'fudge' ? 'F' : g.sides;
+      g.dice.forEach(d => {
+        rolled.push({ value: d.value, sides: sides, kept: d.kept });
+        if (!d.kept) return;
+        dice.push({ value: d.value, sides: sides, sign: g.sign });
+        diceSum += g.sign * d.value;
+      });
+    });
+    const normalized = parsed.source.replace(/df/g, 'dF');
+    return {
+      total: res.total, detail: termDetail(normalized, res) || res.detail, normalized: normalized,
+      dice: dice, rolled: rolled, flat: res.total - diceSum, fate: res.groups.some(g => g.kind === 'fudge')
+    };
+  }
+
+  // The log's detail for a +/- chain: each term in order, a dice term with
+  // every die it rolled ("1d20 [12] +3", "4d6kh3 [1, 2, 5, 6] kh3",
+  // "4dF [+ 0 − +] +2"). Null for anything else (parentheses, * and /):
+  // then the library's own detail shows.
+  function termDetail(normalized, res) {
+    const expr = normalized.toLowerCase();
+    if (/[()*/<>=!r]/.test(expr.replace(/d%/g, 'd100'))) return null;
+    const parts = [];
+    let gi = 0, m, pos = 0;
+    TERM_RE.lastIndex = 0;
+    while ((m = TERM_RE.exec(expr))) {
+      if (m.index !== pos) return null;
+      pos = m.index + m[0].length;
+      const sign = m[1] === '-' ? '-' : (parts.length ? '+' : '');
+      if (/d/.test(m[2])) {
+        const g = res.groups[gi++];
+        if (!g) return null;
+        const keep = (m[2].match(/(kh|kl|dh|dl|k)\d+$/) || [''])[0];
+        const vals = g.kind === 'fudge' ? '[' + g.dice.map(d => FATE_FACE[d.value]).join(' ') + ']'
+          : '[' + g.dice.map(d => d.value).join(', ') + ']' + (keep ? ' ' + keep : '');
+        parts.push(sign + m[2].replace(/df$/, 'dF') + ' ' + vals);
+      } else parts.push(sign + m[2]);
     }
-    if (!matched) return null;
-    const fate = dice.some(d => d.sides === 'F');
-    return { total, detail: parts.join(' '), normalized: expr.replace(/df/g, 'dF'), dice, flat, fate };
+    return pos === expr.length && gi === res.groups.length ? parts.join(' ') : null;
+  }
+
+  // Advantage / disadvantage. The "single d20" of a formula is its first
+  // d20 term rolled as one die ("1d20", "d20") or as an advantage pair
+  // ("2d20kh1", "2d20kl1"). advModeOf() reads that term: 'adv', 'dis', or ''.
+  // withAdv() rewrites it: 'adv' → 2d20kh1, 'dis' → 2d20kl1, '' → 1d20.
+  // A formula with no dice at all ("+2", "+$STR") gets a 1d20 first (but not
+  // in Fate, which rolls 4dF). Without a single d20, both leave it as it is.
+  //   withAdv('1d20+2', 'adv')    → '2d20kh1+2'
+  //   withAdv('+$STR', 'dis')     → '2d20kl1+$STR'
+  //   withAdv('2d20kh1+1', '')    → '1d20+1'
+  //   withAdv('1d8+2', 'adv')     → '1d8+2'
+  const D20_TERM_RE = /(^|[+-])(1?d20|2d20k[hl]1)(?![\dkKdD])/i;
+  function advModeOf(formula) {
+    const m = String(formula || '').match(D20_TERM_RE);
+    if (!m) return '';
+    const t = m[2].toLowerCase();
+    return t === '2d20kh1' ? 'adv' : t === '2d20kl1' ? 'dis' : '';
+  }
+  function canAdv(formula) {
+    const f = String(formula || '');
+    if (f.charAt(0) === '%') return false;
+    if (!/d(\d+|%|f)/i.test(f)) return defaultDie() === '1d20';
+    return D20_TERM_RE.test(f);
+  }
+  function withAdv(formula, mode) {
+    let f = String(formula || '');
+    if (!canAdv(f)) return f;
+    if (!/d(\d+|%|f)/i.test(f)) {
+      if (!mode) return f;
+      f = '1d20' + (/^[+-]/.test(f) ? f : '+' + f);
+    }
+    const die = mode === 'adv' ? '2d20kh1' : mode === 'dis' ? '2d20kl1' : '1d20';
+    return f.replace(D20_TERM_RE, (w, sign) => sign + die);
   }
 
   // Case/whitespace-insensitive key for matching a $Token against a detected
@@ -129,7 +182,7 @@
   // The most recent Fate roll ({ formula, total, source }), for "Invoke +2" and "Reroll".
   OSR.lastFate = null;
 
-  // A short "swoosh" on a roll without 3D dice (3D dice have their own sounds, js/dice-sound.js): white noise through a band-pass filter
+  // A short "swoosh" on a roll without 3D dice (3D dice have their own sounds, the library's rpg-dice-sound.js): white noise through a band-pass filter
   // that sweeps down, with a quick fade in and out. Made with the Web Audio
   // API, so there is no sound file and no network use. On by default; the
   // Settings tab's "Roll sound" turns it off for this browser
@@ -176,8 +229,8 @@
   // A roll line in the Session Log. Every roll goes through here (dice, % rolls,
   // tables); notes do not.
   // opts.quiet: log only, leave the Dice Roller's last-roll box (and its apply context) as it is.
-  // opts.dice: the roll's dice ([{ sides, value }]). With 3D dice on, they are
-  // thrown first (js/dice3d.js) and the log line and the result box show when
+  // opts.dice: the roll's dice ([{ sides, value, kept }], dropped ones with
+  // kept: false). With 3D dice on, they are thrown first (js/dice3d.js) and the log line and the result box show when
   // they land. The entry is saved at once either way.
   function pushLog(source, formula, total, detail, opts) {
     const state = OSR.state;
@@ -273,7 +326,7 @@
     // A Fate roll shows its result on the ladder: "4dF [+ 0 − +] +3 → Good (+4)".
     let detail = res.fate && window.FateSheet ? res.detail + ' → ' + FateSheet.ladderLabel(res.total) : res.detail;
     if (target != null) detail += ' → vs ' + target + ': ' + (res.total >= target ? 'Success' : 'Failure') + ' (' + (res.total - target >= 0 ? '+' : '') + (res.total - target) + ')';
-    const entry = pushLog(source || 'Roll', res.normalized + (target != null ? ' ≥ ' + target : ''), res.total, detail, { dice: res.dice });
+    const entry = pushLog(source || 'Roll', res.normalized + (target != null ? ' ≥ ' + target : ''), res.total, detail, { dice: res.rolled });
     // pushLog cleared lastRoll; a Dice Roller roll is applyable, so set it now.
     OSR.lastRoll = { total: res.total, dice: res.dice, flat: res.flat, normalized: res.normalized };
     // The Fate dice actions (invoke +2, reroll) act on this roll (js/fate-ui.js).
@@ -353,7 +406,7 @@
   }
 
   Object.assign(OSR, { playRollSound, rollSoundOn, setRollSound,
-    rollDie, rollTerm, evalFormula, defaultDie, normVarKey, substituteVars, formatFormulaDisplay,
+    rollDie, evalFormula, defaultDie, advModeOf, canAdv, withAdv, normVarKey, substituteVars, formatFormulaDisplay,
     pushLog, pushNote, doRoll, rollPercent, showLast, fmtTime, appendLogEntry, renderLog, logToText, wireLog, copyText
   });
 })(window.OSR = window.OSR || {});

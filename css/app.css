@@ -224,26 +224,21 @@ button, input, textarea, select {
 .btn.btn-link { background: none; border: 0; padding: 0; color: var(--accent-2); text-decoration: underline; font: inherit; }
 .btn-danger:hover:not(:disabled) { background: var(--danger-bg-hover); }
 
-/* ---------- 3D dice (js/dice3d.js) ---------- */
-/* Over everything, but the mouse goes through to the page. */
-.dice3d-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 9000; pointer-events: none; }
-.dice3d-canvas[hidden] { display: none; }
-.dice3d-canvas.is-out { opacity: 0; transition: opacity .45s ease; }
-/* The total, shown when the dice land (bottom center, over the page). */
-.dice3d-panel {
-  position: fixed; left: 50%; z-index: 9001; pointer-events: none;
-  transform: translate(-50%, 0) scale(.92); opacity: 0; transition: opacity .25s ease, transform .25s ease;
-  min-width: 180px; max-width: min(70vw, 560px); padding: 12px 22px 14px; border-radius: 16px;
-  background: color-mix(in srgb, var(--bg-2) 92%, transparent); color: var(--text); text-align: center;
-  border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0, 0, 0, .45);
+/* ---------- 3D dice (js/dice3d.js, the rpg-dice-3d library) ---------- */
+/* The library adds its own stage and panel styles; these fit them to the theme.
+   The stage is over everything, but the mouse goes through to the page. */
+.rpg-dice3d {
+  --rpg-dice3d-z: 9000;
+  --rpg-dice3d-panel-bg: color-mix(in srgb, var(--bg-2) 92%, transparent);
+  --rpg-dice3d-panel-fg: var(--text);
+  --rpg-dice3d-panel-border: var(--border);
+  --rpg-dice3d-panel-dim: var(--text-dim);
+  --rpg-dice3d-total: var(--accent);
+  --rpg-dice3d-total-font: var(--font-head);
+  --rpg-dice3d-mono: var(--font-mono);
+  --rpg-dice3d-font: inherit;
 }
-.dice3d-panel[hidden] { display: none; }
-.dice3d-panel.is-shown { opacity: 1; transform: translate(-50%, 0) scale(1); }
-.dice3d-panel.is-out { opacity: 0; transition: opacity .45s ease; }
-.dice3d-label { font-size: var(--fs-md); color: var(--text-dim); }
-.dice3d-total { font-size: 48px; font-weight: 700; line-height: 1.1; color: var(--accent); font-family: var(--font-head); font-variant-numeric: tabular-nums; }
-.dice3d-detail { font-size: var(--fs-md); font-family: var(--font-mono); word-break: break-word; }
-.dice3d-detail:empty { display: none; }
+.rpg-dice3d-label, .rpg-dice3d-detail { font-size: var(--fs-md); }
 
 /* ---------- Layout ---------- */
 .layout {
@@ -1489,7 +1484,7 @@ body.rail-hidden .rail { display: none; }
 /* ---------- Right-click "roll with modifiers" popup ---------- */
 .roll-popup {
   position: fixed; z-index: 90;
-  width: 240px;
+  width: 280px;
   background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
   font-size: var(--fs-md);
@@ -1498,10 +1493,13 @@ body.rail-hidden .rail { display: none; }
 .rp-head { margin-bottom: 8px; }
 .rp-head span { color: var(--accent-2); font-family: var(--font-mono); }
 .rp-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.rp-row input[type="number"] {
-  width: 80px; background: var(--bg); color: var(--text);
+.rp-mod-wrap { display: flex; align-items: center; gap: 6px; }
+.rp-row input[type="number"], .rp-row select {
+  background: var(--bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; font: inherit;
 }
+.rp-row input[type="number"] { width: 64px; }
+.rp-row select { flex: 1; min-width: 0; }
 .rp-vars { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .rp-var-row { display: flex; align-items: center; gap: 6px; }
 .rp-var-row select {

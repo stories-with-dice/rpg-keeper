@@ -876,6 +876,13 @@
 
     // In the character editor, typing "[" or "]" while text is selected wraps
     // the selection in brackets instead of replacing it.
+    // Ctrl+Enter (Cmd+Enter on a Mac) saves the sheet, like the Save button.
+    $('#edit-host').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+      if (!e.target.classList || !e.target.classList.contains('edit-col-area')) return;
+      e.preventDefault();
+      saveEdit();
+    });
     $('#edit-host').addEventListener('keydown', e => {
       if (e.key !== '[' && e.key !== ']') return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;

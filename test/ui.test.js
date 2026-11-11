@@ -330,6 +330,46 @@ test('Right-click a dice formula opens the roll popup; a modifier and stacked va
   assert.match(logText(), /1d6\+3-1\+2/, 'base formula + modifier + CON(-1) + STR(+2)');
 });
 
+test('Roll popup: the Adv/Dis dropdown starts at the formula\'s mode and rewrites the d20', () => {
+  T.createCharacter('# Hero\n\nSTR: 1\n\nWeaponMastery: 2\n\nSword +$STR+$WeaponMastery\n\nStealth +0(adv)\n\nAttack: 1d6');
+  T.renderAll();
+  const open = f => {
+    const el = $$('#mode-view .roll').find(x => x.dataset.formula === f);
+    assert.ok(el, 'a roll span for ' + f);
+    el.dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  };
+  open('2d20kh1+0');
+  assert.equal($('#rp-adv').value, 'adv', 'the sheet\'s (adv) tag preselects Advantage');
+  setValue($('#rp-adv'), 'dis');
+  assert.equal($('#rp-preview').textContent, 'Rolling: 2d20kl1+0');
+  click($('#rp-cancel'));
+
+  open('+$STR+$WeaponMastery');
+  assert.equal($('#rp-adv').value, '');
+  assert.equal($('#rp-adv').disabled, false);
+  setValue($('#rp-adv'), 'adv');
+  setValue($('#rp-mod'), '1');
+  assert.equal($('#rp-preview').textContent, 'Rolling: 2d20kh1+$STR+$WeaponMastery+1');
+  rig([face(4, 20), face(15, 20)]);
+  click($('#rp-roll'));
+  assert.match(logText(), /2d20kh1\+1\+2\+1/, 'STR (1) and WeaponMastery (2) were substituted');
+
+  open('1d6');
+  assert.equal($('#rp-adv').disabled, true, 'no d20, no advantage');
+  click($('#rp-cancel'));
+});
+
+test('Character editor: Ctrl+Enter saves the sheet', () => {
+  T.createCharacter('# Hero\n\nOld text');
+  T.renderAll();
+  click($('#btn-mode-edit'));
+  const area = $('#edit-host .edit-col-area');
+  area.value = '# Hero\n\nNew text';
+  area.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true, cancelable: true }));
+  assert.equal(T.activeChar().body, '# Hero\n\nNew text');
+  assert.equal($('#mode-edit').hidden, true, 'back to View mode');
+});
+
 test('Right-click "Add to Compendium" with an existing match: links the selection, replacing text with the entry\'s title', () => {
   T.state.compendium = [
     { id: 'lant1', name: 'Lantern', category: 'Items', source: 'Core', body: 'Sheds light.', createdAt: 1 },
@@ -1307,11 +1347,27 @@ test('3D dice: each rolled die maps to a body and the label that lands up; d% is
     { sides: 20, value: 17 }, { sides: 10, value: 10 }, { sides: 'F', value: -1 }, { sides: 'F', value: 0 },
     { sides: 3, value: 2 }, { sides: 9, value: 5 }, { sides: 100, value: 100 }, { sides: 100, value: 47 },
   ]);
-  assert.deepEqual(show.map(d => [d.key, d.top]),
+  assert.deepEqual(show.map(d => [d.shape, d.top]),
     [['d20', '17'], ['d10', '10'], ['dF', '−'], ['dF', ' '], ['d3', '2'], ['token', '5'],
       ['d10t', '00'], ['d10u', '0'], ['d10t', '40'], ['d10u', '7']],
     'a d3 has a body; a d9 is a coin; 100 is 00 + 0');
   assert.equal(T.diceToShow(Array.from({ length: 30 }, () => ({ sides: 6, value: 1 }))).length, 20, 'at most 20 dice');
+  assert.deepEqual(T.diceToShow([{ sides: 20, value: 8, kept: false }, { sides: 20, value: 17, kept: true }]).map(d => d.kept),
+    [false, true], 'a dropped die is drawn too (dim)');
+});
+
+test('3D dice: an advantage roll throws both d20s', () => {
+  const real = T.show3dDice;
+  let thrown = null;
+  T.show3dDice = (dice, i) => { thrown = dice; i.onLanded(); return true; };
+  try {
+    rig([face(8, 20), face(17, 20)]);
+    T.doRoll('2d20kh1+2', 'Test');
+    assert.deepEqual(thrown, [{ value: 8, sides: 20, kept: false }, { value: 17, sides: 20, kept: true }]);
+    assert.equal(T.state.log[T.state.log.length - 1].total, 19);
+  } finally {
+    T.show3dDice = real;
+  }
 });
 
 test('3D dice: the log line and the result box wait until the dice land; Apply damage too', () => {
@@ -1362,14 +1418,14 @@ test('3D dice: on by default; the Settings checkbox turns them off; never drawn 
   try { window.localStorage.removeItem('osr_dice_3d'); } catch (e) { /* no storage */ }
 });
 
-test('Dice skin: Theme color by default, 12 skins plus Random in Settings, saved per browser', () => {
+test('Dice skin: Theme color by default, the library\'s 14 skins plus Random in Settings, saved per browser', () => {
   try { window.localStorage.removeItem('osr_dice_skin'); } catch (e) { /* no storage */ }
   assert.equal(T.diceSkin(), 'theme');
   tab('settings');
   T.renderAll();
   const sel = $('#set-dice-skin');
   const ids = Array.from(sel.options).map(o => o.value);
-  assert.equal(ids.length, 14, 'Theme color, 12 skins, Random');
+  assert.equal(ids.length, 16, 'Theme color, 14 skins, Random');
   assert.equal(ids[0], 'theme');
   assert.equal(ids[ids.length - 1], 'random');
   assert.equal(sel.value, 'theme');
@@ -1379,7 +1435,7 @@ test('Dice skin: Theme color by default, 12 skins plus Random in Settings, saved
   assert.equal(T.skinFor('galaxy').id, 'galaxy');
   assert.equal(T.skinFor('theme').id, 'theme');
   const skins = ids.slice(1, -1);
-  for (let i = 0; i < 30; i++) assert.ok(skins.indexOf(T.skinFor('random').id) !== -1, 'Random picks one of the 12');
+  for (let i = 0; i < 30; i++) assert.ok(skins.indexOf(T.skinFor('random').id) !== -1, 'Random picks one of the 14');
   window.localStorage.setItem('osr_dice_skin', 'nope');
   assert.equal(T.diceSkin(), 'theme', 'an unknown value falls back to Theme color');
   try { window.localStorage.removeItem('osr_dice_skin'); } catch (e) { /* no storage */ }

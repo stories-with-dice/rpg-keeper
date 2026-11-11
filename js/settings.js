@@ -121,7 +121,7 @@
     $('#set-roll-sound').addEventListener('change', e => {
       OSR.setRollSound(e.target.checked);
       if (e.target.checked) OSR.playRollSound(); // a sample
-      if (e.target.checked && OSR.diceSound) OSR.diceSound.land(); // and the 3D dice's result click
+      if (e.target.checked && window.RpgDiceSound) RpgDiceSound.land(); // and the 3D dice's result click
     });
     $('#set-scarlet-heroes').addEventListener('change', e => {
       OSR.state.settings.scarletHeroes = e.target.checked;

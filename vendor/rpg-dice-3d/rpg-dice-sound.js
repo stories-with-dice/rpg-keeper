@@ -1,23 +1,30 @@
-/* js/dice-sound.js — the sounds of the 3D dice (Web Audio API, no audio files).
+/* rpg-dice-3d 1.0.0 (031bbde), https://github.com/stories-with-dice/rpg-dice-3d (MIT).
+ * Vendored copy: do not edit here. Change the library, then run its scripts/vendor.js. */
+/* rpg-dice-sound.js — the sounds of the 3D dice (part of rpg-dice-3d).
  *
- * Ported from the owner's Wox dice roller (overlay/sound.js). js/dice3d.js
- * simulates the throw and records sound events; OSR.diceSound.play() then
- * schedules one short sound per event:
+ * Web Audio API only, no audio files. A classic script: sets
+ * window.RpgDiceSound. RpgDice3D.throwDice() (rpg-dice-3d.js) simulates the
+ * throw and records sound events; RpgDiceSound.play() then schedules one
+ * short sound per event:
  *   impact: a die lands or bounces on the table (die click + table thud)
  *   clack:  two dice hit each other (two bright clicks, no thud)
  *   roll:   a die tips onto its next face while it rolls (soft click)
- * OSR.diceSound.land() is the short click when the result shows.
+ * RpgDiceSound.land() is the short click when the result shows.
  * Each die gets its own pitch from its size; the sound pans with its x position.
- * Settings → "Dice sound" (localStorage osr_roll_sound, js/dice.js) turns it off.
+ * A browser starts audio only after a user action: call
+ * RpgDiceSound.context() in the click that rolls, before any await.
  */
-(function (OSR) {
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.RpgDiceSound = api;
+})(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
   // Resonance ratios and levels of a small hard plastic body.
   const MODES = [[1, 1], [1.59, 0.55], [2.41, 0.32], [3.33, 0.18]];
   // Base pitch per body; small dice ring higher.
   const PITCH = { d3: 3300, d4: 3900, d5: 3000, d6: 3300, dF: 3300, d7: 2900, d8: 3500, d10: 3000, d10t: 3000, d10u: 3000, d12: 2800, d14: 2700, d16: 2600, d20: 2600, d24: 2500, d30: 2400, token: 4200 };
-  const VOLUME = 0.7;
 
   let ctx = null;
   let noise = null;
@@ -29,6 +36,7 @@
       if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
       return ctx;
     }
+    if (typeof window === 'undefined') return null;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     try {
@@ -99,23 +107,30 @@
     return p;
   }
 
-  function masterOut() {
+  // volume: 0-1 (default 0.7). analyser(ctx): an optional AnalyserNode
+  // factory, to measure the output (debugging).
+  function masterOut(opts) {
     const master = ctx.createGain();
-    master.gain.value = VOLUME;
+    const vol = opts && opts.volume !== undefined ? Number(opts.volume) : 0.7;
+    master.gain.value = Math.max(0, Math.min(1, isNaN(vol) ? 0.7 : vol));
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14;
     comp.ratio.value = 6;
     master.connect(comp).connect(ctx.destination);
+    if (opts && opts.analyser) comp.connect(opts.analyser(ctx));
     return master;
   }
 
-  // events: from js/dice3d.js's throw (t in seconds from the start of the
-  // throw). pitchOf(k): base pitch of die k. width: the window width (pan).
-  // Returns true when the sounds are scheduled.
-  function play(events, pitchOf, width) {
-    if (!context()) return false;
+  // events: from RpgDice3D's throw (t in seconds from the start of the
+  // throw). pitchOf(k): base pitch of die k. opts: { volume, width (the
+  // window width, for the pan), analyser }. Returns the AudioContext when
+  // the sounds are scheduled, else null.
+  function play(events, pitchOf, opts) {
+    opts = opts || {};
+    const width = opts.width || (typeof window !== 'undefined' ? window.innerWidth : 1000);
+    if (!context()) return null;
     try {
-      const master = masterOut();
+      const master = masterOut(opts);
       // Keep the loudest events if there are very many dice.
       const list = events.length > 400 ? events.slice().sort((a, b) => b.s - a.s).slice(0, 400) : events;
       const start = ctx.currentTime + 0.03;
@@ -134,17 +149,17 @@
           tableThud(when, out, s * 0.25);
         }
       }
-      return true;
+      return ctx;
     } catch (e) {
-      return false; // no audio: the roll still works
+      return null; // no audio: the roll still works
     }
   }
 
   // The result shows: two quick bright clicks, a little apart.
-  function land() {
+  function land(opts) {
     if (!context()) return false;
     try {
-      const master = masterOut();
+      const master = masterOut(opts);
       const now = ctx.currentTime + 0.01;
       dieClick(now, master, 0.55, 3600, true);
       dieClick(now + 0.07, master, 0.4, 4300, true);
@@ -154,5 +169,5 @@
     }
   }
 
-  OSR.diceSound = { context, play, land, PITCH };
-})(window.OSR = window.OSR || {});
+  return { context, play, land, PITCH };
+});
