@@ -1468,6 +1468,20 @@ test('sheetResources: every "Name: current/max", one per line or separated by ; 
   assert.deepEqual(T.sheetResources('> **AC** 11 · **HP** 5/5 · **Luck** 🍀 0 · **XP** 0'), [
     { name: 'HP', value: 5, max: 5 }
   ], 'a bold name needs no colon; "·" separates');
+  assert.deepEqual(T.sheetResources('> **AC** 11 · **HP** 5/5 · **Luck** 0/1 · **GP** 5/0 · **XP** 0'), [
+    { name: 'HP', value: 5, max: 5 }, { name: 'Luck', value: 0, max: 1 }, { name: 'GP', value: 5, max: 0 }
+  ], 'the Shadowdark pregen line: Luck and GP trackers (max 0 = no limit)');
+});
+
+test('sheet resources: a GP tracker spent to 0/0 keeps 0 when the sheet is saved again', () => {
+  T.state.settings.system = 'shadowdark';
+  T.createCharacter('# Gp Test\n*Human Fighter — Level 1 Neutral*\n\n> **AC** 10 · **HP** 6/6 · **Luck** 0/1 · **GP** 5/0 · **XP** 0\n');
+  const ch = T.state.characters[T.state.characters.length - 1];
+  const gp = T.state.consumables.find(c => c.name === 'GP (Gp Test)');
+  assert.deepEqual([gp.value, gp.max], [5, 0]);
+  gp.value = 0;
+  T.syncResourceTrackers(ch);
+  assert.equal(gp.value, 0, 'not refilled from the sheet');
 });
 
 test('sheet resources: a new character gets one tracker each; a rename moves them; delete removes them', () => {

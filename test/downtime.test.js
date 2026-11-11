@@ -46,7 +46,8 @@ test('readSheet / writeSheetNumber: level, XP, luck, stat modifiers, and class f
   const after = D.writeSheetNumber(D.writeSheetNumber(gulzund, 'XP', 7), 'Luck', 2);
   assert.match(after, /\*\*XP\*\* 7/);
   assert.match(after, /\*\*XP:\*\* 7/, 'the Advancement line too');
-  assert.match(after, /\*\*Luck\*\* 🍀 2/);
+  assert.match(after, /\*\*Luck\*\* 2\/1/, 'the current value of the Luck resource');
+  assert.match(D.writeSheetNumber('> **Luck** 🍀 0 · **XP** 0', 'Luck', 1), /\*\*Luck\*\* 🍀 1/, 'the old sheet layout');
   assert.match(D.writeLevel(gulzund, 2), /Level 2 Lawful/);
   assert.equal(D.sheetHas('# Bob\nSTR +1', 'XP'), false);
   assert.equal(D.readSheet('# Bob\nLevel 3\n- STR +2\n- CHA: -1\nXP: 12', data.classes).xp, 12);
@@ -155,7 +156,7 @@ test('Wizards and Thieves: a full game keeps every coin', () => {
   }
 });
 
-test('Downtime tab: shows only in Shadowdark; a carousing roll writes XP into the sheet and the rest into the record', async () => {
+test('Downtime tab: shows only in Shadowdark; a carousing roll writes XP into the sheet, gp into the GP tracker, and the rest into the record', async () => {
   const { T, window, document } = await boot();
   const $ = s => document.querySelector(s);
   const settle = async () => { for (let i = 0; i < 10; i++) await tick(); };
@@ -167,7 +168,11 @@ test('Downtime tab: shows only in Shadowdark; a carousing roll writes XP into th
   assert.match($('#dt-root').textContent, /Gulzund Blize/);
   assert.equal(T.downtimePc(ch).renown, 4, 'renown starts at the CHA modifier');
 
-  T.state.downtime.records[ch.id] = Object.assign(T.Downtime.newRecord(), { gp: 300 });
+  const gpT = T.state.consumables.find(c => c.name === 'GP (Gulzund Blize)');
+  const luckT = T.state.consumables.find(c => c.name === 'Luck (Gulzund Blize)');
+  assert.deepEqual([gpT.value, gpT.max, luckT.value, luckT.max], [5, 0, 0, 1], 'the pregen has GP and Luck trackers');
+  assert.equal(T.downtimePc(ch).gp, 5, 'wealth comes from the GP tracker');
+  gpT.value = 300;
   T.state.downtime.ui.kind = 'core';
   T.state.downtime.ui.eventIdx = 0;
   T.state.downtime.ui.ids = [ch.id];
@@ -178,7 +183,7 @@ test('Downtime tab: shows only in Shadowdark; a carousing roll writes XP into th
   go.click();
   await settle();
   const rec = T.state.downtime.records[ch.id];
-  assert.ok(rec.gp <= 270, 'the 30 gp share is paid');
+  assert.ok(gpT.value <= 270, 'the 30 gp share is paid from the GP tracker');
   assert.equal(rec.usedDowntime, true);
   const xp = T.Downtime.readSheet(ch.body, T.data.downtime.classes).xp;
   assert.ok(xp >= 2, 'the sheet has the new XP');
@@ -187,7 +192,14 @@ test('Downtime tab: shows only in Shadowdark; a carousing roll writes XP into th
   $('[data-act="undo"]').click();
   await settle();
   assert.equal(T.Downtime.readSheet(ch.body, T.data.downtime.classes).xp, 0, 'Undo restores the sheet');
-  assert.equal(T.state.downtime.records[ch.id].gp, 300);
+  assert.equal(gpT.value, 300, 'Undo restores the GP tracker');
+
+  // luck tokens go into the Luck tracker, which holds at most one (core p. 79)
+  const pc = T.downtimePc(ch);
+  pc.luck = 2;
+  T.downtimeCommit(pc);
+  assert.equal(luckT.value, 1);
+  assert.match(ch.body, /\*\*Luck\*\* 0\/1/, 'the sheet keeps its start value');
 
   T.setSystem('wwn');
   assert.equal($('.tab-btn[data-tab="downtime"]').hidden, true);

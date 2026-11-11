@@ -50,7 +50,10 @@
   (line start or after `;` `|` `,`; not inside a code fence). `syncResourceTrackers(ch)` (from
   `createCharacter` and `saveEdit`) makes a `"Name (Character)"` tracker for each
   (`resourceTrackerLabel`; `HP`/`Hit Points` → the HP tracker). New: the sheet's value and max.
-  Existing: the sheet sets only `max` (an untouched 0/0 takes both). `renameResourceTrackers` (from
+  Existing: the sheet sets only `max` (an untouched 0/0 HP tracker takes both; another 0/0 tracker,
+  such as a GP tracker spent to 0, keeps its value). Max 0 = no limit (`**GP** 5/0`). Shadowdark
+  sheets: `**HP** 5/5 · **Luck** 0/1 · **GP** 5/0` → HP, Luck, and GP trackers (the Downtime tab
+  reads and writes Luck and GP, docs/agents/downtime.md). `renameResourceTrackers` (from
   `saveEdit`) moves them on a rename; `deleteChar` removes them (`resourceTrackerLabels`);
   `consumablesForSystem` counts them as the character's.
 - Ownership and grouping (js/consumables.js): `trackerOwner(c)` says a tracker named

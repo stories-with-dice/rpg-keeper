@@ -3,9 +3,12 @@
  *
  * The party is the campaign's Shadowdark characters. Level, XP, luck tokens,
  * stat modifiers, and the class come from each sheet (OSR.Downtime.readSheet).
- * XP and luck tokens are written back into the sheet text; a sheet without
- * them keeps them in the record. Everything else (wealth, renown, failed
- * attempts, lasting effects, the log) is in state.downtime.records[charId].
+ * Luck tokens and wealth come from the character's "Luck (Name)" and
+ * "GP (Name)" trackers when the sheet has them ("**Luck** 0/1 · **GP** 5/0",
+ * see syncResourceTrackers in js/core.js). Without a tracker, luck tokens are
+ * in the sheet text and wealth in the record. XP is in the sheet text (or the
+ * record). Everything else (renown, failed attempts, lasting effects, the
+ * log) is in state.downtime.records[charId].
  * state.downtime.ui holds the form choices. Results and Undo are per page load.
  */
 (function (OSR) {
@@ -24,7 +27,7 @@
   try { view = localStorage.getItem(VIEW_KEY) || 'party'; } catch (e) { /* the first view */ }
   let results = [];        // the last carousing roll, per PC
   let checkResult = null;  // the last activity check: { title, lines }
-  let undo = null;         // { label, records, bodies } before the last automated change
+  let undo = null;         // { label, records, bodies, trackers } before the last automated change
   let wt = null;           // the last Wizards and Thieves game
   let tableRolls = {};     // table id → the row of its last roll
 
@@ -44,32 +47,49 @@
     return Object.assign(D().newRecord(), dt().records[id] || {});
   }
 
+  // The character's "Luck (Name)" or "GP (Name)" tracker, or undefined.
+  const TRACKED = { luck: 'Luck', gp: 'GP' };
+  function tracker(ch, key) {
+    const label = TRACKED[key] + ' (' + ch.name + ')';
+    return OSR.state.consumables.find(c => c.name === label);
+  }
+
   function pcOf(ch) {
     const sheet = D().readSheet(ch.body, data().classes);
     const rec = record(ch.id);
+    const luckT = tracker(ch, 'luck'), gpT = tracker(ch, 'gp');
     return Object.assign({}, sheet, rec, {
       id: ch.id, name: ch.name || 'Character',
       hd: rec.hd || sheet.hd, caster: rec.caster || sheet.caster,
       renown: rec.renown == null ? sheet.mods.CHA : rec.renown,
       xp: D().sheetHas(ch.body, 'XP') ? sheet.xp : (rec.xp || 0),
-      luck: D().sheetHas(ch.body, 'Luck') ? sheet.luck : (rec.luck || 0)
+      luck: luckT ? luckT.value : D().sheetHas(ch.body, 'Luck') ? sheet.luck : (rec.luck || 0),
+      gp: gpT ? gpT.value : rec.gp
     });
   }
 
   function snapshot(label) {
-    const bodies = {};
-    party().forEach(c => { bodies[c.id] = c.body; });
-    undo = { label, records: JSON.parse(JSON.stringify(dt().records)), bodies };
+    const bodies = {}, trackers = {};
+    party().forEach(c => {
+      bodies[c.id] = c.body;
+      Object.keys(TRACKED).forEach(k => { const t = tracker(c, k); if (t) trackers[t.id] = t.value; });
+    });
+    undo = { label, records: JSON.parse(JSON.stringify(dt().records)), bodies, trackers };
   }
 
-  // Writes a changed PC back: XP and luck tokens into the sheet (or the record), the rest into the record.
+  // Writes a changed PC back: luck tokens and wealth into their trackers;
+  // XP and luck tokens without a tracker into the sheet (or the record); the
+  // rest into the record. A tracker clamps to its max (luck tokens: 1, core p. 79).
   function commit(pc) {
     const ch = OSR.state.characters.find(c => c.id === pc.id);
     if (!ch) return;
     const rec = record(pc.id);
     let body = ch.body;
     if (D().sheetHas(body, 'XP')) body = D().writeSheetNumber(body, 'XP', pc.xp); else rec.xp = pc.xp;
-    if (D().sheetHas(body, 'Luck')) body = D().writeSheetNumber(body, 'Luck', pc.luck); else rec.luck = pc.luck;
+    const luckT = tracker(ch, 'luck'), gpT = tracker(ch, 'gp');
+    if (luckT) { luckT.value = pc.luck; OSR.clampConsumable(luckT); pc.luck = luckT.value; }
+    else if (D().sheetHas(body, 'Luck')) body = D().writeSheetNumber(body, 'Luck', pc.luck); else rec.luck = pc.luck;
+    if (gpT) { gpT.value = pc.gp; OSR.clampConsumable(gpT); pc.gp = gpT.value; }
     REC_FIELDS.forEach(k => { rec[k] = pc[k]; });
     dt().records[pc.id] = rec;
     if (body !== ch.body) { ch.body = body; ch.updatedAt = Date.now(); }
@@ -79,6 +99,7 @@
     OSR.save();
     if (note) OSR.pushNote('Downtime', note);
     if (OSR.refreshCharUI) OSR.refreshCharUI(); // the sheet shows the new XP and luck
+    if (OSR.renderConsumables) OSR.renderConsumables(); // the Luck and GP trackers
     renderDowntime();
   }
 
@@ -375,6 +396,7 @@
     if (act === 'undo' && undo) {
       dt().records = undo.records;
       party().forEach(c => { if (undo.bodies[c.id] != null && c.body !== undo.bodies[c.id]) { c.body = undo.bodies[c.id]; c.updatedAt = Date.now(); } });
+      OSR.state.consumables.forEach(t => { if (undo.trackers[t.id] != null) t.value = undo.trackers[t.id]; });
       const label = undo.label;
       undo = null; results = []; checkResult = null;
       finish('Undid ' + label);
@@ -513,5 +535,5 @@
     root.addEventListener('submit', onSubmit);
   }
 
-  Object.assign(OSR, { renderDowntime, wireDowntime, applyDowntimeTab, downtimePc: pcOf });
+  Object.assign(OSR, { renderDowntime, wireDowntime, applyDowntimeTab, downtimePc: pcOf, downtimeCommit: commit });
 })(window.OSR = window.OSR || {});

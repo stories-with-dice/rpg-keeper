@@ -576,7 +576,10 @@ Shadowdark core book, the Western Reaches *Player's Guide* and *Game Master's Gu
 *Gamemaster Companion* in one place, and it rolls them for the campaign's Shadowdark characters.
 
 - **Party.** One card per Shadowdark character. Level, XP, luck tokens, stat modifiers, and the
-  class come from the character sheet. Wealth, renown (it starts at the CHA modifier), talents and
+  class come from the character sheet. Put `**Luck** 0/1 · **GP** 5/0` on the sheet's HP line
+  (as the Shadowdark pregen does) to get **Luck (Name)** and **GP (Name)** trackers: then carousing
+  and downtime read and change those trackers, and you can change them with − / + too. Luck holds
+  at most 1 token (core p. 79); GP max 0 means no limit. Wealth (without a GP tracker), renown (it starts at the CHA modifier), talents and
   factions that give ADV, a standing carousing modifier (for example a cursed armor), one-time
   bonuses, and a list of contacts, debts, items, and lasting effects are kept here. **Level up**
   appears when the XP is enough. **New break between adventures** gives every PC a downtime

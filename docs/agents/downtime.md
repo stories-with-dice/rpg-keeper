@@ -22,8 +22,13 @@ edition (AGENTS.md "Hard rules").
 The party is the campaign's Shadowdark characters (`charSystemKey(ch) === 'shadowdark'`).
 `pcOf(ch)` (exported as `OSR.downtimePc`) merges:
 
+- **The trackers** `"Luck (Name)"` and `"GP (Name)"` (js/core.js `syncResourceTrackers`), made
+  from the sheet line `> **AC** 11 · **HP** 5/5 · **Luck** 0/1 · **GP** 5/0 · **XP** 0` (the
+  layout of `data/gulzund-blize-shadowdark.txt` and of the Shadowdark Companion's "Copy for RPG
+  Keeper" text). Luck max 1 (core p. 79: one luck token per player); GP max 0 = no limit. When a
+  tracker exists, it holds the luck tokens or the wealth; the sheet number is only the start value.
 - **The sheet** (`Downtime.readSheet(body, classes)`): `Level N`, `**XP** N` (or `XP: N`),
-  `**Luck** 🍀 N` (or `Luck: N`), the six stat modifiers (an ability table `| STR | 8 | -1 |`, else
+  `**Luck** N` (or `**Luck** 🍀 N`, `Luck: N`; used only without a Luck tracker), the six stat modifiers (an ability table `| STR | 8 | -1 |`, else
   `STR +1` / `STR: +1`, else a score), and the class (the longest class name in the first lines →
   `classes[name]`).
 - **The record** `state.downtime.records[ch.id]` (`Downtime.newRecord()`): `gp`, `renown` (`null`
@@ -31,10 +36,14 @@ The party is the campaign's Shadowdark characters (`charSystemKey(ch) === 'shado
   count), `ongoing` (contacts, debts, items, lasting effects), `log`, `carouseMod` (standing),
   `nextCarouse` (one time), `benefitAdv`, `cancelMishap`, `usedDowntime`, `bardAdv`, `jeweledEye`,
   and optional `hd` / `caster` overrides (`''` = from the class). XP and luck are in the record only
-  when the sheet has no such number.
+  when the sheet has no such number (and, for luck, no tracker). `gp` in the record is the wealth
+  only without a GP tracker; with one, `commit` copies the tracker value there too.
 
-`commit(pc)` writes XP and luck into the sheet (`Downtime.writeSheetNumber`, every occurrence) and
-the rest into the record. Level up (`writeLevel`) sets XP to 0 (core p. 117) and adds 1 renown with
+`commit(pc)` (exported as `OSR.downtimeCommit`) writes luck and gp into their trackers
+(`clampConsumable`: luck stays at 1 or less), XP and tracker-less luck into the sheet
+(`Downtime.writeSheetNumber`, every occurrence), and the rest into the record. `finish()` re-renders
+the Trackers panel; a tracker change in the Trackers panel re-renders the Downtime tab. Undo restores
+the records, the sheet bodies, and the Luck and GP tracker values. Level up (`writeLevel`) sets XP to 0 (core p. 117) and adds 1 renown with
 the Western Reaches rules on. `ensureDowntimeShape()` (js/core.js) backfills the record fields and
 `state.downtime.ui` (`DOWNTIME_UI`), and drops records of deleted characters.
 

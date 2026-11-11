@@ -1,7 +1,7 @@
 # Gulzund Blize
 *Human Witch — Level 1 Lawful*
 
-> **AC** 11 · **HP** 5/5 · **Luck** 🍀 0 · **XP** 0
+> **AC** 11 · **HP** 5/5 · **Luck** 0/1 · **GP** 5/0 · **XP** 0
 
 ## Abilities
 |     | Score | Mod |

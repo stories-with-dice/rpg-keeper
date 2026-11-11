@@ -93,6 +93,7 @@
     OSR.clampConsumable(c);
     row.querySelector('.cons-val-input').value = c.value;
     OSR.save();
+    if (OSR.renderDowntime) OSR.renderDowntime(); // the Downtime tab shows the Luck and GP trackers
   }
 
   function wireConsumables() {
@@ -138,6 +139,7 @@
         OSR.clampConsumable(c);
         OSR.save();
         renderConsumables();
+        if (OSR.renderDowntime) OSR.renderDowntime();
       }
     });
   }

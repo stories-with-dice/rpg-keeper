@@ -342,7 +342,9 @@
   }
   // Creates a tracker for each sheet resource, starting at the sheet's values.
   // After that the tracker holds the current value; the sheet sets only its
-  // max (an untouched 0/0 HP tracker takes both).
+  // max (0 = no limit, as "**GP** 5/0"). An untouched 0/0 HP tracker (made by
+  // ensureHpTracker) takes both. Other trackers at 0/0 keep their value: a
+  // "GP (Name)" tracker the party spent to 0 must not refill from the sheet.
   function syncResourceTrackers(ch) {
     if (!ch || (OSR.charSystemKey && OSR.charSystemKey(ch) === 'ua3e')) return;
     const state = OSR.state;
@@ -350,7 +352,7 @@
       const label = resourceTrackerLabel(ch, r.name);
       const c = state.consumables.find(x => x.name === label);
       if (!c) state.consumables.push({ id: uid(), name: label, value: Math.min(r.value, r.max || r.value), max: r.max });
-      else if (!c.value && !c.max) { c.value = r.value; c.max = r.max; }
+      else if (!c.value && !c.max && isHpName(r.name)) { c.value = r.value; c.max = r.max; }
       else { c.max = r.max; clampConsumable(c); }
     });
   }
