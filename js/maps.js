@@ -432,7 +432,7 @@
   function onMenuKey(e) {
     // Escape (the app-wide handler closes the menu) drops what was typed.
     if (e.key === 'Escape' && isTextField(e.target)) { e.target.value = e.target.defaultValue; return; }
-    if (e.key !== 'Enter' || !menuHandler || !isTextField(e.target)) return;
+    if (e.key !== 'Enter' || OSR.isComposing(e) || !menuHandler || !isTextField(e.target)) return;
     const el = e.target.closest('[data-act]');
     if (!el) return;
     e.preventDefault();
@@ -442,10 +442,10 @@
   // A right-click on the map itself (no element under it), right-click pan
   // off: add a pin there, or, in hexcrawl mode, mark its hex explored or not.
   function mapMenu(sc, p, x, y) {
-    const items = ['<button class="ctx-item" type="button" data-act="pin"><i class="fa-solid fa-location-dot"></i><span>Add a pin here</span></button>'];
+    const items = ['<button class="ctx-item" type="button" data-act="pin"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Add a pin here</span></button>'];
     if (OSR.hexcrawlOn(sc)) {
       const explored = sc.hexcrawl.explored.indexOf(G.hexKey(G.cellAt(p.x, p.y, sc.grid))) !== -1;
-      items.push('<button class="ctx-item" type="button" data-act="explore"><i class="fa-solid fa-binoculars"></i><span>' +
+      items.push('<button class="ctx-item" type="button" data-act="explore"><i class="fa-solid fa-binoculars" aria-hidden="true"></i><span>' +
         (explored ? 'Mark hex not explored' : 'Mark hex explored') + '</span></button>');
     }
     openMapMenu(x, y, '<div class="ctx-head">Map</div>' + items.join(''), el => {
@@ -921,7 +921,7 @@
     $('#map-grid-panel').addEventListener('change', onGridField);
     $('#scene-create').addEventListener('click', submitSceneModal);
     $('#scene-cancel').addEventListener('click', closeSceneModal);
-    $('#scene-modal').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'file') submitSceneModal(); });
+    $('#scene-modal').addEventListener('keydown', e => { if (e.key === 'Enter' && !OSR.isComposing(e) && e.target.tagName === 'INPUT' && e.target.type !== 'file') submitSceneModal(); });
     const svg = $('#map-svg');
     svg.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);

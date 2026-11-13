@@ -98,7 +98,7 @@
     const settings = BRP_SETTINGS.every(x => list.includes(x)) ? 'Every setting' : list.join(', ');
     box.innerHTML =
       '<div class="comp-row-head mb-row" data-id="' + escapeHtml(d.id) + '">' +
-        '<i class="fa-solid fa-dice"></i> ' +
+        '<i class="fa-solid fa-dice" aria-hidden="true"></i> ' +
         '<span class="comp-name">' + escapeHtml(d.name) + '</span>' +
         '<span class="badge">' + escapeHtml(OSR.monsterMetaLine(d)) + '</span>' +
         '<button class="btn mb-pick-add" type="button">Add to Combat</button>' +

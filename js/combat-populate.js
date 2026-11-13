@@ -186,8 +186,8 @@
         '<div class="comp-row-head">' +
           '<span class="comp-name">' + escapeHtml(d.name) + '</span>' +
           '<button class="btn php-row-reroll" type="button"' + (canReroll ? '' : ' disabled') +
-            ' title="Reroll — replace with another monster of the same ' + OSR.levelLabel() + '">' +
-            '<i class="fa-solid fa-dice-d20"></i></button>' +
+            ' title="Reroll — replace with another monster of the same ' + OSR.levelLabel() + '" aria-label="Reroll">' +
+            '<i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>' +
           '<span class="badge">' + OSR.levelLabel() + ' ' + escapeHtml(String(d.hd || '?')) + '</span>' +
         '</div></li>';
     }).join('');

@@ -353,7 +353,7 @@
     OSR.renderMaps();
     const cur = linkKey(t.link);
     const item = (key, icon, label) => '<button class="ctx-item' + (key === cur ? ' is-on' : '') + '" type="button" data-act="link" data-link="' + escapeHtml(key) + '">' +
-      '<i class="fa-solid ' + icon + '"></i><span>' + escapeHtml(label) + '</span>' + (key === cur ? '<i class="fa-solid fa-check ctx-check"></i>' : '') + '</button>';
+      '<i class="fa-solid ' + icon + '" aria-hidden="true"></i><span>' + escapeHtml(label) + '</span>' + (key === cur ? '<i class="fa-solid fa-check ctx-check" aria-hidden="true"></i>' : '') + '</button>';
     const links = OSR.state.combat.entries.map(e => item('combat:' + e.id, 'fa-khanda', 'Combat: ' + e.name))
       .concat(OSR.charactersForSystem().map(c => item('character:' + c.id, 'fa-user', 'Character: ' + c.name)));
     // The label is saved on Enter, on change, or when the menu closes.
@@ -377,8 +377,8 @@
       '<div class="ctx-sub">Color</div>' + OSR.menuSwatches(t.color) +
       '<div class="ctx-sub">Link</div>' +
       '<div class="ctx-list">' + (links.join('') || '<span class="hint map-menu-none">No combatants or characters.</span>') + '</div>' +
-      (t.link ? '<button class="ctx-item" type="button" data-act="unlink"><i class="fa-solid fa-link-slash"></i><span>Unlink</span></button>' : '') +
-      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash"></i><span>Delete token</span></button>',
+      (t.link ? '<button class="ctx-item" type="button" data-act="unlink"><i class="fa-solid fa-link-slash" aria-hidden="true"></i><span>Unlink</span></button>' : '') +
+      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete token</span></button>',
       (el, e) => {
         const one = sc.tokens.find(z => z.id === id);
         if (!one) return true;

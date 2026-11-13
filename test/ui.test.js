@@ -52,6 +52,17 @@ test('tabs: clicking a tab button activates that button and its panel only', () 
   assert.equal($$('.tab-panel.is-active').length, 1);
 });
 
+test('a11y: every modal box is a labelled dialog, and Font Awesome icons are hidden from screen readers', () => {
+  const boxes = $$('.modal > .modal-box');
+  assert.ok(boxes.length >= 12);
+  for (const b of boxes) {
+    assert.equal(b.getAttribute('role'), 'dialog', b.parentElement.id);
+    const title = $('#' + b.getAttribute('aria-labelledby'));
+    assert.ok(title && b.contains(title), b.parentElement.id + ' names its own heading');
+  }
+  assert.deepEqual($$('i[class*="fa-"]:not([aria-hidden="true"])').map(i => i.className), []);
+});
+
 /* ================================================================== */
 /* Dice roller                                                        */
 /* ================================================================== */
@@ -447,8 +458,17 @@ test('Journal: Enter logs the entry as a Journal note and clears the box; Shift+
   assert.equal(area.value, '');
 });
 
+test('Journal: the Enter that confirms IME text (isComposing, or keyCode 229 in Safari) does not log', () => {
+  const area = $('#notes-area');
+  setValue(area, 'キャンプ');
+  key(area, 'Enter', { isComposing: true });
+  key(area, 'Enter', { keyCode: 229 });
+  assert.equal(logCount(), 0, 'Enter during IME composition only confirms the text');
+  assert.equal(area.value, 'キャンプ');
+});
+
 /* ================================================================== */
-/* Consumables                                                        */
+/* Consumables                                                      */
 /* ================================================================== */
 
 test('Consumables: + Add appends a row; steppers bump and clamp; ✕ deletes', () => {

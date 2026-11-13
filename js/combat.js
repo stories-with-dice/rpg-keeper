@@ -822,9 +822,9 @@
     const item = c => {
       const on = active.has(c.name.toLowerCase());
       return '<button class="ctx-item' + (on ? ' is-on' : '') + '" data-name="' + escapeHtml(c.name) + '" title="' + escapeHtml(c.desc) + '">' +
-        '<i class="fa-solid ' + escapeHtml(c.icon || OSR.DEFAULT_STATUS_ICON) + '"></i>' +
+        '<i class="fa-solid ' + escapeHtml(c.icon || OSR.DEFAULT_STATUS_ICON) + '" aria-hidden="true"></i>' +
         '<span>' + escapeHtml(c.name) + '</span>' +
-        (on ? '<i class="fa-solid fa-check ctx-check"></i>' : '') +
+        (on ? '<i class="fa-solid fa-check ctx-check" aria-hidden="true"></i>' : '') +
         '</button>';
     };
     const sorted = OSR.state.conditions.slice().sort((a, b) => a.name.localeCompare(b.name));
@@ -836,14 +836,14 @@
     m.innerHTML =
       '<div class="ctx-head">' + escapeHtml(e.name) + '</div>' +
       '<button class="ctx-item ctx-side">' +
-        '<i class="fa-solid ' + (other === 'ally' ? 'fa-shield-halved' : 'fa-skull') + '"></i>' +
+        '<i class="fa-solid ' + (other === 'ally' ? 'fa-shield-halved' : 'fa-skull') + '" aria-hidden="true"></i>' +
         '<span>Change side &rarr; ' + other + '</span></button>' +
       '<div class="ctx-sub">Status</div>' +
       '<div class="ctx-list">' + items + '</div>' +
       (more ? '<div class="ctx-more"><button class="ctx-item ctx-more-btn" type="button" aria-haspopup="true">' +
-        '<i class="fa-solid fa-ellipsis"></i><span>More</span><i class="fa-solid fa-chevron-right ctx-check"></i></button>' +
+        '<i class="fa-solid fa-ellipsis" aria-hidden="true"></i><span>More</span><i class="fa-solid fa-chevron-right ctx-check" aria-hidden="true"></i></button>' +
         '<div class="ctx-submenu">' + more + '</div></div>' : '') +
-      '<button class="ctx-item ctx-new"><i class="fa-solid fa-plus"></i><span>New condition&hellip;</span></button>';
+      '<button class="ctx-item ctx-new"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>New condition&hellip;</span></button>';
     m.hidden = false;
     // position within viewport
     const mw = m.offsetWidth, mh = m.offsetHeight;
@@ -996,7 +996,7 @@
       const desc = statusDescOf(s.name);
       const tip = (desc ? desc + '  ·  ' : '') + 'added round ' + (s.round || '?');
       return '<span class="status-tag" data-name="' + escapeHtml(s.name) + '" tabindex="0">' +
-        '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '"></i>' +
+        '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '" aria-hidden="true"></i>' +
         '<span class="status-name">' + escapeHtml(s.name) + '</span>' +
         '<button class="status-x" title="Remove ' + escapeHtml(s.name) + '" aria-label="Remove">✕</button>' +
         '<span class="status-tip">' + escapeHtml(tip) + '</span>' +
@@ -1158,7 +1158,7 @@
   function statusListHtml(ent) {
     return '<span class="cd-statuses">' + ent.statuses.map(s =>
       '<span class="status-tag" data-name="' + escapeHtml(s.name) + '" tabindex="0">' +
-      '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '"></i>' +
+      '<i class="fa-solid ' + escapeHtml(s.icon || statusIconOf(s.name)) + '" aria-hidden="true"></i>' +
       '<span class="status-name">' + escapeHtml(s.name) + '</span>' +
       '<button class="status-x" title="Remove ' + escapeHtml(s.name) + '">✕</button>' +
       '<span class="status-tip">' + escapeHtml((statusDescOf(s.name) ? statusDescOf(s.name) + '  ·  ' : '') + 'added round ' + (s.round || '?')) + '</span>' +

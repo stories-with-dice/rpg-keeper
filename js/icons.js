@@ -159,7 +159,7 @@
   function wireIcons() {
     let t = null;
     $('#icon-search').addEventListener('input', () => { clearTimeout(t); t = setTimeout(renderIconSearch, 150); });
-    $('#icon-search').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(t); renderIconSearch(); } });
+    $('#icon-search').addEventListener('keydown', e => { if (e.key === 'Enter' && !OSR.isComposing(e)) { e.preventDefault(); clearTimeout(t); renderIconSearch(); } });
     $('#icon-results').addEventListener('click', onResultClick);
   }
 

@@ -318,12 +318,12 @@
     const now = (isText ? d.size : d.width) / stroke;
     const sizes = (isText ? TEXT_SIZES : WIDTHS).map(n =>
       '<button class="ctx-item' + (Math.abs(now - n) < 0.5 ? ' is-on' : '') + '" type="button" data-act="size" data-n="' + n + '">' +
-      '<i class="fa-solid ' + (isText ? 'fa-text-height' : 'fa-minus') + '"></i><span>' + n + ' px</span></button>').join('');
+      '<i class="fa-solid ' + (isText ? 'fa-text-height' : 'fa-minus') + '" aria-hidden="true"></i><span>' + n + ' px</span></button>').join('');
     OSR.openMapMenu(x, y,
       '<div class="ctx-head">' + (isText ? 'Text' : 'Drawing') + '</div>' +
       '<div class="ctx-sub">Color</div>' + swatchRow(d.stroke) +
       '<div class="ctx-sub">' + (isText ? 'Size' : 'Thickness') + '</div><div class="ctx-list">' + sizes + '</div>' +
-      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash"></i><span>Delete</span></button>',
+      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button>',
       el => {
         const cur = sc.drawings.find(z => z.id === id);
         if (!cur) return true;
@@ -368,7 +368,7 @@
     $('#draw-clear').addEventListener('click', () => clearDrawings(OSR.activeScene()));
     const input = $('#map-text-input');
     input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); closeTextInput(); }
+      if (e.key === 'Enter') { if (OSR.isComposing(e)) return; e.preventDefault(); closeTextInput(); }
       else if (e.key === 'Escape') { e.preventDefault(); closeTextInput(true); }
     });
     // Later, so a click that opens a new box (and moves the focus) keeps it.

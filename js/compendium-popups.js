@@ -41,8 +41,8 @@
       : '';
     return '<div class="cpop-head"><b>' + title + '</b>' + (badges || '') + nav +
       '<span class="cpop-tools">' +
-        '<button class="cpop-icon" data-act="pin" title="Pin open" aria-pressed="' + (pop.pinned ? 'true' : 'false') + '">' +
-          '<i class="fa-solid fa-thumbtack"></i></button>' +
+        '<button class="cpop-icon" data-act="pin" title="Pin open" aria-label="Pin open" aria-pressed="' + (pop.pinned ? 'true' : 'false') + '">' +
+          '<i class="fa-solid fa-thumbtack" aria-hidden="true"></i></button>' +
         '<button class="cpop-icon" data-act="close" title="Close">×</button>' +
       '</span></div>';
   }
@@ -630,7 +630,7 @@
       if (li && OSR.compAC) { e.preventDefault(); acAccept(OSR.compAC.items[Number(li.dataset.i)]); }
     });
     document.addEventListener('keydown', e => {
-      if (!OSR.compAC) return;
+      if (!OSR.compAC || OSR.isComposing(e)) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); acMove(1); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); acMove(-1); }
       else if ((e.key === 'Enter' || e.key === 'Tab') && OSR.compAC.sel >= 0) { e.preventDefault(); e.stopPropagation(); acAccept(OSR.compAC.items[OSR.compAC.sel]); }

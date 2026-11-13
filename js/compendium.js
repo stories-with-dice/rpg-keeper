@@ -366,7 +366,7 @@
     // loaded, its CodeMirror instance has the same onSubmit wired directly
     // (see compMdeInstance) — skip it here to avoid saving twice.
     $('#comp-modal').addEventListener('keydown', e => {
-      if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || OSR.isComposing(e)) return;
       if (e.target.closest('.CodeMirror')) return;
       e.preventDefault();
       saveCompEntry();

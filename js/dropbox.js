@@ -832,7 +832,7 @@
       btn.hidden = !v;
       if (v) {
         btn.className = 'btn dbx-status' + (v.cls ? ' ' + v.cls : '');
-        btn.innerHTML = '<i class="fa-solid ' + v.icon + '"></i>' + OSR.escapeHtml(v.label);
+        btn.innerHTML = '<i class="fa-solid ' + v.icon + '" aria-hidden="true"></i>' + OSR.escapeHtml(v.label);
         btn.title = statusText();
       }
     }
@@ -871,7 +871,7 @@
     $('#dbx-connect').addEventListener('click', () => connect());
     $('#dbx-connect-code').addEventListener('click', () => connectWithCode());
     $('#dbx-finish').addEventListener('click', () => finishConnect($('#dbx-code').value));
-    $('#dbx-code').addEventListener('keydown', e => { if (e.key === 'Enter') finishConnect(e.target.value); });
+    $('#dbx-code').addEventListener('keydown', e => { if (e.key === 'Enter' && !OSR.isComposing(e)) finishConnect(e.target.value); });
     $('#dbx-cancel').addEventListener('click', cancelConnect);
     $('#dbx-sync').addEventListener('click', () => syncNow());
     $('#dbx-resolve').addEventListener('click', openDropboxModal);

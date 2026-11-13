@@ -21,6 +21,11 @@
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  // True while an IME (Japanese, Chinese, Korean input) composes text: the
+  // Enter that confirms a candidate must not submit. Safari sends that keydown
+  // after compositionend (isComposing false), so keyCode 229 catches it.
+  const isComposing = e => e.isComposing || e.keyCode === 229;
+
   /* ------------------------------------------------------------------ */
   /* State                                                              */
   /* ------------------------------------------------------------------ */
@@ -552,7 +557,7 @@
   }
 
   Object.assign(OSR, {
-    STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml,
+    STORAGE_KEY, MAX_LOG, MAX_DICE, $, $$, uid, escapeHtml, isComposing,
     STATE_DEFAULTS, COMPENDIUM_CATEGORIES, COMPENDIUM_DEFAULT_SOURCE,
     THEMES, THEME_LABELS, SYSTEMS, SYSTEM_LABELS, LEGACY_SYSTEM_KEYS, normSystem, renameLegacyKeys, CONDITION_SEED, DEFAULT_STATUS_ICON,
     applyTheme, load, loadCampaign, writeCampaigns, rekeyCampaign, flushSave, saveNow, ensureStateShape, ensureCharShape, migrateBrpSheet, fixAbilities,

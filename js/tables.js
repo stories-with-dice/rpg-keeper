@@ -350,7 +350,7 @@
     const range = TS.formulaRange(t.formula);
     const rolled = range && range.min === range.max ? '' : '<span class="tbl-roll-result">Rolled <b>' +
       escapeHtml(String(tree.roll == null ? '?' : tree.roll)) + '</b></span> ';
-    const copy = '<button class="btn tbl-copy" title="Copy the result"><i class="fa-solid fa-copy"></i></button>';
+    const copy = '<button class="btn tbl-copy" title="Copy the result" aria-label="Copy the result"><i class="fa-solid fa-copy" aria-hidden="true"></i></button>';
     return copy + (TS.nodeLines(tree)
       ? rolled + '<div class="tbl-result-text is-lines">' + linesHtml(tree, []) + '</div>'
       : rolled + '<span class="tbl-result-text">' + nodeHtml(tree, []) + '</span>');
@@ -372,17 +372,17 @@
           t.settings.map(v => '<span class="badge tbl-setting" title="Setting">' + escapeHtml(v) + '</span>').join('') +
           '<span class="hint tbl-origin" title="Source">' + escapeHtml(t.origin) + '</span>' +
           (t.user ? '<span class="badge tbl-mine" title="Your table">mine</span>' : '') +
-          (subs ? '<span class="hint tbl-subs" title="Rolls on other tables"><i class="fa-solid fa-diagram-project"></i> ' + subs + '</span>' : '') +
+          (subs ? '<span class="hint tbl-subs" title="Rolls on other tables"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> ' + subs + '</span>' : '') +
           '<span class="hint tbl-formula">' + escapeHtml(t.formula) + ' &middot; ' + t.entries.length + ' entries</span>' +
         '</summary>' +
         '<div class="tbl-body">' +
           '<div class="tbl-actions">' +
             '<button class="btn btn-primary tbl-roll" data-id="' + id + '"' + (bad ? ' disabled' : '') + '>' +
-              '<i class="fa-solid fa-dice-d20"></i> Roll ' + escapeHtml(t.formula) +
+              '<i class="fa-solid fa-dice-d20" aria-hidden="true"></i> Roll ' + escapeHtml(t.formula) +
             '</button>' +
-            (t.user ? '<button class="btn tbl-edit" data-id="' + id + '"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
-            '<button class="btn tbl-dup" data-id="' + id + '"><i class="fa-solid fa-copy"></i> Duplicate</button>' +
-            (t.user ? '<button class="btn row-del tbl-del" data-id="' + id + '" title="Delete this table" aria-label="Delete this table"><i class="fa-solid fa-trash"></i></button>' : '') +
+            (t.user ? '<button class="btn tbl-edit" data-id="' + id + '"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edit</button>' : '') +
+            '<button class="btn tbl-dup" data-id="' + id + '"><i class="fa-solid fa-copy" aria-hidden="true"></i> Duplicate</button>' +
+            (t.user ? '<button class="btn row-del tbl-del" data-id="' + id + '" title="Delete this table" aria-label="Delete this table"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>' : '') +
           '</div>' +
           (last ? '<div class="tbl-result" data-id="' + id + '">' + resultHtml(t, last.tree) + '</div>' : '') +
           '<table class="tbl-entries">' + head + '<tbody>' +
@@ -615,8 +615,8 @@
       if (copy) {
         const last = tblLastRoll[copy.closest('.tbl-result').dataset.id];
         if (last) OSR.copyText(TS.copyText(last.tree));
-        copy.innerHTML = '<i class="fa-solid fa-check"></i>';
-        setTimeout(() => { copy.innerHTML = '<i class="fa-solid fa-copy"></i>'; }, 1200);
+        copy.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+        setTimeout(() => { copy.innerHTML = '<i class="fa-solid fa-copy" aria-hidden="true"></i>'; }, 1200);
         return;
       }
       const sub = e.target.closest('.tbl-sub');

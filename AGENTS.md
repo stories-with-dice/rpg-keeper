@@ -113,6 +113,22 @@ node book-extracts/build_wwn.js   # owner only (private): PDF text → data/seed
 - Values from the app live in jsdom's realm: use `node:assert` (`deepEqual`), not `assert/strict`.
 - jsdom has no layout: map tests replace `OSR.mapRect()`.
 
+## Web platform guidance
+
+Before you change HTML, CSS, or browser JS, follow the `modern-web-guidance` skill
+([.claude/skills/modern-web-guidance/SKILL.md](.claude/skills/modern-web-guidance/SKILL.md), a copy of
+[GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) at commit
+`4dd9683`, Apache-2.0). It is a dev tool: `npx -y modern-web-guidance@latest search "<query>"`, then
+`retrieve "<id>"`. It does not change the app's network rules. Run
+`npx -y modern-web-guidance@latest legacy-scan js --json` to find old patterns; ignore `vendor/`.
+
+- **Enter in a text field**: a custom `keydown` handler that acts on Enter returns early when
+  `OSR.isComposing(e)` is true (IME text, for example Japanese, is still in composition).
+- **Icons**: every Font Awesome `<i class="fa-…">` gets `aria-hidden="true"`. An icon-only button
+  gets an `aria-label` as well as its `title`.
+- **Modals**: a new `.modal > .modal-box` gets `role="dialog" aria-modal="true"` and
+  `aria-labelledby` set to its heading's id.
+
 ## Conventions
 
 - **Rendering**: no virtual DOM. `render*()` rebuilds `innerHTML` from `state`. After a change:

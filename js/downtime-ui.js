@@ -132,7 +132,7 @@
     root.innerHTML =
       '<div class="dt-head">' +
         '<div class="dt-views">' + VIEWS.map(v => '<button type="button" class="btn' + (v[0] === view ? ' btn-primary' : '') + '" data-dt-view="' + v[0] + '">' + v[1] + '</button>').join('') + '</div>' +
-        (undo ? '<button type="button" class="btn" data-act="undo"><i class="fa-solid fa-rotate-left"></i> Undo ' + esc(undo.label) + '</button>' : '') +
+        (undo ? '<button type="button" class="btn" data-act="undo"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Undo ' + esc(undo.label) + '</button>' : '') +
       '</div>' +
       '<p class="hint">Between adventures, each PC does <b>one</b> downtime activity (core p. 91). The tab rolls the outcome tables and applies XP, gp, renown, luck tokens, next-roll bonuses, and treasure. XP and luck tokens go into the character sheet.</p>' +
       '<div class="dt-opts-row">' +

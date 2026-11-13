@@ -815,12 +815,12 @@
           const pct = r.fuzzy && typeof sc === 'number'
             ? '<span class="ctx-check">&asymp;' + Math.round((1 - sc) * 100) + '%</span>' : '';
           return '<button class="ctx-item" data-act="link" data-id="' + en.id + '" type="button">' +
-            '<i class="fa-solid fa-book"></i><span>' + escapeHtml(en.name) + '</span>' +
+            '<i class="fa-solid fa-book" aria-hidden="true"></i><span>' + escapeHtml(en.name) + '</span>' +
             '<span class="badge">' + escapeHtml(en.category) + '</span>' + pct + '</button>';
         }).join('') + '</div>';
     }
     html += '<button class="ctx-item ctx-new" data-act="add-comp" type="button">' +
-      '<i class="fa-solid fa-plus"></i><span>' +
+      '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>' +
       (matches.length ? 'Create new entry&hellip;' : 'Add &ldquo;' + escapeHtml(short) + '&rdquo; to Compendium') +
       '</span></button>';
     m.innerHTML = html;

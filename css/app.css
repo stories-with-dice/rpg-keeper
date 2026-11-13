@@ -1678,8 +1678,13 @@ body.rail-hidden .rail { display: none; }
 .map-token-sel { fill: none; stroke: var(--accent-2); }
 .map-token-turn { fill: none; stroke: var(--accent); stroke-dasharray: 6 4; }
 .map-token.is-down { opacity: .5; }
-.map-ping { fill: none; stroke: var(--accent); animation: map-ping 2s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+.map-ping {
+  fill: none; stroke: var(--accent); animation: map-ping 2s ease-out forwards; transform-box: fill-box; transform-origin: center;
+  /* Reduced motion: the ring only fades, at full size (js/tokens.js removes it after 2 s). */
+  @media (prefers-reduced-motion: reduce) { animation-name: map-ping-fade; }
+}
 @keyframes map-ping { from { opacity: 1; transform: scale(.2); } to { opacity: 0; transform: scale(1.4); } }
+@keyframes map-ping-fade { from { opacity: 1; } to { opacity: 0; } }
 .map-token-panel[hidden] { display: none; }
 .token-add, .token-edit { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 8px 0; font-size: var(--fs-md); }
 /* Over the map's top edge (.map-float-top), so showing it never moves the map under the pointer. */

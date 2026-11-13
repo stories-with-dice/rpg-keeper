@@ -40,7 +40,7 @@
         notesTimer = setTimeout(OSR.save, 300);
       });
       area.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitNoteFromTextarea(area); }
+        if (e.key === 'Enter' && !e.shiftKey && !OSR.isComposing(e)) { e.preventDefault(); submitNoteFromTextarea(area); }
       });
       area.addEventListener('blur', OSR.save);
       return;

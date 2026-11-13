@@ -52,7 +52,7 @@
     });
     if (opts.onSubmit) {
       cm.on('keydown', (c, e) => {
-        if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || OSR.compAC) return;
+        if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || OSR.compAC || OSR.isComposing(e)) return;
         e.preventDefault();
         opts.onSubmit(c);
       });

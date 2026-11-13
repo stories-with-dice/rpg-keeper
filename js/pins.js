@@ -174,9 +174,9 @@
     const note = noteOf(pin);
     OSR.openMapMenu(x, y,
       '<div class="ctx-head">' + escapeHtml(note ? note.name : 'Note deleted') + '</div>' +
-      (note ? '<button class="ctx-item" type="button" data-act="edit"><i class="fa-solid fa-pen"></i><span>Edit journal entry</span></button>' : '') +
-      (note ? '<button class="ctx-item ctx-delete" type="button" data-act="delete-note"><i class="fa-solid fa-trash"></i><span>Delete pin and journal entry</span></button>' : '') +
-      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-location-dot"></i><span>Delete pin' + (note ? ', keep journal entry' : '') + '</span></button>',
+      (note ? '<button class="ctx-item" type="button" data-act="edit"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Edit journal entry</span></button>' : '') +
+      (note ? '<button class="ctx-item ctx-delete" type="button" data-act="delete-note"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete pin and journal entry</span></button>' : '') +
+      '<button class="ctx-item ctx-delete" type="button" data-act="delete"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>Delete pin' + (note ? ', keep journal entry' : '') + '</span></button>',
       el => {
         const act = el.dataset.act;
         if (act === 'edit') { const n = noteOf(pin); if (n) OSR.openCompEntry(n.id); return true; }
